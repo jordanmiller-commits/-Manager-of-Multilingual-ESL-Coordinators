@@ -223,6 +223,34 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh
 .toast.show{opacity:1}
 
 /* ============================
+   SOURCE & TEMPLATE BADGES
+   ============================ */
+.source-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;margin-left:6px}
+.source-badge.audit{background:#eafaf1;color:#27ae60;border:1px solid #a9dfbf}
+.template-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;background:#f3e8ff;color:#8e44ad;border:1px solid #e8d5f5;margin-left:6px}
+/* ============================
+   STRATEGY PANEL
+   ============================ */
+.strategy-panel{margin-top:10px;padding:10px;border:1.5px solid #8e44ad;border-radius:8px;background:#f8f4ff}
+.strategy-panel h5{font-size:11px;font-weight:700;color:#8e44ad;margin-bottom:8px;text-transform:uppercase}
+.strategy-item{padding:8px;border-radius:6px;background:#fff;border:1px solid #e8d5f5;margin-bottom:6px;font-size:11px}
+.strategy-item .strat-name{font-weight:700;color:#2c3e6e;margin-bottom:3px}
+.strategy-item .strat-detail{color:#555;line-height:1.4}
+.strategy-insert-btn{padding:3px 10px;border-radius:4px;border:1px solid #8e44ad;background:transparent;color:#8e44ad;font-size:10px;cursor:pointer;font-weight:600;margin-top:4px}
+.strategy-insert-btn:hover{background:#f3e8ff}
+.strategy-toggle-btn{padding:4px 12px;border-radius:6px;border:1px solid #8e44ad;background:transparent;color:#8e44ad;font-size:10px;cursor:pointer;font-weight:600;margin-top:4px}
+.strategy-toggle-btn:hover{background:#f3e8ff}
+/* ============================
+   EVIDENCE PANEL
+   ============================ */
+.evidence-panel{margin-top:10px;padding:12px;border:1.5px solid #27ae60;border-radius:8px;background:#f0faf4}
+.evidence-panel h5{font-size:11px;font-weight:700;color:#27ae60;margin-bottom:8px;text-transform:uppercase;cursor:pointer}
+.evidence-section{padding:8px;border-radius:6px;background:#fff;border:1px solid #d5f5e3;margin-bottom:8px}
+.evidence-section .ev-sec-title{font-size:12px;font-weight:700;color:#2c3e6e;margin-bottom:4px}
+.evidence-item{padding:4px 8px;font-size:11px;color:#555;border-left:3px solid #e74c3c;margin-bottom:4px;border-radius:0 4px 4px 0;background:#fef9f8}
+.evidence-tag{display:inline-block;padding:1px 6px;border-radius:8px;font-size:9px;font-weight:600;background:#eee;color:#666;margin-left:4px}
+
+/* ============================
    DARK MODE
    ============================ */
 body.dark-mode{background:#1a1a2e;color:#e0e0e0}
@@ -257,6 +285,18 @@ body.dark-mode .progress-bar-track{background:#2d3a6e}
 body.dark-mode .badge-active{background:#0d2847;color:#64b5f6;border-color:#1a3a5c}
 body.dark-mode .badge-completed{background:#1a3a1a;color:#66bb6a;border-color:#2a5a2a}
 body.dark-mode .empty-state{color:#666}
+body.dark-mode .source-badge.audit{background:#1a3a1a;color:#66bb6a;border-color:#2a5a2a}
+body.dark-mode .template-badge{background:#2a1a3e;color:#b39ddb;border-color:#5a3a7e}
+body.dark-mode .strategy-panel{background:#2a1a3e;border-color:#5a3a7e}
+body.dark-mode .strategy-item{background:#1a2744;border-color:#3a2a5e;color:#e0e0e0}
+body.dark-mode .strategy-item .strat-name{color:#7eb8f7}
+body.dark-mode .strategy-item .strat-detail{color:#bbb}
+body.dark-mode .strategy-insert-btn,.strategy-toggle-btn{color:#b39ddb;border-color:#5a3a7e}
+body.dark-mode .evidence-panel{background:#1a2e1a;border-color:#2a5a2a}
+body.dark-mode .evidence-section{background:#1a2744;border-color:#2a3a1a}
+body.dark-mode .evidence-section .ev-sec-title{color:#7eb8f7}
+body.dark-mode .evidence-item{color:#bbb;background:#1a1a2e;border-left-color:#e74c3c}
+body.dark-mode .evidence-tag{background:#2d3a6e;color:#aaa}
 </style>
 </head>
 <body>
@@ -377,6 +417,12 @@ body.dark-mode .empty-state{color:#666}
         <input type="text" id="newCampus" placeholder="e.g., Rise Academy"/>
       </div>
     </div>
+    <div style="margin-top:12px">
+      <label for="newTemplate" style="display:block;font-size:9px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">Start from Template (optional)</label>
+      <select id="newTemplate" style="width:100%;padding:7px 9px;border-radius:6px;border:1px solid #ddd;font-size:12px;font-family:inherit">
+        <option value="">No template — blank cycle</option>
+      </select>
+    </div>
     <div class="modal-btns">
       <button class="btn-cancel" onclick="closeModal('newCycleModal')">Cancel</button>
       <button class="btn-import" onclick="confirmNewCycle()">Create Cycle</button>
@@ -454,6 +500,31 @@ var STATUS_OPTIONS = [
   {value: "not-started", label: "Not Started"},
   {value: "in-progress", label: "In Progress"},
   {value: "complete", label: "Complete"}
+];
+
+var COACHING_STRATEGIES = {
+  s01:{title:"Language Production",strategies:[{name:"Model-Practice-Apply",move:"Model sentence frame usage during whole-group instruction, then have scholars practice with partners using the frames, then apply independently in writing.",lookFor:"Scholars use frames independently during partner and independent work",successCriteria:"80% of scholars attempt frame usage without prompting"},{name:"Frame Rotation Protocol",move:"Introduce one new sentence frame per week, post it prominently, and require scholars to use it in at least 2 activities daily.",lookFor:"New frames appear weekly; scholars reference the wall during discussions",successCriteria:"Scholars can identify and use 3+ frames from memory"}]},
+  s02:{title:"Vocabulary Systems",strategies:[{name:"Word Wall Interactive Routine",move:"Daily 3-minute word wall review: teacher points to word, scholars say definition chorally, use in sentence with partner.",lookFor:"Daily routine observed; scholars engage actively with word wall",successCriteria:"Scholars can define and use 5+ word wall terms in context"},{name:"Vocabulary Journal Protocol",move:"Establish consistent journal format. Model entries weekly. Scholars complete entries for 3-5 words per unit.",lookFor:"Journals present on desks; entries follow consistent format",successCriteria:"90% of scholars have current, complete journal entries"}]},
+  s03:{title:"Writing Supports",strategies:[{name:"Mentor Text Analysis",move:"Select mentor text at target proficiency level. Guide scholars through annotating language features.",lookFor:"Annotated mentor texts visible; scholars reference during writing",successCriteria:"Scholar writing shows evidence of mentor text language features"},{name:"Scaffolded Writing Frames",move:"Provide tiered writing frames (beginner/intermediate/advanced). Release scaffolds gradually.",lookFor:"Multiple frame levels available; scholars self-select appropriate level",successCriteria:"Scholars transition to less scaffolded frames over time"}]},
+  s04:{title:"Data and Goal Tracking",strategies:[{name:"Weekly Goal Conference",move:"Hold 2-minute individual conferences weekly. Scholar states current goal, evidence of progress, and next step.",lookFor:"Goal trackers updated; scholars can articulate their goals",successCriteria:"80% of scholars can state their language goal and current progress"},{name:"Visual Progress Display",move:"Create class-level progress display that scholars update themselves. Celebrate milestones publicly.",lookFor:"Display is current and scholar-maintained",successCriteria:"Scholars independently update their progress markers"}]},
+  s05:{title:"Culture and Identity",strategies:[{name:"Heritage Spotlight Rotation",move:"Weekly spotlight on a different home language/culture. Scholar or family presents.",lookFor:"Rotating displays reflect current spotlight; scholar presentations scheduled",successCriteria:"Every scholar's heritage is featured at least once per semester"},{name:"Multilingual Asset Mapping",move:"Create classroom map connecting scholars to their languages. Use during instruction to validate home language as asset.",lookFor:"Map visible and referenced; teacher uses home language connections in lessons",successCriteria:"Scholars voluntarily share home language connections during instruction"}]},
+  s06:{title:"Structures and Routines",strategies:[{name:"Routine Installation Cycle",move:"Introduce one new routine per week. Model explicitly, practice 3 days, assess on day 5.",lookFor:"Posted routines match observed classroom practice",successCriteria:"Scholars follow routines with minimal teacher prompting"},{name:"Discussion Norm Co-Creation",move:"Facilitate scholar-led creation of discussion norms. Post prominently. Reference before every discussion.",lookFor:"Norms are scholar-generated; referenced before discussions",successCriteria:"Scholars self-correct using posted norms"}]},
+  s07:{title:"Technology and Reference",strategies:[{name:"Tech Station Rotation",move:"Set up labeled tech stations with QR codes. Train scholars on each tool.",lookFor:"Stations labeled and accessible; scholars navigate independently",successCriteria:"Scholars independently choose appropriate tech tool for task"},{name:"Bilingual Dictionary Protocol",move:"Teach explicit dictionary skills lesson. Post step-by-step lookup guide.",lookFor:"Dictionaries accessible; scholars use without prompting during vocabulary work",successCriteria:"Scholars look up 2+ words independently per class period"}]},
+  s08:{title:"Unit-Specific Vocabulary",strategies:[{name:"Frayer Model Workshop",move:"Model Frayer completion for 2 words. Scholars complete for 3 words in pairs. Display and reference during unit.",lookFor:"Completed Frayer models posted for current unit words",successCriteria:"Scholars can explain vocabulary using all four Frayer quadrants"},{name:"Vocabulary Preview Protocol",move:"Before unit launch, preview 5-8 key terms with visuals and cognates. Post on unit word wall.",lookFor:"Unit word wall is prepared before unit begins; daily references observed",successCriteria:"Scholars use unit vocabulary in speech and writing by week 2"}]},
+  s09:{title:"Content Comprehension",strategies:[{name:"Graphic Organizer Modeling",move:"Select organizer matching text structure. Model completion with think-aloud.",lookFor:"Organizers match current text structure; scholars complete with increasing independence",successCriteria:"Scholars can select appropriate organizer for text structure"},{name:"Background Knowledge Activation",move:"Begin each unit with KWL or anticipation guide. Build collaboratively.",lookFor:"KWL/activation display visible and updated; scholars add to it",successCriteria:"Scholars connect new content to prior knowledge unprompted"}]},
+  s10:{title:"Unit Writing Supports",strategies:[{name:"Genre Study Immersion",move:"Immerse scholars in genre examples before writing. Annotate features collaboratively.",lookFor:"Genre anchor chart posted; multiple examples available for reference",successCriteria:"Scholar writing demonstrates genre-specific features"},{name:"Revision Focus Protocol",move:"Name 1-2 specific revision skills per unit. Model revision process.",lookFor:"Revision focus posted; peer revision observed with checklist",successCriteria:"Final drafts show evidence of focused revision"}]},
+  s11:{title:"Discussion Supports",strategies:[{name:"Protocol Gradual Release",move:"Teach discussion protocol explicitly. Practice with structured prompts. Release to scholar-led discussions.",lookFor:"Protocol steps posted; scholars follow without teacher directing every step",successCriteria:"Scholars lead discussions with minimal teacher intervention"},{name:"Stance-Based Discussion",move:"Provide stance cards with position stems. Scholars prepare positions before discussion.",lookFor:"Stance cards visible; scholars reference stems during debate/discussion",successCriteria:"All scholars state position with text evidence"}]},
+  s12:{title:"Assessment and Monitoring",strategies:[{name:"Scholar Self-Assessment Routine",move:"Create unit learning target tracker. Model self-assessment weekly.",lookFor:"Trackers visible on desks; scholars complete without prompting",successCriteria:"Scholar self-assessments align with teacher assessments within 1 level"},{name:"Exit Ticket Analysis Protocol",move:"Daily exit ticket aligned to language objective. Teacher sorts next morning.",lookFor:"Exit tickets posted daily; evidence of teacher response to data",successCriteria:"Exit ticket data drives next-day instruction adjustments"}]},
+  s13:{title:"Culture-Content Connections",strategies:[{name:"Cultural Connection Mapping",move:"At unit start, facilitate brainstorm connecting content to scholars' cultures.",lookFor:"Cultural connection display updated per unit; teacher references during lessons",successCriteria:"Scholars volunteer cultural connections during instruction"},{name:"Scholar Work Celebration Cycle",move:"Display current unit work at multiple proficiency levels. Update weekly.",lookFor:"Work display shows range of proficiency levels; updated regularly",successCriteria:"All proficiency levels represented; scholars take pride in displayed work"}]}
+};
+
+var CYCLE_TEMPLATES = [
+  {id:"lang-prod",name:"Language Production Focus",sections:["s01","s08"],stages:{observation:"Look for: sentence frames posted and tiered by proficiency, scholars using stems during discussion, language function cards at tables, question stems referenced by DOK level.",feedback:"Discussion starters: How do scholars access language frames during instruction? When did you notice scholars producing language independently vs. with support?",actionStep:"Recommended: Add 2 new sentence frames per week aligned to unit content. Model frame usage during whole-group instruction. Require frame usage during partner discussions.",followUp:"Check: Are scholars using frames without prompting? Has partner talk increased in quality? Are frames updated to match current unit?",growth:"Indicators: Increased unprompted frame usage, higher quality discourse during partner and group work, scholars self-selecting appropriate frames."}},
+  {id:"vocab-systems",name:"Vocabulary Development",sections:["s02","s08"],stages:{observation:"Look for: word wall current and organized, personal vocabulary journals on desks, cognate references visible, morpheme chart posted.",feedback:"Discussion starters: How do scholars interact with vocabulary resources? Are journals being used as reference tools or just completed as assignments?",actionStep:"Recommended: Implement daily 3-minute word wall routine. Establish consistent vocabulary journal format. Add cognate connections for current unit words.",followUp:"Check: Is the word wall routine happening daily? Are journal entries following the format? Can scholars explain word meanings using multiple representations?",growth:"Indicators: Scholars independently reference word wall during tasks, journal entries are complete and accurate, scholars identify cognates without prompting."}},
+  {id:"writing-support",name:"Writing Support Systems",sections:["s03","s10"],stages:{observation:"Look for: writing process chart posted, tiered writing frames available, writer's checklist in use, mentor texts accessible.",feedback:"Discussion starters: How do scholars know where they are in the writing process? Are frames scaffolding independence or creating dependence?",actionStep:"Recommended: Create tiered frames for current writing task (3 levels). Select and annotate a mentor text at target level. Post revision focus.",followUp:"Check: Are scholars self-selecting frame levels? Is the mentor text annotated and referenced? Are scholars using the revision focus?",growth:"Indicators: Scholars transition to less scaffolded frames over time, writing quality improves across drafts."}},
+  {id:"discussion",name:"Academic Discussion Quality",sections:["s06","s11"],stages:{observation:"Look for: discussion norms posted, group role cards available, essential questions displayed, protocol steps visible.",feedback:"Discussion starters: What discussion structures are in place? How do scholars know their role in a discussion?",actionStep:"Recommended: Co-create discussion norms with scholars. Assign and rotate group roles weekly. Post current discussion protocol steps.",followUp:"Check: Do scholars reference norms during discussions? Are roles being followed? Can scholars lead protocol steps independently?",growth:"Indicators: Scholar-led discussions with minimal teacher intervention, all scholars participating actively."}},
+  {id:"data-goals",name:"Data-Driven Goal Setting",sections:["s04","s12"],stages:{observation:"Look for: language goal trackers on desks, class participation visible, I Can statements posted, unit learning targets displayed.",feedback:"Discussion starters: Can scholars state their language goals? How is progress tracked and shared?",actionStep:"Recommended: Create scholar-friendly goal tracker with TELPAS domain labels. Implement weekly goal conference routine.",followUp:"Check: Can 80% of scholars state their goal? Are conferences happening weekly? Is the progress display current?",growth:"Indicators: Scholars independently track and discuss progress, goal-setting conversations are scholar-led."}},
+  {id:"culture-identity",name:"Culture and Identity Integration",sections:["s05","s13"],stages:{observation:"Look for: home language wall, multilingual welcome, bilingual library, cultural connection display, scholar work at multiple levels.",feedback:"Discussion starters: How are scholars' home languages and cultures visible in the classroom?",actionStep:"Recommended: Create heritage spotlight rotation schedule. Add home language labels to word wall. Connect unit content to cultural backgrounds.",followUp:"Check: Is the heritage spotlight rotation happening? Are scholars contributing home language connections?",growth:"Indicators: Scholars voluntarily share cultural connections, home language is referenced positively during instruction."}}
 ];
 
 /* ======================================================
@@ -826,6 +897,14 @@ function buildCycleCard(cycle) {
   html += '<span>Created ' + formatDate(cycle.createdAt) + '</span>';
   html += '<span>' + completedStageCount(cycle) + '/5 stages</span>';
   if (cycle.sourceWalkthroughId) html += '<span style="color:#4a90d9">Imported</span>';
+  if (cycle.sourceAuditId) html += '<span class="source-badge audit">Linked to Audit</span>';
+  if (cycle.templateId) {
+    var tmplName = "";
+    for (var tmi = 0; tmi < CYCLE_TEMPLATES.length; tmi++) {
+      if (CYCLE_TEMPLATES[tmi].id === cycle.templateId) { tmplName = CYCLE_TEMPLATES[tmi].name; break; }
+    }
+    if (tmplName) html += '<span class="template-badge">' + escHtml(tmplName) + '</span>';
+  }
   html += '</div>';
   html += '</div>';
   html += '<span class="cycle-status-badge ' + (isComplete ? 'badge-completed' : 'badge-active') + '">';
@@ -890,6 +969,48 @@ function buildCycleCard(cycle) {
     html += '<div>';
     html += '<label>Notes</label>';
     html += '<textarea id="stage-' + cycle.id + '-' + stageConf.key + '-notes" placeholder="' + escHtml(getStagePlaceholder(stageConf.key)) + '" oninput="onStageChange(\'' + cycle.id + '\')">' + escHtml(st.notes) + '</textarea>';
+    if (s2 === 1 || s2 === 2) {
+      html += '<button class="strategy-toggle-btn" onclick="toggleStrategyPanel(\'' + cycle.id + '-' + stageConf.key + '\')">Strategy Suggestions</button>';
+      html += '<div id="strategy-panel-' + cycle.id + '-' + stageConf.key + '" class="strategy-panel" style="display:none">';
+      html += '<h5>Coaching Strategies</h5>';
+      var sectionsToShow = [];
+      if (cycle.sourceAuditId && cycle.evidenceSummary && cycle.evidenceSummary.weakSections) {
+        for (var ws = 0; ws < cycle.evidenceSummary.weakSections.length; ws++) {
+          sectionsToShow.push(cycle.evidenceSummary.weakSections[ws].sectionId);
+        }
+      }
+      if (sectionsToShow.length > 0) {
+        for (var fs = 0; fs < sectionsToShow.length; fs++) {
+          var secId = sectionsToShow[fs];
+          if (COACHING_STRATEGIES[secId]) {
+            var secStrats = COACHING_STRATEGIES[secId];
+            html += '<p style="font-size:10px;font-weight:700;color:#555;margin-bottom:4px">' + escHtml(secStrats.title) + '</p>';
+            for (var sti = 0; sti < secStrats.strategies.length; sti++) {
+              var strat = secStrats.strategies[sti];
+              html += '<div class="strategy-item"><div class="strat-name">' + escHtml(strat.name) + '</div>';
+              html += '<div class="strat-detail"><strong>Move:</strong> ' + escHtml(strat.move) + '</div>';
+              html += '<div class="strat-detail"><strong>Look-for:</strong> ' + escHtml(strat.lookFor) + '</div>';
+              html += '<div class="strat-detail"><strong>Success:</strong> ' + escHtml(strat.successCriteria) + '</div>';
+              html += '<button class="strategy-insert-btn" onclick="insertStrategy(\'' + cycle.id + '\',\'' + stageConf.key + '\',this)" data-text="' + escHtml(strat.name + ": " + strat.move) + '">Insert into Notes</button></div>';
+            }
+          }
+        }
+      } else {
+        for (var sid in COACHING_STRATEGIES) {
+          if (COACHING_STRATEGIES.hasOwnProperty(sid)) {
+            var secStrats2 = COACHING_STRATEGIES[sid];
+            html += '<p style="font-size:10px;font-weight:700;color:#555;margin-bottom:4px;margin-top:8px">' + escHtml(secStrats2.title) + '</p>';
+            for (var sti2 = 0; sti2 < secStrats2.strategies.length; sti2++) {
+              var strat2 = secStrats2.strategies[sti2];
+              html += '<div class="strategy-item"><div class="strat-name">' + escHtml(strat2.name) + '</div>';
+              html += '<div class="strat-detail"><strong>Move:</strong> ' + escHtml(strat2.move) + '</div>';
+              html += '<button class="strategy-insert-btn" onclick="insertStrategy(\'' + cycle.id + '\',\'' + stageConf.key + '\',this)" data-text="' + escHtml(strat2.name + ": " + strat2.move) + '">Insert into Notes</button></div>';
+            }
+          }
+        }
+      }
+      html += '</div>';
+    }
     html += '</div>';
 
     // Status
@@ -906,11 +1027,45 @@ function buildCycleCard(cycle) {
     html += '</div>'; // stage-fields
     html += '</div>'; // stage-editor
   }
+  // Evidence from Audit panel
+  if (cycle.evidenceSummary) {
+    html += '<div class="evidence-panel">';
+    html += '<h5 onclick="toggleEvidence(\'' + cycle.id + '\')">Evidence from Audit (click to expand) &mdash; ' + formatDate(cycle.evidenceSummary.auditDate) + ' &mdash; ' + (cycle.evidenceSummary.auditScorePct || 0) + '%</h5>';
+    html += '<div id="evidence-body-' + cycle.id + '" style="display:none">';
+    if (cycle.evidenceSummary.weakSections) {
+      for (var evi = 0; evi < cycle.evidenceSummary.weakSections.length; evi++) {
+        var evSec = cycle.evidenceSummary.weakSections[evi];
+        html += '<div class="evidence-section"><div class="ev-sec-title">' + escHtml(evSec.sectionTitle) + ' (' + (evSec.scorePct || 0) + '%)</div>';
+        if (evSec.weakItems) {
+          for (var evii = 0; evii < evSec.weakItems.length; evii++) {
+            var evItem = evSec.weakItems[evii];
+            html += '<div class="evidence-item">' + escHtml(evItem.itemText) + ' &mdash; <strong>' + (evItem.rating === 0 ? "Not Observed" : "Infrequently Implemented") + '</strong>';
+            if (evItem.comment) html += '<br><em style="color:#888">' + escHtml(evItem.comment) + '</em>';
+            if (evItem.tags && evItem.tags.length) {
+              for (var eti = 0; eti < evItem.tags.length; eti++) {
+                html += '<span class="evidence-tag">' + escHtml(evItem.tags[eti]) + '</span>';
+              }
+            }
+            if (evItem.photoCount > 0) html += '<span class="evidence-tag">' + evItem.photoCount + ' photo(s)</span>';
+            html += '</div>';
+          }
+        }
+        html += '</div>';
+      }
+    }
+    if (cycle.sourceAuditId) {
+      html += '<div style="margin-top:8px;text-align:center"><button class="btn" onclick="viewSourceAudit(\'' + cycle.sourceAuditId + '\')" style="color:#27ae60;border-color:#a9dfbf">View Full Audit</button></div>';
+    }
+    html += '</div></div>';
+  }
   html += '</div>'; // cycle-body
 
   // Footer
   html += '<div class="cycle-footer">';
   html += '<span class="created-text">ID: ' + escHtml(cycle.id) + '</span>';
+  if (cycle.sourceAuditId) {
+    html += '<button class="btn" onclick="viewSourceAudit(\'' + cycle.sourceAuditId + '\')" style="color:#27ae60;border-color:#a9dfbf;font-size:10px">View Source Audit</button>';
+  }
   html += '<button class="del-btn" onclick="deleteCycle(\'' + cycle.id + '\')">Delete Cycle</button>';
   html += '</div>';
 
@@ -973,6 +1128,34 @@ function deleteCycle(cycleId) {
   renderAll();
 }
 
+function viewSourceAudit(auditId) {
+  localStorage.setItem("audit_view_request", auditId);
+  window.open("../ESL_Classroom_Audit/ESL_Classroom_Audit.html", "_blank");
+}
+
+function toggleStrategyPanel(panelKey) {
+  var panel = document.getElementById("strategy-panel-" + panelKey);
+  if (panel) {
+    panel.style.display = panel.style.display === "none" ? "block" : "none";
+  }
+}
+
+function insertStrategy(cycleId, stageKey, btnEl) {
+  var text = btnEl.getAttribute("data-text");
+  var notesEl = document.getElementById("stage-" + cycleId + "-" + stageKey + "-notes");
+  if (notesEl && text) {
+    notesEl.value = notesEl.value ? notesEl.value + "\n\n" + text : text;
+    onStageChange(cycleId);
+  }
+}
+
+function toggleEvidence(cycleId) {
+  var body = document.getElementById("evidence-body-" + cycleId);
+  if (body) {
+    body.style.display = body.style.display === "none" ? "block" : "none";
+  }
+}
+
 /* ======================================================
    NEW CYCLE
    ====================================================== */
@@ -989,13 +1172,32 @@ function confirmNewCycle() {
     return;
   }
 
+  var templateId = document.getElementById("newTemplate") ? document.getElementById("newTemplate").value : "";
+  var stages = createBlankStages();
+
+  if (templateId) {
+    for (var ti = 0; ti < CYCLE_TEMPLATES.length; ti++) {
+      if (CYCLE_TEMPLATES[ti].id === templateId) {
+        var tmpl = CYCLE_TEMPLATES[ti];
+        var stageKeys = ["observation", "feedback", "actionStep", "followUp", "growth"];
+        for (var si = 0; si < stages.length; si++) {
+          if (tmpl.stages[stageKeys[si]]) {
+            stages[si].notes = tmpl.stages[stageKeys[si]];
+          }
+        }
+        break;
+      }
+    }
+  }
+
   var cycle = {
     id: genId(),
     teacher: teacher,
     campus: campus,
     createdAt: new Date().toISOString(),
-    stages: createBlankStages(),
-    sourceWalkthroughId: null
+    stages: stages,
+    sourceWalkthroughId: null,
+    templateId: templateId || null
   };
 
   addToRoster(teacher);
@@ -1005,6 +1207,7 @@ function confirmNewCycle() {
   closeModal("newCycleModal");
   teacherEl.value = "";
   campusEl.value = "";
+  if (document.getElementById("newTemplate")) document.getElementById("newTemplate").value = "";
   renderAll();
 }
 
@@ -1237,6 +1440,16 @@ document.addEventListener("keydown", function(e) {
    RENDER ALL
    ====================================================== */
 
+function populateTemplateDropdown() {
+  var sel = document.getElementById("newTemplate");
+  if (!sel) return;
+  var html = '<option value="">No template &mdash; blank cycle</option>';
+  for (var i = 0; i < CYCLE_TEMPLATES.length; i++) {
+    html += '<option value="' + CYCLE_TEMPLATES[i].id + '">' + escHtml(CYCLE_TEMPLATES[i].name) + '</option>';
+  }
+  sel.innerHTML = html;
+}
+
 function renderAll() {
   renderStats();
   populateFilterDropdowns();
@@ -1250,6 +1463,7 @@ function renderAll() {
 function init() {
   loadFromStorage();
   renderAll();
+  populateTemplateDropdown();
 }
 
 init();

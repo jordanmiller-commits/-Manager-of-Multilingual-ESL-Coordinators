@@ -2727,8 +2727,137 @@ function showIRRModal() {
     summary += "<p style='font-size:12px;color:#e74c3c'>Low agreement. A calibration session is recommended before the next walkthrough.</p>";
   }
 
-  document.getElementById("irrContent").innerHTML = summary + html;
+  // Calibration section
+  var calibrationHtml = "";
+  if (agreement < 75 && diff > 0) {
+    calibrationHtml += "<div class='calibration-section'>";
+    calibrationHtml += "<h4 style='color:#e74c3c;font-size:13px;margin-bottom:8px'>Calibration Needed</h4>";
+    calibrationHtml += "<p style='font-size:12px;color:var(--text-secondary);margin-bottom:10px'>The following items have significant disagreement (2+ levels). Discuss each item and record an agreed-upon rating.</p>";
+
+    var calItemIdx = 0;
+    for (var csi = 0; csi < SECTIONS.length; csi++) {
+      var cs = SECTIONS[csi];
+      for (var cj = 0; cj < cs.items.length; cj++) {
+        var ck = cs.id + "-" + cj;
+        var cr1 = obs1[ck];
+        var cr2 = obs2[ck];
+        if (cr1 !== undefined && cr2 !== undefined && Math.abs(cr1 - cr2) >= 2) {
+          var shortText = cs.items[cj].split(" — ")[0];
+          calibrationHtml += "<div class='calibration-item' id='cal-item-" + calItemIdx + "'>";
+          calibrationHtml += "<p style='font-size:12px;font-weight:700;color:var(--text)'>" + shortText + "</p>";
+          calibrationHtml += "<p style='font-size:11px;color:var(--text-muted)'>Section: " + cs.title + " | Obs 1: " + R[cr1].label + " (" + cr1 + ") | Obs 2: " + R[cr2].label + " (" + cr2 + ")</p>";
+          calibrationHtml += "<p style='font-size:11px;color:#e67e22;margin-top:4px;font-style:italic'>Discussion prompt: What specific evidence supports each rating? What would you need to see to rate this item higher?</p>";
+          calibrationHtml += "<div style='margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;align-items:center'>";
+          calibrationHtml += "<label style='font-size:10px;font-weight:700;color:var(--text-muted)'>AGREED RATING:</label>";
+          calibrationHtml += "<select id='cal-agreed-" + calItemIdx + "' style='padding:4px 8px;border-radius:4px;border:1px solid var(--input-border);font-size:11px;background:var(--input-bg);color:var(--input-text)'>";
+          calibrationHtml += "<option value=''>Select...</option>";
+          for (var ri = 0; ri <= 3; ri++) {
+            calibrationHtml += "<option value='" + ri + "'>" + ri + " — " + R[ri].label + "</option>";
+          }
+          calibrationHtml += "</select>";
+          calibrationHtml += "</div>";
+          calibrationHtml += "<div style='margin-top:4px'>";
+          calibrationHtml += "<label style='font-size:10px;font-weight:700;color:var(--text-muted)'>RATIONALE:</label>";
+          calibrationHtml += "<textarea id='cal-rationale-" + calItemIdx + "' style='width:100%;padding:4px 6px;border-radius:4px;border:1px solid var(--input-border);font-size:11px;min-height:30px;resize:vertical;background:var(--input-bg);color:var(--input-text)' placeholder='Why did you agree on this rating?'></textarea>";
+          calibrationHtml += "</div>";
+          calibrationHtml += "<input type='hidden' id='cal-key-" + calItemIdx + "' value='" + ck + "'/>";
+          calibrationHtml += "<input type='hidden' id='cal-text-" + calItemIdx + "' value='" + shortText.replace(/'/g, "&#39;") + "'/>";
+          calibrationHtml += "<input type='hidden' id='cal-r1-" + calItemIdx + "' value='" + cr1 + "'/>";
+          calibrationHtml += "<input type='hidden' id='cal-r2-" + calItemIdx + "' value='" + cr2 + "'/>";
+          calibrationHtml += "</div>";
+          calItemIdx++;
+        }
+      }
+    }
+
+    calibrationHtml += "<input type='hidden' id='cal-total-items' value='" + calItemIdx + "'/>";
+    calibrationHtml += "<input type='hidden' id='cal-agreement-before' value='" + agreement + "'/>";
+    calibrationHtml += "<div style='margin-top:12px;text-align:center'>";
+    calibrationHtml += "<button onclick='saveCalibration()' style='padding:8px 18px;background:#27ae60;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer'>Save Calibration Session</button>";
+    calibrationHtml += "</div>";
+    calibrationHtml += "</div>";
+  }
+
+  // Calibration history
+  var calHistHtml = "";
+  var calSessions = [];
+  try { var calRaw = localStorage.getItem("calibration_sessions"); calSessions = calRaw ? JSON.parse(calRaw) : []; } catch(e2) {}
+  if (calSessions.length > 0) {
+    calHistHtml += "<div class='calibration-history'>";
+    calHistHtml += "<h4 style='font-size:13px;color:var(--text);margin-bottom:8px'>Calibration History (" + calSessions.length + " sessions)</h4>";
+    for (var chi = calSessions.length - 1; chi >= 0 && chi >= calSessions.length - 5; chi--) {
+      var cs2 = calSessions[chi];
+      calHistHtml += "<div style='padding:6px 8px;border-radius:4px;background:var(--card-bg);border:1px solid var(--card-border);margin-bottom:4px;font-size:11px'>";
+      calHistHtml += "<strong>" + (cs2.date || "Unknown date") + "</strong> | " + (cs2.observer1 || "Obs 1") + " &amp; " + (cs2.observer2 || "Obs 2");
+      calHistHtml += " | Agreement: " + (cs2.agreementBefore || "?") + "% &rarr; " + (cs2.agreementAfter || "?") + "%";
+      calHistHtml += " | " + (cs2.items ? cs2.items.length : 0) + " items resolved";
+      calHistHtml += "</div>";
+    }
+    calHistHtml += "</div>";
+  }
+
+  document.getElementById("irrContent").innerHTML = summary + html + calibrationHtml + calHistHtml;
   document.getElementById("irrModal").classList.add("active");
+}
+
+function saveCalibration() {
+  var totalItems = parseInt(document.getElementById("cal-total-items").value, 10) || 0;
+  var agreementBefore = parseInt(document.getElementById("cal-agreement-before").value, 10) || 0;
+  var items = [];
+  var resolved = 0;
+
+  for (var i = 0; i < totalItems; i++) {
+    var agreedEl = document.getElementById("cal-agreed-" + i);
+    var rationaleEl = document.getElementById("cal-rationale-" + i);
+    var keyEl = document.getElementById("cal-key-" + i);
+    var textEl = document.getElementById("cal-text-" + i);
+    var r1El = document.getElementById("cal-r1-" + i);
+    var r2El = document.getElementById("cal-r2-" + i);
+
+    var agreedVal = agreedEl ? agreedEl.value : "";
+    var rationale = rationaleEl ? rationaleEl.value : "";
+
+    var item = {
+      key: keyEl ? keyEl.value : "",
+      itemText: textEl ? textEl.value : "",
+      rating1: r1El ? parseInt(r1El.value, 10) : 0,
+      rating2: r2El ? parseInt(r2El.value, 10) : 0,
+      agreedRating: agreedVal !== "" ? parseInt(agreedVal, 10) : null,
+      rationale: rationale
+    };
+    items.push(item);
+    if (agreedVal !== "") resolved++;
+  }
+
+  if (resolved === 0) {
+    alert("Please resolve at least one item before saving.");
+    return;
+  }
+
+  var agreementAfter = agreementBefore;
+  if (totalItems > 0) {
+    agreementAfter = Math.min(100, agreementBefore + Math.round((resolved / totalItems) * (100 - agreementBefore)));
+  }
+
+  var obs1Name = document.getElementById("m-observer") ? document.getElementById("m-observer").value : "Observer 1";
+  var session = {
+    id: "cal-" + Date.now(),
+    date: new Date().toISOString().slice(0, 10),
+    observer1: obs1Name,
+    observer2: "Observer 2",
+    items: items,
+    agreementBefore: agreementBefore,
+    agreementAfter: agreementAfter,
+    resolved: resolved === totalItems
+  };
+
+  var sessions = [];
+  try { var raw = localStorage.getItem("calibration_sessions"); sessions = raw ? JSON.parse(raw) : []; } catch(e) {}
+  sessions.push(session);
+  localStorage.setItem("calibration_sessions", JSON.stringify(sessions));
+
+  alert("Calibration session saved! " + resolved + "/" + totalItems + " items resolved.\nAgreement improved from " + agreementBefore + "% to " + agreementAfter + "%.");
+  showIRRModal();
 }
 
 /* ==============================
@@ -2853,7 +2982,7 @@ function renderCampusDash() {
   for (var sid in sectionTotals) {
     var st = sectionTotals[sid];
     var avg = st.totalMax > 0 ? Math.round((st.totalScore / st.totalMax) * 100) : 0;
-    sectionList.push({ title: st.title, avg: avg, color: st.color, type: st.type });
+    sectionList.push({ title: st.title, avg: avg, color: st.color, type: st.type, sectionId: sid });
   }
   sectionList.sort(function(a, b) { return a.avg - b.avg; });
 
@@ -2891,12 +3020,46 @@ function renderCampusDash() {
     html += "<p style='font-size:12px;color:var(--text-secondary);line-height:1.6'>The following sections scored below 55% across all audits, indicating a systemic need rather than individual coaching:</p>";
     html += "<ul style='font-size:12px;color:var(--text-secondary);padding-left:20px;margin-top:6px;line-height:1.8'>";
     for (var i = 0; i < weakSections.length; i++) {
-      html += "<li><strong style='color:" + weakSections[i].color + "'>" + weakSections[i].title + "</strong> (" + weakSections[i].avg + "% average)</li>";
+      var escapedTitle = weakSections[i].title.replace(/"/g, "&quot;");
+      var escapedCampus = (campus || "All Campuses").replace(/"/g, "&quot;");
+      html += "<li><strong style='color:" + weakSections[i].color + "'>" + weakSections[i].title + "</strong> (" + weakSections[i].avg + "% average) <button onclick='createPDAction(\"" + escapedTitle + "\",\"" + escapedCampus + "\",\"" + weakSections[i].sectionId + "\")' style='padding:2px 8px;font-size:10px;border-radius:10px;border:1.5px solid #27ae60;background:transparent;color:#27ae60;cursor:pointer;font-weight:600;margin-left:6px'>Create PD Action</button></li>";
     }
     html += "</ul></div>";
   }
 
   body.innerHTML = html;
+}
+
+function createPDAction(sectionTitle, campus, sectionId) {
+  var scopeRaw = localStorage.getItem("esl_scope_data");
+  var scopeData = null;
+  try { scopeData = scopeRaw ? JSON.parse(scopeRaw) : null; } catch(e) {}
+  if (!scopeData) {
+    scopeData = {};
+  }
+  if (!scopeData.customActions) scopeData.customActions = [];
+
+  var now = new Date();
+  var currentMonth = now.getMonth();
+  // Map to school year months (Jul=0 in school year)
+  var schoolMonthIdx = (currentMonth >= 6) ? (currentMonth - 6) : (currentMonth + 6);
+
+  var action = {
+    id: "pda-" + Date.now(),
+    text: "Data-Driven PD: " + sectionTitle + " — " + campus,
+    type: "pd",
+    frequency: "milestone",
+    months: [schoolMonthIdx],
+    campusScope: campus,
+    section: sectionId,
+    sectionTitle: sectionTitle,
+    sourceAuditCampus: campus,
+    createdAt: now.toISOString()
+  };
+
+  scopeData.customActions.push(action);
+  localStorage.setItem("esl_scope_data", JSON.stringify(scopeData));
+  alert("PD Action created: \"" + action.text + "\"\n\nOpen the Scope & Sequence tool to see it.");
 }
 
 /* ==============================
@@ -2951,6 +3114,29 @@ function generateCoachingPlan() {
     } else {
       html += "<p><strong>Coaching move:</strong> Review upcoming unit plans and identify where " + pri.title.toLowerCase() + " should be prepared before the unit launches. Build a unit prep checklist with the teacher.</p>";
     }
+    // Strategy suggestions from library
+    var secStrategies = COACHING_STRATEGIES[pri.sectionId];
+    if (secStrategies && secStrategies.strategies) {
+      html += "<div style='margin-top:8px;padding:8px 10px;background:var(--section-bg-light);border-radius:6px;border:1px solid var(--card-border)'>";
+      html += "<p style='font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:6px'>RECOMMENDED STRATEGIES:</p>";
+      for (var si = 0; si < secStrategies.strategies.length; si++) {
+        var strat = secStrategies.strategies[si];
+        html += "<div style='margin-bottom:8px;padding:6px 8px;background:var(--card-bg);border-radius:4px;border-left:3px solid #4a90d9'>";
+        html += "<p style='font-size:12px;font-weight:700;color:var(--text);margin-bottom:3px'>" + strat.name + "</p>";
+        html += "<p style='font-size:11px;color:var(--text-secondary);margin-bottom:2px'><strong>Move:</strong> " + strat.move + "</p>";
+        html += "<p style='font-size:11px;color:var(--text-secondary);margin-bottom:2px'><strong>Look-for:</strong> " + strat.lookFor + "</p>";
+        html += "<p style='font-size:11px;color:var(--text-secondary)'><strong>Success criteria:</strong> " + strat.successCriteria + "</p>";
+        html += "</div>";
+      }
+      html += "</div>";
+    }
+    // ELPS Resource link
+    var elpsMap = SECTION_ELPS_MAP[pri.sectionId];
+    if (elpsMap) {
+      html += "<div style='margin-top:6px'>";
+      html += "<button onclick='openELPSForSection(\"" + pri.sectionId + "\")' style='padding:5px 12px;border-radius:6px;border:1.5px solid #8e44ad;background:transparent;color:#8e44ad;font-size:11px;cursor:pointer;font-weight:600'>Open ELPS Resources: " + elpsMap.codes.join(", ") + "</button>";
+      html += "</div>";
+    }
     html += "</div>";
   }
 
@@ -2976,6 +3162,11 @@ function generateCoachingPlan() {
   html += "<li>New materials match current unit content and vocabulary</li>";
   html += "</ul></div>";
 
+  html += "<div style='margin-top:14px;text-align:center'>";
+  html += "<button class='start-cycle-btn' onclick='createCoachingCycleFromAudit()'>Start Coaching Cycle from This Audit</button>";
+  html += "<div id='cycleCreatedMsg' style='margin-top:8px;font-size:12px;color:#27ae60;display:none'></div>";
+  html += "</div>";
+
   html += "</div>";
 
   var target = document.getElementById("coachingPlanArea");
@@ -2983,6 +3174,166 @@ function generateCoachingPlan() {
     target.innerHTML = html;
     target.scrollIntoView({ behavior: "smooth" });
   }
+}
+
+/* ==============================
+   AUDIT-TO-COACHING PIPELINE
+   ============================== */
+
+function buildEvidenceSummary() {
+  var state = collectState();
+  var sectionData = [];
+  for (var i = 0; i < SECTIONS.length; i++) {
+    var s = SECTIONS[i];
+    var sc = secScore(s);
+    var pct = sc.max > 0 ? Math.round((sc.score / sc.max) * 100) : 0;
+    var weakItems = [];
+    for (var j = 0; j < s.items.length; j++) {
+      var k = s.id + "-" + j;
+      if (ratings[k] !== undefined && ratings[k] <= 1) {
+        weakItems.push({
+          itemKey: k,
+          itemText: s.items[j].split(" — ")[0],
+          rating: ratings[k],
+          comment: itemComments[k] || "",
+          tags: itemTags[k] || [],
+          photoCount: (itemPhotos[k] && itemPhotos[k].length) ? itemPhotos[k].length : 0
+        });
+      }
+    }
+    sectionData.push({ sectionId: s.id, sectionTitle: s.title, sectionType: s.type, scorePct: pct, weakItems: weakItems });
+  }
+  sectionData.sort(function(a, b) { return a.scorePct - b.scorePct; });
+  var weakSections = sectionData.slice(0, 3);
+
+  var auditDate = state.meta.date || new Date().toISOString().slice(0, 10);
+  var t = totalScore();
+  var auditScorePct = t.max > 0 ? Math.round((t.score / t.max) * 100) : 0;
+
+  return {
+    auditDate: auditDate,
+    auditScorePct: auditScorePct,
+    weakSections: weakSections
+  };
+}
+
+function createCoachingCycleFromAudit() {
+  var state = collectState();
+  var evidenceSummary = buildEvidenceSummary();
+  var teacher = state.meta.teacher || "Unknown Teacher";
+  var campus = state.meta.campus || "";
+  var auditDate = state.meta.date || new Date().toISOString().slice(0, 10);
+
+  // Find matching history entry for audit ID
+  var auditId = "audit-" + Date.now();
+  var history = getHistory();
+  for (var i = history.length - 1; i >= 0; i--) {
+    if (history[i].meta && history[i].meta.teacher === teacher && history[i].meta.date === auditDate) {
+      auditId = history[i].id;
+      break;
+    }
+  }
+
+  // Build summary texts
+  var weakParts = [];
+  for (var w = 0; w < evidenceSummary.weakSections.length; w++) {
+    var ws = evidenceSummary.weakSections[w];
+    weakParts.push(ws.sectionTitle + " (" + ws.scorePct + "%)");
+  }
+  var weakSummaryText = weakParts.join("; ");
+
+  var recommendationParts = [];
+  for (var r = 0; r < evidenceSummary.weakSections.length; r++) {
+    var rs = evidenceSummary.weakSections[r];
+    if (rs.sectionType === "permanent") {
+      recommendationParts.push("- " + rs.sectionTitle + ": Co-create a plan to install or update materials. Schedule a working session to build materials together.");
+    } else {
+      recommendationParts.push("- " + rs.sectionTitle + ": Review upcoming unit plans and identify where materials should be prepared before the unit launches.");
+    }
+  }
+  var recommendationText = recommendationParts.join("\n");
+
+  var nextStepsParts = [];
+  if (evidenceSummary.weakSections[0]) nextStepsParts.push("Address " + evidenceSummary.weakSections[0].sectionTitle + " in weeks 1-2");
+  if (evidenceSummary.weakSections[1]) nextStepsParts.push(evidenceSummary.weakSections[1].sectionTitle + " in weeks 3-4");
+  nextStepsParts.push("follow-up audit weeks 6-8");
+  var nextStepsText = nextStepsParts.join(", ");
+
+  var cycle = {
+    id: "cyc" + Date.now() + Math.floor(Math.random() * 10000),
+    teacher: teacher,
+    campus: campus,
+    createdAt: new Date().toISOString(),
+    stages: [
+      {key:"observation", status:"complete", date:auditDate, notes:"Audit observation — " + weakSummaryText},
+      {key:"feedback", status:"in-progress", date:"", notes:"Coaching recommendations from audit:\n" + recommendationText},
+      {key:"actionStep", status:"not-started", date:"", notes:"Suggested next steps:\n" + nextStepsText},
+      {key:"followUp", status:"not-started", date:"", notes:""},
+      {key:"growth", status:"not-started", date:"", notes:""}
+    ],
+    sourceWalkthroughId: null,
+    sourceAuditId: auditId,
+    evidenceSummary: evidenceSummary
+  };
+
+  // Read coaching_cycles_data
+  var cyclesData;
+  try {
+    var raw = localStorage.getItem("coaching_cycles_data");
+    cyclesData = raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    cyclesData = null;
+  }
+  if (!cyclesData || !cyclesData.cycles) {
+    cyclesData = { version: 1, savedAt: new Date().toISOString(), cycles: [], settings: {} };
+  }
+  cyclesData.cycles.push(cycle);
+  cyclesData.savedAt = new Date().toISOString();
+  localStorage.setItem("coaching_cycles_data", JSON.stringify(cyclesData));
+
+  // Add teacher to shared roster
+  var roster = [];
+  try {
+    var rosterRaw = localStorage.getItem("shared_teacher_roster");
+    roster = rosterRaw ? JSON.parse(rosterRaw) : [];
+  } catch (e) {
+    roster = [];
+  }
+  var teacherLower = teacher.toLowerCase();
+  var found = false;
+  for (var ti = 0; ti < roster.length; ti++) {
+    if (roster[ti].toLowerCase() === teacherLower) { found = true; break; }
+  }
+  if (!found && teacher) {
+    roster.push(teacher);
+    roster.sort();
+    localStorage.setItem("shared_teacher_roster", JSON.stringify(roster));
+  }
+
+  alert("Coaching cycle created for " + teacher + "!\nOpen the Coaching Cycle Tracker to view it.");
+
+  var msgEl = document.getElementById("cycleCreatedMsg");
+  if (msgEl) {
+    msgEl.style.display = "block";
+    msgEl.innerHTML = "Coaching cycle created. <a href='../Academic_Monitoring_Leader_Facing/Coaching_Cycle_Tracker.html' style='color:#27ae60;font-weight:700;text-decoration:underline'>Open Coaching Cycle Tracker</a>";
+  }
+}
+
+function openELPSForSection(sectionId) {
+  var map = SECTION_ELPS_MAP[sectionId];
+  if (!map) return;
+  var sec = null;
+  for (var i = 0; i < SECTIONS.length; i++) {
+    if (SECTIONS[i].id === sectionId) { sec = SECTIONS[i]; break; }
+  }
+  var data = {
+    query: map.query,
+    codes: map.codes,
+    domains: map.domains,
+    sectionTitle: sec ? sec.title : sectionId
+  };
+  localStorage.setItem("elps_recommended_query", JSON.stringify(data));
+  window.open("../ELPS_Agent/ELPS_Agent.html", "_blank");
 }
 
 /* ==============================
@@ -3251,6 +3602,27 @@ if ("serviceWorker" in navigator) {
     if (typeof notes !== "undefined") notes["s01"] = noteLines.join("\n");
     scheduleSave();
     alert("Walkthrough context loaded!\n\nCheck the notes in Section 1 (Language Production Supports) for your walkthrough observation reference.");
+  } catch(e) {}
+})();
+
+// Audit view request (from Coaching Cycle Tracker)
+(function(){
+  try {
+    var raw = localStorage.getItem("audit_view_request");
+    if (!raw) return;
+    localStorage.removeItem("audit_view_request");
+    var auditId = raw;
+    var history = [];
+    try { var h = localStorage.getItem("esl_audit_history"); history = h ? JSON.parse(h) : []; } catch(e) {}
+    for (var i = 0; i < history.length; i++) {
+      if (history[i].id === auditId) {
+        applyState(history[i]);
+        saveToStorage();
+        alert("Loaded audit from history (ID: " + auditId + ")");
+        return;
+      }
+    }
+    alert("Could not find audit with ID: " + auditId + " in history.");
   } catch(e) {}
 })();
 </script>

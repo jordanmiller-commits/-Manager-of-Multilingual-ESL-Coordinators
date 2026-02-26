@@ -197,6 +197,12 @@ body.dark-mode .tc-badge.gray{background:#2d3a6e;color:#888}
       <div class="tc-desc">Aggregate view of a teacher across audits, walkthroughs, coaching cycles, and observations.</div>
       <div class="tc-meta" id="metaTeacher360"></div>
     </a>
+    <a class="tool-card" href="Coordinator_Workload.html">
+      <div class="tc-icon">&#128203;</div>
+      <div class="tc-name">Coordinator Workload</div>
+      <div class="tc-desc">Monitor team capacity, workload balance, and campus coverage across all 4 coordinators.</div>
+      <div class="tc-meta" id="metaWorkload"></div>
+    </a>
   </div>
 
   <!-- Recent Activity -->
@@ -506,16 +512,62 @@ function runSearch(query) {
   }
   if (auditHits.length) groups.push({title: "Audits", items: auditHits.slice(0, 8), link: "ESL_Classroom_Audit/Audit_Dashboard.html"});
 
-  // Search coaching cycles
+  // Search coaching cycles (teacher, campus, and stage notes)
   var cd = safeGet("coaching_cycles_data");
   var cycles = cd && cd.cycles ? cd.cycles : [];
   var coachHits = [];
   for (var cci = 0; cci < cycles.length; cci++) {
+    var ccMatched = false;
+    var ccContext = "Coaching Cycle";
     if ((cycles[cci].teacher || "").toLowerCase().indexOf(q) !== -1 || (cycles[cci].campus || "").toLowerCase().indexOf(q) !== -1) {
-      coachHits.push({text: cycles[cci].teacher + " (" + (cycles[cci].campus || "N/A") + ")", context: "Coaching Cycle"});
+      ccMatched = true;
+    }
+    if (!ccMatched && cycles[cci].stages) {
+      for (var csi = 0; csi < cycles[cci].stages.length; csi++) {
+        var stNotes = cycles[cci].stages[csi].notes || "";
+        if (stNotes.toLowerCase().indexOf(q) !== -1) {
+          ccMatched = true;
+          ccContext = (cycles[cci].stages[csi].key || "Stage") + ": " + stNotes.substring(0, 80);
+          break;
+        }
+      }
+    }
+    if (ccMatched) {
+      coachHits.push({text: (cycles[cci].teacher || "Unknown") + " (" + (cycles[cci].campus || "N/A") + ")", context: ccContext});
     }
   }
   if (coachHits.length) groups.push({title: "Coaching Cycles", items: coachHits.slice(0, 8), link: "Academic_Monitoring_Leader_Facing/Coaching_Cycle_Tracker.html"});
+
+  // Search audit item comments and section notes
+  var auditNoteHits = [];
+  for (var ani = 0; ani < ah.length; ani++) {
+    var anEntry = ah[ani];
+    var anMatched = false;
+    var anContext = "";
+    if (anEntry.itemComments) {
+      for (var ick in anEntry.itemComments) {
+        if (anEntry.itemComments.hasOwnProperty(ick) && anEntry.itemComments[ick] && anEntry.itemComments[ick].toLowerCase().indexOf(q) !== -1) {
+          anMatched = true;
+          anContext = anEntry.itemComments[ick].substring(0, 80);
+          break;
+        }
+      }
+    }
+    if (!anMatched && anEntry.notes) {
+      for (var nk in anEntry.notes) {
+        if (anEntry.notes.hasOwnProperty(nk) && anEntry.notes[nk] && anEntry.notes[nk].toLowerCase().indexOf(q) !== -1) {
+          anMatched = true;
+          anContext = anEntry.notes[nk].substring(0, 80);
+          break;
+        }
+      }
+    }
+    if (anMatched) {
+      var anm = anEntry.meta || {};
+      auditNoteHits.push({text: "Audit " + (anm.date || "N/A") + " — " + (anm.teacher || "Unknown"), context: anContext});
+    }
+  }
+  if (auditNoteHits.length) groups.push({title: "Audit Notes", items: auditNoteHits.slice(0, 8), link: "ESL_Classroom_Audit/ESL_Classroom_Audit.html"});
 
   var box = document.getElementById("searchResults");
   if (groups.length === 0) {

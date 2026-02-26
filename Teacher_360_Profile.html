@@ -105,7 +105,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh
 .cycle-notes{font-size:11px;color:#666;margin-top:6px;line-height:1.5}
 
 /* ============================
-   TIMELINE
+   TIMELINE (legacy - kept for compat)
    ============================ */
 .timeline{position:relative;padding-left:24px}
 .timeline::before{content:'';position:absolute;left:8px;top:0;bottom:0;width:2px;background:#ddd}
@@ -120,6 +120,58 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh
 .tl-badge.audit{background:#e8f5e9;color:#2e7d32}
 .tl-badge.coaching{background:#fff3e0;color:#e65100}
 .tl-summary{font-size:11px;color:#555;line-height:1.5}
+
+/* ============================
+   ENHANCED TIMELINE (Feature 2)
+   ============================ */
+.timeline-visual{position:relative;padding-left:30px;margin-top:12px}
+.timeline-visual::before{content:'';position:absolute;left:12px;top:0;bottom:0;width:3px;background:linear-gradient(to bottom,#4a90d9,#27ae60,#8e44ad);border-radius:2px}
+.timeline-node{position:relative;margin-bottom:16px;padding:10px 14px;background:var(--card-bg,#fff);border-radius:8px;border:1px solid #eee;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.timeline-node::before{content:'';position:absolute;left:-24px;top:14px;width:12px;height:12px;border-radius:50%;border:2.5px solid #4a90d9;background:#fff;z-index:1}
+.timeline-node.type-audit::before{border-color:#4a90d9;background:#eaf3fb}
+.timeline-node.type-walkthrough::before{border-color:#27ae60;background:#eafaf1}
+.timeline-node.type-coaching::before{border-color:#8e44ad;background:#f5eefb}
+.timeline-node .tl-date{font-size:10px;color:#888;font-weight:700;text-transform:uppercase}
+.timeline-node .tl-title{font-size:13px;font-weight:700;color:#2c3e6e;margin-top:2px}
+.timeline-node .tl-detail{font-size:12px;color:#555;margin-top:4px;line-height:1.5}
+.timeline-node .tl-sections{font-size:11px;color:#888;margin-top:4px}
+.timeline-link{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;cursor:pointer;border:1px solid #ddd;background:#fafbfd;color:#4a90d9;margin-top:6px;text-decoration:none}
+.timeline-link:hover{background:#eaf3fb;border-color:#4a90d9}
+.growth-summary{padding:16px;border-radius:10px;background:linear-gradient(135deg,#eaf3fb,#eafaf1);border:1.5px solid #d5e8f7;margin-bottom:16px}
+.growth-summary h4{font-size:14px;color:#2c3e6e;margin-bottom:10px}
+.growth-metric{display:inline-block;padding:6px 14px;border-radius:8px;margin:4px;font-size:13px;font-weight:700}
+.growth-metric.positive{background:#eafaf1;color:#27ae60;border:1px solid #a9dfbf}
+.growth-metric.negative{background:#fef0ef;color:#e74c3c;border:1px solid #f5b7b1}
+.growth-metric.neutral{background:#f8f9fb;color:#888;border:1px solid #ddd}
+.recommended-action{padding:12px;border-radius:8px;background:#fff8e6;border:1.5px solid #f0c27a;margin-top:10px;font-size:12px;color:#856404;line-height:1.5}
+.recommended-action strong{color:#664d03}
+.audit-detail-toggle{cursor:pointer;font-size:10px;color:#4a90d9;font-weight:600;margin-top:4px;display:inline-block}
+.audit-detail-toggle:hover{text-decoration:underline}
+.audit-detail-body{display:none;margin-top:8px;font-size:11px;color:#555;line-height:1.6;padding:8px;background:#f8f9fb;border-radius:6px;border:1px solid #eee}
+.audit-detail-body.open{display:block}
+
+/* ============================
+   PROJECTION (Feature 10)
+   ============================ */
+.projection-card{padding:16px;border-radius:10px;background:#fff;border:1.5px solid #e0e0e0;margin-bottom:16px;box-shadow:0 1px 5px rgba(0,0,0,.07)}
+.projection-card h4{font-size:14px;color:#2c3e6e;margin-bottom:10px}
+.projection-chart{position:relative;min-height:200px;margin-bottom:12px}
+.stall-warning{padding:10px 14px;border-radius:8px;background:#fef0ef;border:1.5px solid #f5b7b1;font-size:12px;color:#721c24;margin-top:10px}
+.projection-metric{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;margin:4px;font-size:12px;font-weight:600}
+.traffic-light{width:16px;height:16px;border-radius:50%;display:inline-block}
+.traffic-light.green{background:#27ae60}
+.traffic-light.yellow{background:#f1c40f}
+.traffic-light.red{background:#e74c3c}
+
+/* ============================
+   CROSS-TOOL SEARCH (Feature 12)
+   ============================ */
+.profile-search{margin-bottom:14px;position:relative}
+.profile-search input{width:100%;padding:10px 14px 10px 36px;border-radius:8px;border:1px solid #ddd;font-size:13px;font-family:inherit;background:#fff}
+.profile-search input:focus{border-color:#4a90d9;outline:none;box-shadow:0 0 0 2px rgba(74,144,217,.2)}
+.profile-search .search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#888;font-size:14px}
+.profile-search .search-count{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:11px;color:#888;font-weight:600}
+.search-highlight mark{background:#fef08a;color:#333;padding:0 2px;border-radius:2px}
 
 /* ============================
    CHART
@@ -170,6 +222,39 @@ body.dark-mode .cycle-notes{color:#bbb}
 body.dark-mode .btn-print{background:#1a2744;color:#e0e0e0;border-color:#2d3a6e}
 body.dark-mode .pipe-dot.not-started{background:#1a2744;border-color:#2d3a6e;color:#667}
 body.dark-mode .pipe-line{background:#2d3a6e}
+/* Dark mode: Enhanced Timeline (Feature 2) */
+body.dark-mode .timeline-visual::before{background:linear-gradient(to bottom,#2d5aa0,#1e8449,#6c3483)}
+body.dark-mode .timeline-node{background:#1a2744;border-color:#2d3a6e;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+body.dark-mode .timeline-node::before{background:#1a2744}
+body.dark-mode .timeline-node.type-audit::before{border-color:#4a90d9;background:#1a2744}
+body.dark-mode .timeline-node.type-walkthrough::before{border-color:#27ae60;background:#1a2744}
+body.dark-mode .timeline-node.type-coaching::before{border-color:#8e44ad;background:#1a2744}
+body.dark-mode .timeline-node .tl-date{color:#7eb8f7}
+body.dark-mode .timeline-node .tl-title{color:#7eb8f7}
+body.dark-mode .timeline-node .tl-detail{color:#bbb}
+body.dark-mode .timeline-node .tl-sections{color:#888}
+body.dark-mode .timeline-link{background:#1a2744;border-color:#2d3a6e;color:#7eb8f7}
+body.dark-mode .timeline-link:hover{background:#2d3a6e;border-color:#4a90d9}
+body.dark-mode .growth-summary{background:linear-gradient(135deg,#1a2744,#162e3e);border-color:#2d3a6e}
+body.dark-mode .growth-summary h4{color:#7eb8f7}
+body.dark-mode .growth-metric.positive{background:#1a3a2a;color:#27ae60;border-color:#1e8449}
+body.dark-mode .growth-metric.negative{background:#3a1a1a;color:#e74c3c;border-color:#922b21}
+body.dark-mode .growth-metric.neutral{background:#1a2744;color:#888;border-color:#2d3a6e}
+body.dark-mode .recommended-action{background:#2a2714;border-color:#5a4e1a;color:#d4a017}
+body.dark-mode .recommended-action strong{color:#f0c27a}
+body.dark-mode .audit-detail-toggle{color:#7eb8f7}
+body.dark-mode .audit-detail-body{background:#16213e;border-color:#2d3a6e;color:#bbb}
+/* Dark mode: Projection (Feature 10) */
+body.dark-mode .projection-card{background:#16213e;border-color:#2d3a6e;box-shadow:0 1px 5px rgba(0,0,0,.3)}
+body.dark-mode .projection-card h4{color:#7eb8f7}
+body.dark-mode .stall-warning{background:#3a1a1a;border-color:#922b21;color:#e8a0a0}
+body.dark-mode .projection-metric{color:#bbb}
+/* Dark mode: Cross-Tool Search (Feature 12) */
+body.dark-mode .profile-search input{background:#1a2744;color:#e0e0e0;border-color:#2d3a6e}
+body.dark-mode .profile-search input:focus{border-color:#4a90d9;box-shadow:0 0 0 2px rgba(74,144,217,.25)}
+body.dark-mode .profile-search .search-icon{color:#7eb8f7}
+body.dark-mode .profile-search .search-count{color:#7eb8f7}
+body.dark-mode .search-highlight mark{background:#5a4e1a;color:#f0e68c}
 
 /* ============================
    PRINT STYLES
@@ -188,6 +273,8 @@ body.dark-mode .pipe-line{background:#2d3a6e}
   .selector-row{display:none}
   #selectorCard .card-title-row{display:block}
   #selectedTeacherPrint{display:block!important;font-size:16px;font-weight:700;color:#2c3e6e;margin-bottom:8px}
+  .profile-search{display:none!important}
+  .projection-chart{page-break-inside:avoid}
 }
 
 /* ============================
@@ -247,6 +334,13 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
     </div>
   </div>
 
+  <!-- CROSS-TOOL SEARCH (Feature 12) -->
+  <div class="profile-search" id="profileSearchWrap" style="display:none">
+    <span class="search-icon">&#128269;</span>
+    <input type="text" id="profileSearchInput" placeholder="Search observations, notes, coaching actions..." oninput="filterProfileContent(this.value)" aria-label="Search within profile content"/>
+    <span class="search-count" id="profileSearchCount"></span>
+  </div>
+
   <!-- SUMMARY STATS -->
   <div class="stats-row" id="statsRow" style="display:none">
     <div class="summary-stat">
@@ -272,7 +366,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
   </div>
 
   <!-- WALKTHROUGH OBSERVATIONS -->
-  <div class="card" id="walkthroughCard" style="display:none">
+  <div class="card searchable-card" id="walkthroughCard" style="display:none">
     <h2><span class="icon">&#128221;</span> Walkthrough Observations</h2>
     <div id="codeDistribution"></div>
     <div class="chart-wrap" id="fidelityChartWrap" style="display:none">
@@ -282,26 +376,32 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
   </div>
 
   <!-- AUDIT HISTORY -->
-  <div class="card" id="auditCard" style="display:none">
+  <div class="card searchable-card" id="auditCard" style="display:none">
     <h2><span class="icon">&#128270;</span> Audit History</h2>
     <div id="auditTrend"></div>
     <div id="auditTableWrap"></div>
   </div>
 
   <!-- COACHING CYCLES -->
-  <div class="card" id="coachingCyclesCard" style="display:none">
+  <div class="card searchable-card" id="coachingCyclesCard" style="display:none">
     <h2><span class="icon">&#128172;</span> Coaching Cycles</h2>
     <div id="coachingCyclesList"></div>
   </div>
 
   <!-- COACHING ACTIONS -->
-  <div class="card" id="coachingActionsCard" style="display:none">
+  <div class="card searchable-card" id="coachingActionsCard" style="display:none">
     <h2><span class="icon">&#9745;</span> Coaching Actions (from Walkthroughs)</h2>
     <div id="coachingActionsTableWrap"></div>
   </div>
 
+  <!-- GROWTH SUMMARY (Feature 2) + PROJECTION (Feature 10) -->
+  <div id="growthProjectionWrap" style="display:none">
+    <div id="growthSummaryWrap"></div>
+    <div id="projectionWrap"></div>
+  </div>
+
   <!-- TIMELINE -->
-  <div class="card" id="timelineCard" style="display:none">
+  <div class="card searchable-card" id="timelineCard" style="display:none">
     <h2><span class="icon">&#128339;</span> Timeline</h2>
     <div id="timelineWrap"></div>
   </div>
@@ -321,6 +421,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
    ====================================================== */
 
 var fidelityChartInstance = null;
+var projectionChartInstance = null;
 
 function safeGet(key) {
   try {
@@ -373,6 +474,41 @@ function codeClass(code) {
   if (c === "partial" || code === "partial") return "partial";
   if (c === "na" || code === "na") return "na";
   return "";
+}
+
+function daysBetween(dateA, dateB) {
+  var a = new Date(dateA);
+  var b = new Date(dateB);
+  var diff = Math.abs(b.getTime() - a.getTime());
+  return Math.round(diff / (1000 * 60 * 60 * 24));
+}
+
+function weeksAgo(dateStr) {
+  if (!dateStr) return 999;
+  var d = new Date(dateStr);
+  var now = new Date();
+  var diff = now.getTime() - d.getTime();
+  return Math.floor(diff / (1000 * 60 * 60 * 24 * 7));
+}
+
+/* ======================================================
+   LINEAR REGRESSION (Feature 10)
+   ====================================================== */
+
+function linearRegression(points) {
+  var n = points.length;
+  var sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+  for (var i = 0; i < n; i++) {
+    sumX += points[i].x;
+    sumY += points[i].y;
+    sumXY += points[i].x * points[i].y;
+    sumX2 += points[i].x * points[i].x;
+  }
+  var denom = n * sumX2 - sumX * sumX;
+  if (denom === 0) return {slope: 0, intercept: sumY / n};
+  var slope = (n * sumXY - sumX * sumY) / denom;
+  var intercept = (sumY - slope * sumX) / n;
+  return {slope: slope, intercept: intercept};
 }
 
 /* ======================================================
@@ -506,9 +642,15 @@ function onTeacherSelected() {
   if (!teacher) {
     hideAllSections();
     document.getElementById("emptyState").style.display = "";
+    document.getElementById("profileSearchWrap").style.display = "none";
+    document.getElementById("profileSearchInput").value = "";
+    document.getElementById("profileSearchCount").textContent = "";
     return;
   }
   document.getElementById("selectedTeacherPrint").textContent = "Teacher: " + teacher;
+  document.getElementById("profileSearchWrap").style.display = "";
+  document.getElementById("profileSearchInput").value = "";
+  document.getElementById("profileSearchCount").textContent = "";
   renderProfile(teacher);
 }
 
@@ -523,7 +665,11 @@ function hideAllSections() {
   document.getElementById("coachingCyclesCard").style.display = "none";
   document.getElementById("coachingActionsCard").style.display = "none";
   document.getElementById("timelineCard").style.display = "none";
+  document.getElementById("growthProjectionWrap").style.display = "none";
 }
+
+/* Store full audit entries for timeline detail expansion */
+var _currentTeacherFullAudits = [];
 
 function renderProfile(teacher) {
   document.getElementById("emptyState").style.display = "none";
@@ -622,8 +768,9 @@ function renderProfile(teacher) {
     return (b.date || "").localeCompare(a.date || "");
   });
 
-  // Gather teacher's audits
+  // Gather teacher's audits (full entries for timeline detail)
   var teacherAudits = [];
+  _currentTeacherFullAudits = [];
   for (var ai = 0; ai < auditHistory.length; ai++) {
     var aud = auditHistory[ai];
     if (aud.meta && nameMatch(aud.meta.teacher, teacher)) {
@@ -633,10 +780,14 @@ function renderProfile(teacher) {
         observer: aud.meta.observer || "",
         scorePct: aud.scorePct != null ? aud.scorePct : null
       });
+      _currentTeacherFullAudits.push(aud);
     }
   }
   teacherAudits.sort(function(a, b) {
     return (b.date || "").localeCompare(a.date || "");
+  });
+  _currentTeacherFullAudits.sort(function(a, b) {
+    return ((b.meta && b.meta.date) || "").localeCompare((a.meta && a.meta.date) || "");
   });
 
   // Gather teacher's coaching cycles
@@ -701,6 +852,12 @@ function renderProfile(teacher) {
 
   // ---- COACHING ACTIONS ----
   renderCoachingActionsSection(teacherCoachingActions);
+
+  // ---- GROWTH SUMMARY + PROJECTION (Features 2 & 10) ----
+  var gpWrap = document.getElementById("growthProjectionWrap");
+  gpWrap.style.display = "";
+  renderGrowthSummary(teacherAudits, teacherCycles, teacherCoachingActions);
+  renderProjection(teacherAudits);
 
   // ---- TIMELINE ----
   renderTimeline(teacherObs, teacherAudits, teacherCycles, teacherCoachingActions);
@@ -777,12 +934,12 @@ function renderWalkthroughSection(observations, codeCounts, fidelities) {
   tHtml += '</tr></thead><tbody>';
   for (var i = 0; i < observations.length; i++) {
     var ob = observations[i];
-    tHtml += '<tr>';
+    tHtml += '<tr class="searchable-row" data-searchtext="' + escHtml(ob.date + ' ' + ob.campus + ' ' + ob.round + ' ' + ob.code + ' ' + ob.notes) + '">';
     tHtml += '<td>' + formatDate(ob.date) + '</td>';
     tHtml += '<td>' + escHtml(ob.campus) + '</td>';
     tHtml += '<td>' + escHtml(ob.round) + '</td>';
     tHtml += '<td>' + codeLabel(ob.code) + '</td>';
-    tHtml += '<td>' + escHtml(ob.notes) + '</td>';
+    tHtml += '<td class="searchable-text">' + escHtml(ob.notes) + '</td>';
     tHtml += '</tr>';
   }
   tHtml += '</tbody></table>';
@@ -898,7 +1055,7 @@ function renderAuditSection(audits) {
   tHtml += '</tr></thead><tbody>';
   for (var j = 0; j < audits.length; j++) {
     var a = audits[j];
-    tHtml += '<tr>';
+    tHtml += '<tr class="searchable-row" data-searchtext="' + escHtml(a.date + ' ' + a.campus + ' ' + (a.scorePct != null ? a.scorePct + '%' : '') + ' ' + a.observer) + '">';
     tHtml += '<td>' + formatDate(a.date) + '</td>';
     tHtml += '<td>' + escHtml(a.campus) + '</td>';
     tHtml += '<td>' + (a.scorePct != null ? a.scorePct + '%' : 'N/A') + '</td>';
@@ -930,7 +1087,13 @@ function renderCoachingCyclesSection(cycles) {
   for (var i = 0; i < cycles.length; i++) {
     var c = cycles[i];
     var stages = c.stages || [];
-    html += '<div class="cycle-item">';
+    var searchParts = [c.campus || "", c.createdAt || ""];
+    for (var sp = 0; sp < stages.length; sp++) {
+      searchParts.push(stages[sp].label || "");
+      searchParts.push(stages[sp].notes || "");
+      searchParts.push(stages[sp].status || "");
+    }
+    html += '<div class="cycle-item searchable-row" data-searchtext="' + escHtml(searchParts.join(" ")) + '">';
     html += '<div class="cycle-item-header">';
     html += '<span class="cycle-item-campus">' + escHtml(c.campus || "No campus") + '</span>';
     html += '<span class="cycle-item-date">Created: ' + formatDate(c.createdAt || "") + '</span>';
@@ -978,7 +1141,7 @@ function renderCoachingCyclesSection(cycles) {
       }
     }
     if (hasNotes) {
-      html += '<div class="cycle-notes">';
+      html += '<div class="cycle-notes searchable-text">';
       for (var ns2 = 0; ns2 < stages.length; ns2++) {
         if (stages[ns2].notes && stages[ns2].notes.trim()) {
           html += '<strong>' + escHtml(stages[ns2].label || stageLabels[ns2] || "") + ':</strong> ' + escHtml(stages[ns2].notes) + '<br/>';
@@ -1023,13 +1186,14 @@ function renderCoachingActionsSection(actions) {
   for (var i = 0; i < actions.length; i++) {
     var act = actions[i];
     var isOverdue = act.deadline && act.deadline < today && act.status !== "completed";
-    var rowClass = isOverdue ? ' class="overdue"' : '';
+    var rowClass = isOverdue ? ' class="overdue searchable-row"' : ' class="searchable-row"';
+    var searchText = [act.date, act.observation, act.feedback, act.nextStep, act.deadline, act.status].join(" ");
 
-    tHtml += '<tr' + rowClass + '>';
+    tHtml += '<tr' + rowClass + ' data-searchtext="' + escHtml(searchText) + '">';
     tHtml += '<td>' + formatDate(act.date) + '</td>';
-    tHtml += '<td>' + escHtml(act.observation) + '</td>';
-    tHtml += '<td>' + escHtml(act.feedback) + '</td>';
-    tHtml += '<td>' + escHtml(act.nextStep) + '</td>';
+    tHtml += '<td class="searchable-text">' + escHtml(act.observation) + '</td>';
+    tHtml += '<td class="searchable-text">' + escHtml(act.feedback) + '</td>';
+    tHtml += '<td class="searchable-text">' + escHtml(act.nextStep) + '</td>';
     tHtml += '<td' + (isOverdue ? ' class="overdue"' : '') + '>' + formatDate(act.deadline) + (isOverdue ? ' &#9888; OVERDUE' : '') + '</td>';
     tHtml += '<td>';
     if (act.status) {
@@ -1047,7 +1211,405 @@ function renderCoachingActionsSection(actions) {
 }
 
 /* ======================================================
-   TIMELINE SECTION
+   GROWTH SUMMARY (Feature 2)
+   ====================================================== */
+
+function renderGrowthSummary(audits, cycles, coachingActions) {
+  var wrap = document.getElementById("growthSummaryWrap");
+  var hasAudits = audits.length >= 2;
+  var hasCycles = cycles.length > 0;
+
+  if (!hasAudits && !hasCycles) {
+    wrap.innerHTML = "";
+    return;
+  }
+
+  var html = '<div class="growth-summary">';
+  html += '<h4>&#128200; Growth Summary</h4>';
+
+  // 1. Audit score improvement
+  if (hasAudits) {
+    var sortedAsc = audits.slice().sort(function(a, b) {
+      return (a.date || "").localeCompare(b.date || "");
+    });
+    var firstScore = sortedAsc[0].scorePct;
+    var latestScore = sortedAsc[sortedAsc.length - 1].scorePct;
+    if (firstScore != null && latestScore != null) {
+      var change = latestScore - firstScore;
+      var changeClass = change > 0 ? "positive" : (change < 0 ? "negative" : "neutral");
+      var arrow = change > 0 ? "&#9650;" : (change < 0 ? "&#9660;" : "&#9654;");
+      html += '<span class="growth-metric ' + changeClass + '">';
+      html += 'Audit: ' + firstScore + '% ' + arrow + ' ' + latestScore + '% ';
+      html += '(' + (change > 0 ? '+' : '') + change + '%)';
+      html += '</span>';
+    }
+  }
+
+  // 2. Coaching cycle velocity
+  if (hasCycles) {
+    var totalDays = 0;
+    var completedTransitions = 0;
+    for (var ci = 0; ci < cycles.length; ci++) {
+      var stages = cycles[ci].stages || [];
+      for (var si = 0; si < stages.length - 1; si++) {
+        if (stages[si].date && stages[si + 1].date && stages[si].status === "complete") {
+          var d = daysBetween(stages[si].date, stages[si + 1].date);
+          totalDays += d;
+          completedTransitions++;
+        }
+      }
+    }
+    if (completedTransitions > 0) {
+      var avgDays = Math.round(totalDays / completedTransitions);
+      html += '<span class="growth-metric neutral">';
+      html += 'Coaching Velocity: ~' + avgDays + ' days/stage';
+      html += '</span>';
+    }
+  }
+
+  // 3. Recommended Next Action
+  var recommendation = getRecommendedAction(audits, cycles, coachingActions);
+  if (recommendation) {
+    html += '<div class="recommended-action"><strong>Recommended:</strong> ' + escHtml(recommendation) + '</div>';
+  }
+
+  html += '</div>';
+  wrap.innerHTML = html;
+}
+
+function getRecommendedAction(audits, cycles, coachingActions) {
+  var today = new Date().toISOString().slice(0, 10);
+
+  // Check for overdue follow-up in active coaching cycles
+  for (var ci = 0; ci < cycles.length; ci++) {
+    var stages = cycles[ci].stages || [];
+    for (var si = 0; si < stages.length; si++) {
+      if ((stages[si].status === "in_progress" || stages[si].status === "in-progress") && stages[si].date && stages[si].date < today) {
+        var label = stages[si].label || "Stage";
+        if (label.toLowerCase().indexOf("follow") >= 0) {
+          return "Follow-up due -- check Coaching Cycle Tracker";
+        }
+      }
+    }
+  }
+
+  // Check for overdue coaching actions
+  for (var ai = 0; ai < coachingActions.length; ai++) {
+    if (coachingActions[ai].deadline && coachingActions[ai].deadline < today && coachingActions[ai].status !== "completed") {
+      return "Follow-up due -- check Coaching Cycle Tracker";
+    }
+  }
+
+  // Check if no active coaching cycle
+  var hasActive = false;
+  for (var cci = 0; cci < cycles.length; cci++) {
+    var stgs = cycles[cci].stages || [];
+    var allDone = true;
+    for (var ssi = 0; ssi < stgs.length; ssi++) {
+      if (stgs[ssi].status !== "complete") {
+        allDone = false;
+        break;
+      }
+    }
+    if (!allDone) {
+      hasActive = true;
+      break;
+    }
+  }
+  if (cycles.length === 0 || !hasActive) {
+    return "No active coaching cycle -- consider starting one from the latest audit";
+  }
+
+  // Check if last audit was 8+ weeks ago
+  if (audits.length > 0) {
+    var sortedDesc = audits.slice().sort(function(a, b) {
+      return (b.date || "").localeCompare(a.date || "");
+    });
+    var lastAuditWeeks = weeksAgo(sortedDesc[0].date);
+    if (lastAuditWeeks >= 8) {
+      return "Schedule re-audit -- last audit was " + lastAuditWeeks + " weeks ago";
+    }
+  }
+
+  // Check for upward trend
+  if (audits.length >= 2) {
+    var sortedAsc = audits.slice().sort(function(a, b) {
+      return (a.date || "").localeCompare(b.date || "");
+    });
+    var firstScore = sortedAsc[0].scorePct;
+    var latestScore = sortedAsc[sortedAsc.length - 1].scorePct;
+    if (firstScore != null && latestScore != null && latestScore > firstScore) {
+      return "Teacher is progressing well -- continue current coaching approach";
+    }
+  }
+
+  return null;
+}
+
+/* ======================================================
+   PROJECTION (Feature 10)
+   ====================================================== */
+
+function destroyProjectionChart() {
+  if (projectionChartInstance) {
+    projectionChartInstance.destroy();
+    projectionChartInstance = null;
+  }
+}
+
+function renderProjection(audits) {
+  var wrap = document.getElementById("projectionWrap");
+  destroyProjectionChart();
+
+  if (audits.length < 3) {
+    wrap.innerHTML = "";
+    return;
+  }
+
+  // Sort audits ascending by date
+  var sortedAsc = audits.slice().sort(function(a, b) {
+    return (a.date || "").localeCompare(b.date || "");
+  });
+
+  // Filter to audits with valid scores and dates
+  var validAudits = [];
+  for (var i = 0; i < sortedAsc.length; i++) {
+    if (sortedAsc[i].date && sortedAsc[i].scorePct != null) {
+      validAudits.push(sortedAsc[i]);
+    }
+  }
+
+  if (validAudits.length < 3) {
+    wrap.innerHTML = "";
+    return;
+  }
+
+  var firstDate = new Date(validAudits[0].date);
+  var points = [];
+  for (var pi = 0; pi < validAudits.length; pi++) {
+    var d = new Date(validAudits[pi].date);
+    var dayNum = Math.round((d.getTime() - firstDate.getTime()) / (1000 * 60 * 60 * 24));
+    points.push({x: dayNum, y: validAudits[pi].scorePct});
+  }
+
+  var reg = linearRegression(points);
+  var lastDayNum = points[points.length - 1].x;
+  var lastDate = new Date(validAudits[validAudits.length - 1].date);
+
+  // Project at 30, 60, 90 days
+  var proj30 = Math.round(Math.min(100, Math.max(0, reg.slope * (lastDayNum + 30) + reg.intercept)));
+  var proj60 = Math.round(Math.min(100, Math.max(0, reg.slope * (lastDayNum + 60) + reg.intercept)));
+  var proj90 = Math.round(Math.min(100, Math.max(0, reg.slope * (lastDayNum + 90) + reg.intercept)));
+
+  // Days to 80%
+  var daysTo80 = null;
+  var currentProjected = reg.slope * lastDayNum + reg.intercept;
+  if (reg.slope > 0 && currentProjected < 80) {
+    daysTo80 = Math.round((80 - reg.intercept) / reg.slope) - lastDayNum;
+    if (daysTo80 < 0) daysTo80 = 0;
+  } else if (currentProjected >= 80) {
+    daysTo80 = 0;
+  }
+
+  // Detect stall: last 2+ audits spanning 6+ weeks with <3% change
+  var isStalled = false;
+  if (validAudits.length >= 2) {
+    var last = validAudits[validAudits.length - 1];
+    var secondLast = validAudits[validAudits.length - 2];
+    var spanWeeks = daysBetween(secondLast.date, last.date) / 7;
+    var scoreDiff = Math.abs((last.scorePct || 0) - (secondLast.scorePct || 0));
+    if (spanWeeks >= 6 && scoreDiff < 3) {
+      isStalled = true;
+    }
+  }
+
+  // Traffic light
+  var lastAuditWeeksAgo = weeksAgo(validAudits[validAudits.length - 1].date);
+  var trafficColor = "green";
+  if (reg.slope < 0 || isStalled || lastAuditWeeksAgo >= 8) {
+    trafficColor = "red";
+  } else if (reg.slope < 0.05 || lastAuditWeeksAgo >= 4) {
+    trafficColor = "yellow";
+  }
+
+  // Build HTML
+  var html = '<div class="projection-card">';
+  html += '<h4>&#128202; Progress Projection</h4>';
+
+  // Chart container
+  html += '<div class="projection-chart"><canvas id="projectionChart"></canvas></div>';
+
+  // Metrics
+  html += '<div style="margin-top:8px">';
+  html += '<span class="projection-metric"><span class="traffic-light ' + trafficColor + '"></span> ';
+  if (trafficColor === "green") html += 'On Track';
+  else if (trafficColor === "yellow") html += 'Slow Progress';
+  else html += 'Needs Attention';
+  html += '</span>';
+
+  html += '<span class="projection-metric" style="background:#f8f9fb;border:1px solid #eee">30-day: ' + proj30 + '%</span>';
+  html += '<span class="projection-metric" style="background:#f8f9fb;border:1px solid #eee">60-day: ' + proj60 + '%</span>';
+  html += '<span class="projection-metric" style="background:#f8f9fb;border:1px solid #eee">90-day: ' + proj90 + '%</span>';
+
+  if (daysTo80 != null && daysTo80 > 0) {
+    html += '<span class="projection-metric" style="background:#eaf3fb;border:1px solid #b3d4f7">Days to 80%: ~' + daysTo80 + '</span>';
+  } else if (daysTo80 === 0) {
+    html += '<span class="projection-metric" style="background:#eafaf1;border:1px solid #a9dfbf">Already at/above 80%</span>';
+  } else if (reg.slope <= 0) {
+    html += '<span class="projection-metric" style="background:#fef0ef;border:1px solid #f5b7b1">80% target: Not reachable at current rate</span>';
+  }
+  html += '</div>';
+
+  // Stall warning
+  if (isStalled) {
+    html += '<div class="stall-warning">&#9888; Growth has stalled: the last 2 audits span 6+ weeks with less than 3% score change. Consider adjusting the coaching approach.</div>';
+  }
+
+  html += '</div>';
+  wrap.innerHTML = html;
+
+  // Render the chart
+  renderProjectionChart(validAudits, points, reg, lastDayNum, firstDate);
+}
+
+function renderProjectionChart(validAudits, points, reg, lastDayNum, firstDate) {
+  var canvas = document.getElementById("projectionChart");
+  if (!canvas || typeof Chart === "undefined") return;
+  var ctx = canvas.getContext("2d");
+
+  // Actual data points
+  var actualData = [];
+  for (var i = 0; i < points.length; i++) {
+    actualData.push({x: points[i].x, y: points[i].y});
+  }
+
+  // Trend line: from first to last actual point
+  var trendData = [
+    {x: points[0].x, y: Math.round(reg.slope * points[0].x + reg.intercept)},
+    {x: points[points.length - 1].x, y: Math.round(reg.slope * points[points.length - 1].x + reg.intercept)}
+  ];
+
+  // Projected extension: 30, 60, 90 days from last
+  var projData = [
+    {x: lastDayNum, y: Math.round(Math.min(100, Math.max(0, reg.slope * lastDayNum + reg.intercept)))},
+    {x: lastDayNum + 30, y: Math.round(Math.min(100, Math.max(0, reg.slope * (lastDayNum + 30) + reg.intercept)))},
+    {x: lastDayNum + 60, y: Math.round(Math.min(100, Math.max(0, reg.slope * (lastDayNum + 60) + reg.intercept)))},
+    {x: lastDayNum + 90, y: Math.round(Math.min(100, Math.max(0, reg.slope * (lastDayNum + 90) + reg.intercept)))}
+  ];
+
+  // 80% target line
+  var maxX = lastDayNum + 90;
+  var targetData = [
+    {x: 0, y: 80},
+    {x: maxX, y: 80}
+  ];
+
+  projectionChartInstance = new Chart(ctx, {
+    type: "scatter",
+    data: {
+      datasets: [
+        {
+          label: "Actual Scores",
+          data: actualData,
+          backgroundColor: "#4a90d9",
+          borderColor: "#4a90d9",
+          pointRadius: 6,
+          pointHoverRadius: 8,
+          showLine: false,
+          order: 1
+        },
+        {
+          label: "Trend Line",
+          data: trendData,
+          borderColor: "#4a90d9",
+          borderDash: [6, 3],
+          borderWidth: 2,
+          pointRadius: 0,
+          showLine: true,
+          fill: false,
+          order: 2
+        },
+        {
+          label: "Projected",
+          data: projData,
+          borderColor: "#27ae60",
+          borderDash: [6, 3],
+          borderWidth: 2,
+          pointRadius: 4,
+          pointBackgroundColor: "#27ae60",
+          pointBorderColor: "#27ae60",
+          showLine: true,
+          fill: false,
+          order: 3
+        },
+        {
+          label: "80% Target",
+          data: targetData,
+          borderColor: "#aaa",
+          borderDash: [4, 4],
+          borderWidth: 1,
+          pointRadius: 0,
+          showLine: true,
+          fill: false,
+          order: 4
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: true,
+          position: "bottom",
+          labels: { font: { size: 10 }, boxWidth: 12, padding: 8 }
+        },
+        title: {
+          display: true,
+          text: "Audit Score Projection",
+          font: { size: 13, weight: "bold" },
+          color: "#2c3e6e"
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              var label = context.dataset.label || "";
+              var xVal = context.parsed.x;
+              var yVal = context.parsed.y;
+              var projDate = new Date(firstDate.getTime() + xVal * 24 * 60 * 60 * 1000);
+              var dateStr = (projDate.getMonth() + 1) + "/" + projDate.getDate() + "/" + projDate.getFullYear();
+              return label + ": " + yVal + "% (" + dateStr + ")";
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          type: "linear",
+          title: { display: true, text: "Days", font: { size: 11 } },
+          min: 0,
+          max: maxX,
+          ticks: {
+            callback: function(v) { return "Day " + v; },
+            font: { size: 10 }
+          }
+        },
+        y: {
+          min: 0,
+          max: 100,
+          title: { display: true, text: "Score %", font: { size: 11 } },
+          ticks: {
+            callback: function(v) { return v + "%"; },
+            font: { size: 10 }
+          }
+        }
+      }
+    }
+  });
+}
+
+/* ======================================================
+   TIMELINE SECTION (Feature 2 - Enhanced)
    ====================================================== */
 
 function renderTimeline(observations, audits, cycles, coachingActions) {
@@ -1055,23 +1617,77 @@ function renderTimeline(observations, audits, cycles, coachingActions) {
   var wrap = document.getElementById("timelineWrap");
   var events = [];
 
-  // Observations
+  // Walkthrough observations - group by session (date+campus)
+  var sessionMap = {};
   for (var i = 0; i < observations.length; i++) {
     var ob = observations[i];
-    events.push({
-      date: ob.date || "",
-      type: "observation",
-      summary: "Walkthrough observation at " + (ob.campus || "campus") + " &mdash; Code: " + codeLabel(ob.code) + (ob.notes ? " &mdash; " + escHtml(ob.notes) : "")
-    });
+    var key = (ob.date || "") + "|" + (ob.campus || "");
+    if (!sessionMap[key]) {
+      sessionMap[key] = {
+        date: ob.date || "",
+        campus: ob.campus || "",
+        focus: ob.focus || "",
+        leader: ob.leader || "",
+        observations: [],
+        codes: {check: 0, circle: 0, partial: 0, na: 0},
+        total: 0
+      };
+    }
+    sessionMap[key].observations.push(ob);
+    sessionMap[key].total++;
+    var cc = codeClass(ob.code);
+    if (cc && sessionMap[key].codes.hasOwnProperty(cc)) {
+      sessionMap[key].codes[cc]++;
+    }
+  }
+
+  for (var sKey in sessionMap) {
+    if (sessionMap.hasOwnProperty(sKey)) {
+      var sess = sessionMap[sKey];
+      var fid = sess.total > 0 ? Math.round((sess.codes.check / sess.total) * 100) : 0;
+      var notesList = [];
+      for (var ni = 0; ni < sess.observations.length; ni++) {
+        if (sess.observations[ni].notes) {
+          notesList.push(sess.observations[ni].notes);
+        }
+      }
+      events.push({
+        date: sess.date,
+        type: "walkthrough",
+        title: "Walkthrough at " + (sess.campus || "campus"),
+        detail: "Focus: " + (sess.focus || "N/A") + " | " + sess.total + " observations | Fidelity: " + fid + "%",
+        notes: notesList.join("; "),
+        searchText: sess.campus + " " + sess.focus + " " + notesList.join(" ") + " walkthrough " + fid + "%",
+        link: "Academic_Monitoring_Leader_Facing/Academic_Monitoring_Planning_Template.html",
+        linkLabel: "Open Planning Template"
+      });
+    }
   }
 
   // Audits
   for (var a = 0; a < audits.length; a++) {
     var au = audits[a];
+    // Find weak sections from full audit data
+    var weakSections = [];
+    for (var fi = 0; fi < _currentTeacherFullAudits.length; fi++) {
+      var fullAud = _currentTeacherFullAudits[fi];
+      if (fullAud.meta && fullAud.meta.date === au.date && fullAud.meta.campus === au.campus) {
+        weakSections = getWeakSections(fullAud);
+        break;
+      }
+    }
+    var weakText = weakSections.length > 0 ? "Weak sections (below 55%): " + weakSections.join(", ") : "";
     events.push({
       date: au.date || "",
       type: "audit",
-      summary: "Classroom audit at " + escHtml(au.campus || "campus") + " &mdash; Score: " + (au.scorePct != null ? au.scorePct + "%" : "N/A") + " &mdash; Observer: " + escHtml(au.observer || "N/A")
+      title: "Classroom Audit at " + escHtml(au.campus || "campus"),
+      detail: "Score: " + (au.scorePct != null ? au.scorePct + "%" : "N/A") + " | Observer: " + (au.observer || "N/A"),
+      sections: weakText,
+      searchText: au.campus + " " + au.observer + " audit " + (au.scorePct || "") + " " + weakSections.join(" "),
+      link: "ESL_Classroom_Audit/ESL_Classroom_Audit.html",
+      linkLabel: "Open in Audit Tool",
+      auditDate: au.date,
+      auditCampus: au.campus
     });
   }
 
@@ -1081,10 +1697,15 @@ function renderTimeline(observations, audits, cycles, coachingActions) {
     var stgs = cycles[c].stages || [];
     for (var s = 0; s < stgs.length; s++) {
       if (stgs[s].date) {
+        var stLabel = stgs[s].label || stageLabels[s] || "Stage";
         events.push({
           date: stgs[s].date,
           type: "coaching",
-          summary: "Coaching: " + escHtml(stgs[s].label || stageLabels[s] || "Stage") + " (" + escHtml(stgs[s].status || "unknown") + ")" + (stgs[s].notes ? " &mdash; " + escHtml(stgs[s].notes) : "") + " at " + escHtml(cycles[c].campus || "campus")
+          title: "Coaching: " + stLabel,
+          detail: "Status: " + (stgs[s].status || "unknown") + (stgs[s].notes ? " | " + stgs[s].notes : "") + " at " + (cycles[c].campus || "campus"),
+          searchText: stLabel + " " + (stgs[s].status || "") + " " + (stgs[s].notes || "") + " " + (cycles[c].campus || "") + " coaching",
+          link: "Academic_Monitoring_Leader_Facing/Coaching_Cycle_Tracker.html",
+          linkLabel: "Open Coaching Tracker"
         });
       }
     }
@@ -1097,7 +1718,11 @@ function renderTimeline(observations, audits, cycles, coachingActions) {
       events.push({
         date: ca.deadline,
         type: "coaching",
-        summary: "Coaching action deadline: " + escHtml(ca.nextStep || "N/A") + " &mdash; Status: " + escHtml(ca.status || "pending")
+        title: "Coaching Action Deadline",
+        detail: (ca.nextStep || "N/A") + " | Status: " + (ca.status || "pending"),
+        searchText: (ca.nextStep || "") + " " + (ca.status || "") + " " + (ca.observation || "") + " " + (ca.feedback || "") + " coaching action",
+        link: "Academic_Monitoring_Leader_Facing/Coaching_Cycle_Tracker.html",
+        linkLabel: "Open Coaching Tracker"
       });
     }
   }
@@ -1114,31 +1739,306 @@ function renderTimeline(observations, audits, cycles, coachingActions) {
   });
 
   card.style.display = "";
-  var html = '<div class="timeline">';
+  var html = '<div class="timeline-visual">';
   for (var e = 0; e < events.length; e++) {
     var ev = events[e];
-    var typeClass = "tl-item type-" + ev.type;
-    var badgeClass = "";
-    var badgeText = "";
-    if (ev.type === "observation") {
-      badgeClass = "tl-badge obs";
-      badgeText = "Observation";
-    } else if (ev.type === "audit") {
-      badgeClass = "tl-badge audit";
-      badgeText = "Audit";
-    } else if (ev.type === "coaching") {
-      badgeClass = "tl-badge coaching";
-      badgeText = "Coaching";
+    var nodeClass = "timeline-node type-" + ev.type + " searchable-row";
+    var searchAttr = ev.searchText ? ' data-searchtext="' + escHtml(ev.searchText) + '"' : '';
+
+    html += '<div class="' + nodeClass + '"' + searchAttr + '>';
+    html += '<div class="tl-date">' + formatDate(ev.date) + '</div>';
+    html += '<div class="tl-title">' + ev.title + '</div>';
+    html += '<div class="tl-detail searchable-text">' + escHtml(ev.detail) + '</div>';
+    if (ev.sections) {
+      html += '<div class="tl-sections">' + escHtml(ev.sections) + '</div>';
     }
 
-    html += '<div class="' + typeClass + '">';
-    html += '<div class="tl-date">' + formatDate(ev.date) + '</div>';
-    html += '<span class="' + badgeClass + '">' + badgeText + '</span>';
-    html += '<span class="tl-summary">' + ev.summary + '</span>';
+    // Expandable audit detail
+    if (ev.type === "audit" && ev.auditDate) {
+      var detailId = "audit-detail-" + e;
+      html += '<span class="audit-detail-toggle" onclick="toggleAuditDetail(\'' + detailId + '\')" role="button" tabindex="0">&#9654; Show section scores</span>';
+      html += '<div class="audit-detail-body" id="' + detailId + '" data-audit-date="' + escHtml(ev.auditDate || "") + '" data-audit-campus="' + escHtml(ev.auditCampus || "") + '"></div>';
+    }
+
+    if (ev.link) {
+      html += '<a class="timeline-link" href="' + ev.link + '" target="_blank">' + ev.linkLabel + '</a>';
+    }
     html += '</div>';
   }
   html += '</div>';
   wrap.innerHTML = html;
+}
+
+function getWeakSections(auditEntry) {
+  var weak = [];
+  if (!auditEntry || !auditEntry.ratings) return weak;
+
+  var sectionNames = {
+    "s01": "Language Objectives",
+    "s02": "Vocab Word Wall",
+    "s03": "Sentence Stems",
+    "s04": "Anchor Charts",
+    "s05": "Student Work",
+    "s06": "Reading Library",
+    "s07": "Classroom Labels",
+    "s08": "Student Resources",
+    "s09": "Listening/Speaking",
+    "s10": "Content Integration",
+    "s11": "Collaboration",
+    "s12": "Newcomer Support",
+    "s13": "Assessment Displays"
+  };
+
+  // Group ratings by section prefix
+  var sectionScores = {};
+  var sectionMaxes = {};
+  for (var key in auditEntry.ratings) {
+    if (auditEntry.ratings.hasOwnProperty(key)) {
+      var parts = key.split("_");
+      var section = parts[0] || key;
+      if (!sectionScores[section]) {
+        sectionScores[section] = 0;
+        sectionMaxes[section] = 0;
+      }
+      sectionScores[section] += (auditEntry.ratings[key] || 0);
+      sectionMaxes[section] += 3; // max rating per item is 3
+    }
+  }
+
+  for (var sec in sectionScores) {
+    if (sectionScores.hasOwnProperty(sec) && sectionMaxes[sec] > 0) {
+      var pct = Math.round((sectionScores[sec] / sectionMaxes[sec]) * 100);
+      if (pct < 55) {
+        var name = sectionNames[sec] || sec;
+        weak.push(name + " (" + pct + "%)");
+      }
+    }
+  }
+  return weak;
+}
+
+function toggleAuditDetail(detailId) {
+  var el = document.getElementById(detailId);
+  if (!el) return;
+  var isOpen = el.classList.contains("open");
+  var toggle = el.previousElementSibling;
+
+  if (isOpen) {
+    el.classList.remove("open");
+    if (toggle) toggle.innerHTML = "&#9654; Show section scores";
+    return;
+  }
+
+  // Populate on first open
+  if (!el.innerHTML.trim()) {
+    var auditDate = el.getAttribute("data-audit-date");
+    var auditCampus = el.getAttribute("data-audit-campus");
+    var content = renderAuditDetail(auditDate, auditCampus);
+    el.innerHTML = content || '<em>No section detail available.</em>';
+  }
+
+  el.classList.add("open");
+  if (toggle) toggle.innerHTML = "&#9660; Hide section scores";
+}
+
+function renderAuditDetail(auditDate, auditCampus) {
+  var sectionNames = {
+    "s01": "Language Objectives",
+    "s02": "Vocab Word Wall",
+    "s03": "Sentence Stems",
+    "s04": "Anchor Charts",
+    "s05": "Student Work",
+    "s06": "Reading Library",
+    "s07": "Classroom Labels",
+    "s08": "Student Resources",
+    "s09": "Listening/Speaking",
+    "s10": "Content Integration",
+    "s11": "Collaboration",
+    "s12": "Newcomer Support",
+    "s13": "Assessment Displays"
+  };
+
+  // Find matching audit in full data
+  var auditEntry = null;
+  for (var i = 0; i < _currentTeacherFullAudits.length; i++) {
+    var a = _currentTeacherFullAudits[i];
+    if (a.meta && a.meta.date === auditDate && a.meta.campus === auditCampus) {
+      auditEntry = a;
+      break;
+    }
+  }
+
+  if (!auditEntry || !auditEntry.ratings) return "";
+
+  // Group ratings by section
+  var sectionScores = {};
+  var sectionMaxes = {};
+  var sectionItems = {};
+  for (var key in auditEntry.ratings) {
+    if (auditEntry.ratings.hasOwnProperty(key)) {
+      var parts = key.split("_");
+      var section = parts[0] || key;
+      if (!sectionScores[section]) {
+        sectionScores[section] = 0;
+        sectionMaxes[section] = 0;
+        sectionItems[section] = 0;
+      }
+      sectionScores[section] += (auditEntry.ratings[key] || 0);
+      sectionMaxes[section] += 3;
+      sectionItems[section]++;
+    }
+  }
+
+  var html = '<table style="width:100%;border-collapse:collapse;font-size:11px">';
+  html += '<tr style="border-bottom:1px solid #ddd"><th style="text-align:left;padding:3px 6px">Section</th><th style="text-align:right;padding:3px 6px">Score</th><th style="text-align:right;padding:3px 6px">%</th></tr>';
+
+  var sections = [];
+  for (var sec in sectionScores) {
+    if (sectionScores.hasOwnProperty(sec)) {
+      sections.push(sec);
+    }
+  }
+  sections.sort();
+
+  for (var si = 0; si < sections.length; si++) {
+    var s = sections[si];
+    var pct = sectionMaxes[s] > 0 ? Math.round((sectionScores[s] / sectionMaxes[s]) * 100) : 0;
+    var color = pct >= 75 ? "#27ae60" : (pct >= 55 ? "#f39c12" : "#e74c3c");
+    var name = sectionNames[s] || s;
+    html += '<tr style="border-bottom:1px solid #f0f0f0">';
+    html += '<td style="padding:3px 6px">' + escHtml(name) + '</td>';
+    html += '<td style="text-align:right;padding:3px 6px">' + sectionScores[s] + '/' + sectionMaxes[s] + '</td>';
+    html += '<td style="text-align:right;padding:3px 6px;color:' + color + ';font-weight:700">' + pct + '%</td>';
+    html += '</tr>';
+  }
+  html += '</table>';
+  return html;
+}
+
+/* ======================================================
+   CROSS-TOOL SEARCH (Feature 12)
+   ====================================================== */
+
+var _searchOriginalContent = {};
+
+function filterProfileContent(query) {
+  var countEl = document.getElementById("profileSearchCount");
+  var cards = document.querySelectorAll(".searchable-card");
+  var rows = document.querySelectorAll(".searchable-row");
+  var textEls = document.querySelectorAll(".searchable-text");
+
+  // Restore original text content before searching
+  restoreOriginalContent();
+
+  if (!query || !query.trim()) {
+    // Show everything, clear highlights
+    for (var ci = 0; ci < cards.length; ci++) {
+      cards[ci].style.display = "";
+    }
+    for (var ri = 0; ri < rows.length; ri++) {
+      rows[ri].style.display = "";
+    }
+    countEl.textContent = "";
+    return;
+  }
+
+  var q = query.trim().toLowerCase();
+  var matchCount = 0;
+
+  // First pass: mark and count matches on rows
+  for (var ri2 = 0; ri2 < rows.length; ri2++) {
+    var row = rows[ri2];
+    var searchText = (row.getAttribute("data-searchtext") || "") + " " + (row.textContent || "");
+    if (searchText.toLowerCase().indexOf(q) >= 0) {
+      row.style.display = "";
+      matchCount++;
+    } else {
+      row.style.display = "none";
+    }
+  }
+
+  // Highlight matches in searchable-text elements
+  for (var ti = 0; ti < textEls.length; ti++) {
+    var el = textEls[ti];
+    // Only highlight if parent row is visible
+    var parentRow = el.closest(".searchable-row");
+    if (parentRow && parentRow.style.display === "none") continue;
+
+    // Store original content
+    var elId = el.getAttribute("data-search-id");
+    if (!elId) {
+      elId = "search-el-" + ti;
+      el.setAttribute("data-search-id", elId);
+    }
+    if (!_searchOriginalContent[elId]) {
+      _searchOriginalContent[elId] = el.innerHTML;
+    }
+
+    // Apply highlight
+    var originalText = el.textContent || "";
+    var highlighted = highlightText(originalText, query.trim());
+    if (highlighted !== originalText) {
+      el.innerHTML = highlighted;
+    }
+  }
+
+  // Show/hide cards based on whether they have any visible rows
+  for (var ci2 = 0; ci2 < cards.length; ci2++) {
+    var card = cards[ci2];
+    var visibleRows = card.querySelectorAll(".searchable-row");
+    var hasVisible = false;
+
+    if (visibleRows.length === 0) {
+      // Card has no rows - check card text directly
+      var cardText = (card.textContent || "").toLowerCase();
+      if (cardText.indexOf(q) >= 0) {
+        card.style.display = "";
+        hasVisible = true;
+      } else {
+        card.style.display = "none";
+      }
+    } else {
+      for (var vr = 0; vr < visibleRows.length; vr++) {
+        if (visibleRows[vr].style.display !== "none") {
+          hasVisible = true;
+          break;
+        }
+      }
+      card.style.display = hasVisible ? "" : "none";
+    }
+  }
+
+  countEl.textContent = matchCount + " match" + (matchCount !== 1 ? "es" : "");
+}
+
+function restoreOriginalContent() {
+  for (var elId in _searchOriginalContent) {
+    if (_searchOriginalContent.hasOwnProperty(elId)) {
+      var el = document.querySelector('[data-search-id="' + elId + '"]');
+      if (el) {
+        el.innerHTML = _searchOriginalContent[elId];
+      }
+    }
+  }
+  _searchOriginalContent = {};
+}
+
+function highlightText(text, query) {
+  if (!text || !query) return text;
+  var lowerText = text.toLowerCase();
+  var lowerQuery = query.toLowerCase();
+  var result = "";
+  var pos = 0;
+  var idx = lowerText.indexOf(lowerQuery, pos);
+
+  while (idx >= 0) {
+    result += escHtml(text.substring(pos, idx));
+    result += '<mark>' + escHtml(text.substring(idx, idx + query.length)) + '</mark>';
+    pos = idx + query.length;
+    idx = lowerText.indexOf(lowerQuery, pos);
+  }
+  result += escHtml(text.substring(pos));
+  return result;
 }
 
 /* ======================================================

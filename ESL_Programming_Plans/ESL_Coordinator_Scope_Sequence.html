@@ -135,6 +135,29 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh
 .btn-import{background:#4a90d9;color:#fff}
 .import-area{width:100%;min-height:100px;border:2px dashed #ddd;border-radius:8px;padding:10px;font-size:12px;font-family:monospace;resize:vertical;margin-bottom:12px}
 
+/* Data-Driven Custom Actions (Feature 4) */
+.data-driven-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;margin-left:6px}
+.custom-action-row{border-left:3px solid #e65100;background:#fffbf5}
+.custom-action-delete{padding:1px 6px;border-radius:4px;border:1px solid #e74c3c;background:transparent;color:#e74c3c;font-size:9px;cursor:pointer;font-weight:600;margin-left:4px}
+.custom-action-delete:hover{background:#fef0ef}
+
+/* Self-Assessment (Feature 7) */
+.self-assess-btn{padding:4px 12px;border-radius:6px;border:1.5px solid #8e44ad;background:transparent;color:#8e44ad;font-size:11px;cursor:pointer;font-weight:600;margin-left:8px}
+.self-assess-btn:hover{background:#f5eefb}
+.self-assess-modal{max-width:600px}
+.assess-area{padding:12px;border-radius:8px;background:#fafbfd;border:1px solid #eee;margin-bottom:12px}
+.assess-area h5{font-size:12px;font-weight:700;color:#2c3e6e;margin-bottom:6px}
+.assess-rating-row{display:flex;gap:6px;align-items:center;margin-bottom:6px;flex-wrap:wrap}
+.assess-rating-row label{font-size:11px;color:#555;min-width:100px}
+.assess-rating-btn{padding:4px 10px;border-radius:16px;border:1.5px solid #ddd;background:#fff;font-size:11px;cursor:pointer;font-weight:600;transition:all .15s}
+.assess-rating-btn.active{background:#8e44ad;color:#fff;border-color:#8e44ad}
+.assess-rating-btn:hover{border-color:#8e44ad}
+.assess-history{margin-top:12px;max-height:200px;overflow-y:auto}
+.assess-history-item{padding:8px 10px;border:1px solid #eee;border-radius:6px;margin-bottom:6px;font-size:11px;cursor:pointer}
+.assess-history-item:hover{background:#f8f9fb}
+.assess-history-item .ah-date{font-weight:700;color:#2c3e6e}
+.assess-history-item .ah-scores{color:#888;margin-top:2px}
+
 /* Dark Mode */
 body.dark-mode{background:#1a1a2e;color:#e0e0e0}
 body.dark-mode .header{background:linear-gradient(135deg,#1a1a2e,#2d3a6e)}
@@ -166,6 +189,23 @@ body.dark-mode .ss-container th{background:#1a2744;color:#7eb8f7;border-color:#2
 body.dark-mode .ss-container td{color:#e0e0e0;border-color:#2d3a6e}
 body.dark-mode .modal-overlay .modal{background:#16213e}
 body.dark-mode .modal-overlay .modal h3{color:#7eb8f7}
+body.dark-mode .data-driven-badge{background:#3d2800;color:#ffb74d;border-color:#5d3f00}
+body.dark-mode .custom-action-row{background:#2a2000;border-left-color:#e65100}
+body.dark-mode .custom-action-delete{color:#ff6b6b;border-color:#ff6b6b}
+body.dark-mode .custom-action-delete:hover{background:#3a1515}
+body.dark-mode .self-assess-btn{color:#bb86fc;border-color:#bb86fc}
+body.dark-mode .self-assess-btn:hover{background:#2a1a3e}
+body.dark-mode .assess-area{background:#1a2744;border-color:#2d3a6e}
+body.dark-mode .assess-area h5{color:#7eb8f7}
+body.dark-mode .assess-rating-btn{background:#1a2744;color:#e0e0e0;border-color:#2d3a6e}
+body.dark-mode .assess-rating-btn.active{background:#8e44ad;color:#fff;border-color:#8e44ad}
+body.dark-mode .assess-rating-btn:hover{border-color:#bb86fc}
+body.dark-mode .assess-history-item{border-color:#2d3a6e;background:#16213e}
+body.dark-mode .assess-history-item:hover{background:#1a2744}
+body.dark-mode .assess-history-item .ah-date{color:#7eb8f7}
+body.dark-mode .assess-history-item .ah-scores{color:#aaa}
+body.dark-mode .ss-table .ss-action-col{background:#16213e}
+body.dark-mode .ss-table .custom-action-row .ss-action-col{background:#2a2000}
 
 /* Print */
 @media print{
@@ -299,6 +339,59 @@ body.dark-mode .modal-overlay .modal h3{color:#7eb8f7}
   </div>
 </div>
 
+<!-- SELF-ASSESSMENT MODAL -->
+<div class="modal-overlay" id="selfAssessModal">
+  <div class="modal self-assess-modal">
+    <h3 id="selfAssessTitle">Self-Assessment</h3>
+    <p>Rate yourself 1-4 in each area. 1 = Beginning, 2 = Developing, 3 = Proficient, 4 = Distinguished.</p>
+
+    <div class="assess-area">
+      <h5>Coaching Impact</h5>
+      <p style="font-size:10px;color:#888;margin-bottom:6px">How effectively are you supporting teachers through coaching cycles?</p>
+      <div class="assess-rating-row" id="assessCoaching"></div>
+      <textarea id="assessCoachingNotes" style="width:100%;padding:6px;border-radius:4px;border:1px solid #ddd;font-size:11px;min-height:30px;resize:vertical;font-family:inherit" placeholder="Notes on coaching impact..."></textarea>
+    </div>
+
+    <div class="assess-area">
+      <h5>PD Delivery</h5>
+      <p style="font-size:10px;color:#888;margin-bottom:6px">How effectively are you planning and delivering professional development?</p>
+      <div class="assess-rating-row" id="assessPD"></div>
+      <textarea id="assessPDNotes" style="width:100%;padding:6px;border-radius:4px;border:1px solid #ddd;font-size:11px;min-height:30px;resize:vertical;font-family:inherit" placeholder="Notes on PD delivery..."></textarea>
+    </div>
+
+    <div class="assess-area">
+      <h5>Data Use</h5>
+      <p style="font-size:10px;color:#888;margin-bottom:6px">How effectively are you using data to drive decisions and support teachers?</p>
+      <div class="assess-rating-row" id="assessDataUse"></div>
+      <textarea id="assessDataUseNotes" style="width:100%;padding:6px;border-radius:4px;border:1px solid #ddd;font-size:11px;min-height:30px;resize:vertical;font-family:inherit" placeholder="Notes on data use..."></textarea>
+    </div>
+
+    <div class="assess-area">
+      <h5>Relationship Building</h5>
+      <p style="font-size:10px;color:#888;margin-bottom:6px">How effectively are you building trust and professional relationships?</p>
+      <div class="assess-rating-row" id="assessRelationships"></div>
+      <textarea id="assessRelNotes" style="width:100%;padding:6px;border-radius:4px;border:1px solid #ddd;font-size:11px;min-height:30px;resize:vertical;font-family:inherit" placeholder="Notes on relationships..."></textarea>
+    </div>
+
+    <div class="assess-area">
+      <h5>Overall Reflection</h5>
+      <textarea id="assessNarrative" style="width:100%;padding:8px;border-radius:4px;border:1px solid #ddd;font-size:12px;min-height:60px;resize:vertical;font-family:inherit" placeholder="Reflect on your overall performance this period..."></textarea>
+    </div>
+
+    <div class="assess-area">
+      <h5>Goals for Next Period</h5>
+      <textarea id="assessGoals" style="width:100%;padding:8px;border-radius:4px;border:1px solid #ddd;font-size:12px;min-height:60px;resize:vertical;font-family:inherit" placeholder="What are your goals for the next period?"></textarea>
+    </div>
+
+    <div class="assess-history" id="assessHistory"></div>
+
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px">
+      <button onclick="closeAssessModal()" style="padding:7px 16px;border-radius:7px;border:1.5px solid #ddd;background:#fff;color:#666;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">Cancel</button>
+      <button onclick="saveSelfAssessment()" style="padding:7px 16px;border-radius:7px;border:none;background:#8e44ad;color:#fff;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">Save Assessment</button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ==============================
    CONSTANTS & DATA
@@ -405,6 +498,7 @@ var actionNotes = {};
 var coordNames = {};
 var coordCampuses = {};
 var quarterTopics = {};
+var customActions = [];
 var currentView = "interactive";
 var currentMonth = "aug26";
 var trackingMode = "individual";
@@ -466,14 +560,58 @@ function getCurrentMonthId(){
   return map[y+"-"+m] || "aug26";
 }
 
+/* Convert custom action month indices (0-11, Jul=0) to month IDs */
+function monthIndexToId(idx){
+  if(idx >= 0 && idx < MONTHS.length) return MONTHS[idx].id;
+  return null;
+}
+
+/* Get all actions (built-in + custom) */
+function getAllActions(){
+  var all = [];
+  var i;
+  for(i=0;i<ACTIONS.length;i++){
+    all.push(ACTIONS[i]);
+  }
+  for(i=0;i<customActions.length;i++){
+    var ca = customActions[i];
+    /* Convert months from indices to IDs if needed */
+    var monthIds = [];
+    if(ca.months && ca.months.length > 0){
+      for(var m=0;m<ca.months.length;m++){
+        var val = ca.months[m];
+        if(typeof val === "number"){
+          var mid = monthIndexToId(val);
+          if(mid) monthIds.push(mid);
+        } else {
+          monthIds.push(val);
+        }
+      }
+    }
+    all.push({
+      id: ca.id,
+      text: ca.text,
+      type: ca.type || "pd",
+      frequency: ca.frequency || "milestone",
+      months: monthIds,
+      campusScope: ca.campusScope || "both",
+      coordScope: "all",
+      notes: ca.sectionTitle ? "Source: Audit section " + ca.section + " (" + ca.sectionTitle + ")" + (ca.sourceAuditCampus ? " at " + ca.sourceAuditCampus : "") : "",
+      isCustom: true
+    });
+  }
+  return all;
+}
+
 /* ==============================
    SCORING / PROGRESS
    ============================== */
 
 function calcOverallProgress(){
+  var allActs = getAllActions();
   var total=0, done=0;
-  for(var a=0;a<ACTIONS.length;a++){
-    var act=ACTIONS[a];
+  for(var a=0;a<allActs.length;a++){
+    var act=allActs[a];
     for(var m=0;m<act.months.length;m++){
       if(trackingMode==="individual"){
         for(var c=0;c<COORDINATORS.length;c++){
@@ -494,9 +632,10 @@ function calcOverallProgress(){
 }
 
 function calcCoordProgress(cid){
+  var allActs = getAllActions();
   var total=0, done=0;
-  for(var a=0;a<ACTIONS.length;a++){
-    var act=ACTIONS[a];
+  for(var a=0;a<allActs.length;a++){
+    var act=allActs[a];
     if(act.coordScope!=="all" && act.coordScope!==cid) continue;
     for(var m=0;m<act.months.length;m++){
       total++;
@@ -512,9 +651,10 @@ function calcQuarterProgress(qid){
   for(var i=0;i<MONTHS.length;i++){
     if(MONTHS[i].quarter===qid) qMonths.push(MONTHS[i].id);
   }
+  var allActs = getAllActions();
   var total=0, done=0;
-  for(var a=0;a<ACTIONS.length;a++){
-    var act=ACTIONS[a];
+  for(var a=0;a<allActs.length;a++){
+    var act=allActs[a];
     for(var m=0;m<act.months.length;m++){
       var inQ=false;
       for(var q=0;q<qMonths.length;q++){
@@ -540,9 +680,10 @@ function calcQuarterProgress(qid){
 }
 
 function calcMonthProgress(mid){
+  var allActs = getAllActions();
   var total=0, done=0;
-  for(var a=0;a<ACTIONS.length;a++){
-    var act=ACTIONS[a];
+  for(var a=0;a<allActs.length;a++){
+    var act=allActs[a];
     var inMonth=false;
     for(var m=0;m<act.months.length;m++){
       if(act.months[m]===mid){inMonth=true;break;}
@@ -621,6 +762,7 @@ function buildCoordSetup(){
     html+='<div class="coord-card">';
     html+='<span class="coord-icon" style="background:'+col+'">'+c.area.charAt(0)+'</span>';
     html+='<strong style="font-size:13px">'+c.area+' Coordinator</strong>';
+    html+='<button class="self-assess-btn" onclick="showSelfAssessment('+i+')">Self-Assessment</button>';
     html+='<label>Name</label>';
     html+='<input type="text" id="cname-'+c.id+'" value="'+getCoordName(c.id)+'" onchange="saveCoordName(\''+c.id+'\',this.value)" placeholder="'+c.defaultName+'"/>';
     html+='<label>Rise Campus</label>';
@@ -739,9 +881,10 @@ function filterActions(){
   var typeF=document.getElementById("filterType").value;
   var coordF=document.getElementById("filterCoord").value;
   var freqF=document.getElementById("filterFreq").value;
+  var allActs=getAllActions();
   var result=[];
-  for(var i=0;i<ACTIONS.length;i++){
-    var act=ACTIONS[i];
+  for(var i=0;i<allActs.length;i++){
+    var act=allActs[i];
     /* Month filter */
     var inMonth=false;
     for(var m=0;m<act.months.length;m++){
@@ -764,7 +907,10 @@ function filterActions(){
 
 function buildActionCard(act){
   var at=getActionType(act.type);
-  var html='<div class="action-card" style="border-left:3px solid '+at.color+'">';
+  var cardClass = "action-card";
+  if(act.isCustom) cardClass += " custom-action-row";
+  var borderStyle = act.isCustom ? "border-left:3px solid #e65100" : "border-left:3px solid "+at.color;
+  var html='<div class="'+cardClass+'" style="'+borderStyle+'">';
   html+='<div class="action-top">';
 
   /* Checkboxes */
@@ -794,6 +940,10 @@ function buildActionCard(act){
   /* Body */
   html+='<div class="action-body">';
   html+='<span class="action-badge" style="background:'+at.color+'">'+at.icon+' '+at.label+'</span>';
+  if(act.isCustom){
+    html+='<span class="data-driven-badge">Data-Driven</span>';
+    html+='<button class="custom-action-delete" onclick="deleteCustomAction(\''+act.id+'\')" title="Remove custom action">&times; Remove</button>';
+  }
   if(act.frequency==="weekly") html+=' <span style="font-size:10px;color:#888;font-weight:600">WEEKLY</span>';
   else if(act.frequency==="monthly") html+=' <span style="font-size:10px;color:#888;font-weight:600">MONTHLY</span>';
   else if(act.frequency==="quarterly") html+=' <span style="font-size:10px;color:#888;font-weight:600">QUARTERLY</span>';
@@ -805,6 +955,9 @@ function buildActionCard(act){
   else if(act.campusScope==="inspire") html+='<span class="scope-tag" style="background:#fce7f3;color:#be185d">Inspire</span>';
   else if(act.campusScope==="district") html+='<span class="scope-tag" style="background:#f3f4f6;color:#4b5563">District</span>';
   else html+='<span class="scope-tag" style="background:#ecfdf5;color:#059669">Rise + Inspire</span>';
+  if(act.isCustom && act.campusScope && act.campusScope !== "both" && act.campusScope !== "rise" && act.campusScope !== "inspire" && act.campusScope !== "district"){
+    html+='<span class="scope-tag" style="background:#fff3e0;color:#e65100">'+act.campusScope+'</span>';
+  }
   html+='</div>';
 
   /* Notes */
@@ -879,6 +1032,7 @@ function toggleTrackingMode(){
 function renderSpreadsheet(){
   var coordF=document.getElementById("ssFilterCoord").value;
   var table=document.getElementById("ssTable");
+  var allActs=getAllActions();
   var html="";
 
   /* Header */
@@ -903,8 +1057,8 @@ function renderSpreadsheet(){
     if(qMonths.length===0) continue;
 
     var qActions=[];
-    for(var a=0;a<ACTIONS.length;a++){
-      var act=ACTIONS[a];
+    for(var a=0;a<allActs.length;a++){
+      var act=allActs[a];
       if(coordF && act.coordScope!=="all" && act.coordScope!==coordF) continue;
       var hasQMonth=false;
       for(var am=0;am<act.months.length;am++){
@@ -932,8 +1086,14 @@ function renderSpreadsheet(){
     for(var ai=0;ai<qActions.length;ai++){
       var act=qActions[ai];
       var at=getActionType(act.type);
-      html+="<tr>";
-      html+='<td class="ss-action-col"><span class="ss-type-badge" style="background:'+at.color+'">'+at.icon+'</span>'+act.text+'</td>';
+      var rowClass = act.isCustom ? "custom-action-row" : "";
+      html+='<tr class="'+rowClass+'">';
+      html+='<td class="ss-action-col"><span class="ss-type-badge" style="background:'+at.color+'">'+at.icon+'</span>'+act.text;
+      if(act.isCustom){
+        html+='<span class="data-driven-badge">Data-Driven</span>';
+        html+='<button class="custom-action-delete" onclick="deleteCustomAction(\''+act.id+'\')" title="Remove custom action">&times;</button>';
+      }
+      html+='</td>';
 
       for(var mi=0;mi<MONTHS.length;mi++){
         var mid=MONTHS[mi].id;
@@ -1000,6 +1160,36 @@ function saveActionNote(key,val){
 }
 
 /* ==============================
+   CUSTOM ACTIONS (Feature 4)
+   ============================== */
+
+function deleteCustomAction(actionId){
+  if(!confirm("Remove this data-driven action?")) return;
+  var newList = [];
+  for(var i=0;i<customActions.length;i++){
+    if(customActions[i].id !== actionId){
+      newList.push(customActions[i]);
+    }
+  }
+  customActions = newList;
+  /* Clean up associated checks and notes */
+  var keysToRemove = [];
+  for(var k in checks){
+    if(k.indexOf(actionId) === 0) keysToRemove.push(k);
+  }
+  for(var j=0;j<keysToRemove.length;j++){
+    delete checks[keysToRemove[j]];
+  }
+  for(var k in actionNotes){
+    if(k.indexOf(actionId) === 0) delete actionNotes[k];
+  }
+  scheduleSave();
+  renderInteractiveActions();
+  if(currentView==="spreadsheet") renderSpreadsheet();
+  refreshProgress();
+}
+
+/* ==============================
    VIEW TOGGLE
    ============================== */
 
@@ -1024,6 +1214,7 @@ function collectState(){
     coordNames:coordNames,
     coordCampuses:coordCampuses,
     quarterTopics:quarterTopics,
+    customActions:customActions,
     currentView:currentView,
     currentMonth:currentMonth,
     trackingMode:trackingMode,
@@ -1038,6 +1229,7 @@ function applyState(state){
   coordNames=state.coordNames||{};
   coordCampuses=state.coordCampuses||{};
   quarterTopics=state.quarterTopics||{};
+  customActions=state.customActions||[];
   if(state.currentView) currentView=state.currentView;
   if(state.currentMonth) currentMonth=state.currentMonth;
   if(state.trackingMode) trackingMode=state.trackingMode;
@@ -1117,6 +1309,7 @@ function confirmReset(){
   coordNames={};
   coordCampuses={};
   quarterTopics={};
+  customActions=[];
   trackingMode="individual";
   currentMonth="aug26";
   closeModal("resetModal");
@@ -1126,6 +1319,174 @@ function confirmReset(){
 
 function closeModal(id){
   document.getElementById(id).classList.remove("active");
+}
+
+/* ==============================
+   SELF-ASSESSMENT (Feature 7)
+   ============================== */
+
+var currentAssessCoordId = null;
+var assessRatings = {coaching: 0, pd: 0, dataUse: 0, relationships: 0};
+
+function showSelfAssessment(coordId) {
+  currentAssessCoordId = coordId;
+  assessRatings = {coaching: 0, pd: 0, dataUse: 0, relationships: 0};
+
+  /* Get coordinator name */
+  var coordName = "Coordinator " + (coordId + 1);
+  try {
+    var cid = COORDINATORS[coordId].id;
+    if (coordNames[cid]) {
+      coordName = coordNames[cid];
+    }
+  } catch(e) {}
+
+  document.getElementById("selfAssessTitle").textContent = "Self-Assessment: " + coordName;
+
+  /* Render rating buttons */
+  var areas = ["Coaching", "PD", "DataUse", "Relationships"];
+  var keys = ["coaching", "pd", "dataUse", "relationships"];
+  for (var i = 0; i < areas.length; i++) {
+    var container = document.getElementById("assess" + areas[i]);
+    if (!container) continue;
+    var html = "";
+    for (var r = 1; r <= 4; r++) {
+      var labels = ["", "Beginning", "Developing", "Proficient", "Distinguished"];
+      html += '<button class="assess-rating-btn" onclick="setAssessRating(\'' + keys[i] + '\',' + r + ',this)" title="' + labels[r] + '">' + r + ' - ' + labels[r] + '</button>';
+    }
+    container.innerHTML = html;
+  }
+
+  /* Clear form */
+  document.getElementById("assessCoachingNotes").value = "";
+  document.getElementById("assessPDNotes").value = "";
+  document.getElementById("assessDataUseNotes").value = "";
+  document.getElementById("assessRelNotes").value = "";
+  document.getElementById("assessNarrative").value = "";
+  document.getElementById("assessGoals").value = "";
+
+  /* Render history */
+  renderAssessmentHistory(coordId);
+
+  /* Show modal */
+  document.getElementById("selfAssessModal").classList.add("active");
+}
+
+function setAssessRating(key, value, btnEl) {
+  assessRatings[key] = value;
+  /* Update UI */
+  var parent = btnEl.parentElement;
+  var btns = parent.querySelectorAll(".assess-rating-btn");
+  for (var i = 0; i < btns.length; i++) {
+    btns[i].classList.remove("active");
+  }
+  btnEl.classList.add("active");
+}
+
+function saveSelfAssessment() {
+  if (currentAssessCoordId === null) return;
+
+  /* Validate at least one rating */
+  var hasRating = false;
+  for (var k in assessRatings) {
+    if (assessRatings.hasOwnProperty(k) && assessRatings[k] > 0) hasRating = true;
+  }
+  if (!hasRating) {
+    alert("Please rate at least one area before saving.");
+    return;
+  }
+
+  var assessment = {
+    coordId: currentAssessCoordId,
+    date: new Date().toISOString().slice(0, 10),
+    ratings: {
+      coaching: assessRatings.coaching,
+      pd: assessRatings.pd,
+      dataUse: assessRatings.dataUse,
+      relationships: assessRatings.relationships
+    },
+    coachingNotes: document.getElementById("assessCoachingNotes").value,
+    pdNotes: document.getElementById("assessPDNotes").value,
+    dataUseNotes: document.getElementById("assessDataUseNotes").value,
+    relNotes: document.getElementById("assessRelNotes").value,
+    narrative: document.getElementById("assessNarrative").value,
+    goals: document.getElementById("assessGoals").value,
+    savedAt: new Date().toISOString()
+  };
+
+  /* Load existing assessments */
+  var data = {assessments: []};
+  try {
+    var raw = localStorage.getItem("coordinator_self_assessments");
+    if (raw) data = JSON.parse(raw);
+    if (!data.assessments) data.assessments = [];
+  } catch(e) {
+    data = {assessments: []};
+  }
+
+  data.assessments.push(assessment);
+  localStorage.setItem("coordinator_self_assessments", JSON.stringify(data));
+
+  alert("Self-assessment saved for " + document.getElementById("selfAssessTitle").textContent.replace("Self-Assessment: ", "") + ".");
+  renderAssessmentHistory(currentAssessCoordId);
+}
+
+function renderAssessmentHistory(coordId) {
+  var container = document.getElementById("assessHistory");
+  if (!container) return;
+
+  var data = {assessments: []};
+  try {
+    var raw = localStorage.getItem("coordinator_self_assessments");
+    if (raw) data = JSON.parse(raw);
+    if (!data.assessments) data.assessments = [];
+  } catch(e) {}
+
+  var filtered = [];
+  for (var i = 0; i < data.assessments.length; i++) {
+    if (data.assessments[i].coordId === coordId) {
+      filtered.push(data.assessments[i]);
+    }
+  }
+
+  if (filtered.length === 0) {
+    container.innerHTML = '<p style="font-size:11px;color:#888;text-align:center;padding:8px">No previous assessments.</p>';
+    return;
+  }
+
+  /* Sort newest first */
+  filtered.sort(function(a, b) { return (b.date || "").localeCompare(a.date || ""); });
+
+  var html = '<p style="font-size:11px;font-weight:700;color:#2c3e6e;margin-bottom:6px">Previous Assessments</p>';
+  for (var j = 0; j < filtered.length; j++) {
+    var a = filtered[j];
+    var r = a.ratings || {};
+    var avg = 0;
+    var count = 0;
+    if (r.coaching) { avg += r.coaching; count++; }
+    if (r.pd) { avg += r.pd; count++; }
+    if (r.dataUse) { avg += r.dataUse; count++; }
+    if (r.relationships) { avg += r.relationships; count++; }
+    avg = count > 0 ? (avg / count).toFixed(1) : "---";
+
+    html += '<div class="assess-history-item" onclick="expandAssessment(' + j + ',' + coordId + ')">';
+    html += '<div class="ah-date">' + (a.date || "Unknown") + ' --- Avg: ' + avg + '/4</div>';
+    html += '<div class="ah-scores">Coaching: ' + (r.coaching || "---") + ' | PD: ' + (r.pd || "---") + ' | Data: ' + (r.dataUse || "---") + ' | Relationships: ' + (r.relationships || "---") + '</div>';
+    if (a.narrative) html += '<div style="color:#555;margin-top:4px;display:none" id="assess-expand-' + coordId + '-' + j + '">' + a.narrative + (a.goals ? '<br><strong>Goals:</strong> ' + a.goals : '') + '</div>';
+    html += '</div>';
+  }
+  container.innerHTML = html;
+}
+
+function expandAssessment(idx, coordId) {
+  var el = document.getElementById("assess-expand-" + coordId + "-" + idx);
+  if (el) {
+    el.style.display = el.style.display === "none" ? "block" : "none";
+  }
+}
+
+function closeAssessModal() {
+  document.getElementById("selfAssessModal").classList.remove("active");
 }
 
 /* ==============================
@@ -1156,6 +1517,20 @@ function init(){
 /* Dark Mode */
 function toggleDarkMode(){var d=document.body.classList.toggle("dark-mode");localStorage.setItem("esl_app_theme",d?"dark":"light");var b=document.getElementById("darkModeToggle");if(b)b.innerHTML=d?"&#9788; Light":"&#9789; Dark";}
 (function(){if(localStorage.getItem("esl_app_theme")==="dark"){document.body.classList.add("dark-mode");var b=document.getElementById("darkModeToggle");if(b)b.innerHTML="&#9788; Light";}})();
+
+/* Close modals on overlay click */
+(function(){
+  var overlays = document.querySelectorAll(".modal-overlay");
+  for(var i=0;i<overlays.length;i++){
+    (function(overlay){
+      overlay.addEventListener("click", function(e){
+        if(e.target === overlay){
+          overlay.classList.remove("active");
+        }
+      });
+    })(overlays[i]);
+  }
+})();
 
 init();
 

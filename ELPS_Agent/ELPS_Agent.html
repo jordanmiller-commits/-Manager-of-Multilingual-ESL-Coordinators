@@ -145,6 +145,13 @@ kbd{background:var(--code-bg);border:1px solid var(--border);border-radius:3px;p
 @media print{.header,.toolbar,.ask-row,.mode-row,.filters-row,.kbd-hint,.doc-actions,.chat-action-btn,.followup-chip,.upload-zone,.modal-overlay,.onboard-overlay{display:none!important}.card,.chat-area{box-shadow:none;border:1px solid #ddd}.chat-area{height:auto;overflow:visible}body{background:#fff;padding:10px}}
 @media(max-width:768px){.stats-row{gap:10px}.ask-row{flex-direction:column}.ask-btn{width:100%}.chat-area{height:320px}}
 @media(max-width:600px){body{padding:10px}.header{padding:18px 16px 12px}.header h1{font-size:18px}.toolbar{gap:4px}.tool-btn{padding:5px 9px;font-size:10px}.card{padding:14px}.chat-area{height:280px}}
+.recommended-banner{padding:10px 14px;border-radius:8px;background:#fff8e6;border:1.5px solid #f0c27a;margin-bottom:14px;font-size:12px;color:#856404;display:none}
+.recommended-banner.visible{display:block}
+.recommended-banner strong{color:#664d03}
+.recommended-banner .dismiss-rec{float:right;padding:2px 8px;border-radius:4px;border:1px solid #f0c27a;background:transparent;color:#856404;font-size:10px;cursor:pointer}
+body.dark .recommended-banner{background:#3a3020;border-color:#664d03;color:#f0c27a}
+body.dark .recommended-banner strong{color:#ffd966}
+body.dark .recommended-banner .dismiss-rec{border-color:#664d03;color:#f0c27a}
 </style>
 </head>
 <body>
@@ -187,6 +194,11 @@ kbd{background:var(--code-bg);border:1px solid var(--border);border-radius:3px;p
 </div>
 </div>
 </div>
+</div>
+<div class="recommended-banner" id="recommendedBanner">
+<button class="dismiss-rec" onclick="dismissRecommendation()">Dismiss</button>
+<strong>Recommended search from Classroom Audit</strong>
+<div id="recommendedDetail" style="margin-top:4px"></div>
 </div>
 <div class="card">
 <div class="card-title">Chat</div>
@@ -524,8 +536,31 @@ function setupModalClose(){var overlays=document.querySelectorAll(".modal-overla
 /* ============ INIT ============ */
 function init(){loadDarkMode();loadFromStorage();renderStats();renderDocList();renderQuickFilters();renderChat();setupDragDrop();setupModalClose();setupKeyboard();if(!localStorage.getItem(STORAGE_ONBOARD))showOnboarding();}
 
-window.handleAskQuestion=handleAskQuestion;window.handleFileInput=handleFileInput;window.removeDocument=removeDocument;window.exportData=exportData;window.loadImportFile=loadImportFile;window.confirmImport=confirmImport;window.confirmReset=confirmReset;window.showModal=showModal;window.closeModal=closeModal;window.showSettingsModal=showSettingsModal;window.onProviderChange=onProviderChange;window.saveSettingsFromModal=saveSettingsFromModal;window.resetSystemPrompt=resetSystemPrompt;window.toggleDocList=toggleDocList;window.setMode=setMode;window.toggleFilter=toggleFilter;window.toggleDarkMode=toggleDarkMode;window.nextOnboardStep=nextOnboardStep;window.closeOnboarding=closeOnboarding;window.askFollowUp=askFollowUp;window.clearChat=clearChat;window.copyMessage=copyMessage;window.printMessage=printMessage;window.searchElpsCode=searchElpsCode;window.toggleFullPage=toggleFullPage;window.showChunkEditor=showChunkEditor;window.splitChunk=splitChunk;window.mergeChunk=mergeChunk;window.saveChunkEdits=saveChunkEdits;window.showPopularQueries=showPopularQueries;window.showAddTag=showAddTag;window.addTagConfirm=addTagConfirm;window.removeTag=removeTag;window.renderCoverageMap=renderCoverageMap;
+function dismissRecommendation(){var b=document.getElementById("recommendedBanner");if(b)b.classList.remove("visible");}
+
+window.handleAskQuestion=handleAskQuestion;window.handleFileInput=handleFileInput;window.removeDocument=removeDocument;window.exportData=exportData;window.loadImportFile=loadImportFile;window.confirmImport=confirmImport;window.confirmReset=confirmReset;window.showModal=showModal;window.closeModal=closeModal;window.showSettingsModal=showSettingsModal;window.onProviderChange=onProviderChange;window.saveSettingsFromModal=saveSettingsFromModal;window.resetSystemPrompt=resetSystemPrompt;window.toggleDocList=toggleDocList;window.setMode=setMode;window.toggleFilter=toggleFilter;window.toggleDarkMode=toggleDarkMode;window.nextOnboardStep=nextOnboardStep;window.closeOnboarding=closeOnboarding;window.askFollowUp=askFollowUp;window.clearChat=clearChat;window.copyMessage=copyMessage;window.printMessage=printMessage;window.searchElpsCode=searchElpsCode;window.toggleFullPage=toggleFullPage;window.showChunkEditor=showChunkEditor;window.splitChunk=splitChunk;window.mergeChunk=mergeChunk;window.saveChunkEdits=saveChunkEdits;window.showPopularQueries=showPopularQueries;window.showAddTag=showAddTag;window.addTagConfirm=addTagConfirm;window.removeTag=removeTag;window.renderCoverageMap=renderCoverageMap;window.dismissRecommendation=dismissRecommendation;
 init();
+
+// Check for recommended query from Audit tool
+(function(){
+  try {
+    var raw = localStorage.getItem("elps_recommended_query");
+    if (!raw) return;
+    localStorage.removeItem("elps_recommended_query");
+    var rec = JSON.parse(raw);
+    var banner = document.getElementById("recommendedBanner");
+    var detail = document.getElementById("recommendedDetail");
+    if (banner && detail) {
+      detail.textContent = "Section: " + (rec.sectionTitle || "Unknown") + " | ELPS: " + (rec.codes ? rec.codes.join(", ") : "N/A");
+      banner.classList.add("visible");
+    }
+    var searchInput = document.getElementById("askInput");
+    if (searchInput && rec.query) {
+      searchInput.value = rec.query;
+      setTimeout(function(){ handleAskQuestion(); }, 500);
+    }
+  } catch(e) {}
+})();
 if("serviceWorker" in navigator){navigator.serviceWorker.register("../service-worker.js").catch(function(){});}
 </script>
 </body>
