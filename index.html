@@ -107,12 +107,25 @@ body.dark-mode .tc-badge.gray{background:#2d3a6e;color:#888}
   .stat-card{box-shadow:none;border:1px solid #ddd}
 }
 
+@media(max-width:768px){
+  .stats-row{grid-template-columns:1fr 1fr}
+  .tool-grid{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
+  .header-row{flex-wrap:wrap}
+}
 @media(max-width:600px){
   body{padding:8px}
   .header{padding:18px 16px}
   .tool-grid{grid-template-columns:1fr}
   .stats-row{grid-template-columns:1fr 1fr}
+  .tool-btn,.search-input{min-height:44px}
 }
+.toast{position:fixed;bottom:24px;right:24px;background:#2c3e6e;color:#fff;padding:12px 20px;border-radius:8px;font-size:13px;font-weight:600;box-shadow:0 4px 15px rgba(0,0,0,.2);z-index:2000;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+body.dark-mode .toast{background:#7eb8f7;color:#1a1a2e}
+.teacher-link{color:#4a90d9;text-decoration:none;cursor:pointer;font-weight:600}
+.teacher-link:hover{text-decoration:underline;color:#2c3e6e}
+body.dark-mode .teacher-link{color:#7eb8f7}
+body.dark-mode .teacher-link:hover{color:#a8d4ff}
 </style>
 </head>
 <body>
@@ -212,6 +225,7 @@ body.dark-mode .tc-badge.gray{background:#2d3a6e;color:#888}
       <div class="no-alerts">No recent activity</div>
     </div>
   </div>
+  <div class="toast" id="toast"></div>
 </div>
 
 <script>
@@ -248,6 +262,20 @@ function escHtml(str) {
   var d = document.createElement("div");
   d.appendChild(document.createTextNode(str));
   return d.innerHTML;
+}
+
+function teacherProfileLink(name) {
+  if (!name) return escHtml(name);
+  return '<a class="teacher-link" href="Teacher_360_Profile.html?teacher=' + encodeURIComponent(name) + '" title="View ' + escHtml(name) + ' profile">' + escHtml(name) + '</a>';
+}
+
+function showToast(msg) {
+  var toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(function() {
+    toast.classList.remove('show');
+  }, 3000);
 }
 
 /* ======================================================
@@ -466,7 +494,7 @@ function runSearch(query) {
       teacherHits.push({text: roster[ti], context: "Teacher Roster"});
     }
   }
-  if (teacherHits.length) groups.push({title: "Teachers", items: teacherHits, link: "Teacher_360_Profile.html"});
+  if (teacherHits.length) groups.push({title: "Teachers", items: teacherHits, link: "Teacher_360_Profile.html", isTeacher: true});
 
   // Search walkthrough history
   var wh = safeGet("walkthrough_history") || [];
@@ -582,7 +610,11 @@ function runSearch(query) {
     html += '<div class="sr-group">';
     html += '<div class="sr-group-title">' + g.title + '</div>';
     for (var ii = 0; ii < g.items.length; ii++) {
-      html += '<div class="sr-item" onclick="window.location.href=\'' + g.link + '\'">';
+      var itemLink = g.link;
+      if (g.isTeacher) {
+        itemLink = 'Teacher_360_Profile.html?teacher=' + encodeURIComponent(g.items[ii].text);
+      }
+      html += '<div class="sr-item" onclick="window.location.href=\'' + itemLink.replace(/'/g, "\\'") + '\'">';
       html += '<span class="sr-match">' + escHtml(g.items[ii].text) + '</span>';
       if (g.items[ii].context) html += '<span class="sr-context">' + escHtml(g.items[ii].context) + '</span>';
       html += '</div>';

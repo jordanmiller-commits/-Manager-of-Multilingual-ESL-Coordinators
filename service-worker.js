@@ -1,4 +1,4 @@
-var CACHE_NAME = "esl-suite-v1";
+var CACHE_NAME = "esl-suite-v2";
 var ASSETS = [
   "./index.html",
   "./Data_Backup_Hub.html",

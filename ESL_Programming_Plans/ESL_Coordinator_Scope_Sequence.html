@@ -219,6 +219,11 @@ body.dark-mode .ss-table .custom-action-row .ss-action-col{background:#2a2000}
   .action-note-area.has-content{display:block!important}
   @page{size:landscape;margin:0.5in}
 }
+@media(max-width:768px){
+  .coord-grid{grid-template-columns:1fr}
+  .filter-bar{flex-direction:column;align-items:stretch}
+  .dash{grid-template-columns:1fr 1fr}
+}
 @media(max-width:600px){
   body{padding:10px}
   .header{padding:18px 16px}
@@ -233,7 +238,11 @@ body.dark-mode .ss-table .custom-action-row .ss-action-col{background:#2a2000}
   .ss-container{font-size:10px}
   .action-checks{min-width:80px}
   .dash-quarters{flex-direction:column}
+  .tool-btn,input,select,button,.view-btn,.month-chip{min-height:44px}
 }
+.toast{position:fixed;bottom:24px;right:24px;background:#2c3e6e;color:#fff;padding:12px 20px;border-radius:8px;font-size:13px;font-weight:600;box-shadow:0 4px 15px rgba(0,0,0,.2);z-index:2000;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+body.dark-mode .toast{background:#7eb8f7;color:#1a1a2e}
 </style>
 </head>
 <body>
@@ -392,7 +401,25 @@ body.dark-mode .ss-table .custom-action-row .ss-action-col{background:#2a2000}
   </div>
 </div>
 
+<div class="toast" id="toast"></div>
+
 <script>
+function escHtml(str) {
+  if (!str) return "";
+  var d = document.createElement("div");
+  d.appendChild(document.createTextNode(str));
+  return d.innerHTML;
+}
+
+function showToast(msg) {
+  var toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(function() {
+    toast.classList.remove('show');
+  }, 3000);
+}
+
 /* ==============================
    CONSTANTS & DATA
    ============================== */

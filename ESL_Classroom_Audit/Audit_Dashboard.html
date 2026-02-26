@@ -61,7 +61,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh
 .threshold-beginning{background:#fdedec;color:#e74c3c}
 
 /* Responsive */
-@media(max-width:700px){
+@media(max-width:768px){
   .stats-bar{grid-template-columns:1fr 1fr}
   .view-bar{flex-direction:column;align-items:stretch}
   .filter-sep{display:none}
@@ -69,6 +69,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh
 }
 @media(max-width:480px){
   .stats-bar{grid-template-columns:1fr}
+  .tool-btn,select,input{min-height:44px}
 }
 /* Dark Mode */
 body.dark-mode{background:#1a1a2e;color:#e0e0e0}
@@ -89,6 +90,22 @@ body.dark-mode .empty-state,.dark-mode .empty-title{color:#666}
   .tool-btn,.view-bar{display:none!important}
   body.dark-mode{background:#fff!important;color:#333!important}
 }
+.toast{position:fixed;bottom:24px;right:24px;background:#2c3e6e;color:#fff;padding:12px 20px;border-radius:8px;font-size:13px;font-weight:600;box-shadow:0 4px 15px rgba(0,0,0,.2);z-index:2000;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+body.dark-mode .toast{background:#7eb8f7;color:#1a1a2e}
+.teacher-link{color:#4a90d9;text-decoration:none;cursor:pointer;font-weight:600}
+.teacher-link:hover{text-decoration:underline;color:#2c3e6e}
+body.dark-mode .teacher-link{color:#7eb8f7}
+body.dark-mode .teacher-link:hover{color:#a8d4ff}
+.audit-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-top:4px}
+.audit-entries-table{width:100%;border-collapse:collapse;font-size:12px}
+.audit-entries-table th{background:#2c3e6e;color:#fff;padding:8px 10px;text-align:left;font-weight:600;white-space:nowrap}
+.audit-entries-table td{padding:8px 10px;border-bottom:1px solid #eee;vertical-align:middle}
+.audit-entries-table tr:hover td{background:#f0f4fc}
+.score-pill{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700}
+body.dark-mode .audit-entries-table th{background:#1a2744}
+body.dark-mode .audit-entries-table td{border-color:#2d3a6e;color:#ccc}
+body.dark-mode .audit-entries-table tr:hover td{background:#1a2744}
 </style>
 </head>
 <body>
@@ -169,6 +186,13 @@ body.dark-mode .empty-state,.dark-mode .empty-title{color:#666}
     </div>
   </div>
 
+  <!-- Audit Entries Table (Score Trends view only) -->
+  <div class="card" id="auditTableCard" style="display:none">
+    <h3 style="margin-bottom:12px;font-size:14px;color:#2c3e6e;font-weight:700">&#128202; Audit Entries</h3>
+    <div class="audit-table-wrap"><div id="auditTableWrap"></div></div>
+  </div>
+
+  <div class="toast" id="toast"></div>
 </div>
 
 <script>
@@ -203,6 +227,63 @@ var MAX_SCORE = 174;
    Chart instance management
    ====================================================== */
 var chartInstance = null;
+
+function escHtml(str) {
+  if (!str) return "";
+  var d = document.createElement("div");
+  d.appendChild(document.createTextNode(str));
+  return d.innerHTML;
+}
+
+function teacherProfileLink(name) {
+  if (!name) return escHtml(name);
+  var href = (window.location.pathname.indexOf('/Academic_Monitoring_Leader_Facing/') !== -1 || window.location.pathname.indexOf('/ESL_Classroom_Audit/') !== -1) ? '../Teacher_360_Profile.html' : 'Teacher_360_Profile.html';
+  return '<a class="teacher-link" href="' + href + '?teacher=' + encodeURIComponent(name) + '" title="View ' + escHtml(name) + ' profile">' + escHtml(name) + '</a>';
+}
+
+function showToast(msg) {
+  var toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(function() {
+    toast.classList.remove('show');
+  }, 3000);
+}
+
+function renderAuditTable(data) {
+  var card = document.getElementById("auditTableCard");
+  var wrap = document.getElementById("auditTableWrap");
+  if (!data || data.length === 0) { card.style.display = "none"; return; }
+  card.style.display = "block";
+  var sorted = data.slice().sort(function(a, b) {
+    return getAuditDate(b).getTime() - getAuditDate(a).getTime();
+  });
+  var html = '<table class="audit-entries-table"><thead><tr>';
+  html += '<th>Date</th><th>Teacher</th><th>Campus</th><th>Score %</th><th>Level</th>';
+  html += '</tr></thead><tbody>';
+  for (var i = 0; i < sorted.length; i++) {
+    var entry = sorted[i];
+    var pct = computeScorePct(entry);
+    var teacher = (entry.meta && entry.meta.teacher) ? entry.meta.teacher.trim() : "Unknown";
+    var campus = (entry.meta && entry.meta.campus) || "\u2014";
+    var levelClass = pct >= 80 ? "threshold-strong" : pct >= 55 ? "threshold-developing" : "threshold-beginning";
+    var levelLabel = pct >= 80 ? "Strong" : pct >= 55 ? "Developing" : "Beginning";
+    html += '<tr>';
+    html += '<td>' + escHtml(formatDate(getAuditDate(entry))) + '</td>';
+    html += '<td>' + teacherProfileLink(teacher) + '</td>';
+    html += '<td>' + escHtml(campus) + '</td>';
+    html += '<td>' + pct + '%</td>';
+    html += '<td><span class="score-pill ' + levelClass + '">' + levelLabel + '</span></td>';
+    html += '</tr>';
+  }
+  html += '</tbody></table>';
+  wrap.innerHTML = html;
+}
+
+function hideAuditTable() {
+  var card = document.getElementById("auditTableCard");
+  if (card) card.style.display = "none";
+}
 
 function destroyChart() {
   if (chartInstance) {
@@ -558,6 +639,7 @@ function renderTrends(data) {
     '<div class="legend-item"><span class="legend-dot" style="background:#f39c12"></span> Developing (55-79%)</div>' +
     '<div class="legend-item"><span class="legend-dot" style="background:#e74c3c"></span> Beginning (&lt;55%)</div>' +
     '</div>';
+  renderAuditTable(data);
 }
 
 /* ======================================================
@@ -648,6 +730,7 @@ function renderSections(data) {
     '<div class="legend-item"><span class="legend-dot" style="background:#4a90d9"></span> Permanent Sections</div>' +
     '<div class="legend-item"><span class="legend-dot" style="background:#8e44ad"></span> Rotating Sections</div>' +
     '</div>';
+  hideAuditTable();
 }
 
 /* ======================================================
@@ -764,6 +847,7 @@ function renderCampuses(data) {
   });
 
   legend.innerHTML = "";
+  hideAuditTable();
 }
 
 /* ======================================================
@@ -858,6 +942,7 @@ function renderPrinciples(data) {
     '<div class="legend-item"><span class="legend-dot" style="background:#27ae60"></span> Principle Met</div>' +
     '<div class="legend-item"><span class="legend-dot" style="background:#e74c3c"></span> Principle Not Met</div>' +
     '</div>';
+  hideAuditTable();
 }
 
 /* ======================================================
@@ -895,6 +980,7 @@ function showEmptyChart(msg) {
       }
     }
   });
+  hideAuditTable();
 }
 
 /* ======================================================

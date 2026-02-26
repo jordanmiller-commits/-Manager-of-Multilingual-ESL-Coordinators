@@ -259,6 +259,11 @@ mark{background:#fef08a;color:#333;padding:0 2px;border-radius:2px}
   .item-row{border-left-color:transparent!important;background:transparent!important}
   .item-comment.has-content{display:block!important}
 }
+@media(max-width:768px){
+  .meta-grid{grid-template-columns:1fr}
+  .toolbar{gap:6px}
+  .toolbar .tool-btn{padding:6px 10px;font-size:11px}
+}
 @media(max-width:600px){
   body{padding:10px}
   .header{padding:18px 16px}
@@ -285,6 +290,7 @@ mark{background:#fef08a;color:#333;padding:0 2px;border-radius:2px}
   .viz-controls{padding:10px 16px;gap:6px}
   .viz-body{padding:14px 16px}
   #vizCanvasWrap{max-height:300px}
+  .tool-btn,input,select,.rating-btn{min-height:44px}
 }
 </style>
 </head>
@@ -576,6 +582,13 @@ mark{background:#fef08a;color:#333;padding:0 2px;border-radius:2px}
 /* ==============================
    CONSTANTS & DATA
    ============================== */
+
+function escHtml(str) {
+  if (!str) return "";
+  var d = document.createElement("div");
+  d.appendChild(document.createTextNode(str));
+  return d.innerHTML;
+}
 
 var R = {
   0:{label:"Not Observed",level:1,color:"#2c3e6e",bg:"#e8ecf4"},

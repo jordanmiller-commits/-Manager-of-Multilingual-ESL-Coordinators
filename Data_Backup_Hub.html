@@ -127,11 +127,17 @@ body.dark-mode .gist-input{background:#16213e;color:#e0e0e0;border-color:#2d3a6e
   .key-card{box-shadow:none;border:1px solid #ddd}
 }
 
+@media(max-width:768px){
+  .key-grid{grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
+  .gist-row{flex-direction:column;align-items:stretch}
+  .gist-input{min-width:auto}
+}
 @media(max-width:600px){
 .key-grid{grid-template-columns:1fr}
 .summary-bar{flex-direction:column}
 .toolbar{flex-direction:column;align-items:stretch}
 .tool-btn{justify-content:center}
+  .tool-btn,.btn-sm,.btn-confirm,.gist-input{min-height:44px}
 }
 </style>
 </head>
@@ -147,6 +153,7 @@ body.dark-mode .gist-input{background:#16213e;color:#e0e0e0;border-color:#2d3a6e
 <button class="tool-btn import-btn" onclick="showImportArea()">&#128228; Import Backup</button>
 <button class="tool-btn" onclick="refreshDashboard()">&#128260; Refresh</button>
 <button class="tool-btn" onclick="toggleGistSection()" aria-label="Cloud sync settings">&#9729; Cloud Sync</button>
+<button class="tool-btn" onclick="toggleGasSection()" aria-label="Google Drive sync settings">&#128190; Drive Sync</button>
 <button class="tool-btn" onclick="toggleDarkMode()" id="darkModeToggle" aria-label="Toggle dark mode">&#9789; Dark</button>
 <a class="tool-btn" href="index.html" style="margin-left:auto" aria-label="Back to Home">&#127968; Home</a>
 </div>
@@ -218,6 +225,37 @@ body.dark-mode .gist-input{background:#16213e;color:#e0e0e0;border-color:#2d3a6e
 <div id="gistSyncStatus" style="margin-top:8px"></div>
 </div>
 
+<!-- Google Drive Sync -->
+<div class="card" id="gasCard" style="display:none">
+<h2>&#128190; Google Drive Sync</h2>
+<p style="font-size:12px;color:#888;margin-bottom:12px">Sync your data to Google Drive using the ESL Coordinator Data Sync Apps Script web app. Each coordinator stores their own backup file in the shared Drive folder.</p>
+<div class="gist-section">
+<h3>Settings</h3>
+<div class="gist-row">
+<label style="font-size:12px;font-weight:600;color:#555;min-width:120px" for="gasUrl">Script URL:</label>
+<input type="text" class="gist-input" id="gasUrl" placeholder="https://script.google.com/macros/s/.../exec" aria-label="GAS Web App URL"/>
+</div>
+<div class="gist-row">
+<label style="font-size:12px;font-weight:600;color:#555;min-width:120px" for="gasCoordId">Coordinator ID:</label>
+<input type="text" class="gist-input" id="gasCoordId" placeholder="e.g. jsmith or campus_esl_01" aria-label="Coordinator ID"/>
+</div>
+<div class="gist-row">
+<label style="font-size:12px;font-weight:600;color:#555;min-width:120px" for="gasCoordName">Display Name:</label>
+<input type="text" class="gist-input" id="gasCoordName" placeholder="e.g. Jane Smith" aria-label="Coordinator display name"/>
+</div>
+<div class="gist-row">
+<button class="btn-confirm" onclick="saveGasSettings()" style="margin-top:0">Save Settings</button>
+<button class="btn-sm" onclick="clearGasSettings()">Clear</button>
+</div>
+<div id="gasStatus"></div>
+</div>
+<div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+<button class="btn-confirm" onclick="pushToDrive()">&#11014; Push to Drive</button>
+<button class="btn-confirm" onclick="pullFromDrive()" style="background:linear-gradient(135deg,#1a6b3f,#27ae60)">&#11015; Pull from Drive</button>
+</div>
+<div id="gasSyncStatus" style="margin-top:8px"></div>
+</div>
+
 <div class="modal-overlay" id="confirmModal">
 <div class="modal">
 <h3 id="modalTitle">Confirm Action</h3>
@@ -240,11 +278,37 @@ var KEY_CONFIG = [
   {key: 'walkthrough_history', tool: 'Walkthrough Planner', icon: '&#128214;', desc: 'Saved walkthrough archive', countFn: function(d){return Array.isArray(d) ? d.length + ' sessions' : null;}},
   {key: 'esl_scope_data', tool: 'Scope & Sequence', icon: '&#128197;', desc: 'Coordinator tracking state', countFn: null},
   {key: 'shared_teacher_roster', tool: 'Shared', icon: '&#128101;', desc: 'Teacher name autocomplete list', countFn: function(d){return Array.isArray(d) ? d.length + ' teachers' : null;}},
-  {key: 'coaching_cycles_data', tool: 'Coaching Cycle Tracker', icon: '&#128736;', desc: 'Coaching cycle state', countFn: null}
+  {key: 'coaching_cycles_data', tool: 'Coaching Cycle Tracker', icon: '&#128736;', desc: 'Coaching cycle state', countFn: null},
+  {key: 'esl_gist_sync', tool: 'Backup Hub', icon: '&#9729;', desc: 'GitHub Gist sync settings', countFn: null},
+  {key: 'esl_gas_sync', tool: 'Backup Hub', icon: '&#128190;', desc: 'Google Drive sync settings', countFn: null}
 ];
 
 var pendingImportData = null;
 var pendingModalCallback = null;
+
+function escHtml(str) {
+  if (!str) return "";
+  var d = document.createElement("div");
+  d.appendChild(document.createTextNode(str));
+  return d.innerHTML;
+}
+
+var IMPORT_VALIDATORS = {
+  esl_audit_data: function(d) { return d && typeof d === 'object'; },
+  esl_audit_history: function(d) { return Array.isArray(d); },
+  esl_audit_campuses: function(d) { return Array.isArray(d); },
+  walkthrough_plan_data_v2: function(d) { return d && typeof d === 'object'; },
+  walkthrough_history: function(d) { return Array.isArray(d); },
+  esl_scope_data: function(d) { return d && typeof d === 'object'; },
+  shared_teacher_roster: function(d) { return Array.isArray(d); },
+  coaching_cycles_data: function(d) { return d && typeof d === 'object' && (d.cycles === undefined || Array.isArray(d.cycles)); }
+};
+
+function validateStructure(key, data) {
+  var validator = IMPORT_VALIDATORS[key];
+  if (!validator) return true;
+  return validator(data);
+}
 
 function init() {
   refreshDashboard();
@@ -607,7 +671,7 @@ function processImportData(data) {
     itemsHtml += '<label style="display:flex;align-items:center;gap:6px;cursor:pointer;flex:1">';
     itemsHtml += '<input type="checkbox" class="import-key-cb" data-key="' + k + '" checked/>';
     itemsHtml += '<span class="preview-icon">' + (cfg ? cfg.icon : '&#128196;') + '</span>';
-    itemsHtml += '<span class="preview-key">' + k + '</span>';
+    itemsHtml += '<span class="preview-key">' + escHtml(k) + '</span>';
     itemsHtml += '</label>';
     itemsHtml += '<span class="preview-detail">' + sizeStr + countStr + '</span>';
     if (existing) {
@@ -673,11 +737,16 @@ function executeImport() {
   showModal('Confirm Import', msg, function() {
     var keys = pendingImportData.keys;
     var imported = 0;
+    var skipped = [];
     var j;
     for (j = 0; j < selectedKeys.length; j++) {
       var k = selectedKeys[j];
       if (keys.hasOwnProperty(k)) {
         var val = keys[k];
+        if (!validateStructure(k, val)) {
+          skipped.push(k);
+          continue;
+        }
         if (typeof val === 'string') {
           localStorage.setItem(k, val);
         } else {
@@ -692,7 +761,11 @@ function executeImport() {
     var fileInput = document.getElementById('fileInput');
     if (fileInput) fileInput.value = '';
     refreshDashboard();
-    showToast('Successfully imported ' + imported + ' key(s).');
+    var toastMsg = 'Successfully imported ' + imported + ' key(s).';
+    if (skipped.length > 0) {
+      toastMsg += ' Skipped ' + skipped.length + ' invalid key(s): ' + skipped.join(', ');
+    }
+    showToast(toastMsg);
   });
 }
 
@@ -929,8 +1002,13 @@ function pullFromGist() {
         }
         var keys = Object.keys(data.keys);
         var imported = 0;
+        var gistSkipped = [];
         for (var i = 0; i < keys.length; i++) {
           var val = data.keys[keys[i]];
+          if (!validateStructure(keys[i], val)) {
+            gistSkipped.push(keys[i]);
+            continue;
+          }
           if (typeof val === "string") {
             localStorage.setItem(keys[i], val);
           } else {
@@ -939,7 +1017,11 @@ function pullFromGist() {
           imported++;
         }
         refreshDashboard();
-        showSyncStatus("Pulled " + imported + " key(s) from Gist. Last synced: " + (data.exportedAt || "unknown"), "ok");
+        var pullMsg = "Pulled " + imported + " key(s) from Gist. Last synced: " + (data.exportedAt || "unknown");
+        if (gistSkipped.length > 0) {
+          pullMsg += ". Skipped " + gistSkipped.length + " invalid key(s): " + gistSkipped.join(", ");
+        }
+        showSyncStatus(pullMsg, gistSkipped.length > 0 ? "info" : "ok");
       } catch(e) {
         showSyncStatus("Error parsing Gist data: " + e.message, "err");
       }
@@ -950,6 +1032,146 @@ function pullFromGist() {
   xhr.onerror = function() {
     showSyncStatus("Network error. Check your connection.", "err");
   };
+  xhr.send();
+}
+
+/* ======================================================
+   GOOGLE DRIVE SYNC (GAS)
+   ====================================================== */
+var GAS_SETTINGS_KEY = "esl_gas_sync";
+
+function toggleGasSection() {
+  var card = document.getElementById("gasCard");
+  var visible = card.style.display !== "none";
+  card.style.display = visible ? "none" : "block";
+  if (!visible) loadGasSettings();
+}
+
+function loadGasSettings() {
+  var settings = safeGetGas();
+  if (settings) {
+    document.getElementById("gasUrl").value = settings.gasUrl || "";
+    document.getElementById("gasCoordId").value = settings.coordinatorId || "";
+    document.getElementById("gasCoordName").value = settings.coordinatorName || "";
+  }
+}
+
+function safeGetGas() {
+  try {
+    var raw = localStorage.getItem(GAS_SETTINGS_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch(e) { return null; }
+}
+
+function saveGasSettings() {
+  var gasUrl = document.getElementById("gasUrl").value.trim();
+  var coordId = document.getElementById("gasCoordId").value.trim();
+  var coordName = document.getElementById("gasCoordName").value.trim();
+  if (!gasUrl) { showGasStatus("Please enter the Script URL.", "err"); return; }
+  if (!coordId) { showGasStatus("Please enter a Coordinator ID.", "err"); return; }
+  localStorage.setItem(GAS_SETTINGS_KEY, JSON.stringify({gasUrl: gasUrl, coordinatorId: coordId, coordinatorName: coordName || coordId}));
+  showGasStatus("Settings saved.", "ok");
+}
+
+function clearGasSettings() {
+  localStorage.removeItem(GAS_SETTINGS_KEY);
+  document.getElementById("gasUrl").value = "";
+  document.getElementById("gasCoordId").value = "";
+  document.getElementById("gasCoordName").value = "";
+  showGasStatus("Settings cleared.", "info");
+}
+
+function showGasStatus(msg, type) {
+  var el = document.getElementById("gasStatus");
+  el.innerHTML = '<div class="gist-status ' + type + '">' + escHtml(msg) + '</div>';
+}
+
+function showDriveSyncStatus(msg, type) {
+  var el = document.getElementById("gasSyncStatus");
+  el.innerHTML = '<div class="gist-status ' + type + '">' + escHtml(msg) + '</div>';
+}
+
+function getGasPayload() {
+  var allKeys = [];
+  for (var i = 0; i < KEY_CONFIG.length; i++) {
+    allKeys.push(KEY_CONFIG[i].key);
+  }
+  return collectExportData(allKeys).keys;
+}
+
+function pushToDrive() {
+  var settings = safeGetGas();
+  if (!settings || !settings.gasUrl) { showDriveSyncStatus("Configure Script URL first.", "err"); return; }
+  if (!settings.coordinatorId) { showDriveSyncStatus("Configure Coordinator ID first.", "err"); return; }
+  showDriveSyncStatus("Pushing to Drive...", "info");
+  var body = JSON.stringify({
+    action: "sync",
+    coordinatorId: settings.coordinatorId,
+    coordinatorName: settings.coordinatorName || settings.coordinatorId,
+    data: getGasPayload()
+  });
+  var xhr = new XMLHttpRequest();
+  xhr.open("POST", settings.gasUrl, true);
+  xhr.setRequestHeader("Content-Type", "application/json");
+  xhr.onload = function() {
+    if (xhr.status === 200) {
+      try {
+        var resp = JSON.parse(xhr.responseText);
+        if (resp.success) {
+          showDriveSyncStatus("Pushed " + resp.keysWritten + " key(s). Last sync: " + (resp.timestamp || "now"), "ok");
+        } else {
+          showDriveSyncStatus("Error: " + (resp.error || "Unknown error"), "err");
+        }
+      } catch(e) {
+        showDriveSyncStatus("Push succeeded (response parse error).", "ok");
+      }
+    } else {
+      showDriveSyncStatus("Push failed: HTTP " + xhr.status, "err");
+    }
+  };
+  xhr.onerror = function() { showDriveSyncStatus("Network error. Check your connection.", "err"); };
+  xhr.send(body);
+}
+
+function pullFromDrive() {
+  var settings = safeGetGas();
+  if (!settings || !settings.gasUrl) { showDriveSyncStatus("Configure Script URL first.", "err"); return; }
+  if (!settings.coordinatorId) { showDriveSyncStatus("Configure Coordinator ID first.", "err"); return; }
+  showDriveSyncStatus("Pulling from Drive...", "info");
+  var url = settings.gasUrl + "?action=read&coordinatorId=" + encodeURIComponent(settings.coordinatorId);
+  var xhr = new XMLHttpRequest();
+  xhr.open("GET", url, true);
+  xhr.onload = function() {
+    if (xhr.status === 200) {
+      try {
+        var resp = JSON.parse(xhr.responseText);
+        if (!resp.success) { showDriveSyncStatus("Error: " + (resp.error || resp.message || "Unknown error"), "err"); return; }
+        if (!resp.data || !resp.data.data) { showDriveSyncStatus("No data found for coordinator: " + settings.coordinatorId, "info"); return; }
+        var keys = Object.keys(resp.data.data);
+        var imported = 0;
+        var driveSkipped = [];
+        for (var i = 0; i < keys.length; i++) {
+          var val = resp.data.data[keys[i]];
+          if (!validateStructure(keys[i], val)) { driveSkipped.push(keys[i]); continue; }
+          if (typeof val === "string") {
+            localStorage.setItem(keys[i], val);
+          } else {
+            localStorage.setItem(keys[i], JSON.stringify(val));
+          }
+          imported++;
+        }
+        refreshDashboard();
+        var msg = "Pulled " + imported + " key(s) from Drive. Last sync: " + (resp.data.lastSync || "unknown");
+        if (driveSkipped.length > 0) msg += ". Skipped " + driveSkipped.length + " invalid: " + driveSkipped.join(", ");
+        showDriveSyncStatus(msg, driveSkipped.length > 0 ? "info" : "ok");
+      } catch(e) {
+        showDriveSyncStatus("Error parsing Drive data: " + e.message, "err");
+      }
+    } else {
+      showDriveSyncStatus("Pull failed: HTTP " + xhr.status, "err");
+    }
+  };
+  xhr.onerror = function() { showDriveSyncStatus("Network error. Check your connection.", "err"); };
   xhr.send();
 }
 

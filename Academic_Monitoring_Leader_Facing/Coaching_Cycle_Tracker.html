@@ -197,6 +197,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh
   .pipeline{padding:0 14px 10px}
   .cycle-body{padding:14px}
   .stage-fields{grid-template-columns:1fr}
+  button,input,select{min-height:44px}
 }
 
 /* ============================
@@ -297,6 +298,20 @@ body.dark-mode .evidence-section{background:#1a2744;border-color:#2a3a1a}
 body.dark-mode .evidence-section .ev-sec-title{color:#7eb8f7}
 body.dark-mode .evidence-item{color:#bbb;background:#1a1a2e;border-left-color:#e74c3c}
 body.dark-mode .evidence-tag{background:#2d3a6e;color:#aaa}
+.breadcrumb{padding:8px 16px;font-size:12px;color:#888;background:#f8f9fb;border-radius:0 0 10px 10px;margin-top:-12px;margin-bottom:12px;display:none}
+.breadcrumb.show{display:block}
+.breadcrumb a{color:#4a90d9;text-decoration:none;font-weight:600}
+.breadcrumb a:hover{text-decoration:underline}
+body.dark-mode .breadcrumb{background:#16213e;color:#aaa}
+body.dark-mode .breadcrumb a{color:#7eb8f7}
+.teacher-link{color:#4a90d9;text-decoration:none;cursor:pointer;font-weight:600}
+.teacher-link:hover{text-decoration:underline;color:#2c3e6e}
+body.dark-mode .teacher-link{color:#7eb8f7}
+body.dark-mode .teacher-link:hover{color:#a8d4ff}
+.dash-link{display:inline-block;font-size:10px;color:#4a90d9;text-decoration:none;font-weight:600;margin-left:8px;padding:1px 6px;border:1px solid #ddd;border-radius:4px;background:#fafbfd}
+.dash-link:hover{background:#eaf3fb;border-color:#4a90d9;text-decoration:none}
+body.dark-mode .dash-link{background:#1a2744;border-color:#2d3a6e;color:#7eb8f7}
+body.dark-mode .dash-link:hover{background:#2d3a6e;border-color:#4a90d9}
 </style>
 </head>
 <body>
@@ -322,6 +337,7 @@ body.dark-mode .evidence-tag{background:#2d3a6e;color:#aaa}
       <a class="nav-link" href="../index.html" style="margin-left:auto" aria-label="Back to Home">&#127968; Home</a>
     </div>
   </div>
+  <div class="breadcrumb" id="breadcrumb"></div>
 
   <!-- Summary Stats -->
   <div class="card first-card" style="padding:0;background:transparent;box-shadow:none">
@@ -545,6 +561,17 @@ function escHtml(str) {
   var d = document.createElement("div");
   d.appendChild(document.createTextNode(str));
   return d.innerHTML;
+}
+
+function getQueryParam(name) {
+  var match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
+  return match ? decodeURIComponent(match[1].replace(/\+/g, ' ')) : null;
+}
+
+function teacherProfileLink(name) {
+  if (!name) return escHtml(name);
+  var href = (window.location.pathname.indexOf('/Academic_Monitoring_Leader_Facing/') !== -1 || window.location.pathname.indexOf('/ESL_Classroom_Audit/') !== -1) ? '../Teacher_360_Profile.html' : 'Teacher_360_Profile.html';
+  return '<a class="teacher-link" href="' + href + '?teacher=' + encodeURIComponent(name) + '" title="View ' + escHtml(name) + ' profile">' + escHtml(name) + '</a>';
 }
 
 function genId() {
@@ -891,9 +918,10 @@ function buildCycleCard(cycle) {
   html += '<div class="cycle-header" onclick="toggleCycle(\'' + cycle.id + '\')">';
   html += '<div class="cycle-avatar">' + escHtml(teacherInitials(cycle.teacher)) + '</div>';
   html += '<div class="cycle-info">';
-  html += '<div class="cycle-teacher">' + escHtml(cycle.teacher || "Unnamed Teacher") + '</div>';
+  html += '<div class="cycle-teacher">' + teacherProfileLink(cycle.teacher || "Unnamed Teacher") + '</div>';
   html += '<div class="cycle-meta">';
   if (cycle.campus) html += '<span>' + escHtml(cycle.campus) + '</span>';
+  if (cycle.teacher) html += '<a class="dash-link" href="Walkthrough_Dashboard.html?teacher=' + encodeURIComponent(cycle.teacher) + '" title="View on Dashboard">&#128202; Dashboard</a>';
   html += '<span>Created ' + formatDate(cycle.createdAt) + '</span>';
   html += '<span>' + completedStageCount(cycle) + '/5 stages</span>';
   if (cycle.sourceWalkthroughId) html += '<span style="color:#4a90d9">Imported</span>';
@@ -1460,10 +1488,41 @@ function renderAll() {
    INIT
    ====================================================== */
 
+function checkHandoff() {
+  var raw = localStorage.getItem('coaching_cycle_handoff');
+  if (!raw) return;
+  localStorage.removeItem('coaching_cycle_handoff');
+  try {
+    var handoff = JSON.parse(raw);
+    showModal('newCycleModal');
+    setTimeout(function() {
+      var teacherInput = document.getElementById('newTeacher');
+      var campusInput = document.getElementById('newCampus');
+      if (teacherInput && handoff.teacher) teacherInput.value = handoff.teacher;
+      if (campusInput && handoff.campus) campusInput.value = handoff.campus;
+      showToast('Pre-filled from walkthrough coaching action');
+    }, 200);
+  } catch(e) {}
+}
+
 function init() {
   loadFromStorage();
   renderAll();
   populateTemplateDropdown();
+
+  var qTeacher = getQueryParam('teacher');
+  if (qTeacher) {
+    var bc = document.getElementById('breadcrumb');
+    bc.innerHTML = '<a href="../index.html">&#127968; Home</a> &rarr; Coaching Cycle Tracker &rarr; ' + escHtml(qTeacher);
+    bc.classList.add('show');
+    var filterEl = document.getElementById('filterTeacher');
+    if (filterEl) {
+      filterEl.value = qTeacher;
+      applyFilters();
+    }
+  }
+
+  checkHandoff();
 }
 
 init();

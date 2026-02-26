@@ -255,6 +255,11 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh
 /* ============================
    RESPONSIVE
    ============================ */
+@media(max-width:768px){
+  .meta-grid{grid-template-columns:1fr 1fr}
+  .obs-table-wrap,.coach-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .obs-table,.coach-table{min-width:600px}
+}
 @media(max-width:600px){
   body{padding:8px}
   .header{padding:16px 14px}
@@ -271,6 +276,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh
   .qc-bar.open{padding-bottom:calc(10px + env(safe-area-inset-bottom))}
   .qc-bar input,.qc-bar select{font-size:14px;padding:10px}
   .qc-code-btn{width:48px;height:48px;font-size:18px}
+  .tool-btn,input,select,button{min-height:44px}
 }
 
 /* Dark Mode */
@@ -966,7 +972,7 @@ function renderCoaching() {
       html += '<option value="' + statuses[s] + '"' + ssel + '>' + statusLabels[s] + '</option>';
     }
     html += '</select></td>';
-    html += '<td class="act-cell"><button class="obs-del-btn" onclick="removeCoachingAction(' + i + ')">&times;</button></td>';
+    html += '<td class="act-cell"><button class="obs-del-btn" onclick="startCycleFromAction(' + i + ')" title="Start coaching cycle" style="color:#4a90d9;font-size:12px">&#128172;</button><button class="obs-del-btn" onclick="removeCoachingAction(' + i + ')">&times;</button></td>';
     html += "</tr>";
   }
   tbody.innerHTML = html;
@@ -985,6 +991,24 @@ function removeCoachingAction(idx) {
   coachingActions.splice(idx, 1);
   renderCoaching();
   scheduleSave();
+}
+
+function startCycleFromAction(idx) {
+  syncFromDOM();
+  if (idx < 0 || idx >= coachingActions.length) return;
+  var a = coachingActions[idx];
+  var meta = collectState().meta || {};
+  var handoff = {
+    teacher: a.teacher || '',
+    campus: meta.campus || '',
+    observation: a.observation || '',
+    feedback: a.feedback || '',
+    nextStep: a.nextStep || '',
+    sourceDate: meta.date || '',
+    timestamp: new Date().toISOString()
+  };
+  localStorage.setItem('coaching_cycle_handoff', JSON.stringify(handoff));
+  window.open('Coaching_Cycle_Tracker.html', '_blank');
 }
 
 /* ======================================================

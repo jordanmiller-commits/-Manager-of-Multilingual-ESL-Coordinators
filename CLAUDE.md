@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Manager_of_Multilingual_ESL_Coordinators/
 ├── index.html                              # Unified Home Page — tool launcher, search, activity hub
 ├── Teacher_360_Profile.html                # Aggregate teacher data across all tools (read-only)
-├── Data_Backup_Hub.html                    # Centralized backup/restore + GitHub Gist cloud sync
+├── Data_Backup_Hub.html                    # Centralized backup/restore + GitHub Gist + Google Drive sync
 ├── manifest.json                           # PWA manifest (app name: "ESL Manager Suite")
 ├── service-worker.js                       # PWA service worker — offline caching for all tools
 ├── ESL_Classroom_Audit/                    # ESL classroom environment audit
@@ -36,13 +36,20 @@ Manager_of_Multilingual_ESL_Coordinators/
 │   └── Responding to Misconceptions In Realtime.jpg
 ├── Data_Analysis/                          # Data analysis & research
 │   ├── build_research_doc.py
-│   └── Language Decline Research/
-│       ├── EB_Language_Decline_Research_Compilation.docx
-│       └── EB_Language_Decline_Research_Compilation.md
+│   ├── Language Decline Research/
+│   │   ├── EB_Language_Decline_Research_Compilation.docx
+│   │   └── EB_Language_Decline_Research_Compilation.md
+│   └── SPED_Time_Tracker/                  # SPED service time tracking utility
+│       ├── build_tracker.py                # Generates SPED_Time_Tracker.xlsx via openpyxl
+│       ├── SPED_Time_Tracker.xlsx          # Output workbook (9 sheets, 5 service types)
+│       └── Social Skills Times.xlsx        # Input: student names
 ├── ELPS_Agent/                             # ELPS knowledge base Q&A tool
 │   ├── ELPS_Agent.html
+│   ├── CLAUDE.md                           # ELPS Agent architecture notes
 │   ├── ELP 201 Teacher Toolkit Secondary.pdf
 │   └── ELPS Summaries for Learning Objectives.pdf
+├── google_apps_script/                     # Google Apps Script backend
+│   └── Code.gs                             # GAS web app: per-coordinator Google Drive sync
 ├── Newcomer_Resources/                     # Newcomer ESL home resources
 │   ├── ESL at Home English Weeks 5-8.pdf
 │   └── ESL at Home English Weeks 9-12.pdf
@@ -84,12 +91,14 @@ All tools share localStorage when served from the same origin (same directory on
 | `shared_teacher_roster` | Planner (auto-harvest) | Planner, Coaching Tracker, Backup Hub, Teacher 360, Home | Teacher name autocomplete list |
 | `coaching_cycles_data` | Coaching Tracker | Coaching Tracker, Backup Hub, Home, Teacher 360 | Coaching cycle state |
 | `walkthrough_audit_handoff` | Planner (temp) | Audit (consumed on load) | Walkthrough → Audit pipeline context |
+| `coaching_cycle_handoff` | Planner (temp) | Coaching Tracker (consumed on load) | Coaching action → new cycle pre-fill |
 | `elps_agent_docs` | ELPS Agent | ELPS Agent, Backup Hub | ELPS document chunks |
 | `elps_agent_index` | ELPS Agent | ELPS Agent | Inverted search index |
 | `elps_agent_settings` | ELPS Agent | ELPS Agent | API key, model preference |
 | `elps_agent_history` | ELPS Agent | ELPS Agent | Recent query history |
 | `esl_app_theme` | All tools | All tools | Dark mode preference (`"dark"` / `"light"`) |
 | `esl_gist_sync` | Backup Hub | Backup Hub | GitHub Gist PAT and Gist ID for cloud sync |
+| `esl_gas_sync` | Backup Hub | Backup Hub | Google Drive sync URL, coordinator ID/name |
 
 ---
 
@@ -108,7 +117,7 @@ All tools share localStorage when served from the same origin (same directory on
 
 ## Teacher 360 Profile
 
-`Teacher_360_Profile.html` — Read-only aggregate view of a single teacher across all tools.
+`Teacher_360_Profile.html` — Read-only aggregate view of a single teacher across all tools. Supports `?teacher=NAME` URL parameter for direct deep-linking from other tools.
 
 - **Teacher Selector**: Dropdown + search populated from roster and all data sources
 - **Summary Stats**: Total observations, avg fidelity %, latest audit score, coaching stage, total sessions
@@ -117,6 +126,19 @@ All tools share localStorage when served from the same origin (same directory on
 - **Coaching Cycles**: 5-stage pipeline visual cards
 - **Coaching Actions**: Follow-up actions table with overdue highlighting
 - **Timeline**: Merged chronological timeline of all events
+- **Breadcrumb**: Shown when loaded via `?teacher=` URL param, linking back to Home
+
+---
+
+## Cross-Tool Navigation
+
+All tools participate in a shared deep-link system:
+
+- **Teacher profile links**: Wherever teacher names appear in tables, they render as `<a class="teacher-link">` linking to `Teacher_360_Profile.html?teacher=NAME`
+- **`?teacher=NAME` URL param**: Supported by Teacher 360 (auto-selects), Walkthrough Dashboard (auto-switches to Teacher Trends view + filters), Coaching Cycle Tracker (auto-filters + breadcrumb)
+- **Coaching handoff pipeline**: Planning Template coaching rows have a 💬 button (`startCycleFromAction()`) that writes `coaching_cycle_handoff` to localStorage and opens Coaching Cycle Tracker. On load, `checkHandoff()` consumes the key and pre-fills the new cycle modal.
+- **`teacherProfileLink(name)`**: Utility function present in all tools that renders a teacher name as a profile link. Path is relative (`../Teacher_360_Profile.html`) for tools in subdirectories.
+- **Toast notifications**: `showToast(msg)` + `.toast#toast` element present in all tools.
 
 ---
 
@@ -148,10 +170,12 @@ After saving a walkthrough to history, the planner offers to open the audit tool
 
 | View | Chart Type | Filters |
 |---|---|---|
-| Score Trends | Line | Date range, Campus, Teacher |
+| Score Trends | Line + Entries Table | Date range, Campus, Teacher |
 | Section Breakdown | Horizontal Bar | Date range, Campus |
 | Campus Comparison | Grouped Bar | Date range |
 | Principles Compliance | Stacked Bar | Date range, Campus |
+
+The **Score Trends** view also renders an **Audit Entries table** below the chart (Date, Teacher → profile link, Campus, Score %, Level pill). Hidden for other views.
 
 ---
 
@@ -205,7 +229,7 @@ After saving a walkthrough to history, the planner offers to open the audit tool
 - **History**: `saveToWalkthroughHistory()`, `getWalkthroughHistory()`, `renderHistoryList()`, `loadFromWalkthroughHistory()`, `deleteFromWalkthroughHistory()`.
 - **Roster**: `getRoster()`, `saveRoster()`, `addToRoster()`, `harvestTeachers()`, `showAutocomplete()`, `pickAutocomplete()`.
 - **Quick-Code**: `toggleQuickCode()`, `selectQCCode()`, `submitQuickCode()`, `updateQCRounds()`.
-- **Pipeline**: `launchAuditFollowUp()` — writes handoff and opens audit tool.
+- **Pipeline**: `launchAuditFollowUp()` — writes `walkthrough_audit_handoff` and opens audit tool. `startCycleFromAction(idx)` — writes `coaching_cycle_handoff` and opens Coaching Cycle Tracker.
 - **Print/Export**: `printFilled()`, `printBlank()`, `exportData()`, `confirmImport()`, `confirmReset()`.
 
 ---
@@ -251,11 +275,13 @@ Each cycle: `{id, teacher, campus, createdAt, stages (5 objects with status/date
 ### Features
 
 - **Import from Walkthroughs**: Scans `walkthrough_history` for coaching actions, imports as cycle starting points
-- **Cycle Board**: Cards with 5-stage visual pipeline (color-coded dots + progress bar), expandable stage editors
+- **Cycle Board**: Cards with 5-stage visual pipeline (color-coded dots + progress bar), expandable stage editors. Teacher name links to Teacher 360 Profile. "Dashboard" badge links to Walkthrough Dashboard filtered by that teacher.
 - **Filter bar**: Teacher text search, campus dropdown, status (All/Active/Completed)
 - **Stats row**: Active cycles, completed, avg days, teachers in coaching
 - **Shared roster**: Reads `shared_teacher_roster` for teacher autocomplete
 - **Calendar Export**: Downloads `.ics` file with coaching deadlines for Outlook/Google Calendar
+- **Coaching handoff**: `checkHandoff()` on init reads `coaching_cycle_handoff` key written by Planning Template, pre-fills new cycle modal
+- **URL param**: `?teacher=NAME` auto-filters the board and shows breadcrumb
 
 ---
 
@@ -271,8 +297,22 @@ Each cycle: `{id, teacher, campus, createdAt, stages (5 objects with status/date
 - **Selective export/import**: Per-key checkboxes
 - **Clear individual keys**: Danger button with confirmation
 - **GitHub Gist Cloud Sync**: Push/pull all data to a private GitHub Gist for cross-device sync. Requires a GitHub Personal Access Token with `gist` scope. Settings stored in `esl_gist_sync` localStorage key.
+- **Google Drive Sync**: Push/pull per-coordinator data to Google Drive via the `google_apps_script/Code.gs` web app. Settings (Script URL, Coordinator ID, Display Name) stored in `esl_gas_sync` localStorage key.
+- **Import validation**: `IMPORT_VALIDATORS` map validates data structure before writing to localStorage; invalid keys are skipped and reported.
 
 Manages all keys listed in the Cross-Tool Data Sharing table above.
+
+---
+
+## Google Apps Script — Drive Sync Backend
+
+`google_apps_script/Code.gs` — GAS web app deployed from script.google.com. Stores each coordinator's data as a JSON file in a shared Google Drive folder.
+
+- **Folder**: hardcoded `FOLDER_ID = '1FvxiBn6-SmLa2RKXWXdE7DMufwm0tOVo'`
+- **File naming**: `{coordinatorId}_data.json` per coordinator
+- **Endpoints (GET)**: `action=status`, `action=read&coordinatorId=X`, `action=readAll`, `action=list`, `action=readKey&coordinatorId=X&key=K`
+- **Endpoints (POST body)**: `action=sync` (full push), `action=syncKey` (single key), `action=delete`
+- **Frontend**: Integrated in Data Backup Hub under "Drive Sync" section
 
 ---
 
