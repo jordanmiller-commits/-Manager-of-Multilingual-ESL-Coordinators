@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ESL Audit Dashboard &mdash; Trend Analysis</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh;padding:20px;color:#333}
+.wrap{max-width:1060px;margin:0 auto}
+
+/* Header */
+.header{background:linear-gradient(135deg,#2c3e6e,#4a90d9);border-radius:12px;padding:24px 28px 18px;color:#fff;margin-bottom:20px}
+.header h1{font-size:22px;font-weight:800}
+.header p{font-size:12px;opacity:.85;margin-top:4px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:14px}
+.tool-btn{padding:7px 14px;border-radius:7px;border:2px solid rgba(255,255,255,.35);background:rgba(255,255,255,.12);color:#fff;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:5px;text-decoration:none;font-family:inherit}
+.tool-btn:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.5)}
+
+/* Cards */
+.card{background:#fff;border-radius:10px;box-shadow:0 1px 5px rgba(0,0,0,.07);padding:20px;margin-bottom:16px}
+
+/* Stats Bar */
+.stats-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
+.stat-card{background:#fff;border-radius:10px;box-shadow:0 1px 5px rgba(0,0,0,.07);padding:16px 18px;text-align:center}
+.stat-val{font-size:30px;font-weight:900;color:#2c3e6e}
+.stat-label{font-size:11px;font-weight:700;text-transform:uppercase;color:#888;margin-top:4px;letter-spacing:.4px}
+
+/* Filter & View Bar */
+.view-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.view-bar label{font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.3px}
+.view-bar select,.view-bar input{padding:7px 10px;border-radius:6px;border:1px solid #ddd;font-size:12px;font-family:inherit;background:#fff;color:#333}
+.view-bar select:focus,.view-bar input:focus{border-color:#4a90d9;outline:none;box-shadow:0 0 0 2px rgba(74,144,217,.15)}
+.filter-sep{width:1px;height:24px;background:#ddd;flex-shrink:0}
+
+/* Chart area */
+.chart-wrap{position:relative;min-height:380px}
+.chart-wrap canvas{width:100%!important}
+
+/* Empty state */
+.empty-state{text-align:center;padding:60px 20px}
+.empty-icon{font-size:48px;color:#ccc;margin-bottom:16px}
+.empty-title{font-size:18px;font-weight:700;color:#555;margin-bottom:8px}
+.empty-sub{font-size:13px;color:#999;max-width:400px;margin:0 auto;line-height:1.6}
+.empty-sub a{color:#4a90d9;text-decoration:none;font-weight:600}
+.empty-sub a:hover{text-decoration:underline}
+
+/* Legend helpers */
+.legend-row{display:flex;flex-wrap:wrap;gap:14px;margin-top:14px;justify-content:center}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:#555}
+.legend-dot{width:12px;height:12px;border-radius:3px;display:inline-block}
+
+/* Threshold labels */
+.threshold-bar{display:flex;gap:10px;justify-content:center;margin-top:10px;flex-wrap:wrap}
+.threshold-tag{font-size:10px;font-weight:700;border-radius:12px;padding:3px 10px}
+.threshold-strong{background:#eafaf1;color:#27ae60}
+.threshold-developing{background:#fef9e7;color:#f39c12}
+.threshold-beginning{background:#fdedec;color:#e74c3c}
+
+/* Responsive */
+@media(max-width:700px){
+  .stats-bar{grid-template-columns:1fr 1fr}
+  .view-bar{flex-direction:column;align-items:stretch}
+  .filter-sep{display:none}
+  .header h1{font-size:18px}
+}
+@media(max-width:480px){
+  .stats-bar{grid-template-columns:1fr}
+}
+@media print{
+  body{background:#fff;padding:10px}
+  .header{border-radius:0;padding:14px}
+  .tool-btn,.view-bar{display:none!important}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Header -->
+  <div class="header">
+    <h1>ESL Audit Dashboard</h1>
+    <p>Trend analysis and insights from ESL Classroom Environment Audit history</p>
+    <div class="toolbar">
+      <a class="tool-btn" href="ESL_Classroom_Audit.html">&larr; Back to Audit</a>
+      <button class="tool-btn" onclick="refreshDashboard()" title="Reload data from localStorage">&#x21bb; Refresh</button>
+      <span id="lastUpdated" style="font-size:10px;color:rgba(255,255,255,.6);margin-left:auto"></span>
+    </div>
+  </div>
+
+  <!-- Stats Bar -->
+  <div class="stats-bar">
+    <div class="stat-card">
+      <div class="stat-val" id="statTotal">0</div>
+      <div class="stat-label">Total Audits</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" id="statAvg">&mdash;</div>
+      <div class="stat-label">Avg Score %</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" id="statTeachers">0</div>
+      <div class="stat-label">Teachers Audited</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" id="statCampuses">0</div>
+      <div class="stat-label">Campuses</div>
+    </div>
+  </div>
+
+  <!-- View selector + filter bar -->
+  <div class="card">
+    <div class="view-bar" id="viewBar">
+      <label>View</label>
+      <select id="viewSelect" onchange="switchView()">
+        <option value="trends">Score Trends</option>
+        <option value="sections">Section Breakdown</option>
+        <option value="campuses">Campus Comparison</option>
+        <option value="principles">Principles Compliance</option>
+      </select>
+      <div class="filter-sep"></div>
+      <div id="filterSlots"></div>
+    </div>
+  </div>
+
+  <!-- Chart card -->
+  <div class="card">
+    <div class="chart-wrap" id="chartWrap">
+      <canvas id="mainChart"></canvas>
+    </div>
+    <div id="chartLegend"></div>
+    <div class="threshold-bar" id="thresholdBar" style="display:none">
+      <span class="threshold-tag threshold-strong">80%+ Strong</span>
+      <span class="threshold-tag threshold-developing">55-79% Developing</span>
+      <span class="threshold-tag threshold-beginning">&lt;55% Beginning</span>
+    </div>
+  </div>
+
+  <!-- Empty state (shown when no data) -->
+  <div class="card" id="emptyState" style="display:none">
+    <div class="empty-state">
+      <div class="empty-icon">&#128202;</div>
+      <div class="empty-title">No Audit History Found</div>
+      <div class="empty-sub">
+        Complete and save audits using the
+        <a href="ESL_Classroom_Audit.html">ESL Classroom Environment Audit</a>
+        tool, then return here to view trends and insights.
+        Saved audits are stored in your browser automatically.
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ======================================================
+   SECTIONS reference data (id, title, type, itemCount)
+   ====================================================== */
+var SECTIONS = [
+  {id:"s01",title:"Language Production Supports",type:"permanent",itemCount:5},
+  {id:"s02",title:"Vocabulary Systems",type:"permanent",itemCount:5},
+  {id:"s03",title:"Writing Supports",type:"permanent",itemCount:5},
+  {id:"s04",title:"Classroom Data and Goal Tracking",type:"permanent",itemCount:3},
+  {id:"s05",title:"Culture and Identity",type:"permanent",itemCount:4},
+  {id:"s06",title:"Classroom Structures and Routines",type:"permanent",itemCount:5},
+  {id:"s07",title:"Technology and Reference Tools",type:"permanent",itemCount:3},
+  {id:"s08",title:"Unit-Specific Vocabulary",type:"rotating",itemCount:5},
+  {id:"s09",title:"Content Comprehension Supports",type:"rotating",itemCount:6},
+  {id:"s10",title:"Unit-Specific Writing Supports",type:"rotating",itemCount:6},
+  {id:"s11",title:"Discussion and Interaction Supports",type:"rotating",itemCount:4},
+  {id:"s12",title:"Assessment and Progress Monitoring",type:"rotating",itemCount:4},
+  {id:"s13",title:"Culture and Content Connections",type:"rotating",itemCount:3}
+];
+
+var PRINCIPLE_LABELS = [
+  "Principle 1", "Principle 2", "Principle 3",
+  "Principle 4", "Principle 5", "Principle 6"
+];
+
+var TOTAL_ITEMS = 58;
+var MAX_SCORE = 174;
+
+/* ======================================================
+   Chart instance management
+   ====================================================== */
+var chartInstance = null;
+
+function destroyChart() {
+  if (chartInstance) {
+    chartInstance.destroy();
+    chartInstance = null;
+  }
+}
+
+function getCtx() {
+  return document.getElementById("mainChart").getContext("2d");
+}
+
+/* ======================================================
+   Data loading from localStorage
+   ====================================================== */
+function loadHistory() {
+  try {
+    var raw = localStorage.getItem("esl_audit_history");
+    if (!raw) return [];
+    var arr = JSON.parse(raw);
+    if (!Array.isArray(arr)) return [];
+    return arr;
+  } catch (e) {
+    return [];
+  }
+}
+
+/* ======================================================
+   Utility helpers
+   ====================================================== */
+function uniqueValues(arr, key) {
+  var seen = {};
+  var result = [];
+  for (var i = 0; i < arr.length; i++) {
+    var val = (arr[i].meta && arr[i].meta[key]) ? arr[i].meta[key].trim() : "";
+    if (val && !seen[val]) {
+      seen[val] = true;
+      result.push(val);
+    }
+  }
+  result.sort();
+  return result;
+}
+
+function parseDate(str) {
+  if (!str) return null;
+  var d = new Date(str);
+  if (isNaN(d.getTime())) return null;
+  return d;
+}
+
+function formatDate(d) {
+  var mm = d.getMonth() + 1;
+  var dd = d.getDate();
+  var yy = d.getFullYear();
+  return (mm < 10 ? "0" : "") + mm + "/" + (dd < 10 ? "0" : "") + dd + "/" + yy;
+}
+
+function getAuditDate(audit) {
+  if (audit.meta && audit.meta.date) {
+    var d = parseDate(audit.meta.date);
+    if (d) return d;
+  }
+  if (audit.timestamp) {
+    var d2 = parseDate(audit.timestamp);
+    if (d2) return d2;
+  }
+  if (audit.id) {
+    var d3 = new Date(parseInt(audit.id, 10));
+    if (!isNaN(d3.getTime())) return d3;
+  }
+  return new Date();
+}
+
+function computeScorePct(audit) {
+  if (typeof audit.scorePct === "number") return audit.scorePct;
+  if (!audit.ratings) return 0;
+  var total = 0;
+  var count = 0;
+  for (var key in audit.ratings) {
+    if (audit.ratings.hasOwnProperty(key)) {
+      var v = parseInt(audit.ratings[key], 10);
+      if (!isNaN(v)) {
+        total += v;
+        count++;
+      }
+    }
+  }
+  if (count === 0) return 0;
+  return Math.round((total / MAX_SCORE) * 100);
+}
+
+function sectionScore(audit, secId, itemCount) {
+  if (!audit.ratings) return {sum: 0, rated: 0, max: itemCount * 3};
+  var sum = 0;
+  var rated = 0;
+  for (var i = 0; i < itemCount; i++) {
+    var key = secId + "-" + i;
+    if (audit.ratings[key] !== undefined && audit.ratings[key] !== null) {
+      var v = parseInt(audit.ratings[key], 10);
+      if (!isNaN(v)) {
+        sum += v;
+        rated++;
+      }
+    }
+  }
+  return {sum: sum, rated: rated, max: itemCount * 3};
+}
+
+function principleChecked(audit, idx) {
+  if (!audit.prChecks) return false;
+  return !!audit.prChecks[idx] || !!audit.prChecks[String(idx)];
+}
+
+function scoreColor(pct) {
+  if (pct >= 80) return "#27ae60";
+  if (pct >= 55) return "#f39c12";
+  return "#e74c3c";
+}
+
+/* ======================================================
+   Filter state
+   ====================================================== */
+var currentView = "trends";
+var filterDateFrom = "";
+var filterDateTo = "";
+var filterCampus = "";
+var filterTeacher = "";
+
+function applyFilters(data) {
+  var result = [];
+  for (var i = 0; i < data.length; i++) {
+    var a = data[i];
+    var d = getAuditDate(a);
+
+    if (filterDateFrom) {
+      var from = parseDate(filterDateFrom);
+      if (from && d < from) continue;
+    }
+    if (filterDateTo) {
+      var to = parseDate(filterDateTo);
+      if (to) {
+        var toEnd = new Date(to.getTime());
+        toEnd.setHours(23, 59, 59, 999);
+        if (d > toEnd) continue;
+      }
+    }
+    if (filterCampus) {
+      var c = (a.meta && a.meta.campus) ? a.meta.campus.trim() : "";
+      if (c !== filterCampus) continue;
+    }
+    if (filterTeacher) {
+      var t = (a.meta && a.meta.teacher) ? a.meta.teacher.trim() : "";
+      if (t !== filterTeacher) continue;
+    }
+    result.push(a);
+  }
+  return result;
+}
+
+/* ======================================================
+   Stats bar computation
+   ====================================================== */
+function updateStats(data) {
+  var total = data.length;
+  var teachers = uniqueValues(data, "teacher");
+  var campuses = uniqueValues(data, "campus");
+
+  document.getElementById("statTotal").textContent = total;
+  document.getElementById("statTeachers").textContent = teachers.length;
+  document.getElementById("statCampuses").textContent = campuses.length;
+
+  if (total === 0) {
+    document.getElementById("statAvg").innerHTML = "&mdash;";
+  } else {
+    var sum = 0;
+    for (var i = 0; i < data.length; i++) {
+      sum += computeScorePct(data[i]);
+    }
+    var avg = Math.round(sum / total);
+    document.getElementById("statAvg").textContent = avg + "%";
+    document.getElementById("statAvg").style.color = scoreColor(avg);
+  }
+}
+
+/* ======================================================
+   Filter bar rendering (adapts per view)
+   ====================================================== */
+function buildFilterBar(data) {
+  var slot = document.getElementById("filterSlots");
+  var html = "";
+
+  var campuses = uniqueValues(data, "campus");
+  var teachers = uniqueValues(data, "teacher");
+
+  // Date range (all views)
+  html += '<label>From</label>';
+  html += '<input type="date" id="fDateFrom" value="' + filterDateFrom + '" onchange="onFilterChange()">';
+  html += '<label>To</label>';
+  html += '<input type="date" id="fDateTo" value="' + filterDateTo + '" onchange="onFilterChange()">';
+
+  // Campus filter (all views except campus comparison)
+  if (currentView !== "campuses") {
+    html += '<div class="filter-sep"></div>';
+    html += '<label>Campus</label>';
+    html += '<select id="fCampus" onchange="onFilterChange()"><option value="">All Campuses</option>';
+    for (var i = 0; i < campuses.length; i++) {
+      var sel = (campuses[i] === filterCampus) ? " selected" : "";
+      html += '<option value="' + campuses[i] + '"' + sel + '>' + campuses[i] + '</option>';
+    }
+    html += '</select>';
+  }
+
+  // Teacher filter (trends view only)
+  if (currentView === "trends") {
+    html += '<div class="filter-sep"></div>';
+    html += '<label>Teacher</label>';
+    html += '<select id="fTeacher" onchange="onFilterChange()"><option value="">All Teachers</option>';
+    for (var j = 0; j < teachers.length; j++) {
+      var sel2 = (teachers[j] === filterTeacher) ? " selected" : "";
+      html += '<option value="' + teachers[j] + '"' + sel2 + '>' + teachers[j] + '</option>';
+    }
+    html += '</select>';
+  }
+
+  slot.innerHTML = html;
+}
+
+function onFilterChange() {
+  var dfEl = document.getElementById("fDateFrom");
+  var dtEl = document.getElementById("fDateTo");
+  var cEl = document.getElementById("fCampus");
+  var tEl = document.getElementById("fTeacher");
+
+  filterDateFrom = dfEl ? dfEl.value : "";
+  filterDateTo = dtEl ? dtEl.value : "";
+  filterCampus = cEl ? cEl.value : "";
+  filterTeacher = tEl ? tEl.value : "";
+
+  renderCurrentView();
+}
+
+/* ======================================================
+   View switching
+   ====================================================== */
+function switchView() {
+  currentView = document.getElementById("viewSelect").value;
+  // Reset teacher filter when leaving trends view
+  if (currentView !== "trends") {
+    filterTeacher = "";
+  }
+  // Reset campus filter when entering campus comparison
+  if (currentView === "campuses") {
+    filterCampus = "";
+  }
+  refreshDashboard();
+}
+
+/* ======================================================
+   VIEW 1: Score Trends (line chart)
+   ====================================================== */
+function renderTrends(data) {
+  destroyChart();
+  var legend = document.getElementById("chartLegend");
+  var threshBar = document.getElementById("thresholdBar");
+  threshBar.style.display = "flex";
+
+  if (data.length === 0) {
+    showEmptyChart("No audit data matches the current filters.");
+    legend.innerHTML = "";
+    return;
+  }
+
+  // Sort by date
+  data.sort(function(a, b) {
+    return getAuditDate(a).getTime() - getAuditDate(b).getTime();
+  });
+
+  var labels = [];
+  var values = [];
+  var bgColors = [];
+  var borderColors = [];
+  var tooltipMeta = [];
+
+  for (var i = 0; i < data.length; i++) {
+    var d = getAuditDate(data[i]);
+    labels.push(formatDate(d));
+    var pct = computeScorePct(data[i]);
+    values.push(pct);
+    bgColors.push(scoreColor(pct));
+    borderColors.push(scoreColor(pct));
+    tooltipMeta.push({
+      teacher: (data[i].meta && data[i].meta.teacher) || "Unknown",
+      campus: (data[i].meta && data[i].meta.campus) || "Unknown"
+    });
+  }
+
+  var isSingleTeacher = !!filterTeacher;
+
+  chartInstance = new Chart(getCtx(), {
+    type: "line",
+    data: {
+      labels: labels,
+      datasets: [{
+        label: isSingleTeacher ? filterTeacher + " Score %" : "Audit Score %",
+        data: values,
+        borderColor: isSingleTeacher ? "#4a90d9" : "#2c3e6e",
+        backgroundColor: isSingleTeacher ? "rgba(74,144,217,0.1)" : "rgba(44,62,110,0.08)",
+        fill: isSingleTeacher,
+        tension: 0.3,
+        pointRadius: 6,
+        pointHoverRadius: 9,
+        pointBackgroundColor: bgColors,
+        pointBorderColor: borderColors,
+        pointBorderWidth: 2,
+        borderWidth: isSingleTeacher ? 3 : 2
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {display: true, position: "top"},
+        tooltip: {
+          callbacks: {
+            afterLabel: function(ctx) {
+              var meta = tooltipMeta[ctx.dataIndex];
+              return "Teacher: " + meta.teacher + "\nCampus: " + meta.campus;
+            }
+          }
+        },
+        annotation: undefined
+      },
+      scales: {
+        y: {
+          min: 0,
+          max: 100,
+          ticks: {
+            callback: function(val) { return val + "%"; },
+            stepSize: 10
+          },
+          title: {display: true, text: "Score %"}
+        },
+        x: {
+          title: {display: true, text: "Date"}
+        }
+      }
+    }
+  });
+
+  legend.innerHTML = '<div class="legend-row">' +
+    '<div class="legend-item"><span class="legend-dot" style="background:#27ae60"></span> Strong (80%+)</div>' +
+    '<div class="legend-item"><span class="legend-dot" style="background:#f39c12"></span> Developing (55-79%)</div>' +
+    '<div class="legend-item"><span class="legend-dot" style="background:#e74c3c"></span> Beginning (&lt;55%)</div>' +
+    '</div>';
+}
+
+/* ======================================================
+   VIEW 2: Section Breakdown (horizontal bar)
+   ====================================================== */
+function renderSections(data) {
+  destroyChart();
+  var legend = document.getElementById("chartLegend");
+  var threshBar = document.getElementById("thresholdBar");
+  threshBar.style.display = "flex";
+
+  if (data.length === 0) {
+    showEmptyChart("No audit data matches the current filters.");
+    legend.innerHTML = "";
+    return;
+  }
+
+  var labels = [];
+  var values = [];
+  var barColors = [];
+
+  for (var s = 0; s < SECTIONS.length; s++) {
+    var sec = SECTIONS[s];
+    labels.push(sec.title);
+
+    var sumPct = 0;
+    var count = 0;
+    for (var a = 0; a < data.length; a++) {
+      var sc = sectionScore(data[a], sec.id, sec.itemCount);
+      if (sc.rated > 0) {
+        sumPct += Math.round((sc.sum / sc.max) * 100);
+        count++;
+      }
+    }
+    var avgPct = count > 0 ? Math.round(sumPct / count) : 0;
+    values.push(avgPct);
+    barColors.push(sec.type === "permanent" ? "#4a90d9" : "#8e44ad");
+  }
+
+  chartInstance = new Chart(getCtx(), {
+    type: "bar",
+    data: {
+      labels: labels,
+      datasets: [{
+        label: "Avg Score %",
+        data: values,
+        backgroundColor: barColors,
+        borderColor: barColors,
+        borderWidth: 1,
+        borderRadius: 4
+      }]
+    },
+    options: {
+      indexAxis: "y",
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {display: false},
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              return " " + ctx.raw + "%";
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          min: 0,
+          max: 100,
+          ticks: {
+            callback: function(val) { return val + "%"; },
+            stepSize: 20
+          },
+          title: {display: true, text: "Average Score %"}
+        },
+        y: {
+          ticks: {
+            font: {size: 11},
+            autoSkip: false
+          }
+        }
+      }
+    }
+  });
+
+  legend.innerHTML = '<div class="legend-row">' +
+    '<div class="legend-item"><span class="legend-dot" style="background:#4a90d9"></span> Permanent Sections</div>' +
+    '<div class="legend-item"><span class="legend-dot" style="background:#8e44ad"></span> Rotating Sections</div>' +
+    '</div>';
+}
+
+/* ======================================================
+   VIEW 3: Campus Comparison (grouped bar)
+   ====================================================== */
+function renderCampuses(data) {
+  destroyChart();
+  var legend = document.getElementById("chartLegend");
+  var threshBar = document.getElementById("thresholdBar");
+  threshBar.style.display = "flex";
+
+  if (data.length === 0) {
+    showEmptyChart("No audit data matches the current filters.");
+    legend.innerHTML = "";
+    return;
+  }
+
+  var campuses = uniqueValues(data, "campus");
+  if (campuses.length === 0) {
+    showEmptyChart("No campus information found in audit data.");
+    legend.innerHTML = "";
+    return;
+  }
+
+  // Compute averages per campus: overall, permanent, rotating
+  var campusOverall = [];
+  var campusPerm = [];
+  var campusRot = [];
+
+  for (var ci = 0; ci < campuses.length; ci++) {
+    var camp = campuses[ci];
+    var cAudits = [];
+    for (var ai = 0; ai < data.length; ai++) {
+      var c = (data[ai].meta && data[ai].meta.campus) ? data[ai].meta.campus.trim() : "";
+      if (c === camp) cAudits.push(data[ai]);
+    }
+
+    var overallSum = 0;
+    var permSum = 0;
+    var permMax = 0;
+    var rotSum = 0;
+    var rotMax = 0;
+
+    for (var j = 0; j < cAudits.length; j++) {
+      overallSum += computeScorePct(cAudits[j]);
+      for (var s = 0; s < SECTIONS.length; s++) {
+        var sec = SECTIONS[s];
+        var sc = sectionScore(cAudits[j], sec.id, sec.itemCount);
+        if (sec.type === "permanent") {
+          permSum += sc.sum;
+          permMax += sc.max;
+        } else {
+          rotSum += sc.sum;
+          rotMax += sc.max;
+        }
+      }
+    }
+
+    campusOverall.push(cAudits.length > 0 ? Math.round(overallSum / cAudits.length) : 0);
+    campusPerm.push(permMax > 0 ? Math.round((permSum / permMax) * 100) : 0);
+    campusRot.push(rotMax > 0 ? Math.round((rotSum / rotMax) * 100) : 0);
+  }
+
+  chartInstance = new Chart(getCtx(), {
+    type: "bar",
+    data: {
+      labels: campuses,
+      datasets: [
+        {
+          label: "Overall Avg %",
+          data: campusOverall,
+          backgroundColor: "#2c3e6e",
+          borderRadius: 4
+        },
+        {
+          label: "Permanent Avg %",
+          data: campusPerm,
+          backgroundColor: "#4a90d9",
+          borderRadius: 4
+        },
+        {
+          label: "Rotating Avg %",
+          data: campusRot,
+          backgroundColor: "#8e44ad",
+          borderRadius: 4
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {display: true, position: "top"},
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              return " " + ctx.dataset.label + ": " + ctx.raw + "%";
+            }
+          }
+        }
+      },
+      scales: {
+        y: {
+          min: 0,
+          max: 100,
+          ticks: {
+            callback: function(val) { return val + "%"; },
+            stepSize: 20
+          },
+          title: {display: true, text: "Average Score %"}
+        }
+      }
+    }
+  });
+
+  legend.innerHTML = "";
+}
+
+/* ======================================================
+   VIEW 4: Principles Compliance (stacked bar)
+   ====================================================== */
+function renderPrinciples(data) {
+  destroyChart();
+  var legend = document.getElementById("chartLegend");
+  var threshBar = document.getElementById("thresholdBar");
+  threshBar.style.display = "none";
+
+  if (data.length === 0) {
+    showEmptyChart("No audit data matches the current filters.");
+    legend.innerHTML = "";
+    return;
+  }
+
+  var labels = [];
+  var checkedCounts = [];
+  var uncheckedCounts = [];
+
+  for (var p = 0; p < 6; p++) {
+    labels.push(PRINCIPLE_LABELS[p]);
+    var checked = 0;
+    var unchecked = 0;
+    for (var a = 0; a < data.length; a++) {
+      if (principleChecked(data[a], p)) {
+        checked++;
+      } else {
+        unchecked++;
+      }
+    }
+    checkedCounts.push(checked);
+    uncheckedCounts.push(unchecked);
+  }
+
+  chartInstance = new Chart(getCtx(), {
+    type: "bar",
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: "Met",
+          data: checkedCounts,
+          backgroundColor: "#27ae60",
+          borderRadius: 4
+        },
+        {
+          label: "Not Met",
+          data: uncheckedCounts,
+          backgroundColor: "#e74c3c",
+          borderRadius: 4
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {display: true, position: "top"},
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              var total = 0;
+              for (var di = 0; di < ctx.chart.data.datasets.length; di++) {
+                total += ctx.chart.data.datasets[di].data[ctx.dataIndex];
+              }
+              var pct = total > 0 ? Math.round((ctx.raw / total) * 100) : 0;
+              return " " + ctx.dataset.label + ": " + ctx.raw + " (" + pct + "%)";
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          stacked: true,
+          ticks: {font: {size: 11}}
+        },
+        y: {
+          stacked: true,
+          ticks: {
+            stepSize: 1,
+            precision: 0
+          },
+          title: {display: true, text: "Number of Audits"}
+        }
+      }
+    }
+  });
+
+  legend.innerHTML = '<div class="legend-row">' +
+    '<div class="legend-item"><span class="legend-dot" style="background:#27ae60"></span> Principle Met</div>' +
+    '<div class="legend-item"><span class="legend-dot" style="background:#e74c3c"></span> Principle Not Met</div>' +
+    '</div>';
+}
+
+/* ======================================================
+   Empty chart placeholder
+   ====================================================== */
+function showEmptyChart(msg) {
+  destroyChart();
+  var ctx = getCtx();
+  chartInstance = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: [""],
+      datasets: [{
+        label: "",
+        data: [0],
+        backgroundColor: "transparent"
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {display: false},
+        title: {
+          display: true,
+          text: msg || "No data available",
+          font: {size: 14, weight: "normal"},
+          color: "#999",
+          padding: {top: 80}
+        }
+      },
+      scales: {
+        x: {display: false},
+        y: {display: false}
+      }
+    }
+  });
+}
+
+/* ======================================================
+   Master render / refresh
+   ====================================================== */
+function renderCurrentView() {
+  var allData = loadHistory();
+  var filtered = applyFilters(allData);
+
+  // Show/hide empty state vs chart
+  var emptyEl = document.getElementById("emptyState");
+  var chartCard = document.getElementById("chartWrap").parentElement;
+
+  if (allData.length === 0) {
+    emptyEl.style.display = "block";
+    chartCard.style.display = "none";
+    updateStats([]);
+    return;
+  } else {
+    emptyEl.style.display = "none";
+    chartCard.style.display = "block";
+  }
+
+  updateStats(allData);
+
+  switch (currentView) {
+    case "trends":
+      renderTrends(filtered);
+      break;
+    case "sections":
+      renderSections(filtered);
+      break;
+    case "campuses":
+      renderCampuses(filtered);
+      break;
+    case "principles":
+      renderPrinciples(filtered);
+      break;
+    default:
+      renderTrends(filtered);
+  }
+}
+
+function refreshDashboard() {
+  var allData = loadHistory();
+  buildFilterBar(allData);
+  renderCurrentView();
+
+  var ts = document.getElementById("lastUpdated");
+  var now = new Date();
+  ts.textContent = "Updated " + formatDate(now) + " " +
+    (now.getHours() < 10 ? "0" : "") + now.getHours() + ":" +
+    (now.getMinutes() < 10 ? "0" : "") + now.getMinutes();
+}
+
+/* ======================================================
+   Initialization
+   ====================================================== */
+(function init() {
+  refreshDashboard();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ESL Tools - Data Backup Hub</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh;padding:20px;color:#333}
+.wrap{max-width:960px;margin:0 auto}
+.header{background:linear-gradient(135deg,#2c3e6e,#4a90d9);border-radius:12px;padding:26px 30px;color:#fff;margin-bottom:22px}
+.header h1{font-size:22px;font-weight:800;display:flex;align-items:center;gap:10px}
+.header p{font-size:13px;opacity:.85;margin-top:6px}
+.header-links{margin-top:12px}
+.header-links a{color:#fff;font-size:12px;font-weight:600;text-decoration:none;opacity:.8;transition:opacity .15s}
+.header-links a:hover{opacity:1;text-decoration:underline}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;align-items:center}
+.tool-btn{padding:8px 16px;border-radius:7px;border:2px solid rgba(255,255,255,.35);background:rgba(255,255,255,.12);color:#fff;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.tool-btn:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.5)}
+.tool-btn.success{border-color:rgba(46,204,113,.5);background:rgba(46,204,113,.15)}
+.tool-btn.success:hover{background:rgba(46,204,113,.3)}
+.tool-btn.import-btn{border-color:rgba(243,156,18,.5);background:rgba(243,156,18,.15)}
+.tool-btn.import-btn:hover{background:rgba(243,156,18,.3)}
+.card{background:#fff;border-radius:10px;padding:20px;margin-bottom:18px;box-shadow:0 1px 5px rgba(0,0,0,.07)}
+.card h2{font-size:16px;font-weight:700;color:#2c3e6e;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.summary-bar{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:18px}
+.summary-stat{background:#fff;border-radius:10px;padding:14px 18px;box-shadow:0 1px 5px rgba(0,0,0,.07);flex:1;min-width:140px;text-align:center}
+.summary-stat .num{font-size:28px;font-weight:900;color:#2c3e6e}
+.summary-stat .lbl{font-size:11px;font-weight:600;color:#888;text-transform:uppercase;margin-top:2px}
+.key-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.key-card{background:#fff;border-radius:10px;padding:16px;box-shadow:0 1px 5px rgba(0,0,0,.07);border-left:4px solid #ccc;position:relative;transition:border-color .2s}
+.key-card.has-data{border-left-color:#27ae60}
+.key-card.empty{border-left-color:#e74c3c}
+.key-card .tool-name{font-size:14px;font-weight:700;color:#2c3e6e;display:flex;align-items:center;gap:6px}
+.key-card .key-name{font-size:11px;color:#888;font-family:'Courier New',monospace;margin-top:2px}
+.key-card .status-row{display:flex;align-items:center;gap:8px;margin-top:8px}
+.status-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;text-transform:uppercase}
+.status-badge.active{background:#eafaf1;color:#27ae60}
+.status-badge.inactive{background:#fdecea;color:#e74c3c}
+.key-meta{font-size:11px;color:#888;margin-top:6px;line-height:1.6}
+.key-actions{display:flex;gap:6px;margin-top:10px;align-items:center}
+.key-actions label{display:flex;align-items:center;gap:4px;font-size:11px;color:#555;cursor:pointer}
+.key-actions label input{margin:0}
+.btn-sm{padding:4px 10px;font-size:10px;border-radius:5px;border:1px solid #ddd;background:#fff;cursor:pointer;font-weight:600;transition:all .15s;color:#555}
+.btn-sm:hover{background:#f0f2f7;border-color:#bbb}
+.btn-sm.danger{color:#e74c3c;border-color:#f5c6cb}
+.btn-sm.danger:hover{background:#fdecea;border-color:#e74c3c}
+.import-area{margin-top:14px}
+.import-area .drop-zone{border:2px dashed #ccc;border-radius:10px;padding:30px;text-align:center;color:#888;font-size:13px;cursor:pointer;transition:all .2s;background:#fafbfd}
+.import-area .drop-zone:hover,.import-area .drop-zone.dragover{border-color:#4a90d9;background:#eef4fb;color:#4a90d9}
+.import-area .drop-zone input[type="file"]{display:none}
+.paste-area{width:100%;min-height:80px;padding:10px;border-radius:8px;border:1px solid #ddd;font-size:12px;font-family:'Courier New',monospace;resize:vertical;margin-top:10px;background:#fafbfd;color:#333}
+.paste-area:focus{outline:none;border-color:#4a90d9}
+.preview-box{margin-top:14px;background:#f8f9fb;border-radius:8px;padding:14px;display:none}
+.preview-box h3{font-size:13px;font-weight:700;color:#2c3e6e;margin-bottom:10px}
+.preview-item{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #eee;font-size:12px}
+.preview-item:last-child{border-bottom:none}
+.preview-icon{font-size:14px}
+.preview-key{font-family:'Courier New',monospace;color:#555;flex:1}
+.preview-detail{color:#888;font-size:11px}
+.btn-confirm{padding:10px 24px;background:linear-gradient(135deg,#2c3e6e,#4a90d9);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;margin-top:12px;transition:opacity .15s}
+.btn-confirm:hover{opacity:.9}
+.btn-confirm:disabled{opacity:.4;cursor:not-allowed}
+.btn-confirm.danger-btn{background:linear-gradient(135deg,#c0392b,#e74c3c)}
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);display:none;justify-content:center;align-items:center;z-index:1000;padding:20px}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:12px;padding:24px;max-width:440px;width:100%;box-shadow:0 8px 30px rgba(0,0,0,.2)}
+.modal h3{font-size:16px;font-weight:700;color:#2c3e6e;margin-bottom:10px}
+.modal p{font-size:13px;color:#555;line-height:1.6;margin-bottom:14px}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end}
+.modal-actions button{padding:8px 18px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;border:1px solid #ddd}
+.modal-actions .cancel-btn{background:#fff;color:#555}
+.modal-actions .cancel-btn:hover{background:#f0f2f7}
+.modal-actions .confirm-btn{background:#e74c3c;color:#fff;border-color:#e74c3c}
+.modal-actions .confirm-btn:hover{background:#c0392b}
+.toast{position:fixed;bottom:24px;right:24px;background:#2c3e6e;color:#fff;padding:12px 20px;border-radius:8px;font-size:13px;font-weight:600;box-shadow:0 4px 15px rgba(0,0,0,.2);z-index:2000;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+.select-all-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:8px 12px;background:#f8f9fb;border-radius:8px}
+.select-all-row label{font-size:12px;font-weight:600;color:#555;cursor:pointer;display:flex;align-items:center;gap:5px}
+@media(max-width:600px){
+.key-grid{grid-template-columns:1fr}
+.summary-bar{flex-direction:column}
+.toolbar{flex-direction:column;align-items:stretch}
+.tool-btn{justify-content:center}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="header">
+<h1>&#128451; Data Backup Hub</h1>
+<p>Export, import, and manage localStorage data across all ESL coordinator tools in one place.</p>
+<div class="header-links"><a href="index.html">&larr; Back to Home</a></div>
+<div class="toolbar">
+<button class="tool-btn success" onclick="exportSelected()">&#128229; Export Selected</button>
+<button class="tool-btn success" onclick="exportAll()">&#128230; Export All</button>
+<button class="tool-btn import-btn" onclick="showImportArea()">&#128228; Import Backup</button>
+<button class="tool-btn" onclick="refreshDashboard()">&#128260; Refresh</button>
+</div>
+</div>
+
+<div class="summary-bar" id="summaryBar"></div>
+
+<div class="card">
+<h2>&#128202; Status Dashboard</h2>
+<div class="select-all-row">
+<label><input type="checkbox" id="selectAllCb" onchange="toggleSelectAll(this.checked)"/> Select All Keys</label>
+</div>
+<div class="key-grid" id="keyGrid"></div>
+</div>
+
+<div class="card" id="importCard" style="display:none">
+<h2>&#128228; Import Backup</h2>
+<div class="import-area">
+<div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+<div style="font-size:32px;margin-bottom:8px">&#128194;</div>
+<div>Drop a backup JSON file here or click to browse</div>
+<input type="file" id="fileInput" accept=".json" onchange="handleFileSelect(this)"/>
+</div>
+<textarea class="paste-area" id="pasteArea" placeholder="Or paste JSON backup content here..."></textarea>
+<button class="btn-sm" onclick="loadFromPaste()" style="margin-top:8px">Parse Pasted JSON</button>
+</div>
+<div class="preview-box" id="previewBox">
+<h3>Import Preview</h3>
+<div id="previewContent"></div>
+<div style="margin-top:12px">
+<label style="font-size:12px;color:#555;display:flex;align-items:center;gap:5px;cursor:pointer">
+<input type="checkbox" id="importSelectAll" checked onchange="toggleImportSelectAll(this.checked)"/> Select all keys
+</label>
+</div>
+<div id="previewItems"></div>
+<p style="font-size:12px;color:#e74c3c;margin-top:10px;font-weight:600">Warning: Importing will overwrite existing data for selected keys.</p>
+<button class="btn-confirm" onclick="executeImport()">Confirm Import</button>
+<button class="btn-sm" onclick="cancelImport()" style="margin-left:8px">Cancel</button>
+</div>
+</div>
+
+</div>
+
+<div class="modal-overlay" id="confirmModal">
+<div class="modal">
+<h3 id="modalTitle">Confirm Action</h3>
+<p id="modalMessage">Are you sure?</p>
+<div class="modal-actions">
+<button class="cancel-btn" onclick="closeModal()">Cancel</button>
+<button class="confirm-btn" id="modalConfirmBtn" onclick="modalConfirmAction()">Confirm</button>
+</div>
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var KEY_CONFIG = [
+  {key: 'esl_audit_data', tool: 'Classroom Audit', icon: '&#128203;', desc: 'Current working audit', countFn: null},
+  {key: 'esl_audit_history', tool: 'Classroom Audit', icon: '&#128203;', desc: 'Saved audit archive', countFn: function(d){return Array.isArray(d) ? d.length + ' audits' : null;}},
+  {key: 'esl_audit_campuses', tool: 'Classroom Audit', icon: '&#128203;', desc: 'Campus name list', countFn: function(d){return Array.isArray(d) ? d.length + ' campuses' : null;}},
+  {key: 'walkthrough_plan_data_v2', tool: 'Walkthrough Planner', icon: '&#128214;', desc: 'Current walkthrough session', countFn: null},
+  {key: 'walkthrough_history', tool: 'Walkthrough Planner', icon: '&#128214;', desc: 'Saved walkthrough archive', countFn: function(d){return Array.isArray(d) ? d.length + ' sessions' : null;}},
+  {key: 'esl_scope_data', tool: 'Scope & Sequence', icon: '&#128197;', desc: 'Coordinator tracking state', countFn: null},
+  {key: 'shared_teacher_roster', tool: 'Shared', icon: '&#128101;', desc: 'Teacher name autocomplete list', countFn: function(d){return Array.isArray(d) ? d.length + ' teachers' : null;}},
+  {key: 'coaching_cycles_data', tool: 'Coaching Cycle Tracker', icon: '&#128736;', desc: 'Coaching cycle state', countFn: null}
+];
+
+var pendingImportData = null;
+var pendingModalCallback = null;
+
+function init() {
+  refreshDashboard();
+  setupDragDrop();
+}
+
+function refreshDashboard() {
+  buildSummary();
+  buildKeyGrid();
+  updateSelectAllState();
+}
+
+function getKeyData(key) {
+  var raw = localStorage.getItem(key);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw);
+  } catch(e) {
+    return raw;
+  }
+}
+
+function getDataSize(key) {
+  var raw = localStorage.getItem(key);
+  if (!raw) return 0;
+  return raw.length;
+}
+
+function formatSize(chars) {
+  if (chars === 0) return '0 B';
+  var bytes = chars * 2;
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+function getLastModified(data) {
+  if (!data || typeof data !== 'object') return null;
+  if (data.savedAt) return data.savedAt;
+  if (data.timestamp) return data.timestamp;
+  if (data.exportedAt) return data.exportedAt;
+  if (data.lastSaved) return data.lastSaved;
+  if (data.meta && data.meta.savedAt) return data.meta.savedAt;
+  if (data.metadata && data.metadata.savedAt) return data.metadata.savedAt;
+  if (Array.isArray(data) && data.length > 0) {
+    var last = data[data.length - 1];
+    if (last && typeof last === 'object') {
+      return last.savedAt || last.timestamp || last.date || null;
+    }
+  }
+  return null;
+}
+
+function formatDate(isoStr) {
+  if (!isoStr) return 'Unknown';
+  try {
+    var d = new Date(isoStr);
+    if (isNaN(d.getTime())) return 'Unknown';
+    return d.toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'}) +
+      ' ' + d.toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'});
+  } catch(e) {
+    return 'Unknown';
+  }
+}
+
+function buildSummary() {
+  var totalKeys = KEY_CONFIG.length;
+  var activeKeys = 0;
+  var totalSize = 0;
+  var i, raw;
+  for (i = 0; i < KEY_CONFIG.length; i++) {
+    raw = localStorage.getItem(KEY_CONFIG[i].key);
+    if (raw) {
+      activeKeys++;
+      totalSize += raw.length * 2;
+    }
+  }
+  var html = '';
+  html += '<div class="summary-stat"><div class="num">' + activeKeys + '/' + totalKeys + '</div><div class="lbl">Keys with Data</div></div>';
+  html += '<div class="summary-stat"><div class="num">' + formatSize(totalSize / 2) + '</div><div class="lbl">Total Data Size</div></div>';
+  html += '<div class="summary-stat"><div class="num">' + totalKeys + '</div><div class="lbl">Tracked Keys</div></div>';
+  document.getElementById('summaryBar').innerHTML = html;
+}
+
+function buildKeyGrid() {
+  var html = '';
+  var i;
+  for (i = 0; i < KEY_CONFIG.length; i++) {
+    var cfg = KEY_CONFIG[i];
+    var data = getKeyData(cfg.key);
+    var hasData = data !== null;
+    var size = getDataSize(cfg.key);
+    var lastMod = hasData ? getLastModified(data) : null;
+    var countStr = '';
+    if (hasData && cfg.countFn) {
+      var c = cfg.countFn(data);
+      if (c) countStr = c;
+    }
+
+    html += '<div class="key-card ' + (hasData ? 'has-data' : 'empty') + '">';
+    html += '<div class="tool-name">' + cfg.icon + ' ' + cfg.tool + '</div>';
+    html += '<div class="key-name">' + cfg.key + '</div>';
+    html += '<div class="status-row">';
+    html += '<span class="status-badge ' + (hasData ? 'active' : 'inactive') + '">' + (hasData ? 'Has Data' : 'Empty') + '</span>';
+    if (countStr) html += '<span style="font-size:11px;color:#555;font-weight:600">' + countStr + '</span>';
+    html += '</div>';
+    html += '<div class="key-meta">';
+    if (hasData) {
+      html += 'Size: ' + formatSize(size);
+      html += '<br/>Last modified: ' + formatDate(lastMod);
+    } else {
+      html += 'No data stored';
+    }
+    html += '</div>';
+    html += '<div class="key-actions">';
+    html += '<label><input type="checkbox" class="key-select-cb" data-key="' + cfg.key + '" ' + (hasData ? 'checked' : '') + ' onchange="updateSelectAllState()"/> Include</label>';
+    if (hasData) {
+      html += '<button class="btn-sm" onclick="exportSingleKey(\'' + cfg.key + '\')">Export</button>';
+      html += '<button class="btn-sm danger" onclick="confirmClearKey(\'' + cfg.key + '\')">Clear</button>';
+    }
+    html += '</div>';
+    html += '</div>';
+  }
+  document.getElementById('keyGrid').innerHTML = html;
+}
+
+function toggleSelectAll(checked) {
+  var cbs = document.querySelectorAll('.key-select-cb');
+  var i;
+  for (i = 0; i < cbs.length; i++) {
+    cbs[i].checked = checked;
+  }
+}
+
+function updateSelectAllState() {
+  var cbs = document.querySelectorAll('.key-select-cb');
+  var allChecked = true;
+  var i;
+  for (i = 0; i < cbs.length; i++) {
+    if (!cbs[i].checked) {
+      allChecked = false;
+      break;
+    }
+  }
+  var selectAllCb = document.getElementById('selectAllCb');
+  if (selectAllCb) selectAllCb.checked = allChecked;
+}
+
+function getSelectedKeys() {
+  var cbs = document.querySelectorAll('.key-select-cb');
+  var selected = [];
+  var i;
+  for (i = 0; i < cbs.length; i++) {
+    if (cbs[i].checked) {
+      selected.push(cbs[i].getAttribute('data-key'));
+    }
+  }
+  return selected;
+}
+
+function collectExportData(keys) {
+  var data = {
+    exportedAt: new Date().toISOString(),
+    version: 1,
+    toolName: 'ESL Tools Data Backup Hub',
+    keys: {}
+  };
+  var i, raw, parsed;
+  for (i = 0; i < keys.length; i++) {
+    raw = localStorage.getItem(keys[i]);
+    if (raw !== null) {
+      try {
+        parsed = JSON.parse(raw);
+      } catch(e) {
+        parsed = raw;
+      }
+      data.keys[keys[i]] = parsed;
+    }
+  }
+  return data;
+}
+
+function downloadJSON(data, filename) {
+  var json = JSON.stringify(data, null, 2);
+  var blob = new Blob([json], {type: 'application/json'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function getDateStamp() {
+  var d = new Date();
+  var y = d.getFullYear();
+  var m = ('0' + (d.getMonth() + 1)).slice(-2);
+  var day = ('0' + d.getDate()).slice(-2);
+  return y + '-' + m + '-' + day;
+}
+
+function exportAll() {
+  var allKeys = [];
+  var i;
+  for (i = 0; i < KEY_CONFIG.length; i++) {
+    allKeys.push(KEY_CONFIG[i].key);
+  }
+  var data = collectExportData(allKeys);
+  var keyCount = Object.keys(data.keys).length;
+  if (keyCount === 0) {
+    showToast('No data to export.');
+    return;
+  }
+  var filename = 'ESL_Tools_Backup_' + getDateStamp() + '.json';
+  downloadJSON(data, filename);
+  showToast('Exported ' + keyCount + ' keys to ' + filename);
+}
+
+function exportSelected() {
+  var selected = getSelectedKeys();
+  if (selected.length === 0) {
+    showToast('No keys selected for export.');
+    return;
+  }
+  var data = collectExportData(selected);
+  var keyCount = Object.keys(data.keys).length;
+  if (keyCount === 0) {
+    showToast('Selected keys have no data to export.');
+    return;
+  }
+  var filename = 'ESL_Tools_Backup_' + getDateStamp() + '.json';
+  downloadJSON(data, filename);
+  showToast('Exported ' + keyCount + ' keys to ' + filename);
+}
+
+function exportSingleKey(key) {
+  var data = collectExportData([key]);
+  if (Object.keys(data.keys).length === 0) {
+    showToast('No data for key: ' + key);
+    return;
+  }
+  var filename = key + '_backup_' + getDateStamp() + '.json';
+  downloadJSON(data, filename);
+  showToast('Exported ' + key);
+}
+
+function showImportArea() {
+  var importCard = document.getElementById('importCard');
+  if (importCard.style.display === 'none') {
+    importCard.style.display = 'block';
+    importCard.scrollIntoView({behavior: 'smooth'});
+  } else {
+    importCard.style.display = 'none';
+  }
+}
+
+function setupDragDrop() {
+  var dropZone = document.getElementById('dropZone');
+  dropZone.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    dropZone.classList.add('dragover');
+  });
+  dropZone.addEventListener('dragleave', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    dropZone.classList.remove('dragover');
+  });
+  dropZone.addEventListener('drop', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    dropZone.classList.remove('dragover');
+    var files = e.dataTransfer.files;
+    if (files.length > 0) {
+      readFile(files[0]);
+    }
+  });
+}
+
+function handleFileSelect(input) {
+  if (input.files && input.files.length > 0) {
+    readFile(input.files[0]);
+  }
+}
+
+function readFile(file) {
+  if (!file.name.match(/\.json$/i)) {
+    showToast('Please select a .json file.');
+    return;
+  }
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var data = JSON.parse(e.target.result);
+      processImportData(data);
+    } catch(err) {
+      showToast('Invalid JSON file: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
+function loadFromPaste() {
+  var pasteArea = document.getElementById('pasteArea');
+  var text = pasteArea.value.trim();
+  if (!text) {
+    showToast('Paste area is empty.');
+    return;
+  }
+  try {
+    var data = JSON.parse(text);
+    processImportData(data);
+  } catch(err) {
+    showToast('Invalid JSON: ' + err.message);
+  }
+}
+
+function processImportData(data) {
+  if (!data || typeof data !== 'object') {
+    showToast('Invalid backup format.');
+    return;
+  }
+  var keys = data.keys;
+  if (!keys || typeof keys !== 'object') {
+    showToast('No keys found in backup. Expected format: { keys: { ... } }');
+    return;
+  }
+
+  pendingImportData = data;
+
+  var previewBox = document.getElementById('previewBox');
+  var previewItems = document.getElementById('previewItems');
+  var previewContent = document.getElementById('previewContent');
+
+  var metaHtml = '';
+  if (data.exportedAt) {
+    metaHtml += '<div style="font-size:12px;color:#888;margin-bottom:8px">Exported: ' + formatDate(data.exportedAt) + '</div>';
+  }
+  if (data.version) {
+    metaHtml += '<div style="font-size:12px;color:#888;margin-bottom:8px">Format version: ' + data.version + '</div>';
+  }
+  previewContent.innerHTML = metaHtml;
+
+  var itemsHtml = '';
+  var importKeys = Object.keys(keys);
+  var i, k, cfg, existing, sizeStr, countStr;
+  for (i = 0; i < importKeys.length; i++) {
+    k = importKeys[i];
+    cfg = findKeyConfig(k);
+    existing = localStorage.getItem(k) !== null;
+    sizeStr = formatSize(JSON.stringify(keys[k]).length);
+    countStr = '';
+    if (cfg && cfg.countFn) {
+      var c = cfg.countFn(keys[k]);
+      if (c) countStr = ' (' + c + ')';
+    }
+    itemsHtml += '<div class="preview-item">';
+    itemsHtml += '<label style="display:flex;align-items:center;gap:6px;cursor:pointer;flex:1">';
+    itemsHtml += '<input type="checkbox" class="import-key-cb" data-key="' + k + '" checked/>';
+    itemsHtml += '<span class="preview-icon">' + (cfg ? cfg.icon : '&#128196;') + '</span>';
+    itemsHtml += '<span class="preview-key">' + k + '</span>';
+    itemsHtml += '</label>';
+    itemsHtml += '<span class="preview-detail">' + sizeStr + countStr + '</span>';
+    if (existing) {
+      itemsHtml += '<span style="font-size:10px;color:#e67e22;font-weight:700;margin-left:6px">OVERWRITE</span>';
+    } else {
+      itemsHtml += '<span style="font-size:10px;color:#27ae60;font-weight:700;margin-left:6px">NEW</span>';
+    }
+    itemsHtml += '</div>';
+  }
+  previewItems.innerHTML = itemsHtml;
+  previewBox.style.display = 'block';
+  previewBox.scrollIntoView({behavior: 'smooth'});
+}
+
+function findKeyConfig(key) {
+  var i;
+  for (i = 0; i < KEY_CONFIG.length; i++) {
+    if (KEY_CONFIG[i].key === key) return KEY_CONFIG[i];
+  }
+  return null;
+}
+
+function toggleImportSelectAll(checked) {
+  var cbs = document.querySelectorAll('.import-key-cb');
+  var i;
+  for (i = 0; i < cbs.length; i++) {
+    cbs[i].checked = checked;
+  }
+}
+
+function executeImport() {
+  if (!pendingImportData || !pendingImportData.keys) {
+    showToast('No import data loaded.');
+    return;
+  }
+
+  var cbs = document.querySelectorAll('.import-key-cb');
+  var selectedKeys = [];
+  var i;
+  for (i = 0; i < cbs.length; i++) {
+    if (cbs[i].checked) {
+      selectedKeys.push(cbs[i].getAttribute('data-key'));
+    }
+  }
+
+  if (selectedKeys.length === 0) {
+    showToast('No keys selected for import.');
+    return;
+  }
+
+  var overwriteCount = 0;
+  for (i = 0; i < selectedKeys.length; i++) {
+    if (localStorage.getItem(selectedKeys[i]) !== null) {
+      overwriteCount++;
+    }
+  }
+
+  var msg = 'Import ' + selectedKeys.length + ' key(s)?';
+  if (overwriteCount > 0) {
+    msg += ' This will overwrite ' + overwriteCount + ' existing key(s).';
+  }
+
+  showModal('Confirm Import', msg, function() {
+    var keys = pendingImportData.keys;
+    var imported = 0;
+    var j;
+    for (j = 0; j < selectedKeys.length; j++) {
+      var k = selectedKeys[j];
+      if (keys.hasOwnProperty(k)) {
+        var val = keys[k];
+        if (typeof val === 'string') {
+          localStorage.setItem(k, val);
+        } else {
+          localStorage.setItem(k, JSON.stringify(val));
+        }
+        imported++;
+      }
+    }
+    pendingImportData = null;
+    document.getElementById('previewBox').style.display = 'none';
+    document.getElementById('pasteArea').value = '';
+    var fileInput = document.getElementById('fileInput');
+    if (fileInput) fileInput.value = '';
+    refreshDashboard();
+    showToast('Successfully imported ' + imported + ' key(s).');
+  });
+}
+
+function cancelImport() {
+  pendingImportData = null;
+  document.getElementById('previewBox').style.display = 'none';
+  document.getElementById('pasteArea').value = '';
+  var fileInput = document.getElementById('fileInput');
+  if (fileInput) fileInput.value = '';
+}
+
+function confirmClearKey(key) {
+  var cfg = findKeyConfig(key);
+  var toolName = cfg ? cfg.tool : key;
+  showModal(
+    'Clear Data',
+    'Are you sure you want to permanently delete the data for "' + key + '" (' + toolName + ')? This action cannot be undone.',
+    function() {
+      localStorage.removeItem(key);
+      refreshDashboard();
+      showToast('Cleared: ' + key);
+    }
+  );
+}
+
+function showModal(title, message, onConfirm) {
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalMessage').textContent = message;
+  pendingModalCallback = onConfirm;
+  document.getElementById('confirmModal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('confirmModal').classList.remove('open');
+  pendingModalCallback = null;
+}
+
+function modalConfirmAction() {
+  if (typeof pendingModalCallback === 'function') {
+    pendingModalCallback();
+  }
+  closeModal();
+}
+
+function showToast(msg) {
+  var toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(function() {
+    toast.classList.remove('show');
+  }, 3000);
+}
+
+// Close modal on overlay click
+document.getElementById('confirmModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// Close modal on Escape
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape' || e.keyCode === 27) {
+    closeModal();
+  }
+});
+
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ESL Coordinator Scope &amp; Sequence 2026-2027</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh;padding:20px}
+.wrap{max-width:1100px;margin:0 auto}
+.header{background:linear-gradient(135deg,#1a2a4a,#2c3e6e);border-radius:12px;padding:26px 30px;color:#fff;margin-bottom:22px}
+.header h1{font-size:22px;font-weight:800}
+.header p{font-size:13px;opacity:.85;margin-top:6px}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;align-items:center}
+.tool-btn{padding:7px 14px;border-radius:7px;border:2px solid rgba(255,255,255,.35);background:rgba(255,255,255,.12);color:#fff;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:5px}
+.tool-btn:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.5)}
+.tool-btn.danger{border-color:rgba(231,76,60,.5);background:rgba(231,76,60,.15)}
+.tool-btn.danger:hover{background:rgba(231,76,60,.3)}
+.save-indicator{font-size:11px;color:rgba(255,255,255,.65);margin-left:auto}
+.card{background:#fff;border-radius:10px;padding:20px;margin-bottom:18px;box-shadow:0 1px 5px rgba(0,0,0,.07)}
+.card h3{font-size:15px;color:#2c3e6e;margin-bottom:12px}
+
+/* View Toggle */
+.view-toggle{display:flex;gap:0;margin-bottom:18px}
+.view-btn{flex:1;padding:12px 16px;border:2px solid #2c3e6e;background:#fff;color:#2c3e6e;font-size:14px;font-weight:700;cursor:pointer;transition:all .15s}
+.view-btn:first-child{border-radius:8px 0 0 8px}
+.view-btn:last-child{border-radius:0 8px 8px 0}
+.view-btn.active{background:#2c3e6e;color:#fff}
+
+/* Progress Dashboard */
+.dash{display:grid;grid-template-columns:140px 1fr;gap:16px;align-items:center}
+.dash-pct{font-size:42px;font-weight:900;text-align:center}
+.dash-label{font-size:11px;color:#888;font-weight:700;text-align:center}
+.dash-bars{display:flex;flex-direction:column;gap:8px}
+.dash-row{display:flex;align-items:center;gap:10px}
+.dash-row-label{font-size:12px;font-weight:600;color:#555;min-width:90px}
+.dash-row-bar{flex:1;height:10px;background:#eee;border-radius:6px;overflow:hidden}
+.dash-row-fill{height:100%;border-radius:6px;transition:width .4s}
+.dash-row-val{font-size:12px;font-weight:700;min-width:40px;text-align:right}
+.dash-quarters{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.dash-q{flex:1;min-width:100px;border-radius:8px;padding:8px 12px;text-align:center}
+.dash-q-label{font-size:10px;font-weight:700;text-transform:uppercase}
+.dash-q-val{font-size:18px;font-weight:900;margin-top:2px}
+
+/* Coordinator Setup */
+.coord-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.coord-card{border:1.5px solid #e0e0e0;border-radius:8px;padding:14px;background:#f8f9fb}
+.coord-card label{font-size:10px;font-weight:700;color:#888;text-transform:uppercase;display:block;margin-bottom:3px;margin-top:8px}
+.coord-card label:first-child{margin-top:0}
+.coord-card input{width:100%;padding:6px 8px;border-radius:5px;border:1px solid #ddd;font-size:12px;font-family:inherit}
+.coord-icon{width:28px;height:28px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;margin-right:6px;vertical-align:middle}
+
+/* Month Strip */
+.month-strip{display:flex;gap:4px;margin-bottom:18px;flex-wrap:wrap}
+.month-chip{padding:8px 12px;border-radius:20px;border:2px solid #ddd;background:#fff;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
+.month-chip:hover{border-color:#2c3e6e;background:#f0f4ff}
+.month-chip.active{background:#2c3e6e;color:#fff;border-color:#2c3e6e}
+.month-chip.current{box-shadow:0 0 0 2px #f1c40f}
+
+/* Filter Bar */
+.filter-bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;align-items:center}
+.filter-bar select,.filter-bar input{padding:6px 10px;border-radius:6px;border:1px solid #ddd;font-size:12px;font-family:inherit}
+.filter-bar label{font-size:11px;font-weight:700;color:#888;text-transform:uppercase}
+
+/* Tracking Mode Toggle */
+.mode-toggle{display:flex;align-items:center;gap:8px;margin-bottom:14px;font-size:12px;color:#555}
+.mode-toggle-switch{width:40px;height:22px;border-radius:12px;background:#ccc;position:relative;cursor:pointer;transition:background .2s}
+.mode-toggle-switch.on{background:#2c3e6e}
+.mode-toggle-switch .knob{width:18px;height:18px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.mode-toggle-switch.on .knob{left:20px}
+
+/* Action Cards */
+.freq-group{margin-bottom:20px}
+.freq-group h4{font-size:13px;font-weight:700;color:#888;text-transform:uppercase;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #eee}
+.action-card{border:1.5px solid #e0e0e0;border-radius:8px;padding:12px 14px;margin-bottom:10px;transition:border-color .15s;background:#fff}
+.action-card:hover{border-color:#bbb}
+.action-top{display:flex;align-items:flex-start;gap:10px}
+.action-checks{display:flex;flex-direction:column;gap:4px;min-width:100px}
+.action-check-row{display:flex;align-items:center;gap:5px}
+.action-check-row input[type=checkbox]{width:15px;height:15px;cursor:pointer}
+.action-check-row .coord-dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.action-check-row span{font-size:10px;color:#666}
+.action-body{flex:1}
+.action-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;color:#fff;margin-bottom:4px}
+.action-text{font-size:13px;color:#333;line-height:1.5}
+.action-scope{font-size:10px;color:#888;margin-top:4px}
+.action-scope .scope-tag{display:inline-block;padding:1px 6px;border-radius:8px;background:#eee;font-weight:600;margin-left:4px}
+.action-note-toggle{font-size:11px;color:#4a90d9;cursor:pointer;margin-top:5px;display:inline-block}
+.action-note-toggle:hover{text-decoration:underline}
+.action-note-area{margin-top:6px;display:none}
+.action-note-area.open{display:block}
+.action-note-area textarea{width:100%;padding:6px 8px;border-radius:5px;border:1px solid #ddd;font-size:11px;resize:vertical;min-height:36px;font-family:inherit}
+
+/* Team check mode - single checkbox */
+.team-check{display:flex;align-items:center;gap:6px}
+.team-check input[type=checkbox]{width:17px;height:17px;cursor:pointer}
+.team-check span{font-size:11px;color:#555;font-weight:600}
+
+/* Spreadsheet View */
+.ss-container{overflow-x:auto;margin-bottom:20px}
+.ss-table{border-collapse:collapse;width:100%;min-width:900px;font-size:11px}
+.ss-table th,.ss-table td{border:1px solid #ddd;padding:6px 8px;text-align:center;vertical-align:middle}
+.ss-table th{background:#2c3e6e;color:#fff;font-weight:700;position:sticky;top:0;z-index:2}
+.ss-table .ss-action-col{text-align:left;min-width:220px;position:sticky;left:0;z-index:1;background:#fff;font-weight:600;font-size:12px}
+.ss-table th.ss-action-col{z-index:3;background:#1a2a4a}
+.ss-table .ss-q-header{background:#f0f2f7;font-weight:700;color:#2c3e6e;font-size:12px;text-align:left;padding:10px 8px}
+.ss-table .ss-q-header td{background:#f0f2f7;font-weight:700;color:#2c3e6e;text-align:left}
+.ss-table .ss-na{background:#f5f5f5;color:#ccc}
+.ss-table .ss-active{background:#fff;cursor:pointer}
+.ss-table .ss-active:hover{background:#f0f4ff}
+.ss-table .ss-checked{background:#eafaf1}
+.ss-table input[type=checkbox]{width:14px;height:14px;cursor:pointer}
+.ss-type-badge{display:inline-block;padding:1px 5px;border-radius:6px;font-size:9px;font-weight:700;color:#fff;margin-right:4px}
+
+/* Quarter Editable */
+.q-edit{margin-bottom:16px;border:1.5px solid #e0e0e0;border-radius:8px;padding:14px;background:#f8f9fb}
+.q-edit-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.q-edit-dot{width:12px;height:12px;border-radius:50%;display:inline-block}
+.q-edit label{font-size:10px;font-weight:700;color:#888;text-transform:uppercase;display:block;margin-bottom:3px;margin-top:6px}
+.q-edit input,.q-edit textarea{width:100%;padding:6px 8px;border-radius:5px;border:1px solid #ddd;font-size:12px;font-family:inherit}
+.q-edit textarea{resize:vertical;min-height:40px}
+
+/* Modal */
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px}
+.modal-overlay.active{display:flex}
+.modal{background:#fff;border-radius:12px;padding:24px;max-width:500px;width:100%;box-shadow:0 8px 30px rgba(0,0,0,.2);max-height:85vh;overflow-y:auto}
+.modal h3{font-size:16px;color:#2c3e6e;margin-bottom:10px}
+.modal p{font-size:13px;color:#666;line-height:1.6;margin-bottom:16px}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end}
+.modal-btns button{padding:8px 18px;border-radius:7px;border:none;font-size:13px;font-weight:600;cursor:pointer}
+.btn-cancel{background:#e8ecf0;color:#555}
+.btn-confirm{background:#e74c3c;color:#fff}
+.btn-import{background:#4a90d9;color:#fff}
+.import-area{width:100%;min-height:100px;border:2px dashed #ddd;border-radius:8px;padding:10px;font-size:12px;font-family:monospace;resize:vertical;margin-bottom:12px}
+
+/* Print */
+@media print{
+  body{background:#fff;padding:0}
+  .toolbar,.view-toggle,.filter-bar,.mode-toggle,.month-strip,.tool-btn,.action-note-toggle,.modal-overlay{display:none!important}
+  .card,.action-card{box-shadow:none;border:1px solid #ddd}
+  .wrap{max-width:100%}
+  .header{background:#2c3e6e!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .ss-table th{background:#2c3e6e!important;color:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .action-badge,.ss-type-badge,.coord-icon,.dash-row-fill,.dash-q{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .action-note-area.has-content{display:block!important}
+  @page{size:landscape;margin:0.5in}
+}
+@media(max-width:600px){
+  body{padding:10px}
+  .header{padding:18px 16px}
+  .header h1{font-size:18px}
+  .dash{grid-template-columns:1fr;text-align:center}
+  .dash-pct{font-size:34px}
+  .coord-grid{grid-template-columns:1fr}
+  .month-strip{gap:3px}
+  .month-chip{padding:6px 8px;font-size:10px}
+  .view-btn{font-size:12px;padding:10px 8px}
+  .filter-bar{flex-direction:column;align-items:stretch}
+  .ss-container{font-size:10px}
+  .action-checks{min-width:80px}
+  .dash-quarters{flex-direction:column}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="header">
+  <h1>ESL Coordinator Scope &amp; Sequence</h1>
+  <p>2026-2027 School Year &mdash; Secondary Campuses (Grades 6-12)</p>
+  <div class="toolbar">
+    <button class="tool-btn" onclick="exportData()" title="Download state as JSON">&#128190; Export</button>
+    <button class="tool-btn" onclick="showImportModal()" title="Import saved state">&#128194; Import</button>
+    <button class="tool-btn danger" onclick="showResetModal()" title="Clear all data">&#128260; Reset</button>
+    <button class="tool-btn" onclick="window.print()" title="Print current view">&#128424; Print</button>
+    <span class="save-indicator" id="saveStatus">Auto-save: ready</span>
+  </div>
+</div>
+
+<!-- Progress Dashboard -->
+<div class="card" id="dashCard">
+  <div class="dash">
+    <div>
+      <div class="dash-pct" id="dashPct">0%</div>
+      <div class="dash-label">OVERALL PROGRESS</div>
+    </div>
+    <div>
+      <div class="dash-bars" id="dashBars"></div>
+      <div class="dash-quarters" id="dashQuarters"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Coordinator Setup -->
+<div class="card" id="coordSetupCard">
+  <h3>Coordinator Setup <span style="font-size:11px;color:#888;font-weight:400">(click to expand)</span></h3>
+  <div id="coordSetupBody" style="display:none">
+    <div class="coord-grid" id="coordGrid"></div>
+  </div>
+</div>
+
+<!-- Quarter PD Topics (Editable) -->
+<div class="card" id="quarterCard">
+  <h3>Quarterly PD Topics <span style="font-size:11px;color:#888;font-weight:400">(click to expand)</span></h3>
+  <div id="quarterBody" style="display:none"></div>
+</div>
+
+<!-- View Toggle -->
+<div class="view-toggle">
+  <button class="view-btn active" id="vbtn-interactive" onclick="showView('interactive')">Interactive Tracker</button>
+  <button class="view-btn" id="vbtn-spreadsheet" onclick="showView('spreadsheet')">Spreadsheet Reference</button>
+</div>
+
+<!-- Interactive View -->
+<div id="interactiveView">
+  <div class="month-strip" id="monthStrip"></div>
+  <div class="filter-bar" id="filterBar">
+    <div><label>Type</label><br/><select id="filterType" onchange="renderInteractiveActions()"><option value="">All Types</option></select></div>
+    <div><label>Coordinator</label><br/><select id="filterCoord" onchange="renderInteractiveActions()"><option value="">All Coordinators</option></select></div>
+    <div><label>Frequency</label><br/><select id="filterFreq" onchange="renderInteractiveActions()"><option value="">All</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option><option value="quarterly">Quarterly</option><option value="milestone">Milestones</option></select></div>
+  </div>
+  <div class="mode-toggle" id="modeToggle">
+    <span>Team View</span>
+    <div class="mode-toggle-switch" id="modeSwitch" onclick="toggleTrackingMode()"><div class="knob"></div></div>
+    <span>Individual Tracking (per coordinator)</span>
+  </div>
+  <div id="actionContainer"></div>
+</div>
+
+<!-- Spreadsheet View -->
+<div id="spreadsheetView" style="display:none">
+  <div class="filter-bar">
+    <div><label>Coordinator</label><br/><select id="ssFilterCoord" onchange="renderSpreadsheet()"><option value="">All Coordinators</option></select></div>
+  </div>
+  <div class="ss-container"><table class="ss-table" id="ssTable"></table></div>
+</div>
+
+</div><!-- end .wrap -->
+
+<!-- Reset Modal -->
+<div class="modal-overlay" id="resetModal">
+  <div class="modal">
+    <h3>Reset All Data</h3>
+    <p>This will clear all check marks, notes, coordinator names, and PD topic edits. This action cannot be undone.</p>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal('resetModal')">Cancel</button>
+      <button class="btn-confirm" onclick="confirmReset()">Reset Everything</button>
+    </div>
+  </div>
+</div>
+
+<!-- Import Modal -->
+<div class="modal-overlay" id="importModal">
+  <div class="modal">
+    <h3>Import Data</h3>
+    <p>Paste exported JSON below, or use the file picker to load a saved file.</p>
+    <input type="file" id="importFile" accept=".json" style="margin-bottom:10px;font-size:12px" onchange="loadImportFile(this)"/>
+    <textarea class="import-area" id="importData" placeholder="Paste JSON data here..."></textarea>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal('importModal')">Cancel</button>
+      <button class="btn-import" onclick="confirmImport()">Import</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ==============================
+   CONSTANTS & DATA
+   ============================== */
+
+var COORD_COLORS = ["#2980b9","#8e44ad","#27ae60","#d35400"];
+
+var COORDINATORS = [
+  {id:"c1",defaultName:"Coordinator 1",area:"ELA",riseCampus:"Rise Campus 1",inspireCampus:"Inspire Campus 1"},
+  {id:"c2",defaultName:"Coordinator 2",area:"Math",riseCampus:"Rise Campus 2",inspireCampus:"Inspire Campus 2"},
+  {id:"c3",defaultName:"Coordinator 3",area:"Science",riseCampus:"Rise Campus 3",inspireCampus:"Inspire Campus 3"},
+  {id:"c4",defaultName:"Coordinator 4",area:"Humanities",riseCampus:"Rise Campus 4",inspireCampus:"Inspire Campus 4"}
+];
+
+var MONTHS = [
+  {id:"jul26",label:"Jul 2026",short:"Jul",quarter:"pre",semester:0},
+  {id:"aug26",label:"Aug 2026",short:"Aug",quarter:"Q1",semester:1},
+  {id:"sep26",label:"Sep 2026",short:"Sep",quarter:"Q1",semester:1},
+  {id:"oct26",label:"Oct 2026",short:"Oct",quarter:"Q2",semester:1},
+  {id:"nov26",label:"Nov 2026",short:"Nov",quarter:"Q2",semester:1},
+  {id:"dec26",label:"Dec 2026",short:"Dec",quarter:"Q2",semester:1},
+  {id:"jan27",label:"Jan 2027",short:"Jan",quarter:"Q3",semester:2},
+  {id:"feb27",label:"Feb 2027",short:"Feb",quarter:"Q3",semester:2},
+  {id:"mar27",label:"Mar 2027",short:"Mar",quarter:"Q3",semester:2},
+  {id:"apr27",label:"Apr 2027",short:"Apr",quarter:"Q4",semester:2},
+  {id:"may27",label:"May 2027",short:"May",quarter:"Q4",semester:2},
+  {id:"jun27",label:"Jun 2027",short:"Jun",quarter:"post",semester:0}
+];
+
+var QUARTERS = [
+  {id:"Q1",label:"Quarter 1",topic:"Scaffolding in Content Areas",objective:"Coordinators deliver PD on scaffolding strategies for EB students across content areas, including sentence frames, visuals, and tiered supports.",window:"Aug 2026",color:"#2980b9"},
+  {id:"Q2",label:"Quarter 2",topic:"Academic Discourse",objective:"Coordinators deliver PD on structured academic discourse strategies including discussion protocols, accountable talk stems, and language functions.",window:"Oct 2026",color:"#8e44ad"},
+  {id:"Q3",label:"Quarter 3",topic:"Measuring Growth",objective:"Coordinators deliver PD on using formative and summative data (TELPAS, unit assessments, ELP progress) to measure and communicate EB student growth.",window:"Jan 2027",color:"#27ae60"},
+  {id:"Q4",label:"Quarter 4",topic:"Listening to Speak and Write",objective:"Coordinators deliver PD on integrating listening comprehension as a bridge to productive language skills (speaking and writing) for EB students.",window:"Apr 2027",color:"#d35400"}
+];
+
+var ACTION_TYPES = [
+  {id:"pd",label:"PD Delivery",color:"#8e44ad",icon:"PD"},
+  {id:"coaching",label:"Coaching",color:"#2980b9",icon:"CO"},
+  {id:"walkthrough",label:"Walkthroughs",color:"#27ae60",icon:"WT"},
+  {id:"data",label:"Data Review",color:"#e67e22",icon:"DR"},
+  {id:"admin",label:"Admin Support",color:"#c0392b",icon:"AD"},
+  {id:"planning",label:"Planning/PLCs",color:"#16a085",icon:"PL"},
+  {id:"systems",label:"Systems/Tools",color:"#7f8c8d",icon:"SY"},
+  {id:"milestone",label:"Milestone",color:"#2c3e50",icon:"MS"},
+  {id:"parent",label:"Parent Engagement",color:"#d35400",icon:"PE"}
+];
+
+var ACTIONS = [
+  /* Weekly (2) */
+  {id:"a01",text:"Update Support Tracker with coaching, walkthrough, and PLC activity logs",type:"systems",frequency:"weekly",months:["aug26","sep26","oct26","nov26","dec26","jan27","feb27","mar27","apr27","may27"],campusScope:"both",coordScope:"all",notes:"Log all touchpoints weekly in shared tracker."},
+  {id:"a02",text:"Review student data and monitor reports (Ellevation, gradebook, TELPAS progress)",type:"data",frequency:"weekly",months:["aug26","sep26","oct26","nov26","dec26","jan27","feb27","mar27","apr27","may27"],campusScope:"both",coordScope:"all",notes:"Check for EBs at risk, flagged newcomers, and domain progress."},
+
+  /* Monthly (9) */
+  {id:"a03",text:"Conduct 2+ CIS Joint Walkthroughs at Rise campuses",type:"walkthrough",frequency:"monthly",months:["sep26","oct26","nov26","dec26","jan27","feb27","mar27","apr27","may27"],campusScope:"rise",coordScope:"all",notes:"Use MLP Observation & Walkthrough Tool. Debrief with CIS partner."},
+  {id:"a04",text:"Provide 2+ Unit Planning / PLC support sessions at Rise campuses",type:"planning",frequency:"monthly",months:["sep26","oct26","nov26","dec26","jan27","feb27","mar27","apr27","may27"],campusScope:"rise",coordScope:"all",notes:"Support content-area PLCs with ELPS integration and scaffolding."},
+  {id:"a05",text:"Conduct 1+ Admin Walkthrough with campus leadership (Rise and/or Inspire)",type:"walkthrough",frequency:"monthly",months:["sep26","oct26","nov26","dec26","jan27","feb27","mar27","apr27","may27"],campusScope:"both",coordScope:"all",notes:"Walk with principal or AP; provide ESL lens on instruction."},
+  {id:"a06",text:"Monthly Data Review meeting with campus team",type:"data",frequency:"monthly",months:["sep26","oct26","nov26","dec26","jan27","feb27","mar27","apr27","may27"],campusScope:"both",coordScope:"all",notes:"Review EB achievement data, TELPAS domain progress, intervention effectiveness."},
+  {id:"a07",text:"Attend Admin meeting at assigned campuses",type:"admin",frequency:"monthly",months:["aug26","sep26","oct26","nov26","dec26","jan27","feb27","mar27","apr27","may27"],campusScope:"both",coordScope:"all",notes:"Maintain visibility and alignment with campus admin priorities."},
+  {id:"a08",text:"MEC/MDLC/MCC Counterpart Meeting",type:"planning",frequency:"monthly",months:["aug26","sep26","oct26","nov26","dec26","jan27","feb27","mar27","apr27","may27"],campusScope:"district",coordScope:"all",notes:"Cross-functional collaboration with multilingual team counterparts."},
+  {id:"a09",text:"ESL Cohort meeting at CMO",type:"planning",frequency:"monthly",months:["aug26","sep26","oct26","nov26","dec26","jan27","feb27","mar27","apr27","may27"],campusScope:"district",coordScope:"all",notes:"Team calibration, resource sharing, and strategic alignment."},
+  {id:"a10",text:"CIS Collaboration session with campus instructional specialist",type:"coaching",frequency:"monthly",months:["sep26","oct26","nov26","dec26","jan27","feb27","mar27","apr27","may27"],campusScope:"rise",coordScope:"all",notes:"Collaborative planning for coaching and PD delivery."},
+  {id:"a11",text:"Strategy Bank deliverable submission (Semester 2 only)",type:"systems",frequency:"monthly",months:["jan27","feb27","mar27","apr27","may27"],campusScope:"district",coordScope:"all",notes:"Contribute to shared strategy bank for ESL best practices."},
+
+  /* Quarterly (5) */
+  {id:"a12",text:"Q1 PD Delivery: Scaffolding in Content Areas",type:"pd",frequency:"quarterly",months:["aug26"],campusScope:"both",coordScope:"all",notes:"Deliver to Rise and Inspire campuses. Align with campus PD calendar."},
+  {id:"a13",text:"Q2 PD Delivery: Academic Discourse",type:"pd",frequency:"quarterly",months:["oct26"],campusScope:"both",coordScope:"all",notes:"Deliver to Rise and Inspire campuses. Include practice protocols."},
+  {id:"a14",text:"Q3 PD Delivery: Measuring Growth",type:"pd",frequency:"quarterly",months:["jan27"],campusScope:"both",coordScope:"all",notes:"Deliver to Rise and Inspire campuses. Use student data examples."},
+  {id:"a15",text:"Q4 PD Delivery: Listening to Speak and Write",type:"pd",frequency:"quarterly",months:["apr27"],campusScope:"both",coordScope:"all",notes:"Deliver to Rise and Inspire campuses. Model listening-to-output cycle."},
+  {id:"a16",text:"Complete coaching cycle at Rise campuses",type:"coaching",frequency:"quarterly",months:["oct26","dec26","mar27","may27"],campusScope:"rise",coordScope:"all",notes:"Full cycle: pre-conference, observation, debrief, follow-up."},
+  {id:"a17",text:"Coordinated Care Review for EB students",type:"data",frequency:"quarterly",months:["oct26","dec26","mar27"],campusScope:"both",coordScope:"all",notes:"Review individual EB student progress across domains with campus team."},
+  {id:"a18",text:"Ellevation Form support window (verify and update student records)",type:"systems",frequency:"quarterly",months:["sep26","jan27","apr27"],campusScope:"both",coordScope:"all",notes:"Ensure all EB student records are current in Ellevation."},
+  {id:"a19",text:"Campus Cafecitos (parent engagement conversations)",type:"parent",frequency:"quarterly",months:["sep26","nov26","feb27","apr27"],campusScope:"both",coordScope:"all",notes:"Informal campus-based parent engagement sessions."},
+
+  /* Semester / Annual Milestones (18) */
+  {id:"a20",text:"New Teacher Training for ESL-certified and content teachers",type:"milestone",frequency:"milestone",months:["jul26"],campusScope:"district",coordScope:"all",notes:"Summer onboarding for new hires; ESL program expectations and resources."},
+  {id:"a21",text:"ELP 101-103 review sessions with campus teams",type:"pd",frequency:"milestone",months:["aug26"],campusScope:"both",coordScope:"all",notes:"Review English Language Proficiency standards and expectations."},
+  {id:"a22",text:"BOY Touchpoints with campus leadership and ESL teachers",type:"admin",frequency:"milestone",months:["aug26","jan27"],campusScope:"both",coordScope:"all",notes:"Beginning of year/semester alignment conversations."},
+  {id:"a23",text:"CIS Partner touchpoint to establish collaboration norms",type:"coaching",frequency:"milestone",months:["aug26","jan27"],campusScope:"rise",coordScope:"all",notes:"Set expectations for joint walkthroughs and PLC support."},
+  {id:"a24",text:"BOY Data Review (analyze incoming EB student data)",type:"data",frequency:"milestone",months:["sep26"],campusScope:"both",coordScope:"all",notes:"Review TELPAS scores, proficiency levels, newcomer status, scheduling."},
+  {id:"a25",text:"Begin formal coaching cycles at Rise campuses",type:"coaching",frequency:"milestone",months:["sep26"],campusScope:"rise",coordScope:"all",notes:"Identify coaching focus teachers; schedule first observations."},
+  {id:"a26",text:"Parent ESL Academy #1",type:"parent",frequency:"milestone",months:["oct26"],campusScope:"both",coordScope:"all",notes:"First parent academy event of the year; intro to ESL program."},
+  {id:"a27",text:"Communicate Differentiated Support (DS) expectations to teachers",type:"admin",frequency:"milestone",months:["nov26"],campusScope:"both",coordScope:"all",notes:"Clarify DS expectations for EB accommodations and support."},
+  {id:"a28",text:"Self-Reflection: Semester 1 coordinator self-assessment",type:"milestone",frequency:"milestone",months:["jan27"],campusScope:"district",coordScope:"all",notes:"Complete S1 self-reflection using provided rubric/tool."},
+  {id:"a29",text:"Parent ESL Academy #2",type:"parent",frequency:"milestone",months:["feb27"],campusScope:"both",coordScope:"all",notes:"Second parent academy event; mid-year progress and resources."},
+  {id:"a30",text:"TELPAS Recalibration support for raters",type:"systems",frequency:"milestone",months:["feb27"],campusScope:"both",coordScope:"all",notes:"Support campus raters with recalibration process and materials."},
+  {id:"a31",text:"TELPAS Entry and verification support",type:"systems",frequency:"milestone",months:["mar27"],campusScope:"both",coordScope:"all",notes:"Support TELPAS holistic rating entry and data verification."},
+  {id:"a32",text:"ELPS Professional Development session",type:"pd",frequency:"milestone",months:["mar27"],campusScope:"both",coordScope:"all",notes:"Focused PD on ELPS integration aligned to content areas."},
+  {id:"a33",text:"Curriculum support shift to EOY testing preparation (~Mar 23)",type:"planning",frequency:"milestone",months:["mar27"],campusScope:"both",coordScope:"all",notes:"Transition focus from regular curriculum to EOY test prep support."},
+  {id:"a34",text:"EOY Testing begins (support proctoring, accommodations, EB needs)",type:"milestone",frequency:"milestone",months:["apr27","may27"],campusScope:"both",coordScope:"all",notes:"Coordinate ESL accommodations during state testing windows."},
+  {id:"a35",text:"EOY Data Review and growth analysis",type:"data",frequency:"milestone",months:["may27"],campusScope:"both",coordScope:"all",notes:"Analyze year-over-year EB student growth; identify trends."},
+  {id:"a36",text:"SummerRISE preparation support",type:"planning",frequency:"milestone",months:["may27"],campusScope:"both",coordScope:"all",notes:"Support planning for summer programming for EB students."},
+  {id:"a37",text:"Self-Reflection: Semester 2 coordinator self-assessment",type:"milestone",frequency:"milestone",months:["may27"],campusScope:"district",coordScope:"all",notes:"Complete S2 self-reflection and EOY summary."}
+];
+
+var STORAGE_KEY = "esl_scope_data";
+
+/* ==============================
+   STATE
+   ============================== */
+
+var checks = {};
+var actionNotes = {};
+var coordNames = {};
+var coordCampuses = {};
+var quarterTopics = {};
+var currentView = "interactive";
+var currentMonth = "aug26";
+var trackingMode = "individual";
+var saveTimeout = null;
+
+/* ==============================
+   UTILITY
+   ============================== */
+
+function getCol(pct){ return pct>=80?"#27ae60":pct>=55?"#f1c40f":"#e74c3c"; }
+
+function getActionType(typeId){
+  for(var i=0;i<ACTION_TYPES.length;i++){
+    if(ACTION_TYPES[i].id===typeId) return ACTION_TYPES[i];
+  }
+  return {id:"",label:"",color:"#999",icon:"?"};
+}
+
+function getCoordName(cid){
+  if(coordNames[cid]) return coordNames[cid];
+  for(var i=0;i<COORDINATORS.length;i++){
+    if(COORDINATORS[i].id===cid) return COORDINATORS[i].defaultName;
+  }
+  return cid;
+}
+
+function getCoordColor(cid){
+  for(var i=0;i<COORDINATORS.length;i++){
+    if(COORDINATORS[i].id===cid) return COORD_COLORS[i];
+  }
+  return "#999";
+}
+
+function getQuarterTopic(qid){
+  if(quarterTopics[qid] && quarterTopics[qid].topic) return quarterTopics[qid].topic;
+  for(var i=0;i<QUARTERS.length;i++){
+    if(QUARTERS[i].id===qid) return QUARTERS[i].topic;
+  }
+  return "";
+}
+
+function getQuarterObjective(qid){
+  if(quarterTopics[qid] && quarterTopics[qid].objective) return quarterTopics[qid].objective;
+  for(var i=0;i<QUARTERS.length;i++){
+    if(QUARTERS[i].id===qid) return QUARTERS[i].objective;
+  }
+  return "";
+}
+
+function getCurrentMonthId(){
+  var now = new Date();
+  var y = now.getFullYear();
+  var m = now.getMonth();
+  var map = {
+    "2026-6":"jul26","2026-7":"aug26","2026-8":"sep26","2026-9":"oct26",
+    "2026-10":"nov26","2026-11":"dec26","2027-0":"jan27","2027-1":"feb27",
+    "2027-2":"mar27","2027-3":"apr27","2027-4":"may27","2027-5":"jun27"
+  };
+  return map[y+"-"+m] || "aug26";
+}
+
+/* ==============================
+   SCORING / PROGRESS
+   ============================== */
+
+function calcOverallProgress(){
+  var total=0, done=0;
+  for(var a=0;a<ACTIONS.length;a++){
+    var act=ACTIONS[a];
+    for(var m=0;m<act.months.length;m++){
+      if(trackingMode==="individual"){
+        for(var c=0;c<COORDINATORS.length;c++){
+          if(act.coordScope==="all" || act.coordScope===COORDINATORS[c].id){
+            total++;
+            var k=act.id+"-"+COORDINATORS[c].id+"-"+act.months[m];
+            if(checks[k]) done++;
+          }
+        }
+      } else {
+        total++;
+        var tk=act.id+"-team-"+act.months[m];
+        if(checks[tk]) done++;
+      }
+    }
+  }
+  return {done:done,total:total,pct:total>0?Math.round((done/total)*100):0};
+}
+
+function calcCoordProgress(cid){
+  var total=0, done=0;
+  for(var a=0;a<ACTIONS.length;a++){
+    var act=ACTIONS[a];
+    if(act.coordScope!=="all" && act.coordScope!==cid) continue;
+    for(var m=0;m<act.months.length;m++){
+      total++;
+      var k=act.id+"-"+cid+"-"+act.months[m];
+      if(checks[k]) done++;
+    }
+  }
+  return {done:done,total:total,pct:total>0?Math.round((done/total)*100):0};
+}
+
+function calcQuarterProgress(qid){
+  var qMonths=[];
+  for(var i=0;i<MONTHS.length;i++){
+    if(MONTHS[i].quarter===qid) qMonths.push(MONTHS[i].id);
+  }
+  var total=0, done=0;
+  for(var a=0;a<ACTIONS.length;a++){
+    var act=ACTIONS[a];
+    for(var m=0;m<act.months.length;m++){
+      var inQ=false;
+      for(var q=0;q<qMonths.length;q++){
+        if(act.months[m]===qMonths[q]){inQ=true;break;}
+      }
+      if(!inQ) continue;
+      if(trackingMode==="individual"){
+        for(var c=0;c<COORDINATORS.length;c++){
+          if(act.coordScope==="all" || act.coordScope===COORDINATORS[c].id){
+            total++;
+            var k=act.id+"-"+COORDINATORS[c].id+"-"+act.months[m];
+            if(checks[k]) done++;
+          }
+        }
+      } else {
+        total++;
+        var tk=act.id+"-team-"+act.months[m];
+        if(checks[tk]) done++;
+      }
+    }
+  }
+  return {done:done,total:total,pct:total>0?Math.round((done/total)*100):0};
+}
+
+function calcMonthProgress(mid){
+  var total=0, done=0;
+  for(var a=0;a<ACTIONS.length;a++){
+    var act=ACTIONS[a];
+    var inMonth=false;
+    for(var m=0;m<act.months.length;m++){
+      if(act.months[m]===mid){inMonth=true;break;}
+    }
+    if(!inMonth) continue;
+    if(trackingMode==="individual"){
+      for(var c=0;c<COORDINATORS.length;c++){
+        if(act.coordScope==="all" || act.coordScope===COORDINATORS[c].id){
+          total++;
+          var k=act.id+"-"+COORDINATORS[c].id+"-"+mid;
+          if(checks[k]) done++;
+        }
+      }
+    } else {
+      total++;
+      var tk=act.id+"-team-"+mid;
+      if(checks[tk]) done++;
+    }
+  }
+  return {done:done,total:total,pct:total>0?Math.round((done/total)*100):0};
+}
+
+function refreshProgress(){
+  var ov=calcOverallProgress();
+  var el=document.getElementById("dashPct");
+  el.textContent=ov.pct+"%";
+  el.style.color=getCol(ov.pct);
+
+  var barsHtml="";
+  if(trackingMode==="individual"){
+    for(var i=0;i<COORDINATORS.length;i++){
+      var cp=calcCoordProgress(COORDINATORS[i].id);
+      var col=getCoordColor(COORDINATORS[i].id);
+      barsHtml+='<div class="dash-row">';
+      barsHtml+='<span class="dash-row-label">'+getCoordName(COORDINATORS[i].id)+'</span>';
+      barsHtml+='<div class="dash-row-bar"><div class="dash-row-fill" style="width:'+cp.pct+'%;background:'+col+'"></div></div>';
+      barsHtml+='<span class="dash-row-val" style="color:'+col+'">'+cp.pct+'%</span>';
+      barsHtml+='</div>';
+    }
+  } else {
+    barsHtml+='<div class="dash-row">';
+    barsHtml+='<span class="dash-row-label">Team</span>';
+    barsHtml+='<div class="dash-row-bar"><div class="dash-row-fill" style="width:'+ov.pct+'%;background:#2c3e6e"></div></div>';
+    barsHtml+='<span class="dash-row-val" style="color:#2c3e6e">'+ov.pct+'%</span>';
+    barsHtml+='</div>';
+  }
+  document.getElementById("dashBars").innerHTML=barsHtml;
+
+  var qHtml="";
+  for(var q=0;q<QUARTERS.length;q++){
+    var qp=calcQuarterProgress(QUARTERS[q].id);
+    qHtml+='<div class="dash-q" style="background:'+QUARTERS[q].color+'15;border:1.5px solid '+QUARTERS[q].color+'40">';
+    qHtml+='<div class="dash-q-label" style="color:'+QUARTERS[q].color+'">'+QUARTERS[q].id+'</div>';
+    qHtml+='<div class="dash-q-val" style="color:'+QUARTERS[q].color+'">'+qp.pct+'%</div>';
+    qHtml+='</div>';
+  }
+  document.getElementById("dashQuarters").innerHTML=qHtml;
+}
+
+/* ==============================
+   COORDINATOR SETUP
+   ============================== */
+
+function buildCoordSetup(){
+  var head=document.getElementById("coordSetupCard").querySelector("h3");
+  head.style.cursor="pointer";
+  head.onclick=function(){
+    var body=document.getElementById("coordSetupBody");
+    body.style.display=body.style.display==="none"?"block":"none";
+  };
+
+  var html="";
+  for(var i=0;i<COORDINATORS.length;i++){
+    var c=COORDINATORS[i];
+    var col=COORD_COLORS[i];
+    html+='<div class="coord-card">';
+    html+='<span class="coord-icon" style="background:'+col+'">'+c.area.charAt(0)+'</span>';
+    html+='<strong style="font-size:13px">'+c.area+' Coordinator</strong>';
+    html+='<label>Name</label>';
+    html+='<input type="text" id="cname-'+c.id+'" value="'+getCoordName(c.id)+'" onchange="saveCoordName(\''+c.id+'\',this.value)" placeholder="'+c.defaultName+'"/>';
+    html+='<label>Rise Campus</label>';
+    html+='<input type="text" id="crise-'+c.id+'" value="'+(coordCampuses[c.id+"_rise"]||c.riseCampus)+'" onchange="saveCoordCampus(\''+c.id+'\',\'rise\',this.value)" placeholder="'+c.riseCampus+'"/>';
+    html+='<label>Inspire Campus</label>';
+    html+='<input type="text" id="cinsp-'+c.id+'" value="'+(coordCampuses[c.id+"_inspire"]||c.inspireCampus)+'" onchange="saveCoordCampus(\''+c.id+'\',\'inspire\',this.value)" placeholder="'+c.inspireCampus+'"/>';
+    html+='</div>';
+  }
+  document.getElementById("coordGrid").innerHTML=html;
+}
+
+function saveCoordName(cid,val){
+  coordNames[cid]=val;
+  refreshProgress();
+  scheduleSave();
+}
+
+function saveCoordCampus(cid,type,val){
+  coordCampuses[cid+"_"+type]=val;
+  scheduleSave();
+}
+
+/* ==============================
+   QUARTER TOPICS
+   ============================== */
+
+function buildQuarterTopics(){
+  var head=document.getElementById("quarterCard").querySelector("h3");
+  head.style.cursor="pointer";
+  head.onclick=function(){
+    var body=document.getElementById("quarterBody");
+    body.style.display=body.style.display==="none"?"block":"none";
+  };
+
+  var html="";
+  for(var i=0;i<QUARTERS.length;i++){
+    var q=QUARTERS[i];
+    html+='<div class="q-edit">';
+    html+='<div class="q-edit-head"><span class="q-edit-dot" style="background:'+q.color+'"></span><strong>'+q.label+' ('+q.window+')</strong></div>';
+    html+='<label>PD Topic</label>';
+    html+='<input type="text" id="qtopic-'+q.id+'" value="'+getQuarterTopic(q.id).replace(/"/g,'&quot;')+'" onchange="saveQuarterTopic(\''+q.id+'\')"/>';
+    html+='<label>PD Objective</label>';
+    html+='<textarea id="qobj-'+q.id+'" onchange="saveQuarterTopic(\''+q.id+'\')">'+getQuarterObjective(q.id)+'</textarea>';
+    html+='</div>';
+  }
+  document.getElementById("quarterBody").innerHTML=html;
+}
+
+function saveQuarterTopic(qid){
+  if(!quarterTopics[qid]) quarterTopics[qid]={};
+  quarterTopics[qid].topic=document.getElementById("qtopic-"+qid).value;
+  quarterTopics[qid].objective=document.getElementById("qobj-"+qid).value;
+  scheduleSave();
+}
+
+/* ==============================
+   MONTH STRIP
+   ============================== */
+
+function buildMonthStrip(){
+  var realMonth=getCurrentMonthId();
+  var html="";
+  for(var i=0;i<MONTHS.length;i++){
+    var m=MONTHS[i];
+    var cls="month-chip";
+    if(m.id===currentMonth) cls+=" active";
+    if(m.id===realMonth) cls+=" current";
+    html+='<button class="'+cls+'" onclick="selectMonth(\''+m.id+'\')" title="'+m.label+'">'+m.short+'</button>';
+  }
+  document.getElementById("monthStrip").innerHTML=html;
+}
+
+function selectMonth(mid){
+  currentMonth=mid;
+  buildMonthStrip();
+  renderInteractiveActions();
+  scheduleSave();
+}
+
+/* ==============================
+   FILTER BAR POPULATION
+   ============================== */
+
+function buildFilterOptions(){
+  var typeSelect=document.getElementById("filterType");
+  var ssCoordSelect=document.getElementById("ssFilterCoord");
+  var coordSelect=document.getElementById("filterCoord");
+
+  /* Type options */
+  for(var i=0;i<ACTION_TYPES.length;i++){
+    var opt=document.createElement("option");
+    opt.value=ACTION_TYPES[i].id;
+    opt.textContent=ACTION_TYPES[i].label;
+    typeSelect.appendChild(opt);
+  }
+
+  /* Coord options */
+  for(var c=0;c<COORDINATORS.length;c++){
+    var o1=document.createElement("option");
+    o1.value=COORDINATORS[c].id;
+    o1.textContent=getCoordName(COORDINATORS[c].id);
+    coordSelect.appendChild(o1);
+
+    var o2=document.createElement("option");
+    o2.value=COORDINATORS[c].id;
+    o2.textContent=getCoordName(COORDINATORS[c].id);
+    ssCoordSelect.appendChild(o2);
+  }
+}
+
+/* ==============================
+   INTERACTIVE VIEW
+   ============================== */
+
+function filterActions(){
+  var typeF=document.getElementById("filterType").value;
+  var coordF=document.getElementById("filterCoord").value;
+  var freqF=document.getElementById("filterFreq").value;
+  var result=[];
+  for(var i=0;i<ACTIONS.length;i++){
+    var act=ACTIONS[i];
+    /* Month filter */
+    var inMonth=false;
+    for(var m=0;m<act.months.length;m++){
+      if(act.months[m]===currentMonth){inMonth=true;break;}
+    }
+    if(!inMonth) continue;
+    /* Type filter */
+    if(typeF && act.type!==typeF) continue;
+    /* Coord filter */
+    if(coordF && act.coordScope!=="all" && act.coordScope!==coordF) continue;
+    /* Frequency filter */
+    if(freqF){
+      if(freqF==="milestone" && act.frequency!=="milestone") continue;
+      if(freqF!=="milestone" && act.frequency!==freqF) continue;
+    }
+    result.push(act);
+  }
+  return result;
+}
+
+function buildActionCard(act){
+  var at=getActionType(act.type);
+  var html='<div class="action-card" style="border-left:3px solid '+at.color+'">';
+  html+='<div class="action-top">';
+
+  /* Checkboxes */
+  html+='<div class="action-checks">';
+  if(trackingMode==="individual"){
+    for(var c=0;c<COORDINATORS.length;c++){
+      var cid=COORDINATORS[c].id;
+      if(act.coordScope!=="all" && act.coordScope!==cid) continue;
+      var k=act.id+"-"+cid+"-"+currentMonth;
+      var chk=checks[k]?"checked":"";
+      html+='<div class="action-check-row">';
+      html+='<input type="checkbox" '+chk+' onchange="toggleCheck(\''+k+'\',this.checked)"/>';
+      html+='<span class="coord-dot" style="background:'+getCoordColor(cid)+'"></span>';
+      html+='<span>'+getCoordName(cid)+'</span>';
+      html+='</div>';
+    }
+  } else {
+    var tk=act.id+"-team-"+currentMonth;
+    var tchk=checks[tk]?"checked":"";
+    html+='<div class="team-check">';
+    html+='<input type="checkbox" '+tchk+' onchange="toggleCheck(\''+tk+'\',this.checked)"/>';
+    html+='<span>Team</span>';
+    html+='</div>';
+  }
+  html+='</div>';
+
+  /* Body */
+  html+='<div class="action-body">';
+  html+='<span class="action-badge" style="background:'+at.color+'">'+at.icon+' '+at.label+'</span>';
+  if(act.frequency==="weekly") html+=' <span style="font-size:10px;color:#888;font-weight:600">WEEKLY</span>';
+  else if(act.frequency==="monthly") html+=' <span style="font-size:10px;color:#888;font-weight:600">MONTHLY</span>';
+  else if(act.frequency==="quarterly") html+=' <span style="font-size:10px;color:#888;font-weight:600">QUARTERLY</span>';
+  html+='<div class="action-text">'+act.text+'</div>';
+
+  /* Scope */
+  html+='<div class="action-scope">';
+  if(act.campusScope==="rise") html+='<span class="scope-tag" style="background:#dbeafe;color:#2563eb">Rise</span>';
+  else if(act.campusScope==="inspire") html+='<span class="scope-tag" style="background:#fce7f3;color:#be185d">Inspire</span>';
+  else if(act.campusScope==="district") html+='<span class="scope-tag" style="background:#f3f4f6;color:#4b5563">District</span>';
+  else html+='<span class="scope-tag" style="background:#ecfdf5;color:#059669">Rise + Inspire</span>';
+  html+='</div>';
+
+  /* Notes */
+  var noteKey=act.id+"-"+currentMonth;
+  var noteVal=actionNotes[noteKey]||"";
+  var hasCls=noteVal?"has-content":"";
+  html+='<span class="action-note-toggle" onclick="toggleActionNote(\''+act.id+'\')">+ Notes</span>';
+  html+='<div class="action-note-area '+hasCls+'" id="anote-'+act.id+'">';
+  if(act.notes) html+='<div style="font-size:11px;color:#888;margin-bottom:4px;font-style:italic">'+act.notes+'</div>';
+  html+='<textarea placeholder="Add notes..." onchange="saveActionNote(\''+noteKey+'\',this.value)">'+noteVal+'</textarea>';
+  html+='</div>';
+
+  html+='</div>'; /* end body */
+  html+='</div>'; /* end top */
+  html+='</div>'; /* end card */
+  return html;
+}
+
+function renderInteractiveActions(){
+  var filtered=filterActions();
+  var groups={weekly:[],monthly:[],quarterly:[],milestone:[]};
+  for(var i=0;i<filtered.length;i++){
+    var f=filtered[i].frequency;
+    if(groups[f]) groups[f].push(filtered[i]);
+    else groups.milestone.push(filtered[i]);
+  }
+
+  var html="";
+  var order=["weekly","monthly","quarterly","milestone"];
+  var labels={weekly:"Weekly Actions",monthly:"Monthly Actions",quarterly:"Quarterly Actions",milestone:"Milestones &amp; Semester Actions"};
+
+  for(var g=0;g<order.length;g++){
+    var grp=groups[order[g]];
+    if(grp.length===0) continue;
+    html+='<div class="freq-group">';
+    html+='<h4>'+labels[order[g]]+' ('+grp.length+')</h4>';
+    for(var j=0;j<grp.length;j++){
+      html+=buildActionCard(grp[j]);
+    }
+    html+='</div>';
+  }
+
+  if(html===""){
+    html='<div style="text-align:center;padding:40px;color:#aaa;font-size:14px">No actions scheduled for this month with current filters.</div>';
+  }
+
+  document.getElementById("actionContainer").innerHTML=html;
+}
+
+function toggleActionNote(aid){
+  var el=document.getElementById("anote-"+aid);
+  if(el){
+    if(el.classList.contains("open")) el.classList.remove("open");
+    else el.classList.add("open");
+  }
+}
+
+function toggleTrackingMode(){
+  trackingMode=trackingMode==="individual"?"team":"individual";
+  var sw=document.getElementById("modeSwitch");
+  if(trackingMode==="individual") sw.classList.add("on");
+  else sw.classList.remove("on");
+  renderInteractiveActions();
+  refreshProgress();
+  scheduleSave();
+}
+
+/* ==============================
+   SPREADSHEET VIEW
+   ============================== */
+
+function renderSpreadsheet(){
+  var coordF=document.getElementById("ssFilterCoord").value;
+  var table=document.getElementById("ssTable");
+  var html="";
+
+  /* Header */
+  html+="<thead><tr>";
+  html+='<th class="ss-action-col">Action</th>';
+  for(var m=0;m<MONTHS.length;m++){
+    html+='<th>'+MONTHS[m].short+'</th>';
+  }
+  html+="</tr></thead><tbody>";
+
+  /* Group by quarter */
+  var qOrder=["pre","Q1","Q2","Q3","Q4","post"];
+  var qLabels={pre:"Pre-Quarter",Q1:"Quarter 1",Q2:"Quarter 2",Q3:"Quarter 3",Q4:"Quarter 4",post:"Post-Year"};
+
+  for(var qi=0;qi<qOrder.length;qi++){
+    var qid=qOrder[qi];
+    /* Find actions that have months in this quarter */
+    var qMonths=[];
+    for(var mi=0;mi<MONTHS.length;mi++){
+      if(MONTHS[mi].quarter===qid) qMonths.push(MONTHS[mi].id);
+    }
+    if(qMonths.length===0) continue;
+
+    var qActions=[];
+    for(var a=0;a<ACTIONS.length;a++){
+      var act=ACTIONS[a];
+      if(coordF && act.coordScope!=="all" && act.coordScope!==coordF) continue;
+      var hasQMonth=false;
+      for(var am=0;am<act.months.length;am++){
+        for(var qm=0;qm<qMonths.length;qm++){
+          if(act.months[am]===qMonths[qm]){hasQMonth=true;break;}
+        }
+        if(hasQMonth) break;
+      }
+      if(hasQMonth) qActions.push(act);
+    }
+
+    if(qActions.length===0) continue;
+
+    /* Quarter header row */
+    var qTopicStr="";
+    for(var qx=0;qx<QUARTERS.length;qx++){
+      if(QUARTERS[qx].id===qid){
+        qTopicStr=" &mdash; "+getQuarterTopic(qid);
+        break;
+      }
+    }
+    html+='<tr class="ss-q-header"><td class="ss-action-col" colspan="'+(MONTHS.length+1)+'">'+qLabels[qid]+qTopicStr+'</td></tr>';
+
+    /* Action rows */
+    for(var ai=0;ai<qActions.length;ai++){
+      var act=qActions[ai];
+      var at=getActionType(act.type);
+      html+="<tr>";
+      html+='<td class="ss-action-col"><span class="ss-type-badge" style="background:'+at.color+'">'+at.icon+'</span>'+act.text+'</td>';
+
+      for(var mi=0;mi<MONTHS.length;mi++){
+        var mid=MONTHS[mi].id;
+        var active=false;
+        for(var am=0;am<act.months.length;am++){
+          if(act.months[am]===mid){active=true;break;}
+        }
+        if(!active){
+          html+='<td class="ss-na"></td>';
+        } else {
+          if(trackingMode==="individual" && !coordF){
+            /* Show coordinator dots */
+            var cellHtml="";
+            for(var c=0;c<COORDINATORS.length;c++){
+              var cid=COORDINATORS[c].id;
+              if(act.coordScope!=="all" && act.coordScope!==cid) continue;
+              var k=act.id+"-"+cid+"-"+mid;
+              var chk=checks[k]?"checked":"";
+              cellHtml+='<input type="checkbox" '+chk+' onchange="updateSpreadsheetCell(\''+k+'\',this.checked)" title="'+getCoordName(cid)+'" style="accent-color:'+getCoordColor(cid)+'"/> ';
+            }
+            var cellCls=cellHtml.indexOf("checked")>-1?"ss-active ss-checked":"ss-active";
+            html+='<td class="'+cellCls+'">'+cellHtml+'</td>';
+          } else if(trackingMode==="individual" && coordF){
+            var k=act.id+"-"+coordF+"-"+mid;
+            var chk=checks[k]?"checked":"";
+            var cellCls=chk?"ss-active ss-checked":"ss-active";
+            html+='<td class="'+cellCls+'"><input type="checkbox" '+chk+' onchange="updateSpreadsheetCell(\''+k+'\',this.checked)" style="accent-color:'+getCoordColor(coordF)+'"/></td>';
+          } else {
+            var tk=act.id+"-team-"+mid;
+            var tchk=checks[tk]?"checked":"";
+            var cellCls=tchk?"ss-active ss-checked":"ss-active";
+            html+='<td class="'+cellCls+'"><input type="checkbox" '+tchk+' onchange="updateSpreadsheetCell(\''+tk+'\',this.checked)"/></td>';
+          }
+        }
+      }
+      html+="</tr>";
+    }
+  }
+
+  html+="</tbody>";
+  table.innerHTML=html;
+}
+
+function updateSpreadsheetCell(key,val){
+  checks[key]=val;
+  refreshProgress();
+  scheduleSave();
+  renderSpreadsheet();
+}
+
+/* ==============================
+   CHECK & NOTE HANDLERS
+   ============================== */
+
+function toggleCheck(key,val){
+  checks[key]=val;
+  refreshProgress();
+  scheduleSave();
+}
+
+function saveActionNote(key,val){
+  actionNotes[key]=val;
+  scheduleSave();
+}
+
+/* ==============================
+   VIEW TOGGLE
+   ============================== */
+
+function showView(view){
+  currentView=view;
+  document.getElementById("interactiveView").style.display=view==="interactive"?"block":"none";
+  document.getElementById("spreadsheetView").style.display=view==="spreadsheet"?"block":"none";
+  document.getElementById("vbtn-interactive").className=view==="interactive"?"view-btn active":"view-btn";
+  document.getElementById("vbtn-spreadsheet").className=view==="spreadsheet"?"view-btn active":"view-btn";
+  if(view==="spreadsheet") renderSpreadsheet();
+  scheduleSave();
+}
+
+/* ==============================
+   PERSISTENCE
+   ============================== */
+
+function collectState(){
+  return {
+    checks:checks,
+    actionNotes:actionNotes,
+    coordNames:coordNames,
+    coordCampuses:coordCampuses,
+    quarterTopics:quarterTopics,
+    currentView:currentView,
+    currentMonth:currentMonth,
+    trackingMode:trackingMode,
+    savedAt:new Date().toISOString()
+  };
+}
+
+function applyState(state){
+  if(!state) return;
+  checks=state.checks||{};
+  actionNotes=state.actionNotes||{};
+  coordNames=state.coordNames||{};
+  coordCampuses=state.coordCampuses||{};
+  quarterTopics=state.quarterTopics||{};
+  if(state.currentView) currentView=state.currentView;
+  if(state.currentMonth) currentMonth=state.currentMonth;
+  if(state.trackingMode) trackingMode=state.trackingMode;
+}
+
+function saveToStorage(){
+  try{
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(collectState()));
+    var el=document.getElementById("saveStatus");
+    el.textContent="Saved "+new Date().toLocaleTimeString();
+    setTimeout(function(){el.textContent="Auto-save: ready";},3000);
+  }catch(e){}
+}
+
+function loadFromStorage(){
+  try{
+    var raw=localStorage.getItem(STORAGE_KEY);
+    if(raw) applyState(JSON.parse(raw));
+  }catch(e){}
+}
+
+function scheduleSave(){
+  if(saveTimeout) clearTimeout(saveTimeout);
+  saveTimeout=setTimeout(saveToStorage,800);
+}
+
+function exportData(){
+  var data=JSON.stringify(collectState(),null,2);
+  var blob=new Blob([data],{type:"application/json"});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement("a");
+  a.href=url;
+  a.download="esl_scope_sequence_"+new Date().toISOString().slice(0,10)+".json";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function showImportModal(){
+  document.getElementById("importData").value="";
+  document.getElementById("importFile").value="";
+  document.getElementById("importModal").classList.add("active");
+}
+
+function loadImportFile(input){
+  if(!input.files||!input.files[0]) return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    document.getElementById("importData").value=e.target.result;
+  };
+  reader.readAsText(input.files[0]);
+}
+
+function confirmImport(){
+  var raw=document.getElementById("importData").value.trim();
+  if(!raw){alert("No data to import.");return;}
+  try{
+    var state=JSON.parse(raw);
+    applyState(state);
+    closeModal("importModal");
+    rebuildAll();
+    saveToStorage();
+    alert("Import successful!");
+  }catch(e){
+    alert("Invalid JSON data: "+e.message);
+  }
+}
+
+function showResetModal(){
+  document.getElementById("resetModal").classList.add("active");
+}
+
+function confirmReset(){
+  checks={};
+  actionNotes={};
+  coordNames={};
+  coordCampuses={};
+  quarterTopics={};
+  trackingMode="individual";
+  currentMonth="aug26";
+  closeModal("resetModal");
+  rebuildAll();
+  saveToStorage();
+}
+
+function closeModal(id){
+  document.getElementById(id).classList.remove("active");
+}
+
+/* ==============================
+   INIT / REBUILD
+   ============================== */
+
+function rebuildAll(){
+  /* Update tracking mode switch */
+  var sw=document.getElementById("modeSwitch");
+  if(trackingMode==="individual") sw.classList.add("on");
+  else sw.classList.remove("on");
+
+  buildCoordSetup();
+  buildQuarterTopics();
+  buildMonthStrip();
+  renderInteractiveActions();
+  if(currentView==="spreadsheet") renderSpreadsheet();
+  showView(currentView);
+  refreshProgress();
+}
+
+function init(){
+  loadFromStorage();
+  buildFilterOptions();
+  rebuildAll();
+}
+
+init();
+</script>
+</body>
+</html>

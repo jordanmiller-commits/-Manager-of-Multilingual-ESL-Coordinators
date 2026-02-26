@@ -1,0 +1,3178 @@
+<!DOCTYPE html>
+<html lang="en" role="document">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="theme-color" content="#2c3e6e"/>
+<link rel="manifest" href="manifest.json"/>
+<title>ESL Classroom Environment Audit</title>
+<style>
+:root{--bg:#f0f2f7;--card-bg:#fff;--card-border:#e0e0e0;--card-shadow:rgba(0,0,0,.07);--text:#333;--text-secondary:#555;--text-muted:#888;--text-faint:#aaa;--input-bg:#fff;--input-border:#ddd;--input-text:#333;--section-bg-light:#f8f9fb;--bar-track:#eee;--item-border:#f0f0f0;--item-hover:#f0f4ff;--tag-border:#ddd;--tag-text:#999;--modal-bg:#fff;--modal-overlay:rgba(0,0,0,.45);--header-gradient-1:#2c3e6e;--header-gradient-2:#4a90d9;--perm-color:#d4a017;--rot-color:#8e44ad;--pr-color:#27ae60}
+body.dark-mode{--bg:#1a1a2e;--card-bg:#242440;--card-border:#3a3a5c;--card-shadow:rgba(0,0,0,.3);--text:#e0e0e0;--text-secondary:#bbb;--text-muted:#999;--text-faint:#777;--input-bg:#2d2d4a;--input-border:#444;--input-text:#e0e0e0;--section-bg-light:#2a2a45;--bar-track:#3a3a5c;--item-border:#333355;--item-hover:#2a2a50;--tag-border:#444;--tag-text:#aaa;--modal-bg:#242440;--modal-overlay:rgba(0,0,0,.7);--header-gradient-1:#1a1a3e;--header-gradient-2:#3a70a9}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100vh;padding:20px;color:var(--text);transition:background .3s,color .3s}
+.wrap{max-width:860px;margin:0 auto}
+.header{background:linear-gradient(135deg,var(--header-gradient-1),var(--header-gradient-2));border-radius:12px;padding:26px 30px;color:#fff;margin-bottom:22px}
+.header h1{font-size:22px;font-weight:800}
+.header p{font-size:13px;opacity:.85;margin-top:6px}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;align-items:center}
+.tool-btn{padding:7px 14px;border-radius:7px;border:2px solid rgba(255,255,255,.35);background:rgba(255,255,255,.12);color:#fff;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:5px}
+.tool-btn:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.5)}
+.tool-btn.danger{border-color:rgba(231,76,60,.5);background:rgba(231,76,60,.15)}
+.tool-btn.danger:hover{background:rgba(231,76,60,.3)}
+.tool-btn.history-btn{border-color:rgba(46,204,113,.5);background:rgba(46,204,113,.15)}
+.tool-btn.history-btn:hover{background:rgba(46,204,113,.3)}
+.save-indicator{font-size:11px;color:rgba(255,255,255,.65);margin-left:auto}
+.card{background:var(--card-bg);border-radius:10px;padding:20px;margin-bottom:18px;box-shadow:0 1px 5px var(--card-shadow)}
+.meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.meta-grid label{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;display:block;margin-bottom:4px}
+.meta-grid input,.meta-grid select{width:100%;padding:8px 10px;border-radius:6px;border:1px solid var(--input-border);font-size:13px;font-family:inherit;background:var(--input-bg);color:var(--input-text)}
+.score-banner{display:flex;align-items:center;gap:20px}
+.score-num{font-size:42px;font-weight:900;min-width:80px;text-align:center;color:#4a90d9}
+.score-label{font-size:11px;color:var(--text-muted);font-weight:700;text-align:center}
+.bar-wrap{height:18px;background:var(--bar-track);border-radius:10px;overflow:hidden;flex:1}
+.bar-fill{height:100%;border-radius:10px;background:#4a90d9;width:0%;transition:width .4s}
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-secondary)}
+.ldot{width:10px;height:10px;border-radius:3px;display:inline-block}
+.score-meta{font-size:12px;color:var(--text-muted);margin-top:8px}
+.score-split{display:flex;gap:14px;margin-top:10px;flex-wrap:wrap}
+.split-item{flex:1;min-width:140px;background:var(--section-bg-light);border-radius:8px;padding:8px 12px}
+.split-label{font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text-muted);margin-bottom:4px}
+.split-bar{height:6px;background:var(--bar-track);border-radius:4px;overflow:hidden;margin-top:4px}
+.split-fill{height:100%;border-radius:4px;transition:width .4s}
+.split-val{font-size:13px;font-weight:800}
+.timer-display{display:flex;align-items:center;gap:6px;margin-top:10px;font-size:12px;color:var(--text-muted)}
+.timer-display span{font-weight:700;font-size:14px;color:var(--header-gradient-1);font-variant-numeric:tabular-nums}
+.timer-btn{padding:2px 10px;border-radius:5px;border:1px solid var(--input-border);background:var(--input-bg);font-size:11px;cursor:pointer;color:var(--text-secondary)}
+.timer-btn:hover{background:var(--section-bg-light)}
+.completion-warn{background:#fef5ec;border:1px solid #f0c27a;border-radius:8px;padding:10px 14px;font-size:12px;color:#b7791f;margin-top:10px;display:none}
+.kb-hint{font-size:11px;color:var(--text-faint);margin-top:8px;font-style:italic}
+.tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.tab-btn{padding:10px 16px;border-radius:8px;border:none;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;position:relative}
+.tab-badge{font-size:10px;font-weight:700;background:rgba(255,255,255,.3);border-radius:10px;padding:1px 7px;margin-left:6px}
+.tab-info{border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:13px}
+.section-controls{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.sec-ctrl-btn{padding:10px 20px;border-radius:8px;border:2px solid var(--header-gradient-1);background:var(--card-bg);font-size:13px;font-weight:700;cursor:pointer;color:var(--header-gradient-1);transition:all .15s;letter-spacing:.3px}
+.sec-ctrl-btn:hover{background:var(--header-gradient-1);color:#fff;border-color:var(--header-gradient-1)}
+.sec-block{margin-bottom:18px;border-radius:10px;overflow:hidden;border:1.5px solid var(--card-border)}
+.sec-head{padding:12px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;user-select:none}
+.sec-title{font-weight:700;font-size:15px}
+.sec-badge{font-size:11px;color:#fff;border-radius:20px;padding:2px 9px;margin-left:8px}
+.sec-body{padding:16px}
+.sec-quickrate{display:flex;gap:6px;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid #eee;flex-wrap:wrap;align-items:center}
+.sec-quickrate span{font-size:11px;color:var(--text-muted);font-weight:600}
+.qr-btn{padding:3px 10px;font-size:10px;border-radius:14px;border:1.5px solid var(--input-border);background:var(--input-bg);color:var(--text-muted);cursor:pointer;font-weight:600;transition:all .15s}
+.qr-btn:hover{border-color:var(--tag-border);background:var(--section-bg-light)}
+.item-row{margin-bottom:14px;padding:10px;padding-bottom:14px;border-bottom:1px solid var(--item-border);border-radius:6px;cursor:pointer;transition:background .1s,border-color .1s;border-left:3px solid transparent}
+.item-row:last-of-type{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.item-row.focused{background:var(--item-hover);border-left-color:#4a90d9}
+.item-top{display:flex;align-items:flex-start;gap:10px}
+.item-cb{margin-top:3px;width:16px;height:16px;flex-shrink:0}
+.item-text{font-size:13.5px;color:var(--text);line-height:1.55}
+.rating-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px;padding-left:26px}
+.rbtn{padding:4px 11px;font-size:11px;border-radius:20px;border:2px solid var(--input-border);background:var(--input-bg);color:var(--text-muted);cursor:pointer;transition:all .15s;font-weight:500}
+.tag-row{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;padding-left:26px}
+.tag-btn{padding:2px 9px;font-size:10px;border-radius:12px;border:1.5px solid var(--tag-border);background:var(--input-bg);color:var(--tag-text);cursor:pointer;transition:all .12s;font-weight:500}
+.tag-btn.active{border-color:#3498db;background:#ebf5fb;color:#2980b9;font-weight:600}
+.tag-btn:hover{border-color:#aaa}
+.item-comment-toggle{font-size:11px;color:#4a90d9;cursor:pointer;margin-top:5px;padding-left:26px;display:inline-block}
+.item-comment-toggle:hover{text-decoration:underline}
+.item-comment{padding-left:26px;margin-top:5px;display:none}
+.item-comment textarea{width:100%;padding:6px 8px;border-radius:5px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--input-text);font-size:11px;resize:vertical;min-height:36px;font-family:inherit}
+.item-comment.open{display:block}
+.sec-notes{margin-top:14px}
+.sec-notes label{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase}
+.sec-notes textarea{width:100%;margin-top:5px;padding:8px 10px;border-radius:6px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--input-text);font-size:12px;resize:vertical;min-height:60px;font-family:inherit}
+.pr-row{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--item-border)}
+.pr-row:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.pr-cb{margin-top:3px;width:18px;height:18px;flex-shrink:0;accent-color:#27ae60}
+.pr-text{font-size:14px;color:var(--text);line-height:1.6}
+.pr-summary{background:#eafaf1;border-radius:8px;padding:10px 14px;font-size:13px;margin-top:16px}
+.sum-btn{width:100%;padding:14px;background:linear-gradient(135deg,#2c3e6e,#4a90d9);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;margin-top:22px}
+#sumReport{display:none;background:var(--card-bg);border-radius:10px;padding:24px;margin-top:12px;box-shadow:0 1px 5px var(--card-shadow)}
+.sum-meta{font-size:13px;color:var(--text-secondary);margin-bottom:16px}
+.sum-overall{padding:14px 16px;border-radius:8px;display:flex;align-items:center;gap:14px;margin-bottom:20px}
+.sum-big{font-size:34px;font-weight:900}
+.sum-lbl{font-weight:700}
+.sum-sub{font-size:12px;color:#666}
+.sum-split{display:flex;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+.sum-split-card{flex:1;min-width:120px;border-radius:8px;padding:10px 14px;text-align:center}
+.sum-split-val{font-size:22px;font-weight:900}
+.sum-split-lbl{font-size:11px;font-weight:600;margin-top:2px}
+.sub-h{font-size:14px;color:#444;margin-bottom:10px;margin-top:18px}
+.sbar-row{margin-bottom:10px}
+.sbar-lbl{display:flex;justify-content:space-between;font-size:13px;margin-bottom:3px}
+.sbar-track{height:8px;background:var(--bar-track);border-radius:6px;overflow:hidden}
+.sbar-fill{height:100%;border-radius:6px}
+.snote{font-size:11px;color:#888;font-style:italic;margin-top:3px}
+.flag-item{display:flex;gap:10px;margin-bottom:8px;font-size:13px;align-items:flex-start}
+.flag-badge{border-radius:6px;padding:2px 8px;font-weight:700;font-size:11px;flex-shrink:0;white-space:nowrap}
+.strength-item{display:flex;gap:10px;margin-bottom:8px;font-size:13px;align-items:flex-start}
+.compare-row{display:flex;gap:8px;align-items:center;margin-bottom:6px;font-size:13px}
+.compare-arrow{font-weight:700;font-size:14px}
+.next-box{margin-top:18px;padding:14px 16px;background:#f8f9fb;border-radius:8px}
+.next-box h3{font-size:14px;color:#444;margin-bottom:8px}
+.next-box p{font-size:13px;color:#666;line-height:1.7}
+.signoff-box{margin-top:22px;padding:18px;background:#f8f9fb;border-radius:10px;border:2px dashed #ccc}
+.signoff-box h3{font-size:14px;color:#444;margin-bottom:12px}
+.signoff-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.signoff-grid label{font-size:11px;font-weight:700;color:#888;text-transform:uppercase;display:block;margin-bottom:4px}
+.signoff-grid input,.signoff-grid textarea{width:100%;padding:8px 10px;border-radius:6px;border:1px solid #ddd;font-size:13px;font-family:inherit}
+.signoff-notes{grid-column:1/-1}
+.signoff-notes textarea{min-height:60px;resize:vertical}
+.sum-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.print-btn{padding:10px 18px;background:#2c3e6e;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer}
+.copy-btn{padding:10px 18px;background:#27ae60;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer}
+.copy-btn.copied{background:#1e8449}
+.save-history-btn{padding:10px 18px;background:#8e44ad;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer}
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--modal-overlay);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px}
+.modal-overlay.active{display:flex}
+.modal{background:var(--modal-bg);border-radius:12px;padding:24px;max-width:500px;width:100%;box-shadow:0 8px 30px rgba(0,0,0,.3);max-height:85vh;overflow-y:auto}
+.modal.wide{max-width:720px}
+.modal h3{font-size:16px;color:#2c3e6e;margin-bottom:10px}
+.modal p{font-size:13px;color:var(--text-muted);line-height:1.6;margin-bottom:16px}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end}
+.modal-btns button{padding:8px 18px;border-radius:7px;border:none;font-size:13px;font-weight:600;cursor:pointer}
+.btn-cancel{background:var(--section-bg-light);color:var(--text-secondary)}
+.btn-confirm{background:#e74c3c;color:#fff}
+.btn-import{background:#4a90d9;color:#fff}
+.import-area{width:100%;min-height:100px;border:2px dashed var(--input-border);border-radius:8px;padding:10px;font-size:12px;font-family:monospace;resize:vertical;margin-bottom:12px;background:var(--input-bg);color:var(--input-text)}
+.hist-filters{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.hist-filters input,.hist-filters select{padding:6px 10px;border-radius:6px;border:1px solid var(--input-border);font-size:12px;font-family:inherit;background:var(--input-bg);color:var(--input-text)}
+.hist-list{max-height:400px;overflow-y:auto}
+.hist-item{border:1px solid var(--card-border);border-radius:8px;padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.hist-info{flex:1;min-width:200px}
+.hist-teacher{font-weight:700;font-size:14px;color:var(--text)}
+.hist-detail{font-size:12px;color:var(--text-muted);margin-top:2px}
+.hist-score{font-size:20px;font-weight:900;min-width:55px;text-align:center}
+.hist-actions{display:flex;gap:5px;flex-wrap:wrap}
+.hist-actions button{padding:4px 10px;border-radius:5px;border:1px solid var(--input-border);background:var(--input-bg);font-size:11px;cursor:pointer;font-weight:600;color:var(--text-secondary)}
+.hist-actions button:hover{background:var(--section-bg-light)}
+.hist-actions button.compare{color:#8e44ad;border-color:#d2b4de}
+.hist-actions button.load{color:#4a90d9;border-color:#aed6f1}
+.hist-actions button.delete{color:#e74c3c;border-color:#f5b7b1}
+.compare-section{background:#f8f4ff;border:1.5px solid #d2b4de;border-radius:10px;padding:16px;margin-top:18px}
+.compare-section h3{color:#8e44ad;margin-bottom:12px}
+.compare-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.compare-close{padding:4px 10px;border-radius:5px;border:1px solid #d2b4de;background:#fff;font-size:11px;cursor:pointer;color:#8e44ad;font-weight:600}
+.no-history{text-align:center;padding:30px;color:var(--text-faint);font-size:13px}
+.tool-btn.viz-btn{border-color:rgba(142,68,173,.5);background:rgba(142,68,173,.15)}
+.tool-btn.viz-btn:hover{background:rgba(142,68,173,.3)}
+.viz-modal{max-width:900px;width:100%;background:var(--modal-bg);border-radius:12px;padding:0;box-shadow:0 8px 30px rgba(0,0,0,.3);max-height:90vh;display:flex;flex-direction:column;overflow:hidden}
+.viz-header{display:flex;justify-content:space-between;align-items:center;padding:18px 24px;border-bottom:1px solid var(--card-border);background:var(--section-bg-light)}
+.viz-header h3{font-size:17px;color:#2c3e6e;margin:0}
+.viz-close-btn{width:32px;height:32px;border-radius:50%;border:none;background:var(--section-bg-light);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);line-height:1}
+.viz-close-btn:hover{background:var(--bar-track)}
+.viz-controls{display:flex;gap:10px;padding:14px 24px;border-bottom:1px solid var(--card-border);flex-wrap:wrap;align-items:center}
+.viz-controls select{padding:7px 12px;border-radius:6px;border:1px solid var(--input-border);font-size:13px;font-family:inherit;background:var(--input-bg);color:var(--input-text)}
+.viz-controls label{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase}
+.viz-body{flex:1;overflow-y:auto;padding:20px 24px}
+#vizCanvasWrap{position:relative;min-height:260px;max-height:440px}
+#vizHeatmapWrap{display:none;overflow-x:auto}
+.viz-heatmap{border-collapse:collapse;width:100%;font-size:12px}
+.viz-heatmap th{background:var(--section-bg-light);padding:6px 8px;font-weight:700;color:var(--text-secondary);text-align:left;border:1px solid var(--card-border);white-space:nowrap}
+.viz-heatmap td{padding:6px 8px;border:1px solid var(--card-border);text-align:center;font-weight:700;min-width:32px}
+.viz-heatmap .viz-hm-section{font-weight:700;text-align:left;white-space:nowrap;max-width:180px;overflow:hidden;text-overflow:ellipsis}
+#vizInsight{margin-top:16px;padding:12px 16px;background:var(--section-bg-light);border-radius:8px;font-size:13px;color:var(--text-secondary);line-height:1.6;border-left:4px solid #8e44ad}
+.photo-row{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;padding-left:26px;align-items:center}
+.photo-add-btn{padding:2px 9px;font-size:10px;border-radius:12px;border:1.5px solid var(--input-border);background:var(--input-bg);color:var(--text-muted);cursor:pointer;font-weight:500}
+.photo-add-btn:hover{border-color:var(--tag-border)}
+.photo-thumb{width:40px;height:40px;border-radius:4px;object-fit:cover;cursor:pointer;border:1px solid var(--card-border)}
+.photo-thumb:hover{opacity:.8}
+.photo-lightbox{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:2000;cursor:pointer}
+.photo-lightbox img{max-width:90vw;max-height:90vh;border-radius:8px}
+.photo-lightbox .lb-close{position:absolute;top:20px;right:20px;color:#fff;font-size:28px;cursor:pointer;background:rgba(0,0,0,.5);border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;border:none}
+.photo-lightbox .lb-delete{position:absolute;bottom:20px;right:20px;color:#fff;font-size:13px;cursor:pointer;background:rgba(231,76,60,.8);border-radius:6px;padding:6px 14px;border:none;font-weight:600}
+.search-bar{margin-bottom:14px}
+.search-bar input{width:100%;padding:10px 14px;border-radius:8px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--input-text);font-size:13px;font-family:inherit}
+.search-bar input:focus{outline:none;border-color:#4a90d9;box-shadow:0 0 0 2px rgba(74,144,217,.2)}
+.coaching-plan{background:var(--section-bg-light);border:2px solid #4a90d9;border-radius:10px;padding:18px;margin-top:18px}
+.coaching-plan h3{color:#4a90d9;margin-bottom:12px;font-size:15px}
+.cp-priority{margin-bottom:14px;padding:12px;border-radius:8px;border-left:4px solid #e74c3c}
+.cp-priority.medium{border-left-color:#f1c40f}
+.cp-priority h4{font-size:13px;margin-bottom:6px}
+.cp-priority p{font-size:12px;color:var(--text-secondary);line-height:1.6}
+.cp-timeline{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+.cp-timeline-item{padding:10px;border-radius:8px;background:var(--card-bg);border:1px solid var(--card-border);font-size:12px}
+.cp-timeline-item h5{font-size:11px;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px}
+.cp-gen-btn{padding:10px 18px;background:#4a90d9;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer}
+.campus-dash-btn{padding:10px 18px;background:#2c3e6e;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer}
+.fb-bank-btn{padding:2px 8px;font-size:10px;border-radius:10px;border:1.5px solid #f39c12;background:transparent;color:#f39c12;cursor:pointer;margin-left:6px;font-weight:500}
+.fb-bank-btn:hover{background:#fef5ec}
+.fb-bank-list{margin-top:6px;padding:8px;background:var(--section-bg-light);border-radius:6px;border:1px solid var(--card-border);display:none}
+.fb-bank-list.open{display:block}
+.fb-bank-item{padding:4px 8px;font-size:11px;color:var(--text-secondary);cursor:pointer;border-radius:4px;margin-bottom:2px;line-height:1.5}
+.fb-bank-item:hover{background:var(--card-bg);color:var(--text)}
+.custom-item-btn{padding:2px 8px;font-size:10px;border-radius:10px;border:1px dashed var(--input-border);background:transparent;color:var(--text-muted);cursor:pointer;margin-top:8px}
+.custom-item-btn:hover{border-color:#4a90d9;color:#4a90d9}
+.hide-item-btn{font-size:9px;color:var(--text-faint);cursor:pointer;margin-left:6px;opacity:0;transition:opacity .15s}
+.item-row:hover .hide-item-btn{opacity:1}
+.item-row.item-hidden{opacity:.4;text-decoration:line-through}
+.observer-mode-bar{background:var(--section-bg-light);border:1px solid var(--card-border);border-radius:8px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12px}
+.observer-mode-bar .obs-label{font-weight:700;color:var(--text-muted);text-transform:uppercase;font-size:10px}
+.obs-switch-btn{padding:4px 12px;border-radius:6px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--text-secondary);font-size:11px;cursor:pointer;font-weight:600}
+.obs-switch-btn.active{background:#4a90d9;color:#fff;border-color:#4a90d9}
+.obs-compare-btn{padding:4px 12px;border-radius:6px;border:1px solid #8e44ad;background:transparent;color:#8e44ad;font-size:11px;cursor:pointer;font-weight:600}
+.irr-modal{max-width:700px}
+.irr-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:10px}
+.irr-table th,.irr-table td{padding:6px 8px;border:1px solid var(--card-border);text-align:center}
+.irr-table th{background:var(--section-bg-light);font-weight:700;color:var(--text-secondary)}
+.irr-match{background:#eafaf1;color:#27ae60}
+.irr-close{background:#fef5ec;color:#e67e22}
+.irr-diff{background:#fdecea;color:#e74c3c}
+.qr-modal-content{text-align:center;padding:10px}
+.qr-modal-content canvas{border:8px solid #fff;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,.15);margin:14px auto;display:block}
+.qr-summary-text{text-align:left;font-size:11px;color:var(--text-secondary);background:var(--section-bg-light);border-radius:8px;padding:10px 14px;margin-top:14px;max-height:200px;overflow-y:auto;white-space:pre-wrap;font-family:monospace;line-height:1.5}
+.sec-timer{font-size:10px;color:var(--text-faint);margin-left:auto;font-variant-numeric:tabular-nums}
+.settings-modal{background:var(--modal-bg);border-radius:12px;padding:0;max-width:420px;width:100%;box-shadow:0 8px 30px rgba(0,0,0,.3);overflow:hidden}
+.settings-header{background:linear-gradient(135deg,var(--header-gradient-1),var(--header-gradient-2));padding:18px 22px;display:flex;justify-content:space-between;align-items:center;color:#fff}
+.settings-header h3{font-size:16px;font-weight:700;margin:0;color:#fff}
+.settings-close-btn{background:none;border:none;color:#fff;font-size:22px;cursor:pointer;padding:0 4px;opacity:.8}
+.settings-close-btn:hover{opacity:1}
+.settings-body{padding:20px 22px}
+.settings-group{margin-bottom:18px}
+.settings-group-label{font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text-muted);letter-spacing:.5px;margin-bottom:10px}
+.settings-row{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;cursor:pointer;transition:background .12s;border:1px solid var(--card-border);margin-bottom:8px}
+.settings-row:hover{background:var(--section-bg-light)}
+.settings-row-icon{font-size:18px;width:28px;text-align:center;flex-shrink:0}
+.settings-row-text{flex:1}
+.settings-row-title{font-size:13px;font-weight:600;color:var(--text)}
+.settings-row-desc{font-size:11px;color:var(--text-muted);margin-top:2px}
+.item-row.search-hidden{display:none}
+.sec-block.search-hidden{display:none}
+mark{background:#fef08a;color:#333;padding:0 2px;border-radius:2px}
+@media print{
+  body{background:#fff;padding:0}
+  .tabs,.sum-btn,.print-btn,.copy-btn,.save-history-btn,.toolbar,.section-controls,.timer-display,.kb-hint,.compare-section,.sec-quickrate,.tag-row,.item-comment-toggle{display:none!important}
+  .sec-body{display:block!important}
+  #pane-rotating,#pane-principles{display:block!important}
+  #sumReport{display:block!important}
+  .card,.sec-block,#sumReport{box-shadow:none;border:1px solid #ddd}
+  .modal-overlay{display:none!important}
+  .item-row{border-left-color:transparent!important;background:transparent!important}
+  .item-comment.has-content{display:block!important}
+}
+@media(max-width:600px){
+  body{padding:10px}
+  .header{padding:18px 16px}
+  .header h1{font-size:18px}
+  .meta-grid,.signoff-grid{grid-template-columns:1fr}
+  .score-banner{flex-direction:column;align-items:flex-start;gap:12px}
+  .score-num{font-size:34px}
+  .score-split{flex-direction:column;gap:8px}
+  .tabs{gap:4px}
+  .tab-btn{padding:8px 10px;font-size:11px;flex:1;text-align:center}
+  .tab-badge{display:block;margin:3px auto 0;font-size:9px}
+  .toolbar{gap:4px}
+  .tool-btn{padding:6px 10px;font-size:11px}
+  .rbtn{padding:3px 8px;font-size:10px}
+  .card{padding:14px}
+  .sec-body{padding:12px}
+  .sum-overall{flex-direction:column;align-items:flex-start;gap:6px}
+  .sum-big{font-size:28px}
+  .section-controls{flex-wrap:wrap}
+  .sum-split{flex-direction:column}
+  .hist-item{flex-direction:column;align-items:flex-start}
+  .viz-modal{max-width:100%;max-height:100vh;border-radius:0}
+  .viz-header{padding:12px 16px}
+  .viz-controls{padding:10px 16px;gap:6px}
+  .viz-body{padding:14px 16px}
+  #vizCanvasWrap{max-height:300px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="header" role="banner">
+  <h1>ESL Classroom Environment Audit</h1>
+  <p>Interactive Checklist &amp; Mastery Level Tool — Aligned to MLP Observation &amp; Walkthrough Indicators</p>
+  <div class="toolbar" role="toolbar" aria-label="Audit tools">
+    <button class="tool-btn history-btn" onclick="showHistoryModal()" title="View saved audit history">&#128202; History</button>
+    <button class="tool-btn viz-btn" onclick="showVizModal()" title="Interactive data visualizations">&#128200; Visualize</button>
+    <button class="tool-btn" onclick="showCampusDash()" title="Campus-level aggregate data" style="border-color:rgba(44,62,110,.5);background:rgba(44,62,110,.2)">&#127979; Campus</button>
+    <button class="tool-btn" onclick="enableMultiObserver()" id="multiObsBtn" title="Enable multi-observer mode for calibration" style="border-color:rgba(52,152,219,.5);background:rgba(52,152,219,.15)">&#128101; Multi-Observer</button>
+    <button class="tool-btn danger" onclick="showResetModal()" title="Clear all data and start fresh">&#128260; Reset</button>
+    <button class="tool-btn" onclick="showSettingsModal()" title="Settings: export, import, appearance">&#9881; Settings</button>
+    <span class="save-indicator" id="saveStatus">Auto-save: ready</span>
+  </div>
+</div>
+
+<div class="card">
+  <div class="meta-grid">
+    <div><label>Teacher Name</label><input type="text" id="m-teacher" placeholder="Enter teacher name"/></div>
+    <div>
+      <label>Campus</label>
+      <input type="text" id="m-campus" list="campus-list" placeholder="Select or type campus name"/>
+      <datalist id="campus-list"></datalist>
+    </div>
+    <div><label>Observer</label><input type="text" id="m-observer" placeholder="Enter observer name"/></div>
+    <div><label>Date</label><input type="date" id="m-date"/></div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="score-banner">
+    <div>
+      <div class="score-num" id="scorePct" role="status" aria-live="polite" aria-label="Overall score percentage">0%</div>
+      <div class="score-label">OVERALL SCORE</div>
+    </div>
+    <div style="flex:1">
+      <div class="bar-wrap"><div class="bar-fill" id="barFill"></div></div>
+      <div class="legend">
+        <div class="legend-item"><span class="ldot" style="background:#2c3e6e"></span>1 = Not Observed</div>
+        <div class="legend-item"><span class="ldot" style="background:#4a90d9"></span>2 = Infrequently Implemented</div>
+        <div class="legend-item"><span class="ldot" style="background:#f1c40f"></span>3 = Inconsistently Implemented</div>
+        <div class="legend-item"><span class="ldot" style="background:#27ae60"></span>4 = Routinely Implemented</div>
+      </div>
+      <div class="score-meta" id="scoreMeta">0 of 0 items rated · 0 of 0 points</div>
+      <div class="score-split">
+        <div class="split-item">
+          <div class="split-label" style="color:#d4a017">Permanent</div>
+          <div class="split-val" id="splitPermVal" style="color:#d4a017">0%</div>
+          <div class="split-bar"><div class="split-fill" id="splitPermBar" style="background:#d4a017;width:0%"></div></div>
+        </div>
+        <div class="split-item">
+          <div class="split-label" style="color:#8e44ad">Rotating</div>
+          <div class="split-val" id="splitRotVal" style="color:#8e44ad">0%</div>
+          <div class="split-bar"><div class="split-fill" id="splitRotBar" style="background:#8e44ad;width:0%"></div></div>
+        </div>
+        <div class="split-item">
+          <div class="split-label" style="color:#27ae60">Principles</div>
+          <div class="split-val" id="splitPrVal" style="color:#27ae60">0/6</div>
+          <div class="split-bar"><div class="split-fill" id="splitPrBar" style="background:#27ae60;width:0%"></div></div>
+        </div>
+      </div>
+      <div class="timer-display" id="timerArea">
+        <span id="timerIcon">&#9201;</span> Duration: <span id="timerDisplay">00:00</span>
+        <button class="timer-btn" id="timerToggle" onclick="toggleTimer()">Pause</button>
+      </div>
+      <div class="completion-warn" id="completionWarn"></div>
+      <div class="kb-hint">Tip: Click any item to focus it, then press 1-4 to rate mastery level. Arrow keys to navigate.</div>
+    </div>
+  </div>
+</div>
+
+<div class="observer-mode-bar" id="observerModeBar" style="display:none">
+  <span class="obs-label">Observer Mode:</span>
+  <button class="obs-switch-btn active" id="obs1Btn" onclick="switchObserver(1)">Observer 1</button>
+  <button class="obs-switch-btn" id="obs2Btn" onclick="switchObserver(2)">Observer 2</button>
+  <input type="text" id="obs2Name" placeholder="Observer 2 name" style="padding:4px 8px;border-radius:6px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--input-text);font-size:11px;width:140px"/>
+  <button class="obs-compare-btn" onclick="showIRRModal()">Compare Reliability</button>
+  <button class="obs-switch-btn" onclick="disableMultiObserver()" style="margin-left:auto;font-size:10px;color:var(--text-faint)">Exit Multi-Observer</button>
+</div>
+
+<div class="search-bar">
+  <input type="text" id="itemSearch" placeholder="Search items across all sections..." oninput="filterItems()" aria-label="Search audit items"/>
+</div>
+
+<div class="tabs" role="tablist" aria-label="Audit sections">
+  <button class="tab-btn" id="tbtn-permanent" onclick="showTab('permanent')" style="background:#d4a017;color:#fff" role="tab" aria-selected="true" aria-controls="pane-permanent">Permanent Materials<span class="tab-badge" id="tbadge-permanent">0/0</span></button>
+  <button class="tab-btn" id="tbtn-rotating" onclick="showTab('rotating')" style="background:#e8ecf0;color:#555" role="tab" aria-selected="false" aria-controls="pane-rotating">Rotating Materials<span class="tab-badge" id="tbadge-rotating">0/0</span></button>
+  <button class="tab-btn" id="tbtn-principles" onclick="showTab('principles')" style="background:#e8ecf0;color:#555" role="tab" aria-selected="false" aria-controls="pane-principles">Environment Principles<span class="tab-badge" id="tbadge-principles">0/0</span></button>
+</div>
+
+<div id="pane-permanent" role="tabpanel" aria-labelledby="tbtn-permanent"></div>
+<div id="pane-rotating" role="tabpanel" aria-labelledby="tbtn-rotating" style="display:none"></div>
+<div id="pane-principles" role="tabpanel" aria-labelledby="tbtn-principles" style="display:none">
+  <div class="tab-info" style="background:#eafaf1;color:#1e8449">
+    <strong>Environment Principles</strong> — These non-negotiable principles govern how the space functions beyond what is on the walls. Observable indicators should be present even when opportunities exist.
+  </div>
+  <div class="card" id="prContainer"></div>
+</div>
+
+<button class="sum-btn" onclick="toggleSummary()">View Summary Report</button>
+<div id="sumReport"></div>
+
+</div>
+
+<!-- Reset Modal -->
+<div class="modal-overlay" id="resetModal" role="dialog" aria-modal="true" aria-labelledby="resetModalTitle">
+  <div class="modal">
+    <h3 id="resetModalTitle">Reset Audit</h3>
+    <p>This will clear all ratings, notes, and meta fields. This action cannot be undone.</p>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal('resetModal')">Cancel</button>
+      <button class="btn-confirm" onclick="confirmReset()">Reset Everything</button>
+    </div>
+  </div>
+</div>
+
+<!-- Import Modal -->
+<div class="modal-overlay" id="importModal" role="dialog" aria-modal="true" aria-labelledby="importModalTitle">
+  <div class="modal">
+    <h3 id="importModalTitle">Import Audit</h3>
+    <p>Paste exported JSON below, or use the file picker to load a saved audit.</p>
+    <input type="file" id="importFile" accept=".json" style="margin-bottom:10px;font-size:12px" onchange="loadImportFile(this)"/>
+    <textarea class="import-area" id="importData" placeholder="Paste JSON data here..."></textarea>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal('importModal')">Cancel</button>
+      <button class="btn-import" onclick="confirmImport()">Import</button>
+    </div>
+  </div>
+</div>
+
+<!-- History Modal -->
+<div class="modal-overlay" id="historyModal" role="dialog" aria-modal="true" aria-labelledby="historyModalTitle">
+  <div class="modal wide">
+    <h3 id="historyModalTitle">Audit History</h3>
+    <p>Previously saved audits are stored in your browser. Use Compare to view growth over time.</p>
+    <div class="hist-filters">
+      <input type="text" id="histFilterTeacher" placeholder="Filter by teacher..." oninput="renderHistory()"/>
+      <select id="histFilterCampus" onchange="renderHistory()"><option value="">All campuses</option></select>
+    </div>
+    <div class="hist-list" id="histList"></div>
+    <div class="modal-btns" style="margin-top:14px">
+      <button class="btn-cancel" onclick="closeModal('historyModal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Visualization Modal -->
+<div class="modal-overlay" id="vizModal">
+  <div class="viz-modal">
+    <div class="viz-header">
+      <h3>Data Visualizations</h3>
+      <button class="viz-close-btn" onclick="closeModal('vizModal')">&times;</button>
+    </div>
+    <div class="viz-controls">
+      <div>
+        <label>Chart</label><br/>
+        <select id="vizChartSelect" onchange="switchVizChart()">
+          <option value="radar">Section Radar</option>
+          <option value="mastery">Mastery Distribution</option>
+          <option value="sectionBars">Section Comparison</option>
+          <option value="growth">Growth Over Time</option>
+          <option value="permVsRot">Permanent vs. Rotating</option>
+          <option value="tagUsage">Evidence Tag Usage</option>
+          <option value="heatmap">Item-Level Heatmap</option>
+        </select>
+      </div>
+      <div id="vizFilterType">
+        <label>Section Type</label><br/>
+        <select id="vizTypeFilter" onchange="switchVizChart()">
+          <option value="all">All Sections</option>
+          <option value="permanent">Permanent Only</option>
+          <option value="rotating">Rotating Only</option>
+        </select>
+      </div>
+      <div id="vizFilterTeacher" style="display:none">
+        <label>Teacher</label><br/>
+        <select id="vizTeacherFilter" onchange="switchVizChart()">
+          <option value="">All Teachers</option>
+        </select>
+      </div>
+    </div>
+    <div class="viz-body">
+      <div id="vizCanvasWrap"><canvas id="vizCanvas"></canvas></div>
+      <div id="vizHeatmapWrap"></div>
+      <div id="vizInsight"></div>
+    </div>
+  </div>
+</div>
+
+<!-- QR Code Modal -->
+<div class="modal-overlay" id="qrModal" role="dialog" aria-modal="true" aria-labelledby="qrModalTitle">
+  <div class="modal">
+    <h3 id="qrModalTitle">Share Audit Summary</h3>
+    <p>Scan this QR code to view the audit summary on another device. The text below is encoded in the QR code.</p>
+    <div class="qr-modal-content" id="qrContent"></div>
+    <div class="modal-btns" style="margin-top:14px">
+      <button class="btn-cancel" onclick="closeModal('qrModal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- IRR Comparison Modal -->
+<div class="modal-overlay" id="irrModal" role="dialog" aria-modal="true" aria-labelledby="irrModalTitle">
+  <div class="modal irr-modal">
+    <h3 id="irrModalTitle">Inter-Rater Reliability Comparison</h3>
+    <p>Comparing ratings between Observer 1 and Observer 2 to check scoring consistency.</p>
+    <div id="irrContent"></div>
+    <div class="modal-btns" style="margin-top:14px">
+      <button class="btn-cancel" onclick="closeModal('irrModal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal-overlay" id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="settingsModalTitle">
+  <div class="settings-modal">
+    <div class="settings-header">
+      <h3 id="settingsModalTitle">Settings</h3>
+      <button class="settings-close-btn" onclick="closeModal('settingsModal')">&times;</button>
+    </div>
+    <div class="settings-body">
+      <div class="settings-group">
+        <div class="settings-group-label">Data</div>
+        <div class="settings-row" onclick="exportAudit();closeModal('settingsModal')">
+          <div class="settings-row-icon">&#128190;</div>
+          <div class="settings-row-text">
+            <div class="settings-row-title">Export JSON</div>
+            <div class="settings-row-desc">Download audit as a JSON file</div>
+          </div>
+        </div>
+        <div class="settings-row" onclick="exportCSV();closeModal('settingsModal')">
+          <div class="settings-row-icon">&#128196;</div>
+          <div class="settings-row-text">
+            <div class="settings-row-title">Export CSV</div>
+            <div class="settings-row-desc">Download audit as a spreadsheet</div>
+          </div>
+        </div>
+        <div class="settings-row" onclick="closeModal('settingsModal');showImportModal()">
+          <div class="settings-row-icon">&#128194;</div>
+          <div class="settings-row-text">
+            <div class="settings-row-title">Import Audit</div>
+            <div class="settings-row-desc">Load a previously saved JSON audit</div>
+          </div>
+        </div>
+      </div>
+      <div class="settings-group">
+        <div class="settings-group-label">Appearance</div>
+        <div class="settings-row" id="settingsDarkRow" onclick="toggleDarkMode()">
+          <div class="settings-row-icon" id="settingsDarkIcon">&#127769;</div>
+          <div class="settings-row-text">
+            <div class="settings-row-title" id="settingsDarkTitle">Dark Mode</div>
+            <div class="settings-row-desc" id="settingsDarkDesc">Switch to dark theme</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Campus Dashboard Modal -->
+<div class="modal-overlay" id="campusDashModal">
+  <div class="viz-modal">
+    <div class="viz-header">
+      <h3>Campus-Level Dashboard</h3>
+      <button class="viz-close-btn" onclick="closeModal('campusDashModal')">&times;</button>
+    </div>
+    <div class="viz-controls">
+      <div>
+        <label>Campus</label><br/>
+        <select id="campusDashSelect" onchange="renderCampusDash()">
+          <option value="">All Campuses</option>
+        </select>
+      </div>
+    </div>
+    <div class="viz-body" id="campusDashBody">
+      <p style="text-align:center;color:var(--text-faint);padding:40px">Select a campus or view all campuses. Data is pulled from saved audit history.</p>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+<script>
+/* ==============================
+   CONSTANTS & DATA
+   ============================== */
+
+var R = {
+  0:{label:"Not Observed",level:1,color:"#2c3e6e",bg:"#e8ecf4"},
+  1:{label:"Infrequently Implemented",level:2,color:"#4a90d9",bg:"#eaf3fb"},
+  2:{label:"Inconsistently Implemented",level:3,color:"#f1c40f",bg:"#fefde7"},
+  3:{label:"Routinely Implemented",level:4,color:"#27ae60",bg:"#eafaf1"}
+};
+
+var SECTIONS = [
+  {id:"s01",type:"permanent",color:"#d4a017",bg:"#fef9e7",title:"Language Production Supports",items:["Sentence Frames and Stems Wall — organized by language function, tiered by proficiency level, color-coded","Discourse Stems Anchor Chart — categories: Starting, Responding, Pushing Back, Building, Wrapping Up","Language Function Cards — individual/table sets for scholar use during discussions and writing","Question Stems by Depth of Knowledge (DOK 1-4) — teacher and scholars reference regularly","Transitional Words and Phrases Chart — organized by function (sequence, contrast, cause/effect, conclusion)"]},
+  {id:"s02",type:"permanent",color:"#d4a017",bg:"#fef9e7",title:"Vocabulary Systems",items:["Permanent Word Wall — alphabetical or part-of-speech organized, includes visuals and home language translations","Personal Vocabulary Journals — consistent format: word, definition, visual, sentence, home language","Cognate Wall or Cognate Corner — organized by content area, home language assets highlighted","Parts of Speech Reference Poster — visual definitions and examples of all major parts of speech","Root Words, Prefixes and Suffixes Chart — high-frequency morphemes explicitly taught and referenced"]},
+  {id:"s03",type:"permanent",color:"#d4a017",bg:"#fef9e7",title:"Writing Supports",items:["Writing Process Anchor Chart — stages visible with EB-specific stems for each phase","Laminated Paragraph and Essay Frames — reusable, tiered by proficiency level","Writer's Checklist — laminated, scholar-facing, includes language and content criteria","Editing Symbols Chart — standard symbols posted or available on laminated reference cards","Mentor Text Binder or Display — includes samples at varying proficiency levels showing growth"]},
+  {id:"s04",type:"permanent",color:"#d4a017",bg:"#fef9e7",title:"Classroom Data and Goal Tracking",items:["Scholar Language Goal Tracker — scholar-friendly TELPAS domain labels, updated and referenced regularly","Class Participation Tracker — visible, non-punitive, promotes scholar self-monitoring","I Can Statements Display — year-long language goals posted and referenced by scholars, not unit-specific"]},
+  {id:"s05",type:"permanent",color:"#d4a017",bg:"#fef9e7",title:"Culture and Identity",items:["Home Language Wall and Heritage Map — world map with scholar connections, home language name cards","Multilingual Welcome Display — Welcome in every home language represented in class","Bilingual Classroom Library — home language and English texts, organized by genre and level","Ask Me About My Language Cards — curiosity prompts near library or word wall"]},
+  {id:"s06",type:"permanent",color:"#d4a017",bg:"#fef9e7",title:"Classroom Structures and Routines",items:["Daily Agenda Display — content objective, language objective, and activities posted consistently","Discussion Norms Anchor Chart — co-created, includes behavioral and language norms","Group Roles Cards (Laminated) — Facilitator, Recorder, Reporter, Timekeeper, Language Monitor with stems","Signal System Display — comprehension signals and help signals posted and taught","Academic Behavior Anchor Chart — what listening, partner talk, and independent work look and sound like"]},
+  {id:"s07",type:"permanent",color:"#d4a017",bg:"#fef9e7",title:"Technology and Reference Tools",items:["QR Code Station — links to Google Translate, bilingual dictionaries, vocabulary lists, support tools","Bilingual Dictionary Station — physical dictionaries matching scholar home languages","Headphone Station — dedicated, accessible location for audio support and language tools"]},
+  {id:"s08",type:"rotating",color:"#8e44ad",bg:"#f5eefb",title:"Unit-Specific Vocabulary",items:["Unit Word Wall Section — current Tier 2 and Tier 3 vocabulary, updated at unit start, archived when done","Frayer Model Displays — teacher or scholar-completed models for 5-8 priority words posted during unit","Visual Vocabulary Cards — illustrated cards with word, visual, definition, sentence example","Word Association Web — collaborative chart showing how unit vocabulary connects conceptually","Cognate Spotlight — current unit vocabulary connected to home language cognates"]},
+  {id:"s09",type:"rotating",color:"#8e44ad",bg:"#f5eefb",title:"Content Comprehension Supports",items:["Unit-Specific Graphic Organizers — current text structure organizer posted and accessible","Anchor Text Display — current mentor or anchor text posted for scholar reference during tasks","Text Features Anchor Chart — identifies features present in current unit texts (charts, headings, maps)","Background Knowledge Activation Display — KWL chart, anticipation guide, or brainstorm built and updated live","Content-Specific Visual Support — unit-relevant images, diagrams, timelines, maps at eye level","Vocabulary in Context Display — unit vocabulary shown in authentic sentences from texts"]},
+  {id:"s10",type:"rotating",color:"#8e44ad",bg:"#f5eefb",title:"Unit-Specific Writing Supports",items:["Current Unit Paragraph or Essay Frame — aligned to current writing task type and genre","Unit Writing Mentor Text — annotated model of current writing type, changed per unit","Current Unit Sentence Stems — content-specific stems posted alongside permanent stems","RAFT Display — current Role, Audience, Format, Topic posted and visible during task","Writing Exemplars for Current Genre — 2-3 samples at varying proficiency levels","Current Revision Focus Chart — 1-2 targeted language revision skills named for this unit"]},
+  {id:"s11",type:"rotating",color:"#8e44ad",bg:"#f5eefb",title:"Discussion and Interaction Supports",items:["Unit Essential Questions Display — driving questions posted and referenced throughout the unit","Current Discussion Protocol Reminder — visual steps and roles for active protocol such as Socratic Seminar","Debate or Discussion Stance Cards — current topic positions with sentence stems for each stance","Current Collaborative Task Directions — step-by-step directions posted for active group task"]},
+  {id:"s12",type:"rotating",color:"#8e44ad",bg:"#f5eefb",title:"Assessment and Progress Monitoring",items:["Unit Learning Targets Tracker — scholar self-assessment tracker for current unit goals","Current Writing Rubric Display — success criteria for current writing task posted throughout process","Data Wall and Progress Snapshot — class-level progress toward current unit targets, updated regularly","Exit Ticket Display — current exit ticket prompt posted and changed daily or every few days"]},
+  {id:"s13",type:"rotating",color:"#8e44ad",bg:"#f5eefb",title:"Culture and Content Connections",items:["Unit Cultural Connection Display — current unit connected to scholars' home cultures and countries","Current Read-Aloud or Independent Reading Text Display — current title and chapter posted and updated","Scholar Work Display (Unit-Specific) — current unit work at multiple proficiency levels, archived when unit ends"]}
+];
+
+var PRINCIPLES = [
+  "Materials are actively used by scholars — not just displayed for observers",
+  "All displays are readable from scholar seats and reachable without asking permission",
+  "At least half of displayed materials are scholar-generated",
+  "Rotating materials are updated before a unit begins, not weeks into it",
+  "Home language is honored visibly in both permanent and rotating displays",
+  "Outdated unit materials are removed when the unit ends"
+];
+
+var EVIDENCE_TAGS = ["Photo Taken","Scholar-Generated","Needs Replacement","Bilingual","Recently Updated","Teacher-Created"];
+
+var STORAGE_KEY = "esl_audit_data";
+var HISTORY_KEY = "esl_audit_history";
+var CAMPUS_KEY = "esl_audit_campuses";
+var CUSTOM_KEY = "esl_audit_custom";
+
+/* ==============================
+   STATE
+   ============================== */
+
+var ratings = {};
+var notes = {};
+var prChecks = {};
+var itemComments = {};
+var itemTags = {};
+var itemPhotos = {};
+var hiddenItems = {};
+var customItems = {}; // keyed by section id -> array of custom item strings
+var sumVisible = false;
+var saveTimeout = null;
+var focusedKey = null;
+var allItemKeys = [];
+var timerStart = null;
+var timerElapsed = 0;
+var timerRunning = false;
+var timerInterval = null;
+var compareAudit = null;
+var undoStack = [];
+var redoStack = [];
+var UNDO_MAX = 30;
+var sectionTimers = {};   // keyed by section id -> elapsed seconds
+var currentSection = null;
+var sectionTimerStart = null;
+
+/* ==============================
+   SCORING
+   ============================== */
+
+function getCol(pct){ return pct>=80?"#27ae60":pct>=55?"#f1c40f":"#4a90d9"; }
+
+function totalScore(){
+  var score=0,rated=0,total=0;
+  for(var i=0;i<SECTIONS.length;i++)
+    for(var j=0;j<SECTIONS[i].items.length;j++){
+      total++;
+      var k=SECTIONS[i].id+"-"+j;
+      if(ratings[k]!==undefined){rated++;score+=ratings[k];}
+    }
+  return {score:score,max:total*3,rated:rated,total:total};
+}
+
+function secScore(s){
+  var score=0,rated=0;
+  for(var j=0;j<s.items.length;j++){
+    var k=s.id+"-"+j;
+    if(ratings[k]!==undefined){rated++;score+=ratings[k];}
+  }
+  return {score:score,max:s.items.length*3,rated:rated,total:s.items.length};
+}
+
+function typeScore(type){
+  var score=0,rated=0,total=0;
+  for(var i=0;i<SECTIONS.length;i++){
+    if(SECTIONS[i].type!==type)continue;
+    for(var j=0;j<SECTIONS[i].items.length;j++){
+      total++;
+      var k=SECTIONS[i].id+"-"+j;
+      if(ratings[k]!==undefined){rated++;score+=ratings[k];}
+    }
+  }
+  return {score:score,max:total*3,rated:rated,total:total};
+}
+
+function prCount(){
+  var c=0;for(var k in prChecks)if(prChecks[k])c++;return c;
+}
+
+/* ==============================
+   BANNER & TAB REFRESH
+   ============================== */
+
+function refreshBanner(){
+  var t=totalScore();
+  var pct=t.max>0?Math.round((t.score/t.max)*100):0;
+  var col=getCol(pct);
+  document.getElementById("scorePct").textContent=pct+"%";
+  document.getElementById("scorePct").style.color=col;
+  document.getElementById("barFill").style.width=pct+"%";
+  document.getElementById("barFill").style.background=col;
+  document.getElementById("scoreMeta").textContent=t.rated+" of "+t.total+" items rated  ·  "+t.score+" of "+t.max+" points";
+
+  var warn=document.getElementById("completionWarn");
+  if(t.rated>0&&t.rated<t.total){
+    warn.style.display="block";
+    warn.textContent=(t.total-t.rated)+" item"+(t.total-t.rated===1?"":"s")+" still unrated. Complete all ratings for a full audit report.";
+  } else warn.style.display="none";
+
+  for(var i=0;i<SECTIONS.length;i++){
+    var sc=secScore(SECTIONS[i]);
+    var el=document.getElementById("badge-"+SECTIONS[i].id);
+    if(el)el.textContent=sc.rated+"/"+sc.total+" rated  ·  "+sc.score+"/"+sc.max+" pts";
+  }
+
+  // Score split
+  var perm=typeScore("permanent"),rot=typeScore("rotating"),pc=prCount();
+  var permPct=perm.max>0?Math.round((perm.score/perm.max)*100):0;
+  var rotPct=rot.max>0?Math.round((rot.score/rot.max)*100):0;
+  var prPct=Math.round((pc/PRINCIPLES.length)*100);
+  document.getElementById("splitPermVal").textContent=permPct+"%";
+  document.getElementById("splitPermBar").style.width=permPct+"%";
+  document.getElementById("splitRotVal").textContent=rotPct+"%";
+  document.getElementById("splitRotBar").style.width=rotPct+"%";
+  document.getElementById("splitPrVal").textContent=pc+"/"+PRINCIPLES.length;
+  document.getElementById("splitPrBar").style.width=prPct+"%";
+
+  // Tab badges
+  document.getElementById("tbadge-permanent").textContent=perm.rated+"/"+perm.total;
+  document.getElementById("tbadge-rotating").textContent=rot.rated+"/"+rot.total;
+  document.getElementById("tbadge-principles").textContent=pc+"/"+PRINCIPLES.length;
+}
+
+/* ==============================
+   RATING
+   ============================== */
+
+function rateItem(key,val,skipUndo){
+  if(!skipUndo){
+    undoStack.push({type:"rate",key:key,prev:ratings[key],next:val});
+    if(undoStack.length>UNDO_MAX)undoStack.shift();
+    redoStack=[];
+  }
+  ratings[key]=val;
+  var row=document.getElementById("rrow-"+key);
+  if(row){
+    var btns=row.getElementsByClassName("rbtn");
+    for(var i=0;i<btns.length;i++){
+      var v=parseInt(btns[i].getAttribute("data-v")),r=R[v];
+      btns[i].setAttribute("aria-pressed",v===val?"true":"false");
+      if(v===val){btns[i].style.border="2px solid "+r.color;btns[i].style.background=r.bg;btns[i].style.color=r.color;btns[i].style.fontWeight="700";}
+      else{btns[i].style.border="2px solid #ddd";btns[i].style.background="#fff";btns[i].style.color="#888";btns[i].style.fontWeight="500";}
+    }
+  }
+  var cb=document.getElementById("cb-"+key);
+  if(cb)cb.checked=true;
+  if(!timerRunning&&!timerStart)startTimer();
+  refreshBanner();
+  scheduleSave();
+}
+
+function quickRateSection(sid,val){
+  var s=null;
+  for(var i=0;i<SECTIONS.length;i++)if(SECTIONS[i].id===sid){s=SECTIONS[i];break;}
+  if(!s)return;
+  for(var j=0;j<s.items.length;j++){
+    var k=sid+"-"+j;
+    if(ratings[k]===undefined)rateItem(k,val);
+  }
+}
+
+/* ==============================
+   FOCUS & KEYBOARD
+   ============================== */
+
+function setFocus(key){
+  // Remove previous focus
+  if(focusedKey){
+    var prev=document.getElementById("item-"+focusedKey);
+    if(prev)prev.classList.remove("focused");
+  }
+  focusedKey=key;
+  var el=document.getElementById("item-"+key);
+  if(el){
+    el.classList.add("focused");
+    el.scrollIntoView({block:"nearest",behavior:"smooth"});
+  }
+}
+
+function moveToNextItem(){
+  if(!focusedKey){if(allItemKeys.length)setFocus(allItemKeys[0]);return;}
+  var idx=allItemKeys.indexOf(focusedKey);
+  if(idx<allItemKeys.length-1)setFocus(allItemKeys[idx+1]);
+}
+
+function moveToPrevItem(){
+  if(!focusedKey){if(allItemKeys.length)setFocus(allItemKeys[0]);return;}
+  var idx=allItemKeys.indexOf(focusedKey);
+  if(idx>0)setFocus(allItemKeys[idx-1]);
+}
+
+document.addEventListener("keydown",function(e){
+  var tag=e.target.tagName;
+  if(tag==="INPUT"||tag==="TEXTAREA"||tag==="SELECT")return;
+  if(!focusedKey)return;
+  if(e.key>="1"&&e.key<="4"){
+    e.preventDefault();
+    rateItem(focusedKey,parseInt(e.key)-1);
+    moveToNextItem();
+  }
+  if(e.key==="ArrowDown"){e.preventDefault();moveToNextItem();}
+  if(e.key==="ArrowUp"){e.preventDefault();moveToPrevItem();}
+});
+
+/* ==============================
+   SECTIONS
+   ============================== */
+
+function toggleSec(bid,cid){
+  var b=document.getElementById(bid),c=document.getElementById(cid);
+  if(b.style.display==="none"){b.style.display="block";c.textContent="▲";}
+  else{b.style.display="none";c.textContent="▼";}
+}
+
+function expandAll(type){
+  for(var i=0;i<SECTIONS.length;i++){
+    if(SECTIONS[i].type!==type)continue;
+    var b=document.getElementById("body-"+SECTIONS[i].id),c=document.getElementById("chev-"+SECTIONS[i].id);
+    if(b)b.style.display="block";if(c)c.textContent="▲";
+  }
+}
+
+function collapseAll(type){
+  for(var i=0;i<SECTIONS.length;i++){
+    if(SECTIONS[i].type!==type)continue;
+    var b=document.getElementById("body-"+SECTIONS[i].id),c=document.getElementById("chev-"+SECTIONS[i].id);
+    if(b)b.style.display="none";if(c)c.textContent="▼";
+  }
+}
+
+function saveNote(sid,val){notes[sid]=val;scheduleSave();}
+
+function saveItemComment(key,val){
+  itemComments[key]=val;
+  var wrap=document.getElementById("icomment-"+key);
+  if(wrap){
+    if(val)wrap.classList.add("has-content");
+    else wrap.classList.remove("has-content");
+  }
+  scheduleSave();
+}
+
+function toggleItemComment(key){
+  var wrap=document.getElementById("icomment-"+key);
+  if(wrap)wrap.classList.toggle("open");
+}
+
+function toggleTag(key,tag){
+  if(!itemTags[key])itemTags[key]=[];
+  var idx=itemTags[key].indexOf(tag);
+  if(idx===-1)itemTags[key].push(tag);
+  else itemTags[key].splice(idx,1);
+  // Update UI
+  var btn=document.getElementById("tag-"+key+"-"+tag.replace(/\s/g,"_"));
+  if(btn){
+    if(itemTags[key].indexOf(tag)!==-1)btn.classList.add("active");
+    else btn.classList.remove("active");
+  }
+  scheduleSave();
+}
+
+function buildSections(type){
+  var pane=document.getElementById("pane-"+type);
+  var info=document.createElement("div");
+  info.className="tab-info";
+  if(type==="permanent"){
+    info.style.background="#eaf3fb";info.style.color="#2c6fad";
+    info.innerHTML="<strong>Permanent Materials</strong> — These should always be present, maintained, and actively referenced throughout the entire school year.";
+  } else {
+    info.style.background="#f5eefb";info.style.color="#6c3483";
+    info.innerHTML="<strong>Rotating Materials</strong> — These change with each unit. Updated before a unit begins and removed or archived when the unit ends.";
+  }
+  pane.appendChild(info);
+
+  var controls=document.createElement("div");
+  controls.className="section-controls";
+  var eb=document.createElement("button");eb.className="sec-ctrl-btn";eb.textContent="Expand All";
+  (function(t){eb.onclick=function(){expandAll(t);};})(type);
+  var cb=document.createElement("button");cb.className="sec-ctrl-btn";cb.textContent="Collapse All";
+  (function(t){cb.onclick=function(){collapseAll(t);};})(type);
+  controls.appendChild(eb);controls.appendChild(cb);
+  pane.appendChild(controls);
+
+  for(var si=0;si<SECTIONS.length;si++){
+    var s=SECTIONS[si];
+    if(s.type!==type)continue;
+
+    var block=document.createElement("div");block.className="sec-block";
+
+    var head=document.createElement("div");head.className="sec-head";head.style.background=s.bg;
+    head.setAttribute("role","button");head.setAttribute("aria-expanded","true");head.setAttribute("aria-controls","body-"+s.id);head.setAttribute("tabindex","0");
+    (function(bid,cid,h){head.onclick=function(){toggleSec(bid,cid);h.setAttribute("aria-expanded",document.getElementById(bid).style.display!=="none"?"true":"false");};})("body-"+s.id,"chev-"+s.id,head);
+
+    var headLeft=document.createElement("div");
+    headLeft.style.cssText="display:flex;align-items:center;flex-wrap:wrap;gap:6px";
+    var titleSpan=document.createElement("span");titleSpan.className="sec-title";titleSpan.style.color=s.color;titleSpan.textContent=s.title;
+    var badge=document.createElement("span");badge.className="sec-badge";badge.id="badge-"+s.id;badge.style.background=s.color;
+    badge.textContent="0/"+s.items.length+" rated  ·  0/"+(s.items.length*3)+" pts";
+    headLeft.appendChild(titleSpan);headLeft.appendChild(badge);
+
+    var chev=document.createElement("span");chev.id="chev-"+s.id;chev.textContent="▲";
+    chev.style.cssText="font-size:16px;color:"+s.color;
+    head.appendChild(headLeft);head.appendChild(chev);
+    block.appendChild(head);
+
+    var body=document.createElement("div");body.className="sec-body";body.id="body-"+s.id;
+
+    // Quick-rate bar
+    var qr=document.createElement("div");qr.className="sec-quickrate";
+    var qrLabel=document.createElement("span");qrLabel.textContent="Quick-rate unrated:";
+    qr.appendChild(qrLabel);
+    for(var qv=0;qv<4;qv++){
+      var qb=document.createElement("button");qb.className="qr-btn";
+      qb.textContent="All → "+R[qv].level+" ("+R[qv].label+")";
+      qb.style.borderColor=R[qv].color;qb.style.color=R[qv].color;
+      (function(sid,val){qb.onclick=function(e){e.stopPropagation();quickRateSection(sid,val);};})(s.id,qv);
+      qr.appendChild(qb);
+    }
+    body.appendChild(qr);
+
+    for(var ii=0;ii<s.items.length;ii++){
+      var key=s.id+"-"+ii;
+      allItemKeys.push(key);
+
+      var itemDiv=document.createElement("div");itemDiv.className="item-row";itemDiv.id="item-"+key;
+      (function(k){
+        itemDiv.addEventListener("click",function(e){
+          var t=e.target.tagName;
+          if(t==="BUTTON"||t==="INPUT"||t==="TEXTAREA")return;
+          setFocus(k);
+        });
+      })(key);
+
+      var topDiv=document.createElement("div");topDiv.className="item-top";
+      var icb=document.createElement("input");icb.type="checkbox";icb.className="item-cb";icb.id="cb-"+key;icb.readOnly=true;
+      icb.onclick=function(){return false;};
+      var txt=document.createElement("span");txt.className="item-text";txt.textContent=s.items[ii];
+      var hideBtn=document.createElement("span");hideBtn.className="hide-item-btn";hideBtn.textContent="[hide]";hideBtn.title="Toggle hide this item";
+      (function(k7){hideBtn.onclick=function(e){e.stopPropagation();toggleHideItem(k7);};})(key);
+      topDiv.appendChild(icb);topDiv.appendChild(txt);topDiv.appendChild(hideBtn);
+
+      var rrow=document.createElement("div");rrow.className="rating-row";rrow.id="rrow-"+key;
+      rrow.setAttribute("role","group");rrow.setAttribute("aria-label","Mastery level for item "+(ii+1));
+      for(var v=0;v<4;v++){
+        var btn=document.createElement("button");btn.className="rbtn";btn.setAttribute("data-v",v);
+        btn.setAttribute("role","radio");btn.setAttribute("aria-pressed","false");btn.setAttribute("aria-label","Level "+R[v].level+": "+R[v].label);
+        btn.textContent=R[v].level+" — "+R[v].label;
+        (function(k2,val){btn.onclick=function(){rateItem(k2,val);};})(key,v);
+        rrow.appendChild(btn);
+      }
+
+      // Evidence tags
+      var tagRow=document.createElement("div");tagRow.className="tag-row";
+      for(var ti=0;ti<EVIDENCE_TAGS.length;ti++){
+        var tb=document.createElement("button");tb.className="tag-btn";
+        tb.id="tag-"+key+"-"+EVIDENCE_TAGS[ti].replace(/\s/g,"_");
+        tb.textContent=EVIDENCE_TAGS[ti];
+        (function(k3,tag){tb.onclick=function(){toggleTag(k3,tag);};})(key,EVIDENCE_TAGS[ti]);
+        tagRow.appendChild(tb);
+      }
+
+      // Item comment toggle + feedback bank
+      var cmtToggle=document.createElement("span");cmtToggle.className="item-comment-toggle";
+      cmtToggle.textContent="+ Add note";
+      (function(k4){cmtToggle.onclick=function(){toggleItemComment(k4);};})(key);
+
+      var fbBtn=document.createElement("button");fbBtn.className="fb-bank-btn";
+      fbBtn.textContent="Feedback Bank";
+      (function(k8){fbBtn.onclick=function(e){e.stopPropagation();toggleFeedbackBank(k8);};})(key);
+
+      var fbList=document.createElement("div");fbList.className="fb-bank-list";fbList.id="fbbank-"+key;
+      var categories=["low","developing","strong"];
+      var catLabels={"low":"Not Observed / Infrequent","developing":"Developing","strong":"Routinely Implemented"};
+      for(var ci=0;ci<categories.length;ci++){
+        var catDiv=document.createElement("div");
+        catDiv.style.cssText="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-top:6px;margin-bottom:2px";
+        catDiv.textContent=catLabels[categories[ci]];
+        fbList.appendChild(catDiv);
+        var items=FEEDBACK_BANK[categories[ci]];
+        for(var fi=0;fi<items.length;fi++){
+          var fbItem=document.createElement("div");fbItem.className="fb-bank-item";fbItem.textContent=items[fi];
+          (function(k9,txt){fbItem.onclick=function(){insertFeedback(k9,txt);};})(key,items[fi]);
+          fbList.appendChild(fbItem);
+        }
+      }
+
+      // Item comment area
+      var cmtDiv=document.createElement("div");cmtDiv.className="item-comment";cmtDiv.id="icomment-"+key;
+      var cmtTA=document.createElement("textarea");cmtTA.placeholder="Observable behaviors and evidence for this indicator...";
+      cmtTA.id="icta-"+key;
+      (function(k5){cmtTA.oninput=function(){saveItemComment(k5,this.value);};})(key);
+      cmtDiv.appendChild(cmtTA);
+
+      // Photo evidence row
+      var photoRow=document.createElement("div");photoRow.className="photo-row";photoRow.id="photos-"+key;
+      var photoBtn=document.createElement("button");photoBtn.className="photo-add-btn";
+      photoBtn.textContent="📷 Photo";
+      (function(k6){photoBtn.onclick=function(e){e.stopPropagation();addPhoto(k6);};})(key);
+      photoRow.appendChild(photoBtn);
+
+      itemDiv.appendChild(topDiv);
+      itemDiv.appendChild(rrow);
+      itemDiv.appendChild(tagRow);
+      itemDiv.appendChild(photoRow);
+      itemDiv.appendChild(cmtToggle);
+      itemDiv.appendChild(fbBtn);
+      itemDiv.appendChild(fbList);
+      itemDiv.appendChild(cmtDiv);
+      body.appendChild(itemDiv);
+    }
+
+    var notesDiv=document.createElement("div");notesDiv.className="sec-notes";
+    var notesLbl=document.createElement("label");notesLbl.textContent="Section Notes";
+    var notesTA=document.createElement("textarea");notesTA.placeholder="Add observer notes for this indicator section...";notesTA.id="notes-"+s.id;
+    (function(sid){notesTA.oninput=function(){saveNote(sid,this.value);};})(s.id);
+    notesDiv.appendChild(notesLbl);notesDiv.appendChild(notesTA);
+    body.appendChild(notesDiv);
+
+    // Add custom item button
+    var addBtn=document.createElement("button");addBtn.className="custom-item-btn";
+    addBtn.textContent="+ Add custom item";
+    (function(sid2){addBtn.onclick=function(){addCustomItem(sid2);};})(s.id);
+    body.appendChild(addBtn);
+
+    block.appendChild(body);pane.appendChild(block);
+  }
+}
+
+function buildPrinciples(){
+  var c=document.getElementById("prContainer");
+  for(var i=0;i<PRINCIPLES.length;i++){
+    var row=document.createElement("div");row.className="pr-row";
+    var cb=document.createElement("input");cb.type="checkbox";cb.className="pr-cb";cb.id="pr-cb-"+i;
+    (function(idx){cb.onchange=function(){prChecks[idx]=this.checked;refreshPrSummary();refreshBanner();scheduleSave();};})(i);
+    var txt=document.createElement("span");txt.className="pr-text";txt.textContent=PRINCIPLES[i];
+    row.appendChild(cb);row.appendChild(txt);c.appendChild(row);
+  }
+  var sum=document.createElement("div");sum.className="pr-summary";sum.id="prSum";
+  sum.innerHTML="<strong style='color:#1e8449'>0 of "+PRINCIPLES.length+"</strong> <span style='color:#555'>environment principles observed</span>";
+  c.appendChild(sum);
+}
+
+function refreshPrSummary(){
+  var c=prCount();
+  document.getElementById("prSum").innerHTML="<strong style='color:#1e8449'>"+c+" of "+PRINCIPLES.length+"</strong> <span style='color:#555'>environment principles observed</span>";
+}
+
+function showTab(tab){
+  // Track section time
+  trackSectionTime(tab);
+
+  var tabs=["permanent","rotating","principles"];
+  var colors={permanent:"#d4a017",rotating:"#8e44ad",principles:"#27ae60"};
+  for(var i=0;i<tabs.length;i++){
+    var t=tabs[i];
+    document.getElementById("pane-"+t).style.display=(t===tab)?"block":"none";
+    var btn=document.getElementById("tbtn-"+t);
+    btn.style.background=(t===tab)?colors[t]:"#e8ecf0";
+    btn.style.color=(t===tab)?"#fff":"#555";
+    btn.setAttribute("aria-selected",t===tab?"true":"false");
+  }
+}
+
+function trackSectionTime(newTab) {
+  var now = Date.now();
+  // Stop timing previous tab
+  if (currentSection && sectionTimerStart) {
+    var elapsed = Math.floor((now - sectionTimerStart) / 1000);
+    if (!sectionTimers[currentSection]) sectionTimers[currentSection] = 0;
+    sectionTimers[currentSection] += elapsed;
+  }
+  currentSection = newTab;
+  sectionTimerStart = now;
+}
+
+function getSectionTimeStr(seconds) {
+  if (!seconds) return "0:00";
+  var m = Math.floor(seconds / 60), s = seconds % 60;
+  return m + ":" + (s < 10 ? "0" : "") + s;
+}
+
+/* ==============================
+   TIMER
+   ============================== */
+
+function startTimer(){
+  timerStart=Date.now()-(timerElapsed*1000);
+  timerRunning=true;
+  timerInterval=setInterval(updateTimerDisplay,1000);
+  document.getElementById("timerToggle").textContent="Pause";
+}
+
+function toggleTimer(){
+  if(timerRunning){
+    clearInterval(timerInterval);
+    timerRunning=false;
+    document.getElementById("timerToggle").textContent="Resume";
+  } else {
+    startTimer();
+  }
+}
+
+function updateTimerDisplay(){
+  if(!timerRunning)return;
+  timerElapsed=Math.floor((Date.now()-timerStart)/1000);
+  var m=Math.floor(timerElapsed/60),s=timerElapsed%60;
+  document.getElementById("timerDisplay").textContent=
+    (m<10?"0":"")+m+":"+(s<10?"0":"")+s;
+}
+
+/* ==============================
+   SUMMARY
+   ============================== */
+
+function toggleSummary(){
+  sumVisible=!sumVisible;
+  var el=document.getElementById("sumReport"),btn=document.querySelector(".sum-btn");
+  if(sumVisible){buildSummary();el.style.display="block";btn.textContent="Hide Summary Report";}
+  else{el.style.display="none";btn.textContent="View Summary Report";}
+}
+
+function buildSummary(){
+  // Flush current section timer
+  if (currentSection && sectionTimerStart) {
+    var now = Date.now();
+    var elapsed = Math.floor((now - sectionTimerStart) / 1000);
+    if (!sectionTimers[currentSection]) sectionTimers[currentSection] = 0;
+    sectionTimers[currentSection] += elapsed;
+    sectionTimerStart = now;
+  }
+
+  var el=document.getElementById("sumReport");
+  var tn=document.getElementById("m-teacher").value||"—";
+  var cp=document.getElementById("m-campus").value||"—";
+  var ob=document.getElementById("m-observer").value||"—";
+  var dt=document.getElementById("m-date").value||"—";
+  var t=totalScore();
+  var pct=t.max>0?Math.round((t.score/t.max)*100):0;
+  var col=getCol(pct);
+  var oBg=pct>=80?"#eafaf1":pct>=55?"#fefde7":"#fdecea";
+  var lbl=pct>=80?"Strong Language-Forward Environment":pct>=55?"Developing Language-Forward Environment":"Beginning Language-Forward Environment";
+  var pc=prCount();
+
+  // Duration
+  var durMin=Math.floor(timerElapsed/60),durSec=timerElapsed%60;
+  var durStr=durMin+"m "+durSec+"s";
+
+  // Score splits
+  var perm=typeScore("permanent"),rot=typeScore("rotating");
+  var permPct=perm.max>0?Math.round((perm.score/perm.max)*100):0;
+  var rotPct=rot.max>0?Math.round((rot.score/rot.max)*100):0;
+
+  var nextTxt=pct>=80
+    ?"This classroom demonstrates a strong language-forward environment. Focus coaching on deepening scholar interaction with materials. Consider a scholar voice audit next."
+    :pct>=55
+    ?"Solid foundations are in place. Prioritize items at Mastery Level 1-2 in the summary above, particularly in Vocabulary Systems and Writing Supports, which have the most direct impact on TELPAS growth."
+    :"Begin with the highest-impact permanent materials: the Sentence Frames Wall, Word Wall, Language Objectives display, and Writing Process Anchor Chart. Schedule a follow-up audit in 6-8 weeks.";
+
+  // Flags
+  var flagHTML="";
+  for(var si=0;si<SECTIONS.length;si++){
+    var s=SECTIONS[si];
+    for(var ji=0;ji<s.items.length;ji++){
+      var key=s.id+"-"+ji;
+      if(ratings[key]!==undefined&&ratings[key]<=1){
+        var r=R[ratings[key]],short=s.items[ji].split("—")[0].trim();
+        var commentNote=itemComments[key]?" <em style='color:#888'>("+itemComments[key]+")</em>":"";
+        var tagNote=itemTags[key]&&itemTags[key].length?" <span style='color:#3498db;font-size:11px'>["+itemTags[key].join(", ")+"]</span>":"";
+        flagHTML+="<div class='flag-item'><span class='flag-badge' style='background:"+r.bg+";color:"+r.color+"'>"+r.label+"</span><span style='color:#444'><strong style='color:#777'>"+s.title+":</strong> "+short+commentNote+tagNote+"</span></div>";
+      }
+    }
+  }
+  if(!flagHTML)flagHTML="<p style='font-size:13px;color:#888'>No items rated at Mastery Level 1 or 2.</p>";
+
+  // Strengths
+  var strengthHTML="";
+  for(var si=0;si<SECTIONS.length;si++){
+    var s=SECTIONS[si];
+    for(var ji=0;ji<s.items.length;ji++){
+      var key=s.id+"-"+ji;
+      if(ratings[key]!==undefined&&ratings[key]===3){
+        var short=s.items[ji].split("—")[0].trim();
+        var tagNote=itemTags[key]&&itemTags[key].length?" <span style='color:#3498db;font-size:11px'>["+itemTags[key].join(", ")+"]</span>":"";
+        strengthHTML+="<div class='strength-item'><span class='flag-badge' style='background:#eafaf1;color:#27ae60'>Routinely Implemented</span><span style='color:#444'><strong style='color:#777'>"+s.title+":</strong> "+short+tagNote+"</span></div>";
+      }
+    }
+  }
+  if(!strengthHTML)strengthHTML="<p style='font-size:13px;color:#888'>No items rated Routinely Implemented yet.</p>";
+
+  // Section bars
+  var barsHTML="";
+  for(var si=0;si<SECTIONS.length;si++){
+    var s=SECTIONS[si],sc=secScore(s),sp=sc.max>0?Math.round((sc.score/sc.max)*100):0,sc2=getCol(sp);
+    var noteHTML=notes[s.id]?"<div class='snote'>Note: "+notes[s.id]+"</div>":"";
+    barsHTML+="<div class='sbar-row'><div class='sbar-lbl'><span style='color:"+s.color+";font-weight:600'>"+s.title+"</span><span style='color:"+sc2+";font-weight:700'>"+sp+"% ("+sc.score+"/"+sc.max+")</span></div><div class='sbar-track'><div class='sbar-fill' style='width:"+sp+"%;background:"+sc2+"'></div></div>"+noteHTML+"</div>";
+  }
+
+  // Completion
+  var completionHTML="";
+  if(t.rated<t.total)
+    completionHTML="<div style='background:#fef5ec;border:1px solid #f0c27a;border-radius:8px;padding:10px 14px;font-size:12px;color:#b7791f;margin-bottom:16px'><strong>Incomplete Audit:</strong> "+(t.total-t.rated)+" of "+t.total+" items have not been rated.</div>";
+
+  // Principles detail
+  var prDetailHTML="";
+  for(var pi=0;pi<PRINCIPLES.length;pi++){
+    var checked=prChecks[pi]?true:false;
+    var icon=checked?"<span style='color:#27ae60;font-weight:700'>Yes</span>":"<span style='color:#e74c3c;font-weight:700'>No</span>";
+    prDetailHTML+="<div style='display:flex;gap:8px;margin-bottom:6px;font-size:13px;align-items:flex-start'>"+icon+" <span style='color:#444'>"+PRINCIPLES[pi]+"</span></div>";
+  }
+
+  // Score split cards
+  var splitHTML=
+    "<div class='sum-split'>"+
+    "<div class='sum-split-card' style='background:#fef9e7'><div class='sum-split-val' style='color:#d4a017'>"+permPct+"%</div><div class='sum-split-lbl' style='color:#d4a017'>Permanent</div></div>"+
+    "<div class='sum-split-card' style='background:#f5eefb'><div class='sum-split-val' style='color:#8e44ad'>"+rotPct+"%</div><div class='sum-split-lbl' style='color:#8e44ad'>Rotating</div></div>"+
+    "<div class='sum-split-card' style='background:#eafaf1'><div class='sum-split-val' style='color:#27ae60'>"+pc+"/"+PRINCIPLES.length+"</div><div class='sum-split-lbl' style='color:#27ae60'>Principles</div></div>"+
+    "</div>";
+
+  // Comparison
+  var compareHTML="";
+  if(compareAudit){
+    compareHTML=buildComparisonHTML(compareAudit);
+  }
+
+  // Sign-off
+  var esc=function(v){return(v||"").replace(/'/g,"&#39;");};
+  var signoffHTML=
+    "<div class='signoff-box'><h3>Post-Conference Acknowledgment</h3><div class='signoff-grid'>"+
+    "<div><label>Observer Signature / Name</label><input type='text' id='sig-observer' placeholder='Observer name' value='"+esc(ob)+"'/></div>"+
+    "<div><label>Teacher Signature / Name</label><input type='text' id='sig-teacher' placeholder='Teacher name' value='"+esc(tn)+"'/></div>"+
+    "<div><label>Conference Date</label><input type='date' id='sig-date'/></div>"+
+    "<div><label>Follow-Up Date</label><input type='date' id='sig-followup'/></div>"+
+    "<div class='signoff-notes'><label>Conference Notes / Action Items</label><textarea placeholder='Document discussion points, agreed-upon next steps, and timeline...'></textarea></div>"+
+    "</div></div>";
+
+  el.innerHTML=
+    "<h2 style='font-size:17px;color:#2c3e6e;margin-bottom:14px'>Audit Summary Report</h2>"+
+    completionHTML+
+    "<div class='sum-meta'><strong>Teacher:</strong> "+tn+" &nbsp;|&nbsp; <strong>Campus:</strong> "+cp+" &nbsp;|&nbsp; <strong>Observer:</strong> "+ob+" &nbsp;|&nbsp; <strong>Date:</strong> "+dt+" &nbsp;|&nbsp; <strong>Duration:</strong> "+durStr+"</div>"+
+    "<div class='sum-overall' style='background:"+oBg+"'><div class='sum-big' style='color:"+col+"'>"+pct+"%</div><div><div class='sum-lbl' style='color:"+col+"'>"+lbl+"</div><div class='sum-sub'>"+t.score+" of "+t.max+" points  ·  "+t.rated+" of "+t.total+" items rated</div></div></div>"+
+    splitHTML+
+    "<h3 class='sub-h'>Section Breakdown</h3>"+barsHTML+
+    "<div style='display:flex;gap:12px;margin:10px 0;flex-wrap:wrap'>"+
+    "<div style='font-size:11px;color:var(--text-muted)'><strong>Time on Permanent:</strong> "+getSectionTimeStr(sectionTimers["permanent"]||0)+"</div>"+
+    "<div style='font-size:11px;color:var(--text-muted)'><strong>Time on Rotating:</strong> "+getSectionTimeStr(sectionTimers["rotating"]||0)+"</div>"+
+    "<div style='font-size:11px;color:var(--text-muted)'><strong>Time on Principles:</strong> "+getSectionTimeStr(sectionTimers["principles"]||0)+"</div>"+
+    "</div>"+
+    ((sectionTimers["permanent"]||0)<60&&(timerElapsed>120)?"<div style='font-size:11px;color:#e67e22;margin-bottom:10px'>Note: Less than 1 minute was spent on Permanent Materials. Consider spending more time reviewing this category.</div>":"")+
+    ((sectionTimers["rotating"]||0)<60&&(timerElapsed>120)?"<div style='font-size:11px;color:#e67e22;margin-bottom:10px'>Note: Less than 1 minute was spent on Rotating Materials. Consider spending more time reviewing this category.</div>":"")+
+    "<h3 class='sub-h' style='color:#27ae60'>Strengths (Mastery Level 4 — Routinely Implemented)</h3>"+strengthHTML+
+    "<h3 class='sub-h' style='color:#e74c3c'>Items Needing Attention (Mastery Level 1-2)</h3>"+flagHTML+
+    "<h3 class='sub-h'>Environment Principles</h3>"+prDetailHTML+
+    "<p style='font-size:13px;color:#555;margin-top:8px'><strong>"+pc+" of "+PRINCIPLES.length+"</strong> environment principles observed.</p>"+
+    "<div class='next-box'><h3>Recommended Next Steps</h3><p>"+nextTxt+"</p></div>"+
+    compareHTML+
+    signoffHTML+
+    "<div class='sum-actions'>"+
+    "<button class='print-btn' onclick='window.print()'>Print / Save as PDF</button>"+
+    "<button class='copy-btn' id='copyBtn' onclick='copySummary()'>Copy Summary to Clipboard</button>"+
+    "<button class='save-history-btn' onclick='saveToHistory()'>Save to Audit History</button>"+
+    "<button class='cp-gen-btn' onclick='generateCoachingPlan()'>Generate Coaching Plan</button>"+
+    "<button class='campus-dash-btn' onclick='generateQRCode()' style='background:#34495e'>QR Share</button>"+
+    "</div>"+
+    "<div id='coachingPlanArea'></div>";
+}
+
+/* ==============================
+   COPY TO CLIPBOARD
+   ============================== */
+
+function copySummary(){
+  var tn=document.getElementById("m-teacher").value||"—";
+  var cp=document.getElementById("m-campus").value||"—";
+  var ob=document.getElementById("m-observer").value||"—";
+  var dt=document.getElementById("m-date").value||"—";
+  var t=totalScore();
+  var pct=t.max>0?Math.round((t.score/t.max)*100):0;
+  var lbl=pct>=80?"Strong":pct>=55?"Developing":"Beginning";
+  var perm=typeScore("permanent"),rot=typeScore("rotating"),pc=prCount();
+  var permPct=perm.max>0?Math.round((perm.score/perm.max)*100):0;
+  var rotPct=rot.max>0?Math.round((rot.score/rot.max)*100):0;
+  var durMin=Math.floor(timerElapsed/60);
+
+  var lines=[];
+  lines.push("ESL CLASSROOM ENVIRONMENT AUDIT SUMMARY");
+  lines.push("========================================");
+  lines.push("Teacher: "+tn);
+  lines.push("Campus: "+cp);
+  lines.push("Observer: "+ob);
+  lines.push("Date: "+dt);
+  lines.push("Duration: "+durMin+" minutes");
+  lines.push("");
+  lines.push("OVERALL SCORE: "+pct+"% ("+lbl+" Language-Forward Environment)");
+  lines.push(t.score+" of "+t.max+" points | "+t.rated+" of "+t.total+" items rated");
+  lines.push("Permanent Materials: "+permPct+"% | Rotating Materials: "+rotPct+"% | Principles: "+pc+"/"+PRINCIPLES.length);
+  lines.push("");
+  lines.push("SECTION BREAKDOWN:");
+
+  for(var i=0;i<SECTIONS.length;i++){
+    var s=SECTIONS[i],sc=secScore(s),sp=sc.max>0?Math.round((sc.score/sc.max)*100):0;
+    lines.push("  "+s.title+": "+sp+"% ("+sc.score+"/"+sc.max+")");
+    if(notes[s.id])lines.push("    Note: "+notes[s.id]);
+  }
+
+  lines.push("");
+  lines.push("STRENGTHS (Mastery Level 4 — Routinely Implemented):");
+  var hasStr=false;
+  for(var i=0;i<SECTIONS.length;i++){
+    var s=SECTIONS[i];
+    for(var j=0;j<s.items.length;j++){
+      var k=s.id+"-"+j;
+      if(ratings[k]===3){
+        hasStr=true;
+        var short=s.items[j].split("—")[0].trim();
+        var tags=itemTags[k]&&itemTags[k].length?" ["+itemTags[k].join(", ")+"]":"";
+        lines.push("  + "+s.title+": "+short+tags);
+      }
+    }
+  }
+  if(!hasStr)lines.push("  (none)");
+
+  lines.push("");
+  lines.push("ITEMS NEEDING ATTENTION (Mastery Level 1-2):");
+  var hasFlag=false;
+  for(var i=0;i<SECTIONS.length;i++){
+    var s=SECTIONS[i];
+    for(var j=0;j<s.items.length;j++){
+      var k=s.id+"-"+j;
+      if(ratings[k]!==undefined&&ratings[k]<=1){
+        hasFlag=true;
+        var short=s.items[j].split("—")[0].trim();
+        var comment=itemComments[k]?" ("+itemComments[k]+")":"";
+        lines.push("  - ["+R[ratings[k]].label+"] "+s.title+": "+short+comment);
+      }
+    }
+  }
+  if(!hasFlag)lines.push("  (none)");
+
+  lines.push("");
+  lines.push("ENVIRONMENT PRINCIPLES ("+pc+"/"+PRINCIPLES.length+"):");
+  for(var i=0;i<PRINCIPLES.length;i++){
+    lines.push("  "+(prChecks[i]?"[YES]":"[ NO]")+" "+PRINCIPLES[i]);
+  }
+
+  var text=lines.join("\n");
+  navigator.clipboard.writeText(text).then(function(){
+    var btn=document.getElementById("copyBtn");
+    btn.textContent="Copied!";
+    btn.classList.add("copied");
+    setTimeout(function(){btn.textContent="Copy Summary to Clipboard";btn.classList.remove("copied");},2000);
+  });
+}
+
+/* ==============================
+   AUTO-SAVE / STORAGE
+   ============================== */
+
+function collectState(){
+  return {
+    version:3,
+    timestamp:new Date().toISOString(),
+    meta:{
+      teacher:document.getElementById("m-teacher").value,
+      campus:document.getElementById("m-campus").value,
+      observer:document.getElementById("m-observer").value,
+      date:document.getElementById("m-date").value
+    },
+    ratings:ratings,
+    notes:notes,
+    prChecks:prChecks,
+    itemComments:itemComments,
+    itemTags:itemTags,
+    itemPhotos:itemPhotos,
+    timerElapsed:timerElapsed,
+    sectionTimers:sectionTimers
+  };
+}
+
+function scheduleSave(){
+  if(saveTimeout)clearTimeout(saveTimeout);
+  saveTimeout=setTimeout(saveToStorage,500);
+}
+
+function saveToStorage(){
+  try{
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(collectState()));
+    saveCampus(document.getElementById("m-campus").value);
+    var el=document.getElementById("saveStatus");
+    el.textContent="Saved "+new Date().toLocaleTimeString();
+    setTimeout(function(){el.textContent="Auto-save: active";},2000);
+  }catch(e){document.getElementById("saveStatus").textContent="Auto-save: error";}
+}
+
+function loadFromStorage(){
+  try{
+    var raw=localStorage.getItem(STORAGE_KEY);
+    if(!raw)return false;
+    applyState(JSON.parse(raw));
+    return true;
+  }catch(e){return false;}
+}
+
+function applyState(state){
+  if(state.meta){
+    document.getElementById("m-teacher").value=state.meta.teacher||"";
+    document.getElementById("m-campus").value=state.meta.campus||"";
+    document.getElementById("m-observer").value=state.meta.observer||"";
+    document.getElementById("m-date").value=state.meta.date||"";
+  }
+  ratings=state.ratings||{};
+  for(var key in ratings)rateItem(key,ratings[key]);
+
+  notes=state.notes||{};
+  for(var sid in notes){var ta=document.getElementById("notes-"+sid);if(ta)ta.value=notes[sid];}
+
+  prChecks=state.prChecks||{};
+  for(var k in prChecks){var cb=document.getElementById("pr-cb-"+k);if(cb)cb.checked=prChecks[k];}
+
+  itemComments=state.itemComments||{};
+  for(var key in itemComments){
+    var ta=document.getElementById("icta-"+key);
+    if(ta)ta.value=itemComments[key];
+    var wrap=document.getElementById("icomment-"+key);
+    if(wrap&&itemComments[key]){wrap.classList.add("open");wrap.classList.add("has-content");}
+  }
+
+  itemTags=state.itemTags||{};
+  for(var key in itemTags){
+    if(!itemTags[key])continue;
+    for(var i=0;i<itemTags[key].length;i++){
+      var btn=document.getElementById("tag-"+key+"-"+itemTags[key][i].replace(/\s/g,"_"));
+      if(btn)btn.classList.add("active");
+    }
+  }
+
+  itemPhotos=state.itemPhotos||{};
+  for(var key in itemPhotos){
+    renderPhotoThumbs(key);
+  }
+
+  if(state.timerElapsed){
+    timerElapsed=state.timerElapsed;
+    var m=Math.floor(timerElapsed/60),s=timerElapsed%60;
+    document.getElementById("timerDisplay").textContent=(m<10?"0":"")+m+":"+(s<10?"0":"")+s;
+  }
+
+  if(state.sectionTimers) sectionTimers=state.sectionTimers;
+
+  refreshPrSummary();
+  refreshBanner();
+}
+
+/* ==============================
+   EXPORT / IMPORT
+   ============================== */
+
+function exportAudit(){
+  var state=collectState();
+  var teacher=state.meta.teacher||"unnamed";
+  var date=state.meta.date||new Date().toISOString().slice(0,10);
+  var filename="ESL_Audit_"+teacher.replace(/[^a-zA-Z0-9]/g,"_")+"_"+date+".json";
+  var blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement("a");a.href=url;a.download=filename;
+  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+}
+
+function csvEscape(val) {
+  var s = String(val == null ? "" : val);
+  if (s.indexOf(",") !== -1 || s.indexOf('"') !== -1 || s.indexOf("\n") !== -1) {
+    return '"' + s.replace(/"/g, '""') + '"';
+  }
+  return s;
+}
+
+function exportCSV() {
+  var tn = document.getElementById("m-teacher").value || "";
+  var cp = document.getElementById("m-campus").value || "";
+  var ob = document.getElementById("m-observer").value || "";
+  var dt = document.getElementById("m-date").value || "";
+  var rows = [];
+  rows.push(["Teacher","Campus","Observer","Date","Section","Section Type","Item","Mastery Level","Mastery Label","Score (0-3)","Evidence Tags","Comment","Section Notes"].join(","));
+  for (var i = 0; i < SECTIONS.length; i++) {
+    var s = SECTIONS[i];
+    for (var j = 0; j < s.items.length; j++) {
+      var k = s.id + "-" + j;
+      var rVal = ratings[k] !== undefined ? ratings[k] : "";
+      var rLevel = rVal !== "" ? R[rVal].level : "";
+      var rLabel = rVal !== "" ? R[rVal].label : "Unrated";
+      var tags = (itemTags[k] && itemTags[k].length) ? itemTags[k].join("; ") : "";
+      var comment = itemComments[k] || "";
+      var secNotes = (j === 0 && notes[s.id]) ? notes[s.id] : "";
+      rows.push([
+        csvEscape(tn), csvEscape(cp), csvEscape(ob), csvEscape(dt),
+        csvEscape(s.title), csvEscape(s.type),
+        csvEscape(s.items[j]), csvEscape(rLevel), csvEscape(rLabel), csvEscape(rVal),
+        csvEscape(tags), csvEscape(comment), csvEscape(secNotes)
+      ].join(","));
+    }
+  }
+  // Add principles as separate rows
+  for (var pi = 0; pi < PRINCIPLES.length; pi++) {
+    rows.push([
+      csvEscape(tn), csvEscape(cp), csvEscape(ob), csvEscape(dt),
+      csvEscape("Environment Principles"), csvEscape("principle"),
+      csvEscape(PRINCIPLES[pi]), csvEscape(prChecks[pi] ? "Yes" : "No"), csvEscape(prChecks[pi] ? "Observed" : "Not Observed"), csvEscape(prChecks[pi] ? "1" : "0"),
+      "", "", ""
+    ].join(","));
+  }
+  var teacher = tn || "unnamed";
+  var date = dt || new Date().toISOString().slice(0, 10);
+  var filename = "ESL_Audit_" + teacher.replace(/[^a-zA-Z0-9]/g, "_") + "_" + date + ".csv";
+  var blob = new Blob([rows.join("\n")], { type: "text/csv;charset=utf-8" });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a"); a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+
+function showImportModal(){
+  document.getElementById("importData").value="";
+  document.getElementById("importFile").value="";
+  document.getElementById("importModal").classList.add("active");
+}
+
+function loadImportFile(input){
+  if(!input.files||!input.files[0])return;
+  var reader=new FileReader();
+  reader.onload=function(e){document.getElementById("importData").value=e.target.result;};
+  reader.readAsText(input.files[0]);
+}
+
+function confirmImport(){
+  var raw=document.getElementById("importData").value.trim();
+  if(!raw){alert("Please paste JSON data or select a file first.");return;}
+  try{
+    var state=JSON.parse(raw);
+    if(!state.ratings&&!state.meta){alert("Not a valid audit file.");return;}
+    applyState(state);saveToStorage();closeModal("importModal");
+  }catch(e){alert("Invalid JSON. Check the file and try again.");}
+}
+
+/* ==============================
+   RESET
+   ============================== */
+
+function showResetModal(){document.getElementById("resetModal").classList.add("active");}
+function closeModal(id){document.getElementById(id).classList.remove("active");}
+
+function confirmReset(){
+  ratings={};notes={};prChecks={};itemComments={};itemTags={};itemPhotos={};sectionTimers={};
+  timerElapsed=0;timerStart=null;
+  if(timerInterval)clearInterval(timerInterval);
+  timerRunning=false;
+  document.getElementById("timerDisplay").textContent="00:00";
+  document.getElementById("timerToggle").textContent="Pause";
+
+  document.getElementById("m-teacher").value="";
+  document.getElementById("m-campus").value="";
+  document.getElementById("m-observer").value="";
+  document.getElementById("m-date").value=new Date().toISOString().slice(0,10);
+
+  var btns=document.getElementsByClassName("rbtn");
+  for(var i=0;i<btns.length;i++){btns[i].style.border="2px solid #ddd";btns[i].style.background="#fff";btns[i].style.color="#888";btns[i].style.fontWeight="500";}
+  var cbs=document.querySelectorAll(".item-cb");for(var i=0;i<cbs.length;i++)cbs[i].checked=false;
+  var pcbs=document.querySelectorAll(".pr-cb");for(var i=0;i<pcbs.length;i++)pcbs[i].checked=false;
+  var tas=document.querySelectorAll(".sec-notes textarea");for(var i=0;i<tas.length;i++)tas[i].value="";
+  var icts=document.querySelectorAll(".item-comment textarea");for(var i=0;i<icts.length;i++)icts[i].value="";
+  var icwraps=document.querySelectorAll(".item-comment");for(var i=0;i<icwraps.length;i++){icwraps[i].classList.remove("open");icwraps[i].classList.remove("has-content");}
+  var tags=document.querySelectorAll(".tag-btn");for(var i=0;i<tags.length;i++)tags[i].classList.remove("active");
+
+  sumVisible=false;
+  document.getElementById("sumReport").style.display="none";
+  document.querySelector(".sum-btn").textContent="View Summary Report";
+  compareAudit=null;
+
+  refreshPrSummary();refreshBanner();
+  localStorage.removeItem(STORAGE_KEY);
+  document.getElementById("saveStatus").textContent="Auto-save: cleared";
+  closeModal("resetModal");
+}
+
+/* ==============================
+   CAMPUS DROPDOWN
+   ============================== */
+
+function loadCampuses(){
+  try{
+    var raw=localStorage.getItem(CAMPUS_KEY);
+    return raw?JSON.parse(raw):[];
+  }catch(e){return [];}
+}
+
+function saveCampus(name){
+  if(!name||!name.trim())return;
+  var list=loadCampuses();
+  if(list.indexOf(name.trim())===-1){
+    list.push(name.trim());
+    list.sort();
+    localStorage.setItem(CAMPUS_KEY,JSON.stringify(list));
+    populateCampusList();
+  }
+}
+
+function populateCampusList(){
+  var dl=document.getElementById("campus-list");
+  dl.innerHTML="";
+  var list=loadCampuses();
+  for(var i=0;i<list.length;i++){
+    var opt=document.createElement("option");opt.value=list[i];dl.appendChild(opt);
+  }
+}
+
+function populateHistoryCampusFilter(){
+  var sel=document.getElementById("histFilterCampus");
+  sel.innerHTML="<option value=''>All campuses</option>";
+  var list=loadCampuses();
+  for(var i=0;i<list.length;i++){
+    var opt=document.createElement("option");opt.value=list[i];opt.textContent=list[i];sel.appendChild(opt);
+  }
+}
+
+/* ==============================
+   AUDIT HISTORY
+   ============================== */
+
+function getHistory(){
+  try{var raw=localStorage.getItem(HISTORY_KEY);return raw?JSON.parse(raw):[];}
+  catch(e){return[];}
+}
+
+function saveToHistory(){
+  var state=collectState();
+  state.id=Date.now().toString();
+  var t=totalScore();
+  state.scorePct=t.max>0?Math.round((t.score/t.max)*100):0;
+  var history=getHistory();
+  history.push(state);
+  localStorage.setItem(HISTORY_KEY,JSON.stringify(history));
+  alert("Audit saved to history for "+( state.meta.teacher||"unnamed teacher")+" on "+(state.meta.date||"unknown date")+".");
+}
+
+function showHistoryModal(){
+  populateHistoryCampusFilter();
+  renderHistory();
+  document.getElementById("historyModal").classList.add("active");
+}
+
+function renderHistory(){
+  var list=document.getElementById("histList");
+  var history=getHistory();
+  var filterTeacher=document.getElementById("histFilterTeacher").value.toLowerCase();
+  var filterCampus=document.getElementById("histFilterCampus").value;
+
+  var filtered=history.filter(function(a){
+    if(filterTeacher&&(!a.meta.teacher||a.meta.teacher.toLowerCase().indexOf(filterTeacher)===-1))return false;
+    if(filterCampus&&a.meta.campus!==filterCampus)return false;
+    return true;
+  });
+
+  if(!filtered.length){
+    list.innerHTML="<div class='no-history'>No saved audits"+(filterTeacher||filterCampus?" match your filters":"")+".<br>Use \"Save to Audit History\" in the summary report to archive completed audits.</div>";
+    return;
+  }
+
+  // Sort newest first
+  filtered.sort(function(a,b){return(b.timestamp||"").localeCompare(a.timestamp||"");});
+
+  var html="";
+  for(var i=0;i<filtered.length;i++){
+    var a=filtered[i];
+    var pct=a.scorePct||0;
+    var col=getCol(pct);
+    var date=a.meta.date||"No date";
+    var dur=a.timerElapsed?Math.floor(a.timerElapsed/60)+"m":"—";
+    html+="<div class='hist-item'>"+
+      "<div class='hist-info'>"+
+      "<div class='hist-teacher'>"+(a.meta.teacher||"Unnamed Teacher")+"</div>"+
+      "<div class='hist-detail'>"+(a.meta.campus||"No campus")+" &nbsp;|&nbsp; "+date+" &nbsp;|&nbsp; Observer: "+(a.meta.observer||"—")+" &nbsp;|&nbsp; Duration: "+dur+"</div>"+
+      "</div>"+
+      "<div class='hist-score' style='color:"+col+"'>"+pct+"%</div>"+
+      "<div class='hist-actions'>"+
+      "<button class='load' onclick='loadFromHistory(\""+a.id+"\")'>Load</button>"+
+      "<button class='compare' onclick='compareFromHistory(\""+a.id+"\")'>Compare</button>"+
+      "<button class='delete' onclick='deleteFromHistory(\""+a.id+"\")'>Delete</button>"+
+      "</div></div>";
+  }
+  list.innerHTML=html;
+}
+
+function loadFromHistory(id){
+  if(!confirm("This will replace your current audit data. Continue?"))return;
+  var history=getHistory();
+  for(var i=0;i<history.length;i++){
+    if(history[i].id===id){
+      applyState(history[i]);
+      saveToStorage();
+      closeModal("historyModal");
+      return;
+    }
+  }
+}
+
+function deleteFromHistory(id){
+  if(!confirm("Delete this audit from history? This cannot be undone."))return;
+  var history=getHistory();
+  history=history.filter(function(a){return a.id!==id;});
+  localStorage.setItem(HISTORY_KEY,JSON.stringify(history));
+  renderHistory();
+}
+
+function compareFromHistory(id){
+  var history=getHistory();
+  for(var i=0;i<history.length;i++){
+    if(history[i].id===id){
+      compareAudit=history[i];
+      closeModal("historyModal");
+      // Open summary if not visible
+      if(!sumVisible)toggleSummary();
+      else buildSummary();
+      // Scroll to comparison
+      setTimeout(function(){
+        var el=document.getElementById("compareSection");
+        if(el)el.scrollIntoView({behavior:"smooth"});
+      },200);
+      return;
+    }
+  }
+}
+
+function clearComparison(){
+  compareAudit=null;
+  buildSummary();
+}
+
+function buildComparisonHTML(prev){
+  var prevTotal=0,prevMax=0;
+  for(var k in prev.ratings){if(prev.ratings[k]!==undefined){prevTotal+=prev.ratings[k];prevMax+=3;}}
+  // Recalculate properly
+  var prevScores={};
+  for(var i=0;i<SECTIONS.length;i++){
+    var s=SECTIONS[i],sc=0,mx=0;
+    for(var j=0;j<s.items.length;j++){
+      var k=s.id+"-"+j;
+      mx+=3;
+      if(prev.ratings[k]!==undefined)sc+=prev.ratings[k];
+    }
+    prevScores[s.id]={score:sc,max:mx,pct:mx>0?Math.round((sc/mx)*100):0};
+  }
+  var prevOverall=0,prevOverallMax=0;
+  for(var sid in prevScores){prevOverall+=prevScores[sid].score;prevOverallMax+=prevScores[sid].max;}
+  var prevPct=prevOverallMax>0?Math.round((prevOverall/prevOverallMax)*100):0;
+
+  var t=totalScore();
+  var curPct=t.max>0?Math.round((t.score/t.max)*100):0;
+  var diff=curPct-prevPct;
+  var diffStr=diff>0?"+"+diff+"%":diff<0?diff+"%":"No change";
+  var diffCol=diff>0?"#27ae60":diff<0?"#e74c3c":"#888";
+
+  var html="<div class='compare-section' id='compareSection'>"+
+    "<div class='compare-header'>"+
+    "<h3>Growth Comparison vs. "+(prev.meta.date||"Previous Audit")+"</h3>"+
+    "<button class='compare-close' onclick='clearComparison()'>Close Comparison</button>"+
+    "</div>"+
+    "<div style='display:flex;gap:16px;align-items:center;margin-bottom:14px;flex-wrap:wrap'>"+
+    "<div style='text-align:center'><div style='font-size:11px;color:#888;font-weight:700'>PREVIOUS</div><div style='font-size:28px;font-weight:900;color:"+getCol(prevPct)+"'>"+prevPct+"%</div></div>"+
+    "<div class='compare-arrow' style='font-size:24px;color:"+diffCol+"'>&rarr;</div>"+
+    "<div style='text-align:center'><div style='font-size:11px;color:#888;font-weight:700'>CURRENT</div><div style='font-size:28px;font-weight:900;color:"+getCol(curPct)+"'>"+curPct+"%</div></div>"+
+    "<div style='padding:6px 14px;border-radius:8px;background:"+(diff>0?"#eafaf1":diff<0?"#fdecea":"#f0f0f0")+";font-weight:700;font-size:16px;color:"+diffCol+"'>"+diffStr+"</div>"+
+    "</div>";
+
+  html+="<div style='font-size:13px'>";
+  for(var i=0;i<SECTIONS.length;i++){
+    var s=SECTIONS[i];
+    var sc=secScore(s);
+    var curSP=sc.max>0?Math.round((sc.score/sc.max)*100):0;
+    var prevSP=prevScores[s.id]?prevScores[s.id].pct:0;
+    var d=curSP-prevSP;
+    var dStr=d>0?"+"+d+"%":d<0?d+"%":"=";
+    var dCol=d>0?"#27ae60":d<0?"#e74c3c":"#888";
+    html+="<div class='compare-row'>"+
+      "<span style='flex:1;font-weight:600;color:"+s.color+"'>"+s.title+"</span>"+
+      "<span style='min-width:50px;text-align:right;color:#888'>"+prevSP+"%</span>"+
+      "<span class='compare-arrow' style='color:"+dCol+"'>&rarr;</span>"+
+      "<span style='min-width:50px;font-weight:700;color:"+getCol(curSP)+"'>"+curSP+"%</span>"+
+      "<span style='min-width:50px;text-align:right;font-weight:700;color:"+dCol+"'>"+dStr+"</span>"+
+      "</div>";
+  }
+  html+="</div></div>";
+  return html;
+}
+
+/* ==============================
+   VISUALIZATION — DATA FUNCTIONS
+   ============================== */
+
+function getVizSectionScores(filterType) {
+  var labels = [], pcts = [], colors = [], bgs = [];
+  for (var i = 0; i < SECTIONS.length; i++) {
+    var s = SECTIONS[i];
+    if (filterType && filterType !== "all" && s.type !== filterType) continue;
+    var sc = secScore(s);
+    var pct = sc.max > 0 ? Math.round((sc.score / sc.max) * 100) : 0;
+    labels.push(s.title);
+    pcts.push(pct);
+    colors.push(s.color);
+    bgs.push(s.bg);
+  }
+  return { labels: labels, pcts: pcts, colors: colors, bgs: bgs };
+}
+
+function getVizMasteryDistribution(filterType) {
+  var counts = [0, 0, 0, 0, 0]; // index 0-3 = rating 0-3, index 4 = unrated
+  for (var i = 0; i < SECTIONS.length; i++) {
+    var s = SECTIONS[i];
+    if (filterType && filterType !== "all" && s.type !== filterType) continue;
+    for (var j = 0; j < s.items.length; j++) {
+      var k = s.id + "-" + j;
+      if (ratings[k] !== undefined) {
+        counts[ratings[k]]++;
+      } else {
+        counts[4]++;
+      }
+    }
+  }
+  return counts;
+}
+
+function getVizGrowthData(teacherFilter) {
+  var history = getHistory();
+  var filtered = [];
+  for (var i = 0; i < history.length; i++) {
+    var a = history[i];
+    if (teacherFilter && a.meta && a.meta.teacher !== teacherFilter) continue;
+    filtered.push(a);
+  }
+  // Sort by timestamp ascending
+  filtered.sort(function(a, b) { return (a.timestamp || "").localeCompare(b.timestamp || ""); });
+
+  var labels = [], overall = [], perm = [], rot = [];
+  for (var i = 0; i < filtered.length; i++) {
+    var a = filtered[i];
+    var dateLabel = (a.meta && a.meta.date) || ("Audit " + (i + 1));
+    labels.push(dateLabel);
+    // Compute scores from saved ratings
+    var tScore = 0, tMax = 0, pScore = 0, pMax = 0, rScore = 0, rMax = 0;
+    for (var si = 0; si < SECTIONS.length; si++) {
+      var s = SECTIONS[si];
+      for (var j = 0; j < s.items.length; j++) {
+        var k = s.id + "-" + j;
+        var mx = 3;
+        var sc = (a.ratings && a.ratings[k] !== undefined) ? a.ratings[k] : 0;
+        tScore += sc; tMax += mx;
+        if (s.type === "permanent") { pScore += sc; pMax += mx; }
+        else { rScore += sc; rMax += mx; }
+      }
+    }
+    overall.push(tMax > 0 ? Math.round((tScore / tMax) * 100) : 0);
+    perm.push(pMax > 0 ? Math.round((pScore / pMax) * 100) : 0);
+    rot.push(rMax > 0 ? Math.round((rScore / rMax) * 100) : 0);
+  }
+
+  // Append current session
+  var t = totalScore();
+  var ps = typeScore("permanent"), rs = typeScore("rotating");
+  labels.push("Current");
+  overall.push(t.max > 0 ? Math.round((t.score / t.max) * 100) : 0);
+  perm.push(ps.max > 0 ? Math.round((ps.score / ps.max) * 100) : 0);
+  rot.push(rs.max > 0 ? Math.round((rs.score / rs.max) * 100) : 0);
+
+  return { labels: labels, overall: overall, perm: perm, rot: rot };
+}
+
+function getVizPermVsRotData() {
+  var ps = typeScore("permanent"), rs = typeScore("rotating");
+  var permPct = ps.max > 0 ? Math.round((ps.score / ps.max) * 100) : 0;
+  var rotPct = rs.max > 0 ? Math.round((rs.score / rs.max) * 100) : 0;
+  return { permPct: permPct, rotPct: rotPct, permScore: ps, rotScore: rs };
+}
+
+function getVizTagData() {
+  var tagCounts = {};
+  for (var ti = 0; ti < EVIDENCE_TAGS.length; ti++) {
+    tagCounts[EVIDENCE_TAGS[ti]] = 0;
+  }
+  for (var key in itemTags) {
+    if (!itemTags[key]) continue;
+    for (var i = 0; i < itemTags[key].length; i++) {
+      var tag = itemTags[key][i];
+      if (tagCounts[tag] !== undefined) tagCounts[tag]++;
+    }
+  }
+  var labels = [], counts = [];
+  for (var ti = 0; ti < EVIDENCE_TAGS.length; ti++) {
+    labels.push(EVIDENCE_TAGS[ti]);
+    counts.push(tagCounts[EVIDENCE_TAGS[ti]]);
+  }
+  return { labels: labels, counts: counts };
+}
+
+function getVizHeatmapData(filterType) {
+  var sections = [];
+  for (var i = 0; i < SECTIONS.length; i++) {
+    var s = SECTIONS[i];
+    if (filterType && filterType !== "all" && s.type !== filterType) continue;
+    var itemRatings = [];
+    for (var j = 0; j < s.items.length; j++) {
+      var k = s.id + "-" + j;
+      itemRatings.push(ratings[k] !== undefined ? ratings[k] : -1);
+    }
+    sections.push({ title: s.title, color: s.color, ratings: itemRatings });
+  }
+  return sections;
+}
+
+/* ==============================
+   VISUALIZATION — CHART RENDERERS
+   ============================== */
+
+var vizChart = null;
+
+function destroyVizChart() {
+  if (vizChart) {
+    vizChart.destroy();
+    vizChart = null;
+  }
+}
+
+function renderVizRadar(filterType) {
+  destroyVizChart();
+  var d = getVizSectionScores(filterType);
+  var ctx = document.getElementById("vizCanvas").getContext("2d");
+  vizChart = new Chart(ctx, {
+    type: "radar",
+    data: {
+      labels: d.labels,
+      datasets: [{
+        label: "Score %",
+        data: d.pcts,
+        backgroundColor: "rgba(44,62,110,0.12)",
+        borderColor: "#2c3e6e",
+        borderWidth: 2,
+        pointBackgroundColor: d.colors,
+        pointBorderColor: d.colors,
+        pointRadius: 5
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        r: {
+          beginAtZero: true,
+          max: 100,
+          ticks: { stepSize: 20, font: { size: 10 } },
+          pointLabels: { font: { size: 10 } }
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) { return ctx.parsed.r + "%"; }
+          }
+        }
+      }
+    }
+  });
+  // Insight
+  var best = 0, worst = 0;
+  for (var i = 1; i < d.pcts.length; i++) {
+    if (d.pcts[i] > d.pcts[best]) best = i;
+    if (d.pcts[i] < d.pcts[worst]) worst = i;
+  }
+  var insight = "";
+  if (d.labels.length > 0) {
+    insight = "<strong>Strongest:</strong> " + d.labels[best] + " (" + d.pcts[best] + "%). ";
+    insight += "<strong>Needs attention:</strong> " + d.labels[worst] + " (" + d.pcts[worst] + "%).";
+  } else {
+    insight = "No sections to display for the selected filter.";
+  }
+  document.getElementById("vizInsight").innerHTML = insight;
+}
+
+function renderVizMastery(filterType) {
+  destroyVizChart();
+  var counts = getVizMasteryDistribution(filterType);
+  var ctx = document.getElementById("vizCanvas").getContext("2d");
+  var rLabels = [R[0].level + " - " + R[0].label, R[1].level + " - " + R[1].label, R[2].level + " - " + R[2].label, R[3].level + " - " + R[3].label, "Unrated"];
+  var rColors = [R[0].color, R[1].color, R[2].color, R[3].color, "#ccc"];
+  vizChart = new Chart(ctx, {
+    type: "doughnut",
+    data: {
+      labels: rLabels,
+      datasets: [{
+        data: counts,
+        backgroundColor: rColors,
+        borderWidth: 2,
+        borderColor: "#fff"
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: "bottom", labels: { font: { size: 11 }, padding: 12 } },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              var total = 0;
+              for (var i = 0; i < ctx.dataset.data.length; i++) total += ctx.dataset.data[i];
+              var pct = total > 0 ? Math.round((ctx.parsed / total) * 100) : 0;
+              return ctx.label + ": " + ctx.parsed + " items (" + pct + "%)";
+            }
+          }
+        }
+      }
+    }
+  });
+  var total = 0;
+  for (var i = 0; i < counts.length; i++) total += counts[i];
+  var rated = total - counts[4];
+  var strong = counts[3];
+  var weak = counts[0] + counts[1];
+  var insight = "<strong>" + rated + "</strong> of <strong>" + total + "</strong> items rated. ";
+  if (rated > 0) {
+    insight += "<strong>" + strong + "</strong> at Mastery 4 (Routinely Implemented). ";
+    insight += "<strong>" + weak + "</strong> at Mastery 1-2 (need attention).";
+  }
+  document.getElementById("vizInsight").innerHTML = insight;
+}
+
+function renderVizSectionBars(filterType) {
+  destroyVizChart();
+  var d = getVizSectionScores(filterType);
+  // Sort by percentage descending
+  var indices = [];
+  for (var i = 0; i < d.labels.length; i++) indices.push(i);
+  indices.sort(function(a, b) { return d.pcts[b] - d.pcts[a]; });
+  var sortedLabels = [], sortedPcts = [], sortedColors = [];
+  for (var i = 0; i < indices.length; i++) {
+    sortedLabels.push(d.labels[indices[i]]);
+    sortedPcts.push(d.pcts[indices[i]]);
+    sortedColors.push(d.colors[indices[i]]);
+  }
+  var ctx = document.getElementById("vizCanvas").getContext("2d");
+  vizChart = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: sortedLabels,
+      datasets: [{
+        data: sortedPcts,
+        backgroundColor: sortedColors,
+        borderRadius: 4,
+        barThickness: 22
+      }]
+    },
+    options: {
+      indexAxis: "y",
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        x: { beginAtZero: true, max: 100, ticks: { callback: function(v) { return v + "%"; } } },
+        y: { ticks: { font: { size: 11 } } }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) { return ctx.parsed.x + "%"; }
+          }
+        }
+      }
+    }
+  });
+  var insight = "";
+  if (sortedLabels.length > 0) {
+    insight = "<strong>Highest:</strong> " + sortedLabels[0] + " (" + sortedPcts[0] + "%). ";
+    insight += "<strong>Lowest:</strong> " + sortedLabels[sortedLabels.length - 1] + " (" + sortedPcts[sortedPcts.length - 1] + "%).";
+  }
+  document.getElementById("vizInsight").innerHTML = insight;
+}
+
+function renderVizGrowth(teacherFilter) {
+  destroyVizChart();
+  var d = getVizGrowthData(teacherFilter);
+  if (d.labels.length <= 1) {
+    document.getElementById("vizInsight").innerHTML = "<strong>No history data available.</strong> Save audits to history to see growth trends. The current session is shown as the only data point.";
+    var ctx = document.getElementById("vizCanvas").getContext("2d");
+    vizChart = new Chart(ctx, {
+      type: "line",
+      data: { labels: d.labels, datasets: [{ label: "Overall", data: d.overall, borderColor: "#2c3e6e", backgroundColor: "rgba(44,62,110,0.1)", fill: true, tension: 0.3, pointRadius: 6 }] },
+      options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 100, ticks: { callback: function(v) { return v + "%"; } } } }, plugins: { legend: { position: "bottom" } } }
+    });
+    return;
+  }
+  var ctx = document.getElementById("vizCanvas").getContext("2d");
+  vizChart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: d.labels,
+      datasets: [
+        { label: "Overall", data: d.overall, borderColor: "#2c3e6e", backgroundColor: "rgba(44,62,110,0.08)", fill: true, tension: 0.3, pointRadius: 5, borderWidth: 2 },
+        { label: "Permanent", data: d.perm, borderColor: "#d4a017", backgroundColor: "transparent", tension: 0.3, pointRadius: 4, borderWidth: 2, borderDash: [5, 3] },
+        { label: "Rotating", data: d.rot, borderColor: "#8e44ad", backgroundColor: "transparent", tension: 0.3, pointRadius: 4, borderWidth: 2, borderDash: [5, 3] }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: { beginAtZero: true, max: 100, ticks: { callback: function(v) { return v + "%"; } } }
+      },
+      plugins: {
+        legend: { position: "bottom", labels: { font: { size: 11 } } },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) { return ctx.dataset.label + ": " + ctx.parsed.y + "%"; }
+          }
+        }
+      }
+    }
+  });
+  var first = d.overall[0], last = d.overall[d.overall.length - 1];
+  var diff = last - first;
+  var trend = diff > 0 ? "up " + diff + " points" : diff < 0 ? "down " + Math.abs(diff) + " points" : "unchanged";
+  document.getElementById("vizInsight").innerHTML = "<strong>Growth trend:</strong> Overall score is <strong>" + trend + "</strong> from first to current audit (" + first + "% to " + last + "%). " + d.labels.length + " data points shown.";
+}
+
+function renderVizPermVsRot() {
+  destroyVizChart();
+  var d = getVizPermVsRotData();
+  var ctx = document.getElementById("vizCanvas").getContext("2d");
+  vizChart = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: ["Permanent Materials", "Rotating Materials"],
+      datasets: [{
+        data: [d.permPct, d.rotPct],
+        backgroundColor: ["#d4a017", "#8e44ad"],
+        borderRadius: 6,
+        barThickness: 80
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: { beginAtZero: true, max: 100, ticks: { callback: function(v) { return v + "%"; } } }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) { return ctx.parsed.y + "%"; }
+          }
+        }
+      }
+    }
+  });
+  var gap = Math.abs(d.permPct - d.rotPct);
+  var stronger = d.permPct >= d.rotPct ? "Permanent" : "Rotating";
+  var weaker = d.permPct >= d.rotPct ? "Rotating" : "Permanent";
+  var insight = "<strong>" + stronger + "</strong> materials score higher. ";
+  if (gap > 15) {
+    insight += "The <strong>" + gap + "-point gap</strong> with " + weaker + " materials suggests targeted improvement is needed there.";
+  } else if (gap > 0) {
+    insight += "The categories are relatively balanced (" + gap + "-point difference).";
+  } else {
+    insight += "Both categories are scoring equally.";
+  }
+  insight += " Permanent: " + d.permScore.score + "/" + d.permScore.max + " pts (" + d.permScore.rated + " rated). Rotating: " + d.rotScore.score + "/" + d.rotScore.max + " pts (" + d.rotScore.rated + " rated).";
+  document.getElementById("vizInsight").innerHTML = insight;
+}
+
+function renderVizTagUsage() {
+  destroyVizChart();
+  var d = getVizTagData();
+  var tagColors = ["#3498db", "#e67e22", "#e74c3c", "#27ae60", "#f1c40f", "#8e44ad"];
+  var ctx = document.getElementById("vizCanvas").getContext("2d");
+  vizChart = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: d.labels,
+      datasets: [{
+        data: d.counts,
+        backgroundColor: tagColors,
+        borderRadius: 4,
+        barThickness: 22
+      }]
+    },
+    options: {
+      indexAxis: "y",
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        x: { beginAtZero: true, ticks: { stepSize: 1 } },
+        y: { ticks: { font: { size: 12 } } }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) { return ctx.parsed.x + " items tagged"; }
+          }
+        }
+      }
+    }
+  });
+  var totalItems = 0;
+  for (var i = 0; i < SECTIONS.length; i++) totalItems += SECTIONS[i].items.length;
+  var totalTags = 0, most = 0, least = 0;
+  for (var i = 0; i < d.counts.length; i++) {
+    totalTags += d.counts[i];
+    if (d.counts[i] > d.counts[most]) most = i;
+    if (d.counts[i] < d.counts[least]) least = i;
+  }
+  var insight = "<strong>" + totalTags + "</strong> evidence tags applied across " + totalItems + " items. ";
+  if (totalTags > 0) {
+    insight += "<strong>Most used:</strong> " + d.labels[most] + " (" + d.counts[most] + "). ";
+    insight += "<strong>Least used:</strong> " + d.labels[least] + " (" + d.counts[least] + ").";
+  } else {
+    insight += "No evidence tags have been applied yet.";
+  }
+  document.getElementById("vizInsight").innerHTML = insight;
+}
+
+function renderVizHeatmap(filterType) {
+  destroyVizChart();
+  var data = getVizHeatmapData(filterType);
+  // Find max items per section for column count
+  var maxItems = 0;
+  for (var i = 0; i < data.length; i++) {
+    if (data[i].ratings.length > maxItems) maxItems = data[i].ratings.length;
+  }
+  var html = "<table class='viz-heatmap'><thead><tr><th>Section</th>";
+  for (var c = 0; c < maxItems; c++) {
+    html += "<th>Item " + (c + 1) + "</th>";
+  }
+  html += "</tr></thead><tbody>";
+  var ratedCount = 0, totalCount = 0, strongCount = 0, weakCount = 0;
+  for (var i = 0; i < data.length; i++) {
+    var s = data[i];
+    html += "<tr><td class='viz-hm-section' style='color:" + s.color + "'>" + s.title + "</td>";
+    for (var c = 0; c < maxItems; c++) {
+      if (c < s.ratings.length) {
+        totalCount++;
+        var v = s.ratings[c];
+        if (v === -1) {
+          html += "<td style='background:#f5f5f5;color:#ccc'>-</td>";
+        } else {
+          ratedCount++;
+          if (v === 3) strongCount++;
+          if (v <= 1) weakCount++;
+          html += "<td style='background:" + R[v].bg + ";color:" + R[v].color + "'>" + R[v].level + "</td>";
+        }
+      } else {
+        html += "<td></td>";
+      }
+    }
+    html += "</tr>";
+  }
+  html += "</tbody></table>";
+  document.getElementById("vizHeatmapWrap").innerHTML = html;
+
+  var insight = "<strong>" + ratedCount + "</strong> of <strong>" + totalCount + "</strong> items rated. ";
+  insight += "<strong style='color:#27ae60'>" + strongCount + "</strong> at Mastery 4. ";
+  insight += "<strong style='color:#e74c3c'>" + weakCount + "</strong> at Mastery 1-2.";
+  if (totalCount - ratedCount > 0) {
+    insight += " <strong>" + (totalCount - ratedCount) + "</strong> items still unrated.";
+  }
+  document.getElementById("vizInsight").innerHTML = insight;
+}
+
+/* ==============================
+   VISUALIZATION — MODAL CONTROLS
+   ============================== */
+
+function showVizModal() {
+  if (typeof Chart === "undefined") {
+    alert("Chart.js could not be loaded. Please check your internet connection and reload the page.");
+    return;
+  }
+  // Populate teacher filter from history
+  var sel = document.getElementById("vizTeacherFilter");
+  sel.innerHTML = "<option value=''>All Teachers</option>";
+  var history = getHistory();
+  var teachers = {};
+  for (var i = 0; i < history.length; i++) {
+    var t = history[i].meta && history[i].meta.teacher;
+    if (t && !teachers[t]) {
+      teachers[t] = true;
+      var opt = document.createElement("option");
+      opt.value = t;
+      opt.textContent = t;
+      sel.appendChild(opt);
+    }
+  }
+  document.getElementById("vizChartSelect").value = "radar";
+  document.getElementById("vizTypeFilter").value = "all";
+  document.getElementById("vizModal").classList.add("active");
+  switchVizChart();
+}
+
+function switchVizChart() {
+  var chart = document.getElementById("vizChartSelect").value;
+  var filterType = document.getElementById("vizTypeFilter").value;
+  var teacherFilter = document.getElementById("vizTeacherFilter").value;
+
+  // Show/hide filters
+  var typeFilterCharts = { radar: true, mastery: true, sectionBars: true, heatmap: true };
+  document.getElementById("vizFilterType").style.display = typeFilterCharts[chart] ? "" : "none";
+  document.getElementById("vizFilterTeacher").style.display = chart === "growth" ? "" : "none";
+
+  // Show canvas or heatmap
+  var isHeatmap = chart === "heatmap";
+  document.getElementById("vizCanvasWrap").style.display = isHeatmap ? "none" : "";
+  document.getElementById("vizHeatmapWrap").style.display = isHeatmap ? "" : "none";
+
+  if (chart === "radar") renderVizRadar(filterType);
+  else if (chart === "mastery") renderVizMastery(filterType);
+  else if (chart === "sectionBars") renderVizSectionBars(filterType);
+  else if (chart === "growth") renderVizGrowth(teacherFilter);
+  else if (chart === "permVsRot") renderVizPermVsRot();
+  else if (chart === "tagUsage") renderVizTagUsage();
+  else if (chart === "heatmap") renderVizHeatmap(filterType);
+}
+
+// Keyboard shortcuts: Escape to close modals, Ctrl+Z/Y for undo/redo
+document.addEventListener("keydown", function(e) {
+  if (e.key === "Escape") {
+    var overlays = document.querySelectorAll(".modal-overlay.active");
+    if (overlays.length) overlays[overlays.length - 1].classList.remove("active");
+    var lb = document.querySelector(".photo-lightbox");
+    if (lb) document.body.removeChild(lb);
+  }
+  if ((e.ctrlKey || e.metaKey) && e.key === "z" && !e.shiftKey) {
+    var tag = e.target.tagName;
+    if (tag === "INPUT" || tag === "TEXTAREA") return;
+    e.preventDefault();
+    performUndo();
+  }
+  if ((e.ctrlKey || e.metaKey) && (e.key === "y" || (e.key === "z" && e.shiftKey))) {
+    var tag = e.target.tagName;
+    if (tag === "INPUT" || tag === "TEXTAREA") return;
+    e.preventDefault();
+    performRedo();
+  }
+});
+
+/* ==============================
+   UNDO / REDO
+   ============================== */
+
+function performUndo() {
+  if (!undoStack.length) return;
+  var action = undoStack.pop();
+  if (action.type === "rate") {
+    redoStack.push(action);
+    if (action.prev === undefined) {
+      delete ratings[action.key];
+      // Reset button styles
+      var row = document.getElementById("rrow-" + action.key);
+      if (row) {
+        var btns = row.getElementsByClassName("rbtn");
+        for (var i = 0; i < btns.length; i++) {
+          btns[i].style.border = "2px solid " + (document.body.classList.contains("dark-mode") ? "#444" : "#ddd");
+          btns[i].style.background = document.body.classList.contains("dark-mode") ? "#2d2d4a" : "#fff";
+          btns[i].style.color = document.body.classList.contains("dark-mode") ? "#999" : "#888";
+          btns[i].style.fontWeight = "500";
+        }
+      }
+      var cb = document.getElementById("cb-" + action.key);
+      if (cb) cb.checked = false;
+    } else {
+      rateItem(action.key, action.prev, true);
+    }
+    refreshBanner();
+    scheduleSave();
+  }
+}
+
+function performRedo() {
+  if (!redoStack.length) return;
+  var action = redoStack.pop();
+  if (action.type === "rate") {
+    undoStack.push(action);
+    rateItem(action.key, action.next, true);
+  }
+}
+
+/* ==============================
+   CUSTOMIZABLE SECTIONS & ITEMS
+   ============================== */
+
+function loadCustomizations() {
+  try {
+    var raw = localStorage.getItem(CUSTOM_KEY);
+    if (!raw) return;
+    var data = JSON.parse(raw);
+    hiddenItems = data.hiddenItems || {};
+    customItems = data.customItems || {};
+    // Inject custom items into SECTIONS
+    for (var sid in customItems) {
+      for (var i = 0; i < SECTIONS.length; i++) {
+        if (SECTIONS[i].id === sid) {
+          for (var j = 0; j < customItems[sid].length; j++) {
+            if (SECTIONS[i].items.indexOf(customItems[sid][j]) === -1) {
+              SECTIONS[i].items.push(customItems[sid][j]);
+            }
+          }
+          break;
+        }
+      }
+    }
+  } catch (e) {}
+}
+
+function saveCustomizations() {
+  localStorage.setItem(CUSTOM_KEY, JSON.stringify({ hiddenItems: hiddenItems, customItems: customItems }));
+}
+
+function addCustomItem(sid) {
+  var text = prompt("Enter a custom audit item for this section:");
+  if (!text || !text.trim()) return;
+  text = text.trim();
+  // Add to SECTIONS data
+  for (var i = 0; i < SECTIONS.length; i++) {
+    if (SECTIONS[i].id === sid) {
+      SECTIONS[i].items.push(text);
+      if (!customItems[sid]) customItems[sid] = [];
+      customItems[sid].push(text);
+      saveCustomizations();
+      // Rebuild the section pane
+      var s = SECTIONS[i];
+      var pane = document.getElementById("pane-" + s.type);
+      pane.innerHTML = "";
+      allItemKeys = allItemKeys.filter(function(k) {
+        return !(k.indexOf(s.type === "permanent" ? "s0" : "s") === 0); // will rebuild
+      });
+      // Full rebuild needed for this type
+      allItemKeys = [];
+      document.getElementById("pane-permanent").innerHTML = "";
+      document.getElementById("pane-rotating").innerHTML = "";
+      buildSections("permanent");
+      buildSections("rotating");
+      // Re-apply ratings
+      for (var key in ratings) rateItem(key, ratings[key], true);
+      for (var sid2 in notes) { var ta = document.getElementById("notes-" + sid2); if (ta) ta.value = notes[sid2]; }
+      for (var key in itemComments) { var ta = document.getElementById("icta-" + key); if (ta) ta.value = itemComments[key]; }
+      for (var key in itemTags) {
+        if (!itemTags[key]) continue;
+        for (var t = 0; t < itemTags[key].length; t++) {
+          var btn = document.getElementById("tag-" + key + "-" + itemTags[key][t].replace(/\s/g, "_"));
+          if (btn) btn.classList.add("active");
+        }
+      }
+      for (var key in itemPhotos) renderPhotoThumbs(key);
+      applyHiddenItems();
+      refreshBanner();
+      break;
+    }
+  }
+}
+
+function toggleHideItem(key) {
+  if (hiddenItems[key]) {
+    delete hiddenItems[key];
+    var row = document.getElementById("item-" + key);
+    if (row) row.classList.remove("item-hidden");
+  } else {
+    hiddenItems[key] = true;
+    var row = document.getElementById("item-" + key);
+    if (row) row.classList.add("item-hidden");
+  }
+  saveCustomizations();
+}
+
+function applyHiddenItems() {
+  for (var key in hiddenItems) {
+    var row = document.getElementById("item-" + key);
+    if (row) row.classList.add("item-hidden");
+  }
+}
+
+/* ==============================
+   QR CODE SHARING
+   ============================== */
+
+function generateQRCode() {
+  if (typeof qrcode === "undefined") {
+    alert("QR code library could not be loaded. Check your internet connection.");
+    return;
+  }
+  // Build compact summary text
+  var tn = document.getElementById("m-teacher").value || "—";
+  var cp = document.getElementById("m-campus").value || "—";
+  var dt = document.getElementById("m-date").value || "—";
+  var t = totalScore();
+  var pct = t.max > 0 ? Math.round((t.score / t.max) * 100) : 0;
+  var perm = typeScore("permanent"), rot = typeScore("rotating"), pc = prCount();
+  var permPct = perm.max > 0 ? Math.round((perm.score / perm.max) * 100) : 0;
+  var rotPct = rot.max > 0 ? Math.round((rot.score / rot.max) * 100) : 0;
+
+  var text = "ESL AUDIT\n";
+  text += tn + " | " + cp + " | " + dt + "\n";
+  text += "Score: " + pct + "% (" + t.score + "/" + t.max + ")\n";
+  text += "Perm: " + permPct + "% | Rot: " + rotPct + "% | Prin: " + pc + "/6\n";
+  // Top 3 weakest sections
+  var secs = [];
+  for (var i = 0; i < SECTIONS.length; i++) {
+    var s = SECTIONS[i], sc = secScore(s);
+    var sp = sc.max > 0 ? Math.round((sc.score / sc.max) * 100) : 0;
+    secs.push({ title: s.title, pct: sp });
+  }
+  secs.sort(function(a, b) { return a.pct - b.pct; });
+  text += "Focus: " + secs[0].title + " (" + secs[0].pct + "%), " + secs[1].title + " (" + secs[1].pct + "%)";
+
+  // Generate QR
+  var qr = qrcode(0, "M");
+  qr.addData(text);
+  qr.make();
+
+  var content = document.getElementById("qrContent");
+  content.innerHTML = qr.createImgTag(5, 10) + "<div class='qr-summary-text'>" + text.replace(/</g, "&lt;") + "</div>";
+  document.getElementById("qrModal").classList.add("active");
+}
+
+/* ==============================
+   MULTI-OBSERVER MODE
+   ============================== */
+
+var multiObserverActive = false;
+var currentObserver = 1;
+var observer2Ratings = {};
+
+function enableMultiObserver() {
+  multiObserverActive = true;
+  document.getElementById("observerModeBar").style.display = "flex";
+  document.getElementById("multiObsBtn").style.display = "none";
+}
+
+function disableMultiObserver() {
+  multiObserverActive = false;
+  currentObserver = 1;
+  document.getElementById("observerModeBar").style.display = "none";
+  document.getElementById("multiObsBtn").style.display = "";
+  // Restore observer 1 ratings
+  for (var key in ratings) rateItem(key, ratings[key], true);
+  refreshBanner();
+}
+
+function switchObserver(num) {
+  if (num === currentObserver) return;
+  // Save current ratings
+  if (currentObserver === 1) {
+    // Switching away from observer 1 — ratings are already in `ratings`
+  } else {
+    // Switching away from observer 2 — save their ratings
+    observer2Ratings = {};
+    for (var key in ratings) observer2Ratings[key] = ratings[key];
+  }
+
+  if (num === 1) {
+    // Restore observer 1 ratings from storage
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        var state = JSON.parse(raw);
+        var obs1Ratings = state.ratings || {};
+        for (var key in obs1Ratings) rateItem(key, obs1Ratings[key], true);
+        // Clear any keys not in obs1
+        for (var key in ratings) {
+          if (obs1Ratings[key] === undefined) delete ratings[key];
+        }
+      }
+    } catch (e) {}
+  } else {
+    // Restore observer 2 ratings
+    for (var key in observer2Ratings) rateItem(key, observer2Ratings[key], true);
+    // Clear keys not in obs2
+    var keys = Object.keys(ratings);
+    for (var i = 0; i < keys.length; i++) {
+      if (observer2Ratings[keys[i]] === undefined) delete ratings[keys[i]];
+    }
+  }
+
+  currentObserver = num;
+  document.getElementById("obs1Btn").className = "obs-switch-btn" + (num === 1 ? " active" : "");
+  document.getElementById("obs2Btn").className = "obs-switch-btn" + (num === 2 ? " active" : "");
+  refreshBanner();
+}
+
+function showIRRModal() {
+  // Get observer 1 ratings from storage
+  var obs1 = {};
+  try {
+    var raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) obs1 = JSON.parse(raw).ratings || {};
+  } catch (e) {}
+  var obs2 = currentObserver === 2 ? ratings : observer2Ratings;
+
+  var html = "";
+  var totalItems = 0, exactMatch = 0, closeMatch = 0, diff = 0, unmatched = 0;
+
+  html += "<table class='irr-table'><thead><tr><th>Section</th><th>Item</th><th>Obs 1</th><th>Obs 2</th><th>Match</th></tr></thead><tbody>";
+
+  for (var si = 0; si < SECTIONS.length; si++) {
+    var s = SECTIONS[si];
+    for (var j = 0; j < s.items.length; j++) {
+      var k = s.id + "-" + j;
+      var r1 = obs1[k];
+      var r2 = obs2[k];
+      if (r1 === undefined && r2 === undefined) continue;
+      totalItems++;
+      var r1Label = r1 !== undefined ? R[r1].level : "-";
+      var r2Label = r2 !== undefined ? R[r2].level : "-";
+      var matchClass = "", matchLabel = "";
+      if (r1 !== undefined && r2 !== undefined) {
+        if (r1 === r2) { exactMatch++; matchClass = "irr-match"; matchLabel = "Exact"; }
+        else if (Math.abs(r1 - r2) === 1) { closeMatch++; matchClass = "irr-close"; matchLabel = "Close (+/-1)"; }
+        else { diff++; matchClass = "irr-diff"; matchLabel = "Different"; }
+      } else {
+        unmatched++; matchLabel = "One missing";
+      }
+      var short = s.items[j].split(" — ")[0];
+      if (short.length > 50) short = short.substring(0, 47) + "...";
+      html += "<tr><td style='text-align:left;color:" + s.color + ";font-weight:600;font-size:11px'>" + s.title.split(" ").slice(0, 2).join(" ") + "</td>";
+      html += "<td style='text-align:left;font-size:11px'>" + short + "</td>";
+      html += "<td>" + r1Label + "</td><td>" + r2Label + "</td>";
+      html += "<td class='" + matchClass + "'>" + matchLabel + "</td></tr>";
+    }
+  }
+  html += "</tbody></table>";
+
+  var agreement = totalItems > 0 ? Math.round(((exactMatch + closeMatch) / totalItems) * 100) : 0;
+  var summary = "<div style='margin-bottom:14px;padding:12px;border-radius:8px;background:var(--section-bg-light)'>";
+  summary += "<strong>Agreement Rate:</strong> " + agreement + "% (" + exactMatch + " exact, " + closeMatch + " close, " + diff + " different";
+  if (unmatched) summary += ", " + unmatched + " partial";
+  summary += " across " + totalItems + " items)</div>";
+
+  if (agreement >= 80) {
+    summary += "<p style='font-size:12px;color:#27ae60'>Strong inter-rater reliability. Observers are well-calibrated.</p>";
+  } else if (agreement >= 60) {
+    summary += "<p style='font-size:12px;color:#f39c12'>Moderate agreement. Consider discussing items marked Different to calibrate scoring.</p>";
+  } else {
+    summary += "<p style='font-size:12px;color:#e74c3c'>Low agreement. A calibration session is recommended before the next walkthrough.</p>";
+  }
+
+  document.getElementById("irrContent").innerHTML = summary + html;
+  document.getElementById("irrModal").classList.add("active");
+}
+
+/* ==============================
+   FEEDBACK LANGUAGE BANK
+   ============================== */
+
+var FEEDBACK_BANK = {
+  "low": [
+    "This material is not currently visible in the classroom. Consider co-creating with the teacher during a planning session.",
+    "No evidence of scholar interaction with this resource. Model how scholars should reference it during instruction.",
+    "This item was not observed. Prioritize installation before the next unit launch.",
+    "The resource is missing from the environment. Provide a template or exemplar for the teacher to adapt."
+  ],
+  "developing": [
+    "The material is present but not yet at a level scholars can independently access. Discuss placement and readability.",
+    "This resource exists but appears outdated or underutilized. Schedule a refresh session.",
+    "Evidence suggests this is teacher-facing rather than scholar-facing. Co-plan ways to increase scholar ownership.",
+    "The material is visible but not referenced during instruction. Suggest embedding references into lesson plans."
+  ],
+  "strong": [
+    "Scholars actively reference this resource during independent and collaborative work. This is a model for other classrooms.",
+    "This material is well-maintained, current, and accessible. Consider documenting as a campus exemplar.",
+    "Evidence of scholar ownership and interaction. The teacher has successfully embedded this into daily routines.",
+    "This resource demonstrates strong language-forward practice. Highlight during campus walkthroughs and PD."
+  ]
+};
+
+function toggleFeedbackBank(key) {
+  var list = document.getElementById("fbbank-" + key);
+  if (list) list.classList.toggle("open");
+}
+
+function insertFeedback(key, text) {
+  var ta = document.getElementById("icta-" + key);
+  var wrap = document.getElementById("icomment-" + key);
+  if (ta) {
+    ta.value = ta.value ? ta.value + "\n" + text : text;
+    if (wrap) { wrap.classList.add("open"); wrap.classList.add("has-content"); }
+    saveItemComment(key, ta.value);
+  }
+  var list = document.getElementById("fbbank-" + key);
+  if (list) list.classList.remove("open");
+}
+
+/* ==============================
+   CAMPUS-LEVEL DASHBOARD
+   ============================== */
+
+function showCampusDash() {
+  var sel = document.getElementById("campusDashSelect");
+  sel.innerHTML = "<option value=''>All Campuses</option>";
+  var campuses = loadCampuses();
+  for (var i = 0; i < campuses.length; i++) {
+    var opt = document.createElement("option");
+    opt.value = campuses[i]; opt.textContent = campuses[i];
+    sel.appendChild(opt);
+  }
+  document.getElementById("campusDashModal").classList.add("active");
+  renderCampusDash();
+}
+
+function renderCampusDash() {
+  var campus = document.getElementById("campusDashSelect").value;
+  var history = getHistory();
+  var filtered = [];
+  for (var i = 0; i < history.length; i++) {
+    if (campus && history[i].meta && history[i].meta.campus !== campus) continue;
+    filtered.push(history[i]);
+  }
+  var body = document.getElementById("campusDashBody");
+
+  if (!filtered.length) {
+    body.innerHTML = "<p style='text-align:center;color:var(--text-faint);padding:40px'>No audits found" + (campus ? " for " + campus : "") + ". Save audits to history to populate this dashboard.</p>";
+    return;
+  }
+
+  // Aggregate section scores across all audits
+  var sectionTotals = {};
+  for (var si = 0; si < SECTIONS.length; si++) {
+    sectionTotals[SECTIONS[si].id] = { title: SECTIONS[si].title, color: SECTIONS[si].color, type: SECTIONS[si].type, totalScore: 0, totalMax: 0, auditCount: 0 };
+  }
+
+  var teacherScores = {};
+  var overallScores = [];
+
+  for (var ai = 0; ai < filtered.length; ai++) {
+    var a = filtered[ai];
+    var aTotal = 0, aMax = 0;
+    for (var si = 0; si < SECTIONS.length; si++) {
+      var s = SECTIONS[si];
+      var sScore = 0, sMax = 0;
+      for (var j = 0; j < s.items.length; j++) {
+        var k = s.id + "-" + j;
+        sMax += 3;
+        if (a.ratings && a.ratings[k] !== undefined) sScore += a.ratings[k];
+      }
+      sectionTotals[s.id].totalScore += sScore;
+      sectionTotals[s.id].totalMax += sMax;
+      sectionTotals[s.id].auditCount++;
+      aTotal += sScore; aMax += sMax;
+    }
+    var pct = aMax > 0 ? Math.round((aTotal / aMax) * 100) : 0;
+    overallScores.push(pct);
+    var teacher = (a.meta && a.meta.teacher) || "Unknown";
+    if (!teacherScores[teacher]) teacherScores[teacher] = [];
+    teacherScores[teacher].push(pct);
+  }
+
+  var avgOverall = 0;
+  for (var i = 0; i < overallScores.length; i++) avgOverall += overallScores[i];
+  avgOverall = overallScores.length > 0 ? Math.round(avgOverall / overallScores.length) : 0;
+  var avgCol = getCol(avgOverall);
+
+  var html = "<div style='text-align:center;margin-bottom:20px'>";
+  html += "<div style='font-size:11px;color:var(--text-muted);font-weight:700;text-transform:uppercase'>Campus Average</div>";
+  html += "<div style='font-size:42px;font-weight:900;color:" + avgCol + "'>" + avgOverall + "%</div>";
+  html += "<div style='font-size:12px;color:var(--text-muted)'>" + filtered.length + " audits from " + Object.keys(teacherScores).length + " teachers</div>";
+  html += "</div>";
+
+  // Section averages - sorted weakest first
+  var sectionList = [];
+  for (var sid in sectionTotals) {
+    var st = sectionTotals[sid];
+    var avg = st.totalMax > 0 ? Math.round((st.totalScore / st.totalMax) * 100) : 0;
+    sectionList.push({ title: st.title, avg: avg, color: st.color, type: st.type });
+  }
+  sectionList.sort(function(a, b) { return a.avg - b.avg; });
+
+  html += "<h4 style='font-size:14px;color:var(--text);margin-bottom:10px'>Section Averages (weakest first)</h4>";
+  for (var i = 0; i < sectionList.length; i++) {
+    var s = sectionList[i];
+    var col = getCol(s.avg);
+    html += "<div class='sbar-row'><div class='sbar-lbl'><span style='color:" + s.color + ";font-weight:600'>" + s.title + "</span><span style='color:" + col + ";font-weight:700'>" + s.avg + "%</span></div><div class='sbar-track'><div class='sbar-fill' style='width:" + s.avg + "%;background:" + col + "'></div></div></div>";
+  }
+
+  // Teacher leaderboard
+  html += "<h4 style='font-size:14px;color:var(--text);margin-top:18px;margin-bottom:10px'>Teacher Scores</h4>";
+  var teacherList = [];
+  for (var t in teacherScores) {
+    var avg = 0;
+    for (var i = 0; i < teacherScores[t].length; i++) avg += teacherScores[t][i];
+    avg = Math.round(avg / teacherScores[t].length);
+    teacherList.push({ name: t, avg: avg, count: teacherScores[t].length });
+  }
+  teacherList.sort(function(a, b) { return b.avg - a.avg; });
+
+  for (var i = 0; i < teacherList.length; i++) {
+    var t = teacherList[i];
+    var col = getCol(t.avg);
+    html += "<div style='display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-radius:6px;margin-bottom:4px;background:var(--card-bg);border:1px solid var(--card-border)'>";
+    html += "<span style='font-weight:600;color:var(--text)'>" + t.name + " <span style='font-size:11px;color:var(--text-muted)'>(" + t.count + " audit" + (t.count > 1 ? "s" : "") + ")</span></span>";
+    html += "<span style='font-weight:700;color:" + col + "'>" + t.avg + "%</span></div>";
+  }
+
+  // Systemic weakness identification
+  var weakSections = sectionList.filter(function(s) { return s.avg < 55; });
+  if (weakSections.length) {
+    html += "<div style='margin-top:18px;padding:14px;border-radius:8px;background:var(--card-bg);border:2px solid #e74c3c'>";
+    html += "<h4 style='font-size:13px;color:#e74c3c;margin-bottom:8px'>Campus-Wide PD Needs</h4>";
+    html += "<p style='font-size:12px;color:var(--text-secondary);line-height:1.6'>The following sections scored below 55% across all audits, indicating a systemic need rather than individual coaching:</p>";
+    html += "<ul style='font-size:12px;color:var(--text-secondary);padding-left:20px;margin-top:6px;line-height:1.8'>";
+    for (var i = 0; i < weakSections.length; i++) {
+      html += "<li><strong style='color:" + weakSections[i].color + "'>" + weakSections[i].title + "</strong> (" + weakSections[i].avg + "% average)</li>";
+    }
+    html += "</ul></div>";
+  }
+
+  body.innerHTML = html;
+}
+
+/* ==============================
+   COACHING ACTION PLAN GENERATOR
+   ============================== */
+
+function generateCoachingPlan() {
+  var tn = document.getElementById("m-teacher").value || "Teacher";
+  var ob = document.getElementById("m-observer").value || "Observer";
+  var dt = document.getElementById("m-date").value || new Date().toISOString().slice(0, 10);
+
+  // Find weakest sections
+  var sectionData = [];
+  for (var i = 0; i < SECTIONS.length; i++) {
+    var s = SECTIONS[i];
+    var sc = secScore(s);
+    var pct = sc.max > 0 ? Math.round((sc.score / sc.max) * 100) : 0;
+    var weakItems = [];
+    for (var j = 0; j < s.items.length; j++) {
+      var k = s.id + "-" + j;
+      if (ratings[k] !== undefined && ratings[k] <= 1) {
+        weakItems.push({ text: s.items[j].split(" — ")[0], level: R[ratings[k]].label });
+      }
+    }
+    sectionData.push({ title: s.title, type: s.type, pct: pct, weakItems: weakItems, color: s.color });
+  }
+  sectionData.sort(function(a, b) { return a.pct - b.pct; });
+
+  var priorities = sectionData.slice(0, 3);
+
+  var html = "<div class='coaching-plan' id='coachingPlan'>";
+  html += "<h3>Coaching Action Plan for " + tn + "</h3>";
+  html += "<p style='font-size:12px;color:var(--text-muted);margin-bottom:14px'>Generated from audit on " + dt + " by " + ob + "</p>";
+
+  // Priority areas
+  for (var p = 0; p < priorities.length; p++) {
+    var pri = priorities[p];
+    var cls = p === 0 ? "cp-priority" : "cp-priority medium";
+    html += "<div class='" + cls + "' style='background:var(--card-bg)'>";
+    html += "<h4 style='color:" + pri.color + "'>" + (p === 0 ? "High" : p === 1 ? "Medium" : "Growth") + " Priority: " + pri.title + " (" + pri.pct + "%)</h4>";
+    if (pri.weakItems.length) {
+      html += "<p><strong>Focus items:</strong> ";
+      var items = [];
+      for (var w = 0; w < pri.weakItems.length; w++) {
+        items.push(pri.weakItems[w].text + " (" + pri.weakItems[w].level + ")");
+      }
+      html += items.join("; ") + "</p>";
+    }
+    // Coaching suggestion based on section type
+    if (pri.type === "permanent") {
+      html += "<p><strong>Coaching move:</strong> Co-create a plan to install or update " + pri.title.toLowerCase() + ". Schedule a working session to build materials together. Model how scholars should interact with these resources during instruction.</p>";
+    } else {
+      html += "<p><strong>Coaching move:</strong> Review upcoming unit plans and identify where " + pri.title.toLowerCase() + " should be prepared before the unit launches. Build a unit prep checklist with the teacher.</p>";
+    }
+    html += "</div>";
+  }
+
+  // Timeline
+  html += "<h4 style='margin-top:16px;font-size:13px;color:var(--text)'>Recommended Timeline</h4>";
+  html += "<div class='cp-timeline'>";
+  html += "<div class='cp-timeline-item'><h5>Week 1-2</h5><p style='font-size:12px;color:var(--text-secondary)'>Address <strong>" + priorities[0].title + "</strong>. Co-plan installation of missing materials. Model scholar interaction with existing resources.</p></div>";
+  html += "<div class='cp-timeline-item'><h5>Week 3-4</h5><p style='font-size:12px;color:var(--text-secondary)'>Address <strong>" + (priorities[1] ? priorities[1].title : "next priority") + "</strong>. Check progress on week 1-2 items. Observe scholar usage of new materials during instruction.</p></div>";
+  html += "<div class='cp-timeline-item'><h5>Week 6-8</h5><p style='font-size:12px;color:var(--text-secondary)'>Follow-up audit. Verify materials are actively used, not just posted. Address <strong>" + (priorities[2] ? priorities[2].title : "remaining areas") + "</strong>.</p></div>";
+  html += "</div>";
+
+  // Look-fors for next walkthrough
+  html += "<div style='margin-top:14px;padding:12px;background:var(--card-bg);border-radius:8px;border:1px solid var(--card-border)'>";
+  html += "<h4 style='font-size:13px;margin-bottom:8px;color:var(--text)'>Look-Fors for Next Walkthrough</h4>";
+  html += "<ul style='font-size:12px;color:var(--text-secondary);padding-left:20px;line-height:1.8'>";
+  for (var p = 0; p < Math.min(priorities.length, 3); p++) {
+    var pri = priorities[p];
+    for (var w = 0; w < Math.min(pri.weakItems.length, 2); w++) {
+      html += "<li>" + pri.weakItems[w].text + " is present, visible, and referenced by scholars</li>";
+    }
+  }
+  html += "<li>Scholar-generated materials are visibly increasing</li>";
+  html += "<li>New materials match current unit content and vocabulary</li>";
+  html += "</ul></div>";
+
+  html += "</div>";
+
+  var target = document.getElementById("coachingPlanArea");
+  if (target) {
+    target.innerHTML = html;
+    target.scrollIntoView({ behavior: "smooth" });
+  }
+}
+
+/* ==============================
+   ITEM SEARCH & FILTER
+   ============================== */
+
+function filterItems() {
+  var query = document.getElementById("itemSearch").value.toLowerCase().trim();
+  // Track which sections have visible items
+  var sectionVisible = {};
+  for (var i = 0; i < SECTIONS.length; i++) {
+    var s = SECTIONS[i];
+    sectionVisible[s.id] = false;
+    for (var j = 0; j < s.items.length; j++) {
+      var key = s.id + "-" + j;
+      var row = document.getElementById("item-" + key);
+      if (!row) continue;
+      var textEl = row.querySelector(".item-text");
+      var original = s.items[j];
+      if (!query) {
+        row.classList.remove("search-hidden");
+        textEl.innerHTML = "";
+        textEl.textContent = original;
+        sectionVisible[s.id] = true;
+      } else if (original.toLowerCase().indexOf(query) !== -1) {
+        row.classList.remove("search-hidden");
+        sectionVisible[s.id] = true;
+        // Highlight match
+        var regex = new RegExp("(" + query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ")", "gi");
+        textEl.innerHTML = original.replace(regex, "<mark>$1</mark>");
+      } else {
+        row.classList.add("search-hidden");
+        textEl.innerHTML = "";
+        textEl.textContent = original;
+      }
+    }
+  }
+  // Show/hide section blocks
+  for (var i = 0; i < SECTIONS.length; i++) {
+    var s = SECTIONS[i];
+    var block = document.getElementById("item-" + s.id + "-0");
+    if (!block) continue;
+    var secBlock = block.closest(".sec-block");
+    if (secBlock) {
+      if (!query) {
+        secBlock.classList.remove("search-hidden");
+      } else if (sectionVisible[s.id]) {
+        secBlock.classList.remove("search-hidden");
+        // Expand section if searching
+        var body = document.getElementById("body-" + s.id);
+        var chev = document.getElementById("chev-" + s.id);
+        if (body) body.style.display = "block";
+        if (chev) chev.textContent = "▲";
+      } else {
+        secBlock.classList.add("search-hidden");
+      }
+    }
+  }
+  // If searching, show all tab panes
+  if (query) {
+    document.getElementById("pane-permanent").style.display = "block";
+    document.getElementById("pane-rotating").style.display = "block";
+  }
+}
+
+/* ==============================
+   PHOTO EVIDENCE
+   ============================== */
+
+function addPhoto(key) {
+  var input = document.createElement("input");
+  input.type = "file";
+  input.accept = "image/*";
+  input.capture = "environment";
+  input.onchange = function() {
+    if (!input.files || !input.files[0]) return;
+    var file = input.files[0];
+    if (file.size > 2 * 1024 * 1024) {
+      alert("Photo must be under 2MB. Try a lower resolution or crop the image.");
+      return;
+    }
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      if (!itemPhotos[key]) itemPhotos[key] = [];
+      if (itemPhotos[key].length >= 3) {
+        alert("Maximum 3 photos per item. Remove one to add another.");
+        return;
+      }
+      itemPhotos[key].push(e.target.result);
+      renderPhotoThumbs(key);
+      scheduleSave();
+    };
+    reader.readAsDataURL(file);
+  };
+  input.click();
+}
+
+function renderPhotoThumbs(key) {
+  var container = document.getElementById("photos-" + key);
+  if (!container) return;
+  var photos = itemPhotos[key] || [];
+  var thumbs = container.querySelectorAll(".photo-thumb");
+  for (var i = thumbs.length - 1; i >= 0; i--) thumbs[i].parentNode.removeChild(thumbs[i]);
+  for (var i = 0; i < photos.length; i++) {
+    var img = document.createElement("img");
+    img.className = "photo-thumb";
+    img.src = photos[i];
+    img.alt = "Evidence photo " + (i + 1);
+    (function(k, idx) {
+      img.onclick = function() { showPhotoLightbox(k, idx); };
+    })(key, i);
+    container.insertBefore(img, container.querySelector(".photo-add-btn"));
+  }
+}
+
+function showPhotoLightbox(key, idx) {
+  var photos = itemPhotos[key] || [];
+  if (!photos[idx]) return;
+  var lb = document.createElement("div");
+  lb.className = "photo-lightbox";
+  lb.onclick = function(e) { if (e.target === lb) document.body.removeChild(lb); };
+  var img = document.createElement("img");
+  img.src = photos[idx];
+  var closeBtn = document.createElement("button");
+  closeBtn.className = "lb-close";
+  closeBtn.innerHTML = "&times;";
+  closeBtn.onclick = function() { document.body.removeChild(lb); };
+  var delBtn = document.createElement("button");
+  delBtn.className = "lb-delete";
+  delBtn.textContent = "Delete Photo";
+  delBtn.onclick = function() {
+    if (confirm("Delete this photo?")) {
+      itemPhotos[key].splice(idx, 1);
+      if (!itemPhotos[key].length) delete itemPhotos[key];
+      renderPhotoThumbs(key);
+      scheduleSave();
+      document.body.removeChild(lb);
+    }
+  };
+  lb.appendChild(img);
+  lb.appendChild(closeBtn);
+  lb.appendChild(delBtn);
+  document.body.appendChild(lb);
+}
+
+/* ==============================
+   DARK MODE
+   ============================== */
+
+var DARK_MODE_KEY = "esl_audit_dark_mode";
+
+function toggleDarkMode() {
+  var isDark = document.body.classList.toggle("dark-mode");
+  localStorage.setItem(DARK_MODE_KEY, isDark ? "true" : "false");
+  updateDarkModeUI(isDark);
+}
+
+function updateDarkModeUI(isDark) {
+  var icon = document.getElementById("settingsDarkIcon");
+  var title = document.getElementById("settingsDarkTitle");
+  var desc = document.getElementById("settingsDarkDesc");
+  if (icon) icon.innerHTML = isDark ? "&#9728;" : "&#127769;";
+  if (title) title.textContent = isDark ? "Light Mode" : "Dark Mode";
+  if (desc) desc.textContent = isDark ? "Switch to light theme" : "Switch to dark theme";
+}
+
+function initDarkMode() {
+  var stored = localStorage.getItem(DARK_MODE_KEY);
+  var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  var isDark = stored === "true" || (stored === null && prefersDark);
+  if (isDark) {
+    document.body.classList.add("dark-mode");
+  }
+  updateDarkModeUI(isDark);
+}
+
+function showSettingsModal() {
+  var isDark = document.body.classList.contains("dark-mode");
+  updateDarkModeUI(isDark);
+  document.getElementById("settingsModal").classList.add("active");
+}
+
+/* ==============================
+   META LISTENERS
+   ============================== */
+
+function initMetaListeners(){
+  ["m-teacher","m-campus","m-observer","m-date"].forEach(function(fid){
+    document.getElementById(fid).addEventListener("input",function(){scheduleSave();});
+  });
+}
+
+/* ==============================
+   INIT
+   ============================== */
+
+initDarkMode();
+loadCustomizations();
+buildSections("permanent");
+buildSections("rotating");
+buildPrinciples();
+applyHiddenItems();
+populateCampusList();
+
+document.getElementById("m-date").value=new Date().toISOString().slice(0,10);
+
+var hadSave=loadFromStorage();
+if(hadSave)document.getElementById("saveStatus").textContent="Auto-save: restored";
+
+refreshBanner();
+initMetaListeners();
+currentSection="permanent";
+sectionTimerStart=Date.now();
+
+document.querySelectorAll(".modal-overlay").forEach(function(o){
+  o.addEventListener("click",function(e){if(e.target===o)o.classList.remove("active");});
+});
+
+// PWA Service Worker registration
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("service-worker.js").catch(function() {});
+}
+
+// Walkthrough → Audit handoff
+(function(){
+  try {
+    var raw = localStorage.getItem("walkthrough_audit_handoff");
+    if (!raw) return;
+    var handoff = JSON.parse(raw);
+    localStorage.removeItem("walkthrough_audit_handoff");
+    if (handoff.source !== "walkthrough") return;
+    // Pre-fill metadata
+    if (handoff.campus) {
+      var campusEl = document.getElementById("m-campus");
+      if (campusEl) campusEl.value = handoff.campus;
+    }
+    if (handoff.observer) {
+      var obsEl = document.getElementById("m-observer");
+      if (obsEl) obsEl.value = handoff.observer;
+    }
+    if (handoff.date) {
+      var dateEl = document.getElementById("m-date");
+      if (dateEl) dateEl.value = handoff.date;
+    }
+    // Build walkthrough reference notes in section s01
+    var noteLines = [];
+    noteLines.push("=== WALKTHROUGH REFERENCE ===");
+    noteLines.push("Focus: " + (handoff.focusLabel || "N/A"));
+    noteLines.push("Fidelity: " + handoff.fidelityPct + "%");
+    noteLines.push("");
+    if (handoff.observations && handoff.observations.length > 0) {
+      noteLines.push("Observations:");
+      for (var i = 0; i < handoff.observations.length; i++) {
+        var ob = handoff.observations[i];
+        noteLines.push("  " + (ob.code || "?") + " - " + (ob.teacher || "Unknown") + (ob.notes ? ": " + ob.notes : ""));
+      }
+    }
+    var notesEl = document.getElementById("notes-s01");
+    if (notesEl) {
+      notesEl.value = noteLines.join("\n");
+      notesEl.style.display = "block";
+    }
+    // Also store in notes state
+    if (typeof notes !== "undefined") notes["s01"] = noteLines.join("\n");
+    scheduleSave();
+    alert("Walkthrough context loaded!\n\nCheck the notes in Section 1 (Language Production Supports) for your walkthrough observation reference.");
+  } catch(e) {}
+})();
+</script>
+</body>
+</html>

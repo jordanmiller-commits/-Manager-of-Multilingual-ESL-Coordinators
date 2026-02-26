@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Walkthrough Data Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh;padding:20px}
+.wrap{max-width:1140px;margin:0 auto}
+
+/* Header */
+.header{background:linear-gradient(135deg,#2c3e6e,#4a90d9);color:#fff;padding:24px 28px 16px;border-radius:14px 14px 0 0}
+.header h1{font-size:21px;font-weight:800;margin-bottom:2px}
+.header p{font-size:12px;opacity:.85;margin-bottom:12px}
+.header-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tool-btn{background:rgba(255,255,255,.13);color:#fff;border:2px solid rgba(255,255,255,.35);padding:6px 13px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;text-decoration:none;display:inline-block}
+.tool-btn:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.55)}
+
+/* Cards */
+.card{background:#fff;border-radius:10px;box-shadow:0 1px 5px rgba(0,0,0,.07);padding:16px 20px;margin-bottom:12px}
+.first-card{border-radius:0 0 10px 10px;margin-top:0}
+
+/* Controls */
+.controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.controls label{font-size:9px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px}
+.controls select,.controls input{padding:6px 10px;border:1px solid #ddd;border-radius:6px;font-size:12px;font-family:inherit}
+.controls select:focus,.controls input:focus{border-color:#4a90d9;outline:none;box-shadow:0 0 0 2px rgba(74,144,217,.15)}
+.view-select{min-width:220px;font-weight:600}
+
+/* Stats Row */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.stat-card{background:#fff;border-radius:10px;padding:14px 16px;box-shadow:0 1px 5px rgba(0,0,0,.07);text-align:center}
+.stat-val{font-size:28px;font-weight:800;color:#2c3e6e}
+.stat-label{font-size:10px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.4px;margin-top:2px}
+
+/* Chart Area */
+.chart-area{background:#fff;border-radius:10px;box-shadow:0 1px 5px rgba(0,0,0,.07);padding:20px;margin-bottom:12px;min-height:350px;position:relative}
+.chart-title{font-size:14px;font-weight:700;color:#2c3e6e;margin-bottom:12px}
+.chart-wrap{position:relative;width:100%;max-height:400px}
+.chart-wrap canvas{width:100%!important;max-height:400px}
+
+/* Empty State */
+.empty-state{text-align:center;padding:60px 20px;color:#aaa}
+.empty-state .icon{font-size:48px;margin-bottom:12px}
+.empty-state h3{font-size:16px;color:#888;margin-bottom:6px}
+.empty-state p{font-size:12px;line-height:1.6}
+
+/* Lists */
+.action-list{margin-top:12px}
+.action-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid #eee;border-radius:6px;margin-bottom:4px;font-size:11px}
+.action-item .badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700}
+.badge-overdue{background:#fce4ec;color:#c62828}
+.badge-upcoming{background:#fff3e0;color:#e65100}
+.badge-completed{background:#e8f5e9;color:#2e7d32}
+
+/* Two-col layout for coaching view */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* Report / Print */
+.report-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.45);z-index:1000;justify-content:center;align-items:flex-start;overflow-y:auto;padding:20px}
+.report-overlay.active{display:flex}
+.report-page{background:#fff;border-radius:12px;padding:30px 36px;max-width:900px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,.2);margin:20px auto}
+.report-page h2{font-size:18px;color:#2c3e6e;margin-bottom:4px}
+.report-page .rpt-subtitle{font-size:11px;color:#888;margin-bottom:16px}
+.rpt-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.rpt-stat{text-align:center;padding:10px;background:#f8f9fb;border-radius:8px;border:1px solid #eee}
+.rpt-stat .val{font-size:22px;font-weight:800;color:#2c3e6e}
+.rpt-stat .lbl{font-size:9px;font-weight:600;color:#888;text-transform:uppercase}
+.rpt-section{margin-bottom:18px}
+.rpt-section h3{font-size:13px;font-weight:700;color:#2c3e6e;border-bottom:2px solid #4a90d9;padding-bottom:4px;margin-bottom:8px}
+.rpt-table{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:8px}
+.rpt-table th{background:#e8f0fa;padding:6px 8px;text-align:left;font-size:9px;font-weight:700;color:#555;text-transform:uppercase;border:1px solid #ddd}
+.rpt-table td{padding:5px 8px;border:1px solid #eee}
+.rpt-bar{height:14px;border-radius:4px;display:inline-block;vertical-align:middle}
+.rpt-actions{display:flex;gap:8px;justify-content:center;margin-top:20px}
+.rpt-btn{padding:9px 24px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;border:none}
+.rpt-btn.primary{background:#4a90d9;color:#fff}
+.rpt-btn.primary:hover{background:#3a7bc8}
+.rpt-btn.outline{background:#fff;color:#4a90d9;border:2px solid #4a90d9}
+.rpt-btn.outline:hover{background:#eaf3fb}
+
+/* Responsive */
+@media(max-width:768px){
+  .stats-row{grid-template-columns:1fr 1fr}
+  .two-col{grid-template-columns:1fr}
+  .controls{flex-direction:column;align-items:stretch}
+}
+@media(max-width:480px){
+  body{padding:8px}
+  .header{padding:16px 14px}
+  .stats-row{grid-template-columns:1fr}
+}
+@media print{
+  body{background:#fff;padding:0}
+  .wrap,.header,.card,.chart-area,.stats-row,.controls{display:none!important}
+  .report-overlay{display:block!important;position:static;background:none;padding:0}
+  .report-page{box-shadow:none;border-radius:0;padding:10px}
+  .rpt-actions{display:none!important}
+  .rpt-stat,.rpt-table th{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  @page{margin:.5in}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <h1>Walkthrough Data Dashboard</h1>
+    <p>Trends and patterns from saved walkthrough history</p>
+    <div class="header-actions">
+      <a class="tool-btn" href="Academic_Monitoring_Planning_Template.html">&#8592; Back to Planner</a>
+      <button class="tool-btn" onclick="refreshCurrentView()">&#128260; Refresh</button>
+      <button class="tool-btn" onclick="generateReport()">&#128196; Generate Report</button>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div class="card first-card">
+    <div class="controls">
+      <div>
+        <label>View</label><br/>
+        <select class="view-select" id="viewSelect" onchange="switchView()">
+          <option value="codeDistribution">Code Distribution</option>
+          <option value="teacherTrends">Teacher-Level Trends</option>
+          <option value="focusComparison">Focus Area Comparison</option>
+          <option value="coachingPipeline">Coaching Pipeline</option>
+          <option value="campusTrends">Campus-Level Trends</option>
+        </select>
+      </div>
+      <div id="filterBar"></div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row" id="statsRow">
+    <div class="stat-card"><div class="stat-val" id="statSessions">0</div><div class="stat-label">Total Sessions</div></div>
+    <div class="stat-card"><div class="stat-val" id="statObs">0</div><div class="stat-label">Observations</div></div>
+    <div class="stat-card"><div class="stat-val" id="statFidelity">0%</div><div class="stat-label">Avg Fidelity</div></div>
+    <div class="stat-card"><div class="stat-val" id="statCoaching">0</div><div class="stat-label">Coaching Actions</div></div>
+  </div>
+
+  <!-- Chart -->
+  <div class="chart-area" id="chartArea">
+    <div class="chart-title" id="chartTitle">Code Distribution</div>
+    <div class="chart-wrap" id="chartWrap">
+      <canvas id="mainChart"></canvas>
+    </div>
+    <div id="chartExtra"></div>
+  </div>
+</div>
+
+<!-- REPORT OVERLAY -->
+<div class="report-overlay" id="reportOverlay">
+  <div class="report-page" id="reportContent"></div>
+</div>
+
+<script>
+/* ======================================================
+   CONSTANTS
+   ====================================================== */
+var HISTORY_KEY = "walkthrough_history";
+var CODE_COLORS = {"\u2713": "#27ae60", "O": "#e74c3c", "P": "#f39c12", "NA": "#95a5a6"};
+var CODE_LABELS = {"\u2713": "Observed (\u2713)", "O": "Not Observed (O)", "P": "Partial (P)", "NA": "N/A"};
+var FOCUS_LABELS = {
+  "cfu": "CFU",
+  "discourse": "Academic Discourse",
+  "scaffolding": "Scaffolding",
+  "engagement": "Engagement",
+  "rigor": "Rigor / DOK",
+  "esl": "ESL Strategies",
+  "custom": "Custom",
+  "": "No Focus"
+};
+var FOCUS_COLORS = ["#4a90d9", "#8e44ad", "#27ae60", "#e67e22", "#e74c3c", "#16a085", "#7f8c8d"];
+
+/* ======================================================
+   STATE
+   ====================================================== */
+var currentChart = null;
+var currentView = "codeDistribution";
+
+/* ======================================================
+   DATA ACCESS
+   ====================================================== */
+function getHistory() {
+  try {
+    var raw = localStorage.getItem(HISTORY_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) { return []; }
+}
+
+function escHtml(str) {
+  if (!str) return "";
+  var d = document.createElement("div");
+  d.appendChild(document.createTextNode(str));
+  return d.innerHTML;
+}
+
+/* ======================================================
+   FILTERING
+   ====================================================== */
+function getFilteredHistory() {
+  var history = getHistory();
+  var filtered = [];
+
+  var dateFrom = document.getElementById("filterDateFrom");
+  var dateTo = document.getElementById("filterDateTo");
+  var campus = document.getElementById("filterCampus");
+  var focus = document.getElementById("filterFocus");
+  var teacher = document.getElementById("filterTeacher");
+
+  var df = dateFrom ? dateFrom.value : "";
+  var dt = dateTo ? dateTo.value : "";
+  var fc = campus ? campus.value : "";
+  var ff = focus ? focus.value : "";
+
+  for (var i = 0; i < history.length; i++) {
+    var h = history[i];
+    if (df && h.meta.date < df) continue;
+    if (dt && h.meta.date > dt) continue;
+    if (fc && h.meta.campus !== fc) continue;
+    if (ff && h.meta.focus !== ff) continue;
+    filtered.push(h);
+  }
+
+  return filtered;
+}
+
+function getFilterTeacher() {
+  var el = document.getElementById("filterTeacher");
+  return el ? el.value : "";
+}
+
+/* ======================================================
+   AGGREGATION HELPERS
+   ====================================================== */
+function aggregateCodeCounts(sessions) {
+  var totals = {"\u2713": 0, "O": 0, "P": 0, "NA": 0};
+  for (var i = 0; i < sessions.length; i++) {
+    var m = sessions[i].metrics;
+    if (!m || !m.codeCounts) continue;
+    var codes = ["\u2713", "O", "P", "NA"];
+    for (var c = 0; c < codes.length; c++) {
+      totals[codes[c]] += (m.codeCounts[codes[c]] || 0);
+    }
+  }
+  return totals;
+}
+
+function aggregateCoachingCounts(sessions) {
+  var totals = {pending: 0, scheduled: 0, completed: 0};
+  for (var i = 0; i < sessions.length; i++) {
+    var m = sessions[i].metrics;
+    if (!m || !m.coachingCounts) continue;
+    totals.pending += (m.coachingCounts.pending || 0);
+    totals.scheduled += (m.coachingCounts.scheduled || 0);
+    totals.completed += (m.coachingCounts.completed || 0);
+  }
+  return totals;
+}
+
+function getUniqueCampuses(history) {
+  var map = {};
+  for (var i = 0; i < history.length; i++) {
+    if (history[i].meta.campus) map[history[i].meta.campus] = true;
+  }
+  var arr = [];
+  for (var k in map) { if (map.hasOwnProperty(k)) arr.push(k); }
+  return arr.sort();
+}
+
+function getUniqueFocuses(history) {
+  var map = {};
+  for (var i = 0; i < history.length; i++) {
+    if (history[i].meta.focus) map[history[i].meta.focus] = true;
+  }
+  var arr = [];
+  for (var k in map) { if (map.hasOwnProperty(k)) arr.push(k); }
+  return arr.sort();
+}
+
+function getUniqueTeachers(history) {
+  var map = {};
+  for (var i = 0; i < history.length; i++) {
+    var tc = history[i].metrics ? history[i].metrics.teacherCodes : [];
+    if (!tc) continue;
+    for (var j = 0; j < tc.length; j++) {
+      if (tc[j].teacher) map[tc[j].teacher.trim()] = true;
+    }
+  }
+  var arr = [];
+  for (var k in map) { if (map.hasOwnProperty(k)) arr.push(k); }
+  return arr.sort();
+}
+
+/* ======================================================
+   STATS BAR
+   ====================================================== */
+function updateStats(sessions) {
+  var totalObs = 0;
+  var totalCoaching = 0;
+  var fidelitySum = 0;
+  var fidelityCount = 0;
+
+  for (var i = 0; i < sessions.length; i++) {
+    var m = sessions[i].metrics;
+    if (m) {
+      var obs = (m.codeCounts ? (m.codeCounts["\u2713"] + m.codeCounts["O"] + m.codeCounts["P"] + m.codeCounts["NA"]) : 0);
+      totalObs += obs;
+      if (m.coachingCounts) {
+        totalCoaching += (m.coachingCounts.pending + m.coachingCounts.scheduled + m.coachingCounts.completed);
+      }
+      if (obs > 0) {
+        fidelitySum += m.fidelityPct;
+        fidelityCount++;
+      }
+    }
+  }
+
+  document.getElementById("statSessions").textContent = sessions.length;
+  document.getElementById("statObs").textContent = totalObs;
+  document.getElementById("statFidelity").textContent = fidelityCount > 0 ? Math.round(fidelitySum / fidelityCount) + "%" : "N/A";
+  document.getElementById("statCoaching").textContent = totalCoaching;
+}
+
+/* ======================================================
+   CHART MANAGEMENT
+   ====================================================== */
+function destroyChart() {
+  if (currentChart) {
+    currentChart.destroy();
+    currentChart = null;
+  }
+}
+
+function getCtx() {
+  // Reset canvas to avoid Chart.js reuse issues
+  var wrap = document.getElementById("chartWrap");
+  var oldCanvas = document.getElementById("mainChart");
+  if (oldCanvas) oldCanvas.remove();
+  var canvas = document.createElement("canvas");
+  canvas.id = "mainChart";
+  wrap.appendChild(canvas);
+  return canvas.getContext("2d");
+}
+
+/* ======================================================
+   FILTER BAR BUILDER
+   ====================================================== */
+function buildFilterBar(viewId) {
+  var history = getHistory();
+  var campuses = getUniqueCampuses(history);
+  var focuses = getUniqueFocuses(history);
+  var teachers = getUniqueTeachers(history);
+  var bar = document.getElementById("filterBar");
+  var html = "";
+
+  // Date range (all views)
+  html += '<div style="display:inline-block;margin-right:10px">';
+  html += '<label>From</label><br/>';
+  html += '<input type="date" id="filterDateFrom" onchange="refreshCurrentView()"/>';
+  html += '</div>';
+  html += '<div style="display:inline-block;margin-right:10px">';
+  html += '<label>To</label><br/>';
+  html += '<input type="date" id="filterDateTo" onchange="refreshCurrentView()"/>';
+  html += '</div>';
+
+  // Campus filter (all views except campusTrends which uses its own)
+  if (viewId !== "campusTrends") {
+    html += '<div style="display:inline-block;margin-right:10px">';
+    html += '<label>Campus</label><br/>';
+    html += '<select id="filterCampus" onchange="refreshCurrentView()">';
+    html += '<option value="">All Campuses</option>';
+    for (var c = 0; c < campuses.length; c++) {
+      html += '<option value="' + escHtml(campuses[c]) + '">' + escHtml(campuses[c]) + '</option>';
+    }
+    html += '</select>';
+    html += '</div>';
+  }
+
+  // Focus filter (codeDistribution, campusTrends)
+  if (viewId === "focusComparison" || viewId === "codeDistribution") {
+    html += '<div style="display:inline-block;margin-right:10px">';
+    html += '<label>Focus Area</label><br/>';
+    html += '<select id="filterFocus" onchange="refreshCurrentView()">';
+    html += '<option value="">All Focus Areas</option>';
+    for (var f = 0; f < focuses.length; f++) {
+      html += '<option value="' + escHtml(focuses[f]) + '">' + escHtml(FOCUS_LABELS[focuses[f]] || focuses[f]) + '</option>';
+    }
+    html += '</select>';
+    html += '</div>';
+  }
+
+  // Teacher filter (teacherTrends only)
+  if (viewId === "teacherTrends") {
+    html += '<div style="display:inline-block;margin-right:10px">';
+    html += '<label>Teacher</label><br/>';
+    html += '<select id="filterTeacher" onchange="refreshCurrentView()">';
+    html += '<option value="">All Teachers</option>';
+    for (var t = 0; t < teachers.length; t++) {
+      html += '<option value="' + escHtml(teachers[t]) + '">' + escHtml(teachers[t]) + '</option>';
+    }
+    html += '</select>';
+    html += '</div>';
+  }
+
+  // Campus dropdown for campusTrends
+  if (viewId === "campusTrends") {
+    html += '<div style="display:inline-block;margin-right:10px">';
+    html += '<label>Campus</label><br/>';
+    html += '<select id="filterCampus" onchange="refreshCurrentView()">';
+    html += '<option value="">All Campuses (Comparison)</option>';
+    for (var cc = 0; cc < campuses.length; cc++) {
+      html += '<option value="' + escHtml(campuses[cc]) + '">' + escHtml(campuses[cc]) + '</option>';
+    }
+    html += '</select>';
+    html += '</div>';
+  }
+
+  bar.innerHTML = html;
+}
+
+/* ======================================================
+   VIEW: CODE DISTRIBUTION
+   ====================================================== */
+function renderCodeDistribution() {
+  var sessions = getFilteredHistory();
+  updateStats(sessions);
+
+  document.getElementById("chartTitle").textContent = "Code Distribution Across Sessions";
+  document.getElementById("chartExtra").innerHTML = "";
+
+  if (sessions.length === 0) {
+    showEmpty("No walkthrough sessions found. Save walkthroughs from the planning template to see data here.");
+    return;
+  }
+
+  var totals = aggregateCodeCounts(sessions);
+  var codes = ["\u2713", "O", "P", "NA"];
+  var data = [];
+  var bgColors = [];
+  var labelsArr = [];
+
+  for (var i = 0; i < codes.length; i++) {
+    data.push(totals[codes[i]]);
+    bgColors.push(CODE_COLORS[codes[i]]);
+    labelsArr.push(CODE_LABELS[codes[i]] + ": " + totals[codes[i]]);
+  }
+
+  var ctx = getCtx();
+  currentChart = new Chart(ctx, {
+    type: "doughnut",
+    data: {
+      labels: labelsArr,
+      datasets: [{
+        data: data,
+        backgroundColor: bgColors,
+        borderWidth: 2,
+        borderColor: "#fff"
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: "bottom",
+          labels: {font: {family: "'Segoe UI',Arial,sans-serif", size: 12}}
+        }
+      }
+    }
+  });
+}
+
+/* ======================================================
+   VIEW: TEACHER-LEVEL TRENDS
+   ====================================================== */
+function renderTeacherTrends() {
+  var sessions = getFilteredHistory();
+  updateStats(sessions);
+
+  document.getElementById("chartTitle").textContent = "Teacher-Level Trends Over Time";
+  document.getElementById("chartExtra").innerHTML = "";
+
+  var teacher = getFilterTeacher();
+
+  if (sessions.length === 0) {
+    showEmpty("No walkthrough sessions found.");
+    return;
+  }
+
+  // Sort by date
+  sessions.sort(function(a, b) { return (a.meta.date || "").localeCompare(b.meta.date || ""); });
+
+  if (!teacher) {
+    // Show all teachers — aggregate fidelity per teacher
+    var teacherMap = {};
+    for (var i = 0; i < sessions.length; i++) {
+      var tc = sessions[i].metrics ? sessions[i].metrics.teacherCodes : [];
+      if (!tc) continue;
+      for (var j = 0; j < tc.length; j++) {
+        var name = (tc[j].teacher || "").trim();
+        if (!name) continue;
+        if (!teacherMap[name]) teacherMap[name] = {check: 0, other: 0};
+        if (tc[j].code === "\u2713") {
+          teacherMap[name].check++;
+        } else if (tc[j].code !== "NA") {
+          teacherMap[name].other++;
+        }
+      }
+    }
+
+    var labels = [];
+    var dataVals = [];
+    var bgColors = [];
+    for (var tk in teacherMap) {
+      if (!teacherMap.hasOwnProperty(tk)) continue;
+      labels.push(tk);
+      var total = teacherMap[tk].check + teacherMap[tk].other;
+      var pct = total > 0 ? Math.round(teacherMap[tk].check / total * 100) : 0;
+      dataVals.push(pct);
+      bgColors.push(pct >= 80 ? "#27ae60" : pct >= 50 ? "#f39c12" : "#e74c3c");
+    }
+
+    var ctx = getCtx();
+    currentChart = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: labels,
+        datasets: [{
+          label: "Fidelity %",
+          data: dataVals,
+          backgroundColor: bgColors,
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {min: 0, max: 100, title: {display: true, text: "Fidelity %"}}
+        },
+        plugins: {
+          legend: {display: false}
+        }
+      }
+    });
+    return;
+  }
+
+  // Single teacher — line chart over sessions
+  var sessionLabels = [];
+  var fidelityData = [];
+
+  for (var si = 0; si < sessions.length; si++) {
+    var tc2 = sessions[si].metrics ? sessions[si].metrics.teacherCodes : [];
+    if (!tc2) continue;
+    var check = 0;
+    var other = 0;
+    var found = false;
+    for (var ti = 0; ti < tc2.length; ti++) {
+      if ((tc2[ti].teacher || "").trim() === teacher) {
+        found = true;
+        if (tc2[ti].code === "\u2713") check++;
+        else if (tc2[ti].code !== "NA") other++;
+      }
+    }
+    if (found) {
+      sessionLabels.push(sessions[si].meta.date || "Session " + (si + 1));
+      var total2 = check + other;
+      fidelityData.push(total2 > 0 ? Math.round(check / total2 * 100) : 0);
+    }
+  }
+
+  if (fidelityData.length === 0) {
+    showEmpty("No observations found for " + teacher + " in filtered sessions.");
+    return;
+  }
+
+  var ctx2 = getCtx();
+  currentChart = new Chart(ctx2, {
+    type: "line",
+    data: {
+      labels: sessionLabels,
+      datasets: [{
+        label: teacher + " Fidelity %",
+        data: fidelityData,
+        borderColor: "#4a90d9",
+        backgroundColor: "rgba(74,144,217,.1)",
+        fill: true,
+        tension: 0.3,
+        pointRadius: 5,
+        pointBackgroundColor: "#4a90d9"
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {min: 0, max: 100, title: {display: true, text: "Fidelity %"}}
+      },
+      plugins: {
+        legend: {position: "bottom"}
+      }
+    }
+  });
+}
+
+/* ======================================================
+   VIEW: FOCUS AREA COMPARISON
+   ====================================================== */
+function renderFocusComparison() {
+  var sessions = getFilteredHistory();
+  updateStats(sessions);
+
+  document.getElementById("chartTitle").textContent = "Focus Area Comparison";
+  document.getElementById("chartExtra").innerHTML = "";
+
+  if (sessions.length === 0) {
+    showEmpty("No walkthrough sessions found.");
+    return;
+  }
+
+  var focusMap = {};
+  for (var i = 0; i < sessions.length; i++) {
+    var focus = sessions[i].meta.focus || "";
+    var label = FOCUS_LABELS[focus] || focus || "No Focus";
+    if (!focusMap[label]) focusMap[label] = {check: 0, O: 0, P: 0, NA: 0, count: 0};
+    focusMap[label].count++;
+    var m = sessions[i].metrics;
+    if (m && m.codeCounts) {
+      focusMap[label].check += (m.codeCounts["\u2713"] || 0);
+      focusMap[label].O += (m.codeCounts["O"] || 0);
+      focusMap[label].P += (m.codeCounts["P"] || 0);
+      focusMap[label].NA += (m.codeCounts["NA"] || 0);
+    }
+  }
+
+  var labels = [];
+  var checkData = [];
+  var oData = [];
+  var pData = [];
+
+  for (var fk in focusMap) {
+    if (!focusMap.hasOwnProperty(fk)) continue;
+    labels.push(fk + " (" + focusMap[fk].count + ")");
+    checkData.push(focusMap[fk].check);
+    oData.push(focusMap[fk].O);
+    pData.push(focusMap[fk].P);
+  }
+
+  var ctx = getCtx();
+  currentChart = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: labels,
+      datasets: [
+        {label: "Observed (\u2713)", data: checkData, backgroundColor: "#27ae60", borderRadius: 4},
+        {label: "Not Observed (O)", data: oData, backgroundColor: "#e74c3c", borderRadius: 4},
+        {label: "Partial (P)", data: pData, backgroundColor: "#f39c12", borderRadius: 4}
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        x: {stacked: true},
+        y: {stacked: true, title: {display: true, text: "Observation Count"}}
+      },
+      plugins: {
+        legend: {position: "bottom"}
+      }
+    }
+  });
+}
+
+/* ======================================================
+   VIEW: COACHING PIPELINE
+   ====================================================== */
+function renderCoachingPipeline() {
+  var sessions = getFilteredHistory();
+  updateStats(sessions);
+
+  document.getElementById("chartTitle").textContent = "Coaching Pipeline";
+
+  if (sessions.length === 0) {
+    showEmpty("No walkthrough sessions found.");
+    document.getElementById("chartExtra").innerHTML = "";
+    return;
+  }
+
+  var totals = aggregateCoachingCounts(sessions);
+  var total = totals.pending + totals.scheduled + totals.completed;
+
+  if (total === 0) {
+    showEmpty("No coaching actions recorded in filtered sessions.");
+    document.getElementById("chartExtra").innerHTML = "";
+    return;
+  }
+
+  var ctx = getCtx();
+  currentChart = new Chart(ctx, {
+    type: "doughnut",
+    data: {
+      labels: [
+        "Pending: " + totals.pending,
+        "Scheduled: " + totals.scheduled,
+        "Completed: " + totals.completed
+      ],
+      datasets: [{
+        data: [totals.pending, totals.scheduled, totals.completed],
+        backgroundColor: ["#e65100", "#1565c0", "#2e7d32"],
+        borderWidth: 2,
+        borderColor: "#fff"
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {position: "bottom"}
+      }
+    }
+  });
+
+  // Build overdue/upcoming lists
+  var overdue = [];
+  var upcoming = [];
+  var today = new Date().toISOString().slice(0, 10);
+
+  for (var i = 0; i < sessions.length; i++) {
+    var actions = sessions[i].coachingActions || [];
+    for (var j = 0; j < actions.length; j++) {
+      var a = actions[j];
+      if (a.status === "completed") continue;
+      var item = {
+        teacher: a.teacher || "Unknown",
+        nextStep: a.nextStep || a.observation || "",
+        deadline: a.deadline || "",
+        status: a.status,
+        session: sessions[i].meta.date || ""
+      };
+      if (a.deadline && a.deadline < today && a.status !== "completed") {
+        overdue.push(item);
+      } else if (a.deadline && a.status !== "completed") {
+        upcoming.push(item);
+      }
+    }
+  }
+
+  var extraHtml = '<div class="two-col" style="margin-top:16px">';
+
+  extraHtml += '<div>';
+  extraHtml += '<div style="font-size:12px;font-weight:700;color:#c62828;margin-bottom:6px">Overdue (' + overdue.length + ')</div>';
+  if (overdue.length === 0) {
+    extraHtml += '<div style="font-size:11px;color:#aaa;font-style:italic">No overdue actions</div>';
+  } else {
+    extraHtml += '<div class="action-list">';
+    for (var oi = 0; oi < overdue.length; oi++) {
+      extraHtml += '<div class="action-item"><span class="badge badge-overdue">OVERDUE</span>';
+      extraHtml += '<span>' + escHtml(overdue[oi].teacher) + ' &mdash; ' + escHtml(overdue[oi].nextStep) + ' (due ' + escHtml(overdue[oi].deadline) + ')</span></div>';
+    }
+    extraHtml += '</div>';
+  }
+  extraHtml += '</div>';
+
+  extraHtml += '<div>';
+  extraHtml += '<div style="font-size:12px;font-weight:700;color:#e65100;margin-bottom:6px">Upcoming (' + upcoming.length + ')</div>';
+  if (upcoming.length === 0) {
+    extraHtml += '<div style="font-size:11px;color:#aaa;font-style:italic">No upcoming actions</div>';
+  } else {
+    extraHtml += '<div class="action-list">';
+    for (var ui = 0; ui < upcoming.length; ui++) {
+      extraHtml += '<div class="action-item"><span class="badge badge-upcoming">UPCOMING</span>';
+      extraHtml += '<span>' + escHtml(upcoming[ui].teacher) + ' &mdash; ' + escHtml(upcoming[ui].nextStep) + ' (due ' + escHtml(upcoming[ui].deadline) + ')</span></div>';
+    }
+    extraHtml += '</div>';
+  }
+  extraHtml += '</div>';
+
+  extraHtml += '</div>';
+  document.getElementById("chartExtra").innerHTML = extraHtml;
+}
+
+/* ======================================================
+   VIEW: CAMPUS-LEVEL TRENDS
+   ====================================================== */
+function renderCampusTrends() {
+  var sessions = getFilteredHistory();
+  updateStats(sessions);
+
+  document.getElementById("chartTitle").textContent = "Campus-Level Trends";
+  document.getElementById("chartExtra").innerHTML = "";
+
+  if (sessions.length === 0) {
+    showEmpty("No walkthrough sessions found.");
+    return;
+  }
+
+  var selectedCampus = "";
+  var campusEl = document.getElementById("filterCampus");
+  if (campusEl) selectedCampus = campusEl.value;
+
+  if (selectedCampus) {
+    // Single campus — fidelity over time (line chart)
+    var campusSessions = [];
+    for (var i = 0; i < sessions.length; i++) {
+      if (sessions[i].meta.campus === selectedCampus) campusSessions.push(sessions[i]);
+    }
+    campusSessions.sort(function(a, b) { return (a.meta.date || "").localeCompare(b.meta.date || ""); });
+
+    var labels = [];
+    var data = [];
+    for (var j = 0; j < campusSessions.length; j++) {
+      labels.push(campusSessions[j].meta.date || "Session " + (j + 1));
+      data.push(campusSessions[j].metrics ? campusSessions[j].metrics.fidelityPct : 0);
+    }
+
+    if (data.length === 0) {
+      showEmpty("No sessions found for " + selectedCampus + ".");
+      return;
+    }
+
+    var ctx = getCtx();
+    currentChart = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: labels,
+        datasets: [{
+          label: selectedCampus + " Fidelity %",
+          data: data,
+          borderColor: "#4a90d9",
+          backgroundColor: "rgba(74,144,217,.1)",
+          fill: true,
+          tension: 0.3,
+          pointRadius: 5,
+          pointBackgroundColor: "#4a90d9"
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {min: 0, max: 100, title: {display: true, text: "Fidelity %"}}
+        },
+        plugins: {
+          legend: {position: "bottom"}
+        }
+      }
+    });
+  } else {
+    // Cross-campus comparison (bar chart)
+    var campusMap = {};
+    for (var ci = 0; ci < sessions.length; ci++) {
+      var campus = sessions[ci].meta.campus || "No Campus";
+      if (!campusMap[campus]) campusMap[campus] = {fidelitySum: 0, count: 0};
+      campusMap[campus].fidelitySum += (sessions[ci].metrics ? sessions[ci].metrics.fidelityPct : 0);
+      campusMap[campus].count++;
+    }
+
+    var barLabels = [];
+    var barData = [];
+    var barColors = [];
+    var colorIdx = 0;
+    var palette = ["#4a90d9", "#8e44ad", "#27ae60", "#e67e22", "#e74c3c", "#16a085", "#2c3e6e"];
+
+    for (var ck in campusMap) {
+      if (!campusMap.hasOwnProperty(ck)) continue;
+      barLabels.push(ck + " (" + campusMap[ck].count + " sessions)");
+      barData.push(Math.round(campusMap[ck].fidelitySum / campusMap[ck].count));
+      barColors.push(palette[colorIdx % palette.length]);
+      colorIdx++;
+    }
+
+    var ctx2 = getCtx();
+    currentChart = new Chart(ctx2, {
+      type: "bar",
+      data: {
+        labels: barLabels,
+        datasets: [{
+          label: "Avg Fidelity %",
+          data: barData,
+          backgroundColor: barColors,
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {min: 0, max: 100, title: {display: true, text: "Avg Fidelity %"}}
+        },
+        plugins: {
+          legend: {display: false}
+        }
+      }
+    });
+  }
+}
+
+/* ======================================================
+   EMPTY STATE
+   ====================================================== */
+function showEmpty(message) {
+  destroyChart();
+  var wrap = document.getElementById("chartWrap");
+  var canvas = document.getElementById("mainChart");
+  if (canvas) canvas.style.display = "none";
+  document.getElementById("chartExtra").innerHTML =
+    '<div class="empty-state">' +
+    '<div class="icon">&#128202;</div>' +
+    '<h3>No Data Available</h3>' +
+    '<p>' + escHtml(message) + '</p>' +
+    '</div>';
+}
+
+/* ======================================================
+   VIEW SWITCHING
+   ====================================================== */
+function switchView() {
+  var sel = document.getElementById("viewSelect");
+  currentView = sel.value;
+  destroyChart();
+  buildFilterBar(currentView);
+
+  // Ensure canvas is visible
+  var canvas = document.getElementById("mainChart");
+  if (canvas) canvas.style.display = "";
+
+  refreshCurrentView();
+}
+
+function refreshCurrentView() {
+  destroyChart();
+  document.getElementById("chartExtra").innerHTML = "";
+
+  var canvas = document.getElementById("mainChart");
+  if (canvas) canvas.style.display = "";
+
+  switch (currentView) {
+    case "codeDistribution": renderCodeDistribution(); break;
+    case "teacherTrends": renderTeacherTrends(); break;
+    case "focusComparison": renderFocusComparison(); break;
+    case "coachingPipeline": renderCoachingPipeline(); break;
+    case "campusTrends": renderCampusTrends(); break;
+  }
+}
+
+/* ======================================================
+   REPORT GENERATION
+   ====================================================== */
+
+function generateReport() {
+  var sessions = getFilteredHistory();
+  if (sessions.length === 0) {
+    alert("No walkthrough data to report. Save walkthroughs from the planning template first.");
+    return;
+  }
+
+  var totals = aggregateCodeCounts(sessions);
+  var coachTotals = aggregateCoachingCounts(sessions);
+  var totalObs = totals["\u2713"] + totals["O"] + totals["P"] + totals["NA"];
+  var fidelitySum = 0; var fidelityCount = 0;
+  for (var i = 0; i < sessions.length; i++) {
+    var m = sessions[i].metrics;
+    if (m && m.fidelityPct > 0) { fidelitySum += m.fidelityPct; fidelityCount++; }
+  }
+  var avgFidelity = fidelityCount > 0 ? Math.round(fidelitySum / fidelityCount) : 0;
+  var totalCoaching = coachTotals.pending + coachTotals.scheduled + coachTotals.completed;
+  var dateNow = new Date().toLocaleDateString();
+
+  var html = "";
+  html += '<h2>Walkthrough Data Report</h2>';
+  html += '<div class="rpt-subtitle">Generated ' + escHtml(dateNow) + ' &bull; ' + sessions.length + ' session(s) included</div>';
+
+  // Stats
+  html += '<div class="rpt-stats">';
+  html += '<div class="rpt-stat"><div class="val">' + sessions.length + '</div><div class="lbl">Sessions</div></div>';
+  html += '<div class="rpt-stat"><div class="val">' + totalObs + '</div><div class="lbl">Observations</div></div>';
+  html += '<div class="rpt-stat"><div class="val">' + avgFidelity + '%</div><div class="lbl">Avg Fidelity</div></div>';
+  html += '<div class="rpt-stat"><div class="val">' + totalCoaching + '</div><div class="lbl">Coaching Actions</div></div>';
+  html += '</div>';
+
+  // Code Distribution
+  html += '<div class="rpt-section"><h3>Observation Code Distribution</h3>';
+  html += '<table class="rpt-table"><thead><tr><th>Code</th><th>Count</th><th>Percentage</th><th>Distribution</th></tr></thead><tbody>';
+  var codes = ["\u2713", "O", "P", "NA"];
+  var codeNames = {"\\u2713": "Observed (\u2713)", "O": "Not Observed (O)", "P": "Partial (P)", "NA": "N/A"};
+  var codeColors = {"\u2713": "#27ae60", "O": "#e74c3c", "P": "#f39c12", "NA": "#95a5a6"};
+  for (var c = 0; c < codes.length; c++) {
+    var cnt = totals[codes[c]];
+    var pct = totalObs > 0 ? Math.round(cnt / totalObs * 100) : 0;
+    html += '<tr><td>' + escHtml(codes[c]) + '</td><td>' + cnt + '</td><td>' + pct + '%</td>';
+    html += '<td><div class="rpt-bar" style="width:' + Math.max(pct, 2) + '%;background:' + codeColors[codes[c]] + '">&nbsp;</div></td></tr>';
+  }
+  html += '</tbody></table></div>';
+
+  // Coaching Pipeline
+  html += '<div class="rpt-section"><h3>Coaching Pipeline</h3>';
+  html += '<table class="rpt-table"><thead><tr><th>Status</th><th>Count</th><th>Percentage</th></tr></thead><tbody>';
+  var statuses = ["pending", "scheduled", "completed"];
+  var statusLabels = ["Pending", "Scheduled", "Completed"];
+  for (var s = 0; s < statuses.length; s++) {
+    var sc = coachTotals[statuses[s]];
+    var sp = totalCoaching > 0 ? Math.round(sc / totalCoaching * 100) : 0;
+    html += '<tr><td>' + statusLabels[s] + '</td><td>' + sc + '</td><td>' + sp + '%</td></tr>';
+  }
+  html += '</tbody></table></div>';
+
+  // Session Detail
+  html += '<div class="rpt-section"><h3>Session Detail</h3>';
+  html += '<table class="rpt-table"><thead><tr><th>Date</th><th>Leader</th><th>Campus</th><th>Focus</th><th>Obs</th><th>Fidelity</th></tr></thead><tbody>';
+  sessions.sort(function(a, b) { return (b.meta.date || "").localeCompare(a.meta.date || ""); });
+  for (var j = 0; j < sessions.length; j++) {
+    var sess = sessions[j];
+    var fid = sess.metrics ? sess.metrics.fidelityPct : 0;
+    var fidColor = fid >= 80 ? "#27ae60" : fid >= 50 ? "#f39c12" : "#e74c3c";
+    var obsC = sess.observations ? sess.observations.length : 0;
+    html += '<tr>';
+    html += '<td>' + escHtml(sess.meta.date || "N/A") + '</td>';
+    html += '<td>' + escHtml(sess.meta.leader || "N/A") + '</td>';
+    html += '<td>' + escHtml(sess.meta.campus || "N/A") + '</td>';
+    html += '<td>' + escHtml(sess.meta.focusLabel || sess.meta.focus || "N/A") + '</td>';
+    html += '<td>' + obsC + '</td>';
+    html += '<td style="font-weight:700;color:' + fidColor + '">' + fid + '%</td>';
+    html += '</tr>';
+  }
+  html += '</tbody></table></div>';
+
+  // Top Teachers
+  var teacherMap = {};
+  for (var ti = 0; ti < sessions.length; ti++) {
+    var tc = sessions[ti].metrics ? sessions[ti].metrics.teacherCodes : [];
+    if (!tc) continue;
+    for (var tj = 0; tj < tc.length; tj++) {
+      var tname = (tc[tj].teacher || "").trim();
+      if (!tname) continue;
+      if (!teacherMap[tname]) teacherMap[tname] = {check: 0, other: 0, total: 0};
+      teacherMap[tname].total++;
+      if (tc[tj].code === "\u2713") teacherMap[tname].check++;
+      else if (tc[tj].code !== "NA") teacherMap[tname].other++;
+    }
+  }
+  var teacherArr = [];
+  for (var tk in teacherMap) {
+    if (!teacherMap.hasOwnProperty(tk)) continue;
+    var den = teacherMap[tk].check + teacherMap[tk].other;
+    teacherArr.push({name: tk, fidelity: den > 0 ? Math.round(teacherMap[tk].check / den * 100) : 0, obs: teacherMap[tk].total});
+  }
+  teacherArr.sort(function(a, b) { return a.fidelity - b.fidelity; });
+
+  if (teacherArr.length > 0) {
+    html += '<div class="rpt-section"><h3>Teacher Fidelity Summary</h3>';
+    html += '<table class="rpt-table"><thead><tr><th>Teacher</th><th>Observations</th><th>Fidelity</th></tr></thead><tbody>';
+    for (var tl = 0; tl < teacherArr.length; tl++) {
+      var tf = teacherArr[tl].fidelity;
+      var tfc = tf >= 80 ? "#27ae60" : tf >= 50 ? "#f39c12" : "#e74c3c";
+      html += '<tr><td>' + escHtml(teacherArr[tl].name) + '</td><td>' + teacherArr[tl].obs + '</td>';
+      html += '<td style="font-weight:700;color:' + tfc + '">' + tf + '%</td></tr>';
+    }
+    html += '</tbody></table></div>';
+  }
+
+  // Actions
+  html += '<div class="rpt-actions no-print">';
+  html += '<button class="rpt-btn primary" onclick="window.print()">&#128424; Print / Save PDF</button>';
+  html += '<button class="rpt-btn outline" onclick="closeReport()">Close</button>';
+  html += '</div>';
+
+  document.getElementById("reportContent").innerHTML = html;
+  document.getElementById("reportOverlay").classList.add("active");
+}
+
+function closeReport() {
+  document.getElementById("reportOverlay").classList.remove("active");
+}
+
+// Click overlay to close
+(function() {
+  var overlay = document.getElementById("reportOverlay");
+  if (overlay) {
+    overlay.addEventListener("click", function(e) {
+      if (e.target === overlay) overlay.classList.remove("active");
+    });
+  }
+})();
+
+/* ======================================================
+   INITIALIZATION
+   ====================================================== */
+buildFilterBar("codeDistribution");
+refreshCurrentView();
+</script>
+</body>
+</html>

@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ELPS Agent — Knowledge Base Q&A</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f0f2f7;--card:#fff;--card-border:transparent;--text:#333;--text-muted:#888;--text-heading:#2c3e6e;--border:#ddd;--border-light:#e0e0e0;--input-bg:#fff;--hover-bg:#f5f5f5;--code-bg:#f8f9fa;--shadow:0 1px 5px rgba(0,0,0,.07);--primary:#4a90d9;--primary-dark:#2c3e6e;--primary-light:#eaf3fb;--success:#27ae60;--danger:#e74c3c;--warn:#e67e22;--mark-bg:#fff3cd;--chat-user-bg:linear-gradient(135deg,#2c3e6e,#4a90d9);--chat-ai-bg:#fff;--chat-ai-border:#e0e0e0}
+body.dark{--bg:#1a1d23;--card:#23272e;--card-border:#333;--text:#d4d4d4;--text-muted:#888;--text-heading:#7eb3e8;--border:#444;--border-light:#3a3a3a;--input-bg:#2a2e36;--hover-bg:#2a2e36;--code-bg:#2a2e36;--shadow:0 1px 5px rgba(0,0,0,.3);--mark-bg:#5c4a1e;--chat-ai-bg:#23272e;--chat-ai-border:#444}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);padding:18px;min-height:100vh;transition:background .3s,color .3s}
+.wrap{max-width:920px;margin:0 auto}
+.header{background:linear-gradient(135deg,#2c3e6e,#4a90d9);color:#fff;border-radius:12px;padding:24px 28px 16px;margin-bottom:18px}
+.header h1{font-size:22px;font-weight:800;margin-bottom:2px}
+.header .subtitle{font-size:12px;opacity:.85;margin-bottom:12px}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.tool-btn{background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.35);color:#fff;border-radius:7px;padding:6px 13px;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit}
+.tool-btn:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.55)}
+.tool-btn.danger{border-color:rgba(231,76,60,.5);background:rgba(231,76,60,.15)}
+.tool-btn.danger:hover{background:rgba(231,76,60,.3)}
+.tool-btn.active{background:rgba(255,255,255,.3);border-color:rgba(255,255,255,.7)}
+.save-indicator{font-size:10px;opacity:.7;margin-left:auto}
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:10px;padding:18px;margin-bottom:14px;box-shadow:var(--shadow);transition:background .3s}
+.card-title{font-size:14px;font-weight:700;color:var(--text-heading);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
+.card-title .badge{font-size:11px;background:var(--primary-light);color:var(--primary);padding:2px 10px;border-radius:10px;font-weight:600}
+.stats-row{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--text-muted)}
+.stat-item{display:flex;align-items:center;gap:4px}
+.stat-num{font-weight:700;color:var(--text-heading)}
+.doc-list{list-style:none}
+.doc-item{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-left:4px solid var(--primary);background:var(--hover-bg);border-radius:0 8px 8px 0;margin-bottom:8px;flex-wrap:wrap;gap:6px}
+.doc-info{flex:1;min-width:200px}
+.doc-name{font-size:13px;font-weight:600;color:var(--text)}
+.doc-meta{font-size:10px;color:var(--text-muted);margin-top:2px}
+.doc-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.doc-tag{font-size:9px;padding:1px 7px;border-radius:8px;background:var(--primary-light);color:var(--primary);font-weight:600;cursor:pointer}
+.doc-tag-add{border:1px dashed var(--border);background:transparent;color:var(--text-muted);cursor:pointer;font-family:inherit;font-size:9px;padding:1px 7px;border-radius:8px}
+.doc-actions{display:flex;gap:4px}
+.doc-btn{background:none;border:1.5px solid var(--border);color:var(--text-muted);border-radius:6px;padding:3px 8px;font-size:10px;font-weight:600;cursor:pointer;font-family:inherit}
+.doc-btn:hover{border-color:var(--primary);color:var(--primary)}
+.doc-btn.danger{border-color:var(--danger);color:var(--danger)}
+.doc-btn.danger:hover{background:var(--danger);color:#fff}
+.empty-docs{font-size:12px;color:var(--text-muted);font-style:italic;padding:8px 0}
+.collapse-head{cursor:pointer;user-select:none}
+.chev{font-size:11px;color:var(--text-muted)}
+.upload-zone{border:2px dashed var(--border);border-radius:10px;padding:28px 20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--hover-bg)}
+.upload-zone:hover,.upload-zone.dragover{border-color:var(--primary);background:var(--primary-light)}
+.upload-zone-text{font-size:13px;color:var(--text-muted)}
+.upload-zone-hint{font-size:10px;color:var(--text-muted);margin-top:4px}
+.upload-progress{display:none;margin-top:12px}
+.progress-bar{height:6px;background:var(--border-light);border-radius:4px;overflow:hidden;margin-top:6px}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--success));border-radius:4px;transition:width .3s;width:0}
+.progress-text{font-size:11px;color:var(--primary);font-weight:600}
+.chat-area{height:420px;overflow-y:auto;border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px;background:var(--bg);scroll-behavior:smooth}
+.chat-msg{margin-bottom:14px;display:flex;gap:10px}
+.chat-msg.user{flex-direction:row-reverse}
+.chat-bubble{max-width:82%;padding:12px 16px;border-radius:12px;font-size:13px;line-height:1.65;word-wrap:break-word}
+.chat-msg.user .chat-bubble{background:var(--chat-user-bg);color:#fff;border-bottom-right-radius:4px}
+.chat-msg.ai .chat-bubble{background:var(--chat-ai-bg);border:1px solid var(--chat-ai-border);color:var(--text);border-bottom-left-radius:4px}
+.chat-bubble mark{background:var(--mark-bg);padding:1px 3px;border-radius:2px}
+.chat-bubble .elps-link{color:var(--primary);cursor:pointer;font-weight:600;text-decoration:underline}
+.chat-bubble .elps-link:hover{opacity:.8}
+.chat-sources{margin-top:10px;padding-top:8px;border-top:1px solid var(--border-light);font-size:11px;color:var(--text-muted)}
+.chat-sources strong{color:var(--text-heading)}
+.chat-followups{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.followup-chip{background:var(--primary-light);border:1px solid var(--primary);color:var(--primary-dark);border-radius:14px;padding:4px 12px;font-size:11px;cursor:pointer;font-family:inherit;font-weight:500;transition:all .15s}
+.followup-chip:hover{background:var(--primary);color:#fff}
+.chat-actions{display:flex;gap:6px;margin-top:8px}
+.chat-action-btn{background:none;border:1px solid var(--border);color:var(--text-muted);border-radius:6px;padding:2px 8px;font-size:10px;cursor:pointer;font-family:inherit}
+.chat-action-btn:hover{border-color:var(--primary);color:var(--primary)}
+.result-inline{background:var(--hover-bg);border-radius:8px;padding:10px 12px;margin-top:8px;border-left:3px solid var(--primary)}
+.result-inline-header{display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-bottom:4px}
+.result-inline-source{font-weight:700;color:var(--text-heading)}
+.result-inline-text{font-size:12px;line-height:1.5;color:var(--text)}
+.result-full-page{display:none;margin-top:8px;padding:10px;background:var(--code-bg);border-radius:6px;font-size:11px;line-height:1.6;white-space:pre-wrap;max-height:300px;overflow-y:auto;border:1px solid var(--border-light)}
+.result-expand{font-size:10px;color:var(--primary);cursor:pointer;margin-top:4px;display:inline-block}
+.streaming-cursor{display:inline-block;width:2px;height:14px;background:var(--primary);animation:blink .8s infinite;vertical-align:text-bottom;margin-left:2px}
+@keyframes blink{0%,50%{opacity:1}51%,100%{opacity:0}}
+.ask-row{display:flex;gap:8px}
+.ask-input{flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;background:var(--input-bg);color:var(--text);transition:border-color .15s}
+.ask-input:focus{border-color:var(--primary);outline:none;box-shadow:0 0 0 2px rgba(74,144,217,.15)}
+.ask-btn{padding:10px 22px;background:linear-gradient(135deg,#2c3e6e,#4a90d9);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap}
+.ask-btn:hover{opacity:.9}
+.ask-btn:disabled{opacity:.5;cursor:not-allowed}
+.mode-row{display:flex;align-items:center;gap:14px;margin-top:10px;font-size:12px}
+.mode-label{font-weight:600;color:var(--text-muted)}
+.mode-opt{display:flex;align-items:center;gap:4px;cursor:pointer;color:var(--text-muted)}
+.mode-opt input{cursor:pointer}
+.mode-opt.active{color:var(--text-heading);font-weight:700}
+.filters-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.filter-chip{border:1.5px solid var(--border);background:var(--card);border-radius:14px;padding:3px 11px;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;color:var(--text-muted);font-family:inherit}
+.filter-chip:hover{border-color:var(--primary);color:var(--primary)}
+.filter-chip.active{border-color:var(--primary);background:var(--primary-light);color:var(--primary-dark)}
+.filter-group-label{font-size:9px;font-weight:700;color:var(--text-muted);text-transform:uppercase;width:100%;margin-top:4px}
+.kbd-hint{font-size:10px;color:var(--text-muted);margin-top:6px}
+kbd{background:var(--code-bg);border:1px solid var(--border);border-radius:3px;padding:1px 5px;font-size:10px;font-family:inherit}
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:var(--card);border-radius:12px;padding:24px;max-width:600px;width:90%;box-shadow:0 10px 40px rgba(0,0,0,.2);max-height:85vh;overflow-y:auto;color:var(--text)}
+.modal.wide{max-width:800px}
+.modal h3{font-size:16px;color:var(--text-heading);margin-bottom:14px}
+.modal p{font-size:12px;color:var(--text-muted);margin-bottom:12px;line-height:1.5}
+.modal label{display:block;font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase}
+.modal input[type="text"],.modal input[type="password"],.modal textarea,.modal select{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:inherit;margin-bottom:12px;background:var(--input-bg);color:var(--text)}
+.modal input:focus,.modal textarea:focus,.modal select:focus{border-color:var(--primary);outline:none}
+.modal textarea{min-height:100px;resize:vertical}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+.modal-btns button{padding:8px 18px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;border:none}
+.btn-cancel{background:var(--border-light);color:var(--text-muted)}
+.btn-cancel:hover{opacity:.8}
+.btn-confirm{background:var(--primary);color:#fff}
+.btn-confirm:hover{background:#3a7bc8}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-danger:hover{background:#c0392b}
+.btn-secondary{background:var(--hover-bg);color:var(--text);border:1px solid var(--border) !important}
+.warning{font-size:10px;color:var(--warn);font-style:italic}
+.coverage-grid{display:grid;gap:2px;margin-top:12px}
+.coverage-cell{padding:6px 4px;text-align:center;font-size:10px;font-weight:700;border-radius:4px;cursor:pointer;transition:transform .1s}
+.coverage-cell:hover{transform:scale(1.1)}
+.coverage-domain-label{font-size:11px;font-weight:700;color:var(--text-heading);padding:8px 4px 4px;grid-column:1/-1}
+.chunk-list{max-height:400px;overflow-y:auto}
+.chunk-item{border:1px solid var(--border);border-radius:6px;padding:8px;margin-bottom:6px;font-size:11px}
+.chunk-item textarea{width:100%;min-height:60px;border:1px solid var(--border-light);border-radius:4px;padding:6px;font-size:11px;font-family:inherit;resize:vertical;background:var(--input-bg);color:var(--text)}
+.chunk-meta{font-size:10px;color:var(--text-muted);margin-bottom:4px;display:flex;justify-content:space-between}
+.chunk-btns{display:flex;gap:4px;margin-top:4px}
+.chunk-btns button{font-size:10px;padding:2px 8px;border:1px solid var(--border);border-radius:4px;background:var(--card);color:var(--text-muted);cursor:pointer;font-family:inherit}
+.chunk-btns button:hover{border-color:var(--primary);color:var(--primary)}
+.query-list{list-style:none}
+.query-item{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-bottom:1px solid var(--border-light);font-size:12px;cursor:pointer}
+.query-item:hover{background:var(--hover-bg)}
+.query-count{font-weight:700;color:var(--primary);font-size:13px;min-width:30px;text-align:right}
+.onboard-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);z-index:2000;align-items:center;justify-content:center}
+.onboard-overlay.show{display:flex}
+.onboard-card{background:var(--card);border-radius:14px;padding:30px;max-width:500px;width:90%;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.3)}
+.onboard-card h2{font-size:20px;color:var(--text-heading);margin-bottom:8px}
+.onboard-card p{font-size:13px;color:var(--text-muted);line-height:1.6;margin-bottom:16px}
+.onboard-step{font-size:11px;color:var(--primary);margin-bottom:16px;font-weight:600}
+.onboard-dots{display:flex;gap:6px;justify-content:center;margin-bottom:16px}
+.onboard-dot{width:8px;height:8px;border-radius:50%;background:var(--border)}
+.onboard-dot.active{background:var(--primary)}
+.onboard-btn{padding:10px 28px;background:linear-gradient(135deg,#2c3e6e,#4a90d9);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
+.onboard-btn:hover{opacity:.9}
+.onboard-skip{display:block;margin-top:10px;font-size:11px;color:var(--text-muted);cursor:pointer;background:none;border:none;font-family:inherit}
+@media print{.header,.toolbar,.ask-row,.mode-row,.filters-row,.kbd-hint,.doc-actions,.chat-action-btn,.followup-chip,.upload-zone,.modal-overlay,.onboard-overlay{display:none!important}.card,.chat-area{box-shadow:none;border:1px solid #ddd}.chat-area{height:auto;overflow:visible}body{background:#fff;padding:10px}}
+@media(max-width:768px){.stats-row{gap:10px}.ask-row{flex-direction:column}.ask-btn{width:100%}.chat-area{height:320px}}
+@media(max-width:600px){body{padding:10px}.header{padding:18px 16px 12px}.header h1{font-size:18px}.toolbar{gap:4px}.tool-btn{padding:5px 9px;font-size:10px}.card{padding:14px}.chat-area{height:280px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="header">
+<h1>ELPS Knowledge Base Agent</h1>
+<p class="subtitle">English Language Proficiency Standards &mdash; Document Q&amp;A Tool</p>
+<div class="toolbar">
+<button class="tool-btn" onclick="exportData()">Export</button>
+<button class="tool-btn" onclick="showModal('importModal')">Import</button>
+<button class="tool-btn" onclick="showSettingsModal()">Settings</button>
+<button class="tool-btn" onclick="showModal('coverageModal')">Coverage</button>
+<button class="tool-btn" onclick="showPopularQueries()">Popular</button>
+<button class="tool-btn" id="darkBtn" onclick="toggleDarkMode()">Dark</button>
+<button class="tool-btn danger" onclick="showModal('resetModal')">Reset</button>
+<span class="save-indicator" id="saveStatus">Auto-save: ready</span>
+</div>
+</div>
+<div class="card">
+<div class="stats-row" id="statsRow"><span class="stat-item">Loading...</span></div>
+</div>
+<div class="card">
+<div class="card-title collapse-head" onclick="toggleDocList()">
+<span>Documents <span class="badge" id="docCountBadge">0</span></span>
+<span class="chev" id="docChev">&#9660;</span>
+</div>
+<div id="docListBody" style="display:none">
+<div id="docList" style="margin-top:10px"></div>
+<div style="margin-top:12px">
+<div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+<div style="font-size:28px;margin-bottom:6px">&#128196;</div>
+<div class="upload-zone-text">Drag &amp; drop PDF files here, or click to browse</div>
+<div class="upload-zone-hint">PDF text will be extracted and indexed for searching</div>
+</div>
+<input type="file" id="fileInput" accept=".pdf" multiple style="display:none" onchange="handleFileInput(this)"/>
+<div class="upload-progress" id="uploadProgress">
+<div class="progress-text" id="progressText">Processing...</div>
+<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+</div>
+</div>
+</div>
+</div>
+<div class="card">
+<div class="card-title">Chat</div>
+<div class="chat-area" id="chatArea"><div id="chatWelcome" style="text-align:center;padding:40px 20px;color:var(--text-muted);font-size:13px">Ask a question about ELPS standards, proficiency levels, accommodations, or strategies.<br/>Your knowledge base is pre-loaded and ready to search.</div></div>
+<div class="ask-row">
+<input type="text" class="ask-input" id="askInput" placeholder="Ask about ELPS standards, proficiency levels, accommodations..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();handleAskQuestion()}"/>
+<button class="ask-btn" id="askBtn" onclick="handleAskQuestion()">Search</button>
+</div>
+<div class="mode-row">
+<span class="mode-label">Mode:</span>
+<label class="mode-opt active" id="modeSearch"><input type="radio" name="mode" value="search" checked onchange="setMode('search')"/> Search</label>
+<label class="mode-opt" id="modeAI"><input type="radio" name="mode" value="ai" onchange="setMode('ai')"/> AI Answer</label>
+<button class="chat-action-btn" onclick="clearChat()" style="margin-left:auto">Clear Chat</button>
+<button class="chat-action-btn" onclick="window.print()">Print Chat</button>
+</div>
+<div class="filters-row" id="filtersRow"></div>
+<div class="kbd-hint"><kbd>Ctrl</kbd>+<kbd>K</kbd> focus search &middot; <kbd>Ctrl</kbd>+<kbd>Enter</kbd> toggle AI mode &middot; <kbd>Esc</kbd> close modals</div>
+</div>
+</div>
+<div class="onboard-overlay" id="onboardOverlay">
+<div class="onboard-card">
+<div class="onboard-step" id="onboardStep">Step 1 of 4</div>
+<h2 id="onboardTitle">Welcome to ELPS Agent</h2>
+<p id="onboardText">Your ELPS knowledge base is pre-loaded with the ELP 201 Teacher Toolkit and ELPS Summaries for Learning Objectives. You can start searching immediately.</p>
+<div class="onboard-dots" id="onboardDots"></div>
+<button class="onboard-btn" id="onboardNext" onclick="nextOnboardStep()">Next</button>
+<button class="onboard-skip" onclick="closeOnboarding()">Skip tour</button>
+</div>
+</div>
+<div class="modal-overlay" id="settingsModal">
+<div class="modal">
+<h3>Settings</h3>
+<label>Anthropic API Key</label>
+<input type="password" id="settingsApiKey" placeholder="sk-ant-api03-..."/>
+<p class="warning">Stored in your browser's localStorage for personal/local use only.</p>
+<label>Model</label>
+<select id="settingsModel">
+<option value="claude-sonnet-4-20250514">Claude Sonnet 4</option>
+<option value="claude-haiku-4-5-20251001">Claude Haiku 4.5</option>
+</select>
+<label>Max Tokens</label>
+<input type="text" id="settingsMaxTokens" value="1024"/>
+<label>System Prompt (customize AI behavior)</label>
+<textarea id="settingsPrompt" style="min-height:120px"></textarea>
+<button class="btn-secondary" onclick="resetSystemPrompt()" style="margin-bottom:12px;padding:4px 12px;font-size:11px;border-radius:6px;cursor:pointer;font-family:inherit">Reset to Default</button>
+<div class="modal-btns">
+<button class="btn-cancel" onclick="closeModal('settingsModal')">Cancel</button>
+<button class="btn-confirm" onclick="saveSettingsFromModal()">Save</button>
+</div>
+</div>
+</div>
+<div class="modal-overlay" id="importModal">
+<div class="modal">
+<h3>Import Knowledge Base</h3>
+<p>Paste exported JSON or choose a file to restore your knowledge base.</p>
+<input type="file" accept=".json" onchange="loadImportFile(this)" style="margin-bottom:10px;font-size:12px"/>
+<textarea id="importData" placeholder="Paste JSON here..."></textarea>
+<div class="modal-btns">
+<button class="btn-cancel" onclick="closeModal('importModal')">Cancel</button>
+<button class="btn-confirm" onclick="confirmImport()">Import</button>
+</div>
+</div>
+</div>
+<div class="modal-overlay" id="resetModal">
+<div class="modal">
+<h3>Reset Knowledge Base</h3>
+<p>This will permanently delete all uploaded documents, settings, and chat history. Pre-loaded documents will be restored on next load.</p>
+<div class="modal-btns">
+<button class="btn-cancel" onclick="closeModal('resetModal')">Cancel</button>
+<button class="btn-danger" onclick="confirmReset()">Reset Everything</button>
+</div>
+</div>
+</div>
+<div class="modal-overlay" id="chunkModal">
+<div class="modal wide">
+<h3>Chunk Editor — <span id="chunkDocName"></span></h3>
+<p>View and edit how document text was chunked. Changes affect search results.</p>
+<div class="chunk-list" id="chunkList"></div>
+<div class="modal-btns">
+<button class="btn-cancel" onclick="closeModal('chunkModal')">Close</button>
+<button class="btn-confirm" onclick="saveChunkEdits()">Save Changes</button>
+</div>
+</div>
+</div>
+<div class="modal-overlay" id="coverageModal">
+<div class="modal wide">
+<h3>ELPS Coverage Map</h3>
+<p>Shows which ELPS codes are covered in your knowledge base. Darker = more chunks mention that code. Click a cell to search for it.</p>
+<div id="coverageGrid"></div>
+<div class="modal-btns"><button class="btn-cancel" onclick="closeModal('coverageModal')">Close</button></div>
+</div>
+</div>
+<div class="modal-overlay" id="popularModal">
+<div class="modal">
+<h3>Popular Queries</h3>
+<p>Most frequently asked questions across your sessions.</p>
+<ul class="query-list" id="popularList"></ul>
+<div class="modal-btns"><button class="btn-cancel" onclick="closeModal('popularModal')">Close</button></div>
+</div>
+</div>
+<div class="modal-overlay" id="tagModal">
+<div class="modal">
+<h3>Add Tag</h3>
+<p>Enter a category tag for this document (e.g., Proficiency Levels, Accommodations, Strategies).</p>
+<input type="text" id="tagInput" placeholder="Tag name..." onkeydown="if(event.key==='Enter')addTagConfirm()"/>
+<div class="modal-btns">
+<button class="btn-cancel" onclick="closeModal('tagModal')">Cancel</button>
+<button class="btn-confirm" onclick="addTagConfirm()">Add</button>
+</div>
+</div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.min.mjs" type="module"></script>
+<script type="module">
+import * as pdfjsModule from "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.min.mjs";
+var pdfjsLib = pdfjsModule;
+pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.worker.min.mjs";
+
+/* ============ CONSTANTS ============ */
+var STORAGE_DOCS = "elps_agent_docs";
+var STORAGE_INDEX = "elps_agent_index";
+var STORAGE_SETTINGS = "elps_agent_settings";
+var STORAGE_HISTORY = "elps_agent_history";
+var STORAGE_CHAT = "elps_agent_chat";
+var STORAGE_ONBOARD = "elps_agent_onboarded";
+var STORAGE_DARK = "elps_agent_dark";
+
+var DEFAULT_PROMPT = "You are an expert on Texas English Language Proficiency Standards (ELPS). Answer the user's question using ONLY the provided source documents. Always cite the source document and page number when referencing information. If the provided sources do not contain enough information to fully answer, say so. Format your answer clearly with bullet points or numbered lists when appropriate. At the end of your answer, add a line containing only '---FOLLOWUPS---' followed by exactly 3 brief follow-up questions the user might want to ask, one per line, each starting with '- '.";
+
+var QUICK_FILTERS = [
+  {group:"Standards", items:["C1","C2","C3","C4","C5"]},
+  {group:"Domains", items:["Listening","Speaking","Reading","Writing"]},
+  {group:"Levels", items:["Beginning","Intermediate","Advanced","Advanced High"]}
+];
+
+var ELPS_CODES = [
+  {domain:"C1",name:"Learning Strategies",codes:["A","B","C","D","E","F","G","H"]},
+  {domain:"C2",name:"Listening",codes:["A","B","C","D","E","F","G","H","I"]},
+  {domain:"C3",name:"Speaking",codes:["A","B","C","D","E","F","G","H","I","J"]},
+  {domain:"C4",name:"Reading",codes:["A","B","C","D","E","F","G","H","I","J","K"]},
+  {domain:"C5",name:"Writing",codes:["A","B","C","D","E","F","G","H"]}
+];
+
+var ONBOARD_STEPS = [
+  {title:"Welcome to ELPS Agent", text:"Your ELPS knowledge base is pre-loaded with the ELP 201 Teacher Toolkit and ELPS Summaries for Learning Objectives. You can start searching immediately."},
+  {title:"Search or Ask AI", text:"Type a question and hit Search to find relevant passages. Toggle to AI Answer mode and add your Anthropic API key in Settings for AI-powered responses with source citations."},
+  {title:"Upload More Documents", text:"Expand the Documents section to upload additional ELPS PDFs. You can tag documents by category, view how they were chunked, and manage your knowledge base."},
+  {title:"Explore & Discover", text:"Use Quick Filters to search by ELPS code, domain, or proficiency level. Check the Coverage Map to see which standards are well-documented. Use Ctrl+K to quickly focus the search bar."}
+];
+
+/* ============ PRE-LOADED DOCUMENTS ============ */
+var PRELOADED_DOCS = [
+{id:"preload_toolkit",filename:"ELP 201 Teacher Toolkit Secondary.pdf",addedAt:"2026-01-15T00:00:00.000Z",pageCount:12,tags:["Proficiency Levels","Accommodations","Activities","Standards"],chunks:[
+{page:1,text:"ELP 201: TERMS TO KNOW\n\nEnglish Learner (EL) - A scholar who is acquiring English as a second language.\n\nEnglish Language Proficiency Standards (ELPS) - The standards through which English Learners acquire grade-level appropriate English.\n\nEnglish as a Second Language (ESL) - A special language program for scholars acquiring the English language.\n\nLanguage Proficiency Levels - The level of skills demonstrated when receiving messages (input) and expressing meaning (output) in English.\n\nProficiency Level Descriptors (PLDs) - Describe the skills that ELs can demonstrate, at their current level of proficiency, within the domains of Listening, Speaking, Reading, and Writing.\n\nTexas Essential Knowledge and Skills (TEKS) - Required state standards for what scholars must know and be able to do at each grade level and content area."},
+{page:2,text:"Summaries of ELPS Introduction, District Responsibilities and Student Expectations (subsection a,b,c)\n\nELPS Introduction\na1: Part of required curriculum for each subject including proficiency standards and level descriptors\na2: ELLs need social and academic English language proficiency to be successful\na3: Instruction must integrate social and academic English in content areas\na4: ELLs must read, write, listen, and speak in increasing complexity\na5: Student Expectations of ELPS apply to K-12 students\na6: Level descriptors are not grade specific and serve as a road map\n\nDistrict Responsibilities\nb1: Identify students' proficiency levels using proficiency level descriptors\nb2: Provide linguistically accommodated content instruction (communicated, sequenced, scaffolded)\nb3: Provide linguistically accommodated content-based language instruction\nb4: Focused, targeted, and systematic language instruction for beginning and intermediate ELLs (Grade 3 or higher)"},
+{page:2,text:"Student Expectations\n\nLearning Strategies\nc1A: Use prior knowledge to learn new language\nc1B: Monitor language with self-corrective techniques\nc1C: Use techniques to learn new vocabulary\nc1D: Speak using learning strategies\nc1E: Use and reuse new basic and academic language to internalize language\nc1F: Use accessible language to learn new language\nc1G: Distinguish formal and informal English\nc1H: Expand repertoire of language learning strategies\n\nListening\nc2A: Distinguish sound and intonation\nc2B: Recognize English sound system in new vocabulary\nc2C: Learn new language heard in classroom interactions and instruction\nc2D: Monitor understanding and seek clarification\nc2E: Use visual, contextual linguistic support to confirm and enhance understanding\nc2F: Derive meaning from a variety of media\nc2G: Understand general meaning, main points, and details\nc2H: Understand implicit ideas and information\nc2I: Demonstrate listening comprehension"},
+{page:2,text:"Speaking\nc3A: Practice using English sound system in new vocabulary\nc3B: Use new vocabulary in stories, descriptions, and classroom communication\nc3C: Speak using a variety of sentence structures\nc3D: Speak using grade level content area vocabulary in context\nc3E: Share in cooperative groups\nc3F: Ask and give information using high-frequency and content area vocabulary\nc3G: Express opinions, ideas and feelings\nc3H: Narrate, describe and explain\nc3I: Adapt spoken language for formal and informal purposes\nc3J: Respond orally to information from a variety of media sources\n\nReading\nc4A: Learn relationships of sounds and letters in English\nc4B: Recognize directionality of English text\nc4C: Develop sight vocabulary and language structures\nc4D: Use prereading supports\nc4E: Read linguistically accommodated content area materials\nc4F: Use visual and contextual supports to read text\nc4G: Show comprehension of English text individually and in groups\nc4H: Read silently with comprehension\nc4I: Show comprehension through basic reading skills\nc4J: Show comprehension through inferential skills\nc4K: Show comprehension through analytical skills\n\nWriting\nc5A: Learn relationships between sounds and letters when writing\nc5B: Write using newly acquired vocabulary\nc5C: Spell familiar English words\nc5D: Edit writing\nc5E: Employ complex grammatical structures\nc5F: Write using variety of sentence structures and words\nc5G: Narrate, describe, and explain in writing"},
+{page:3,text:"Language Objectives Aligned to Cross-Curricular Student Expectations (subsection c)\n\nLearning Strategies\n1A: Use what they know about ___ to predict the meaning of...\n1B: Check how well they are able to say...\n1C: Use ___ to learn new vocabulary about...\n1D: Use strategies such as ___ to discuss...\n1E: Use and reuse the words/phrases ___ in a discussion/writing activity about...\n1F: Use the phrase ___ to learn the meaning of...\n1G: Use formal/informal English to describe...\n1H: Use strategies such as ___ to learn the meaning of...\n\nListening\n2A: Recognize correct pronunciation of...\n2B: Recognize sounds used in the words...\n2C: Identify words and phrases heard in a discussion about...\n2D: Check for understanding by.../Seek help by...\n2E: Use supports such as ___ to enhance understanding of...\n2F: Use ___ (media source) to learn/review...\n2G: Describe general meaning, main points, and details heard in...\n2H: Identify implicit ideas and information heard in...\n2I: Demonstrate listening comprehension by..."},
+{page:3,text:"Speaking\n3A: Pronounce the words ___ correctly...\n3B: Use new vocabulary about ___ in stories, pictures, descriptions, and/or classroom communication...\n3C: Speak using a variety of types of sentence stems about...\n3D: Speak using the words ___ about...\n3E: Share in cooperative groups about...\n3F: Ask and give information using the words...\n3G: Express opinions, ideas and feelings about ___ using the words/phrases...\n3H: Narrate, describe and explain...\n3I: Use formal/informal English to say...\n3J: Respond orally to information from a variety of media sources about...\n\nReading\n4A: Identify relationships between sounds and letters by...\n4B: Recognize directionality of English text...\n4C: Recognize the words/phrases...\n4D: Use prereading supports such as ___ to understand...\n4E: Read materials about ___ with support of simplified text/visuals/word banks as needed...\n4F: Use visual and contextual supports to read...\n4G: Show comprehension of English text about...\n4H: Demonstrate comprehension of text read silently by...\n4I: Show comprehension of text about ___ through basic reading skills such as...\n4J: Show comprehension of text/graphic sources about ___ through inferential skills such as...\n4K: Show comprehension of text about ___ through analytical skills such as...\n\nWriting\n5A: Learn relationships between sounds and letters when writing about...\n5B: Write using newly acquired vocabulary about...\n5C: Spell English words such as...\n5D: Edit writing about...\n5E: Use simple and complex sentences to write about...\n5F: Write using a variety of sentence frames and selected vocabulary about...\n5G: Narrate, describe, and explain in writing about..."},
+{page:4,text:"Performance-Based Activities\n\nThe following performance-based listening, speaking, reading, and writing activities are recommended for teachers to implement in their instruction as ways to gather information on how students are progressing in English language development.\n\nGrades K-12 Listening Activities: Reacting to oral presentations, Responding to text read aloud, Following directions, Cooperative group work, Informal interactions with peers, Large-group and small-group instructional interactions, One-on-one interviews, Individual student conferences\n\nGrades K-12 Speaking Activities: Cooperative group work, Oral presentations, Informal interactions with peers, Large-group and small-group instructional interactions, One-on-one interviews, Classroom discussions, Articulation of problem-solving strategies, Individual student conferences\n\nGrades K-12 Reading Activities: Paired reading, Sing-alongs and read-alongs including chants and poems, Shared reading with big books charts overhead transparencies and other displays, Guided reading with leveled readers, Reading subject-area texts and related materials, Independent reading, Cooperative group work, Reading-response journals, Read and think aloud using high-interest books relating to student's background\n\nGrades K-12 Writing Activities: Shared writing for literacy and content area development, Language experience dictation, Organization of thoughts and ideas through prewriting strategies, Making lists for specific purposes, Labeling pictures objects and items from projects, Descriptive writing on a familiar topic or writing about a familiar process, Narrative writing about a past event, Reflective writing such as journaling, Extended writing from language arts classes, Expository or procedural writing from science mathematics and social studies classes"},
+{page:5,text:"ELPS-TELPAS Proficiency Level Descriptors Grades K-12 Listening\n\nBeginning: Beginning English learners (ELs) have little or no ability to understand spoken English used in academic and social settings. These students: struggle to understand simple conversations and simple discussions even when the topics are familiar and the speaker uses linguistic supports (e.g., visuals, slower speech and other verbal cues, gestures); struggle to identify and distinguish individual words and phrases during social and instructional interactions that have not been intentionally modified for ELs; may not seek clarification in English when failing to comprehend the English they hear; frequently remain silent, watching others for cues.\n\nIntermediate: Intermediate ELs have the ability to understand simple, high-frequency spoken English used in routine academic and social settings. These students: usually understand simple or routine directions, as well as short, simple conversations and short, simple discussions on familiar topics; when topics are unfamiliar, require extensive linguistic supports and adaptations (e.g., visuals, slower speech and other verbal cues, simplified language, gestures, preteaching to preview or build topic-related vocabulary); often identify and distinguish key words and phrases necessary to understand the general meaning (gist) during social and basic instructional interactions that have not been intentionally modified for ELs; have the ability to seek clarification in English when failing to comprehend the English they hear by requiring/requesting the speaker to repeat, slow down, or rephrase speech."},
+{page:5,text:"ELPS-TELPAS Proficiency Level Descriptors Grades K-12 Listening (continued)\n\nAdvanced: Advanced ELs have the ability to understand, with second language acquisition support, grade-appropriate spoken English used in academic and social settings. These students: usually understand longer, more elaborated directions, conversations, and discussions on familiar and some unfamiliar topics, but sometimes need processing time and sometimes depend on visuals, verbal cues, and gestures to support understanding; understand most main points, most important details, and some implicit information during social and basic instructional interactions that have not been intentionally modified for ELs; occasionally require/request the speaker to repeat, slow down, or rephrase to clarify the meaning of the English they hear.\n\nAdvanced High: Advanced high ELs have the ability to understand, with minimal second language acquisition support, grade-appropriate spoken English used in academic and social settings. These students: understand longer, elaborated directions, conversations, and discussions on familiar and unfamiliar topics with only occasional need for processing time and with little dependence on visuals, verbal cues, and gestures; some exceptions when complex academic or highly specialized language is used; understand main points, important details, and implicit information at a level nearly comparable to native English-speaking peers during social and instructional interactions; rarely require/request the speaker to repeat, slow down, or rephrase to clarify the meaning of the English they hear."},
+{page:6,text:"ELPS-TELPAS Proficiency Level Descriptors Grades K-12 Speaking\n\nBeginning: Beginning English learners (ELs) have little or no ability to speak English in academic and social settings. These students: mainly speak using single words and short phrases consisting of recently practiced, memorized, or highly familiar material to get immediate needs met; may be hesitant to speak and often give up in their attempts to communicate; speak using a very limited bank of high-frequency, high-need, concrete vocabulary, including key words and expressions needed for basic communication in academic and social contexts; lack the knowledge of English grammar necessary to connect ideas and speak in sentences; can sometimes produce sentences using recently practiced, memorized, or highly familiar material; exhibit second language acquisition errors that may hinder overall communication, particularly when trying to convey information beyond memorized, practiced, or highly familiar material; typically use pronunciation that significantly inhibits communication.\n\nIntermediate: Intermediate ELs have the ability to speak in a simple manner using English commonly heard in routine academic and social settings. These students: are able to express simple, original messages, speak using sentences, and participate in short conversations and classroom interactions; may hesitate frequently and for long periods to think about how to communicate desired meaning; speak simply using basic vocabulary needed in everyday social interactions and routine academic contexts; rarely have vocabulary to speak in detail; exhibit an emerging awareness of English grammar and speak using mostly simple sentence structures and simple tenses; are most comfortable speaking in present tense; exhibit second language acquisition errors that may hinder overall communication when trying to use complex or less familiar English; use pronunciation that can usually be understood by people accustomed to interacting with ELs."},
+{page:6,text:"ELPS-TELPAS Proficiency Level Descriptors Grades K-12 Speaking (continued)\n\nAdvanced: Advanced ELs have the ability to speak using grade-appropriate English, with second language acquisition support, in academic and social settings. These students: are able to participate comfortably in most conversations and academic discussions on familiar topics, with some pauses to restate, repeat, or search for words and phrases to clarify meaning; discuss familiar academic topics using content-based terms and common abstract vocabulary; can usually speak in some detail on familiar topics; have a grasp of basic grammar features, including a basic ability to narrate and describe in present, past, and future tenses; have an emerging ability to use complex sentences and complex grammar features; make errors that interfere somewhat with communication when using complex grammar structures, long sentences, and less familiar words and expressions; may mispronounce words, but use pronunciation that can usually be understood by people not accustomed to interacting with ELs.\n\nAdvanced High: Advanced high ELs have the ability to speak using grade-appropriate English, with minimal second language acquisition support, in academic and social settings. These students: are able to participate in extended discussions on a variety of social and grade-appropriate academic topics with only occasional disruptions, hesitations, or pauses; communicate effectively using abstract and content-based vocabulary during classroom instructional tasks, with some exceptions when low-frequency or academically demanding vocabulary is needed; use many of the same idioms and colloquialisms as their native English-speaking peers; can use English grammar structures and complex sentences to narrate and describe at a level nearly comparable to native English-speaking peers; make few second language acquisition errors that interfere with overall communication; may mispronounce words, but rarely use pronunciation that interferes with overall communication."},
+{page:7,text:"ELPS-TELPAS Proficiency Level Descriptors Grades 2-12 Reading\n\nBeginning: Beginning English learners (ELs) have little or no ability to read and understand English used in academic and social contexts. These students: read and understand the very limited recently practiced, memorized, or highly familiar English they have learned; vocabulary predominantly includes environmental print, some very high-frequency words, concrete words that can be represented by pictures; read slowly, word by word; have a very limited sense of English language structures; comprehend predominantly isolated familiar words and phrases; comprehend some sentences in highly routine contexts or recently practiced, highly familiar text; are highly dependent on visuals and prior knowledge to derive meaning from text in English; are able to apply reading comprehension skills in English only when reading texts written for this level.\n\nIntermediate: Intermediate ELs have the ability to read and understand simple, high-frequency English used in routine academic and social contexts. These students: read and understand English vocabulary on a somewhat wider range of topics and with increased depth; vocabulary predominantly includes everyday oral language, literal meanings of common words, routine academic language and terms, commonly used abstract language such as terms used to describe basic feelings; often read slowly and in short phrases; may re-read to clarify meaning; have a growing understanding of basic, routinely used English language structures; understand simple sentences in short, connected texts, but are dependent on visual cues, topic familiarity, prior knowledge, pretaught topic-related vocabulary, story predictability, and teacher/peer assistance to sustain comprehension; struggle to independently read and understand grade-level texts; are able to apply basic and some higher-order comprehension skills when reading texts that are linguistically accommodated and/or simplified for this level."},
+{page:7,text:"ELPS-TELPAS Proficiency Level Descriptors Grades 2-12 Reading (continued)\n\nAdvanced: Advanced ELs have the ability to read and understand, with second language acquisition support, grade-appropriate English used in academic and social contexts. These students: read and understand, with second language acquisition support, a variety of grade-appropriate English vocabulary used in social and academic contexts; with second language acquisition support, read and understand grade-appropriate concrete and abstract vocabulary, but have difficulty with less commonly encountered words; demonstrate an emerging ability to understand words and phrases beyond their literal meaning; understand multiple meanings of commonly used words; read longer phrases and simple sentences from familiar text with appropriate rate and speed; are developing skill in using their growing familiarity with English language structures to construct meaning of grade-appropriate text; are able to apply basic and higher-order comprehension skills when reading grade-appropriate text, but are still occasionally dependent on visuals, teacher/peer assistance, and other linguistically accommodated text features to determine or clarify meaning, particularly with unfamiliar topics.\n\nAdvanced High: Advanced high ELs have the ability to read and understand, with minimal second language acquisition support, grade-appropriate English used in academic and social contexts. These students: read and understand vocabulary at a level nearly comparable to that of their native English-speaking peers, with some exceptions when low-frequency or specialized vocabulary is used; generally read grade-appropriate, familiar text with appropriate rate, speed, intonation, and expression; are able to, at a level nearly comparable to native English-speaking peers, use their familiarity with English language structures to construct meaning of grade-appropriate text; are able to apply, with minimal second language acquisition support and at a level nearly comparable to native English-speaking peers, basic and higher-order comprehension skills when reading grade-appropriate text."},
+{page:8,text:"ELPS-TELPAS Proficiency Level Descriptors Grades 2-12 Writing\n\nBeginning: Beginning English learners (ELs) lack the English vocabulary and grasp of English language structures necessary to address grade-appropriate writing tasks meaningfully. These students: have little or no ability to use the English language to express ideas in writing and engage meaningfully in grade-appropriate writing assignments in content area instruction; lack the English necessary to develop or demonstrate elements of grade-appropriate writing (e.g., focus and coherence, conventions, organization, voice, and development of ideas) in English. Typical writing features at this level: ability to label, list, and copy; high-frequency words/phrases and short, simple sentences based primarily on recently practiced, memorized, or highly familiar material; present tense used primarily; frequent primary language features and other errors associated with second language acquisition may significantly hinder or prevent understanding.\n\nIntermediate: Intermediate ELs have enough English vocabulary and enough grasp of English language structures to address grade-appropriate writing tasks in a limited way. These students: have a limited ability to use the English language to express ideas in writing; are limited in their ability to develop or demonstrate elements of grade-appropriate writing in English; communicate best when topics are highly familiar and concrete, and require simple, high-frequency English. Typical writing features: simple, original messages consisting of short, simple sentences; high-frequency vocabulary; loosely connected text with limited use of cohesive devices; repetition of ideas due to lack of vocabulary; present tense used most accurately; descriptions, explanations, and narrations lacking detail."},
+{page:8,text:"ELPS-TELPAS Proficiency Level Descriptors Grades 2-12 Writing (continued)\n\nAdvanced: Advanced ELs have enough English vocabulary and command of English language structures to address grade-appropriate writing tasks, although second language acquisition support is needed. These students: are able to use the English language, with second language acquisition support, to express ideas in writing and engage meaningfully in grade-appropriate writing assignments; know enough English to develop or demonstrate elements of grade-appropriate writing, although second language acquisition support is particularly needed when topics are abstract, academically challenging, or unfamiliar. Typical writing features: grasp of basic verbs, tenses, grammar features, and sentence patterns; partial grasp of more complex verbs, tenses, grammar features, and sentence patterns; emerging grade-appropriate vocabulary; academic writing has a more academic tone; use of a variety of common cohesive devices; narrations, explanations, and descriptions developed in some detail with emerging clarity; occasional second language acquisition errors; communications are usually understood by individuals not accustomed to the writing of ELs.\n\nAdvanced High: Advanced high ELs have acquired the English vocabulary and command of English language structures necessary to address grade-appropriate writing tasks with minimal second language acquisition support. These students: are able to use the English language, with minimal second language acquisition support, to express ideas in writing; know enough English to develop or demonstrate, with minimal second language acquisition support, elements of grade-appropriate writing in English. Typical writing features: nearly comparable to writing of native English-speaking peers in clarity and precision; occasional difficulty with naturalness of phrasing and expression; errors associated with second language acquisition are minor and usually limited to low-frequency words and structures; errors rarely interfere with communication."},
+{page:11,text:"Guidelines for Linguistic Accommodations for Each Proficiency Level\n\nBeginning (A):\nListening - Allow use of same language peer and native language support; Expect student to struggle to understand simple conversations; Use gestures and movement and other linguistic support to communicate language and expectations.\nSpeaking - Provide short sentence stems and single words for practice before conversations; Allow some nonparticipation in simple conversations; Provide word bank of key vocabulary; Model pronunciation of social and academic language.\nReading - Organize reading in chunks; Practice high frequency, concrete terms; Use visual and linguistic supports; Explain classroom environmental print; Use adapted text.\nWriting - Allow drawing and use of native language to express concepts; Allow student to use high frequency recently memorized, and short, simple, sentences; Provide short, simple sentence stems with present tense and high frequency vocabulary.\n\nIntermediate (B):\nListening - Provide visuals, slower speech, verbal cues, simplified language; Preteach vocabulary before discussions and lectures; Teach phrases for student to request speakers repeat, slow down, or rephrase speech.\nSpeaking - Allow extra processing time; Provide sentence stems with simple sentence structures and tenses; Model and provide practice in pronunciation of academic terms.\nReading - Allow wide range of reading; Allow grade-level comprehension and analysis of tasks including drawing and use of native language and peer collaboration; Provide high level of visual and linguistic supports with adapted text and pretaught vocabulary.\nWriting - Allow drawing and use of native language to express academic concepts; Allow writing on familiar, concrete topics; Avoid assessment of language errors in content area writing; Provide simple sentence stems and scaffolded writing assignments."},
+{page:11,text:"Guidelines for Linguistic Accommodations (continued)\n\nAdvanced (C):\nListening - Allow some processing time, visuals, verbal cues, and gestures for unfamiliar conversations; Provide opportunities for student to request clarification, repetition and rephrasing.\nSpeaking - Allow extra time after pauses; Provide sentence stems with past, present, future, and complex grammar, and vocabulary with content-based and abstract terms.\nReading - Allow abstract grade-level reading comprehension and analysis with peer support; Provide visual and linguistic supports including adapted text for unfamiliar topics.\nWriting - Provide grade-level appropriate writing tasks; Allow abstract and technical writing with linguistic support including teacher modeling and student interaction; Provide complex sentence stems for scaffolded writing assignments.\n\nAdvanced High (D):\nListening - Allow some extra time when academic material is complex and unfamiliar; Provide visuals, verbal cues, and gestures when material is complex and unfamiliar.\nSpeaking - Opportunities for extended discussions; Provide sentence stems with past, present, future, and complex grammar and vocabulary with content-based and abstract terms.\nReading - Allow abstract grade-level reading; Provide minimal visual and linguistic supports; Allow grade level comprehension and analysis tasks with peer collaboration.\nWriting - Provide complex grade-level appropriate writing tasks; Allow abstract and technical writing with minimal linguistic support; Use genre analysis to identify and use features of advanced English writing."}
+]},
+{id:"preload_summaries",filename:"ELPS Summaries for Learning Objectives.pdf",addedAt:"2026-01-15T00:00:00.000Z",pageCount:1,tags:["Standards","Quick Reference"],chunks:[
+{page:1,text:"ELPS Summaries for Use in Learning Objectives\nSummaries from subsection c of Texas English Language Proficiency Standards (ELPS), TAC Chapter 74, Subchapter A\n\nOverall Learning Strategies\nC1A: Use prior knowledge\nC1B: Monitor language with self-corrective techniques\nC1C: Learn new vocabulary\nC1D: Speak using learning strategies\nC1E: Use and reuse new vocabulary\nC1F: Use accessible language to learn new language\nC1G: Distinguish between formal and informal English\nC1H: Learn new strategies for learning English"},
+{page:1,text:"Listening\nC2A: Distinguish sound and intonation\nC2B: Recognize English sound system in new vocabulary\nC2C: Learn new language from classroom interaction and instruction\nC2D: Seek clarification to improve understanding\nC2E: Use visual and/or contextual support to confirm understanding\nC2F: Derive meaning from a variety of media\nC2G: Understand general meaning, main points, and details\nC2H: Understand implicit ideas and information\nC2I: Demonstrate listening comprehension\n\nSpeaking\nC3A: Practice using English sound system in new vocabulary\nC3B: Use new vocabulary in stories, descriptions, and communication\nC3C: Speak using a variety of sentence structures\nC3D: Speak using grade level content area vocabulary\nC3E: Participate in cooperative groups\nC3F: Ask and give information using high-frequency and content area vocabulary\nC3G: Express opinions, ideas, and feelings\nC3H: Narrate, describe, and explain\nC3I: Adapt spoken language for formal and informal purposes\nC3J: Respond orally to information from a variety of media sources"},
+{page:1,text:"Reading\nC4A: Learn relationships of sounds and letters in English\nC4B: Recognize directionality of English text (left to right, top to bottom)\nC4C: Develop sight vocabulary and structures\nC4D: Use prereading supports\nC4E: Read linguistically accommodated content area materials\nC4F: Use visual and contextual support to read text\nC4G: Show comprehension of English individually and in groups\nC4H: Read silently\nC4I: Show comprehension through basic reading skills\nC4J: Show comprehension through inferential skills\nC4K: Show comprehension through analytical skills\n\nWriting\nC5A: Learn relationships between sounds and letters when writing\nC5B: Write using new vocabulary\nC5C: Spell familiar English words\nC5D: Edit writing\nC5E: Employ varied and complex grammatical structures\nC5F: Write using a variety of structures and words\nC5G: Narrate, describe, and explain in writing"}
+]}
+];
+
+/* ============ STATE ============ */
+var documents = [];
+var invertedIndex = {};
+var chunkMap = {};
+var searchMode = "search";
+var queryHistory = [];
+var chatMessages = [];
+var activeFilters = [];
+var isProcessing = false;
+var isQuerying = false;
+var saveTimeout = null;
+var editingChunkDocId = null;
+var tagTargetDocId = null;
+var settings = {apiKey:"",model:"claude-sonnet-4-20250514",maxTokens:1024,systemPrompt:DEFAULT_PROMPT};
+
+/* ============ STATE MANAGEMENT ============ */
+function collectState(){return {version:2,documents:documents,savedAt:new Date().toISOString()};}
+function applyState(state){if(!state)return;documents=state.documents||[];initChunks();rebuildChunkMap();rebuildInvertedIndex();}
+function initChunks(){for(var d=0;d<documents.length;d++){var doc=documents[d];if(!doc.tags)doc.tags=[];for(var c=0;c<doc.chunks.length;c++){var ch=doc.chunks[c];if(!ch.id)ch.id=doc.id+"_c"+c;if(!ch.textLower)ch.textLower=ch.text.toLowerCase();if(!ch.tokens){var tset={};var words=ch.textLower.replace(/[^a-z0-9]/g," ").split(/\s+/);for(var w=0;w<words.length;w++){if(words[w].length>1)tset[words[w]]=true;}ch.tokens=Object.keys(tset);}}doc.charCount=doc.chunks.reduce(function(s,c){return s+c.text.length;},0);}}
+function saveToStorage(){try{localStorage.setItem(STORAGE_DOCS,JSON.stringify(collectState()));localStorage.setItem(STORAGE_INDEX,JSON.stringify(invertedIndex));var el=document.getElementById("saveStatus");el.textContent="Saved "+new Date().toLocaleTimeString();setTimeout(function(){el.textContent="Auto-save: ready";},2000);}catch(e){document.getElementById("saveStatus").textContent="Save error";}}
+function loadFromStorage(){try{var raw=localStorage.getItem(STORAGE_DOCS);if(raw){applyState(JSON.parse(raw));}else{loadPreloadedDocs();}var sRaw=localStorage.getItem(STORAGE_SETTINGS);if(sRaw)settings=JSON.parse(sRaw);if(!settings.systemPrompt)settings.systemPrompt=DEFAULT_PROMPT;var hRaw=localStorage.getItem(STORAGE_HISTORY);if(hRaw)queryHistory=JSON.parse(hRaw);var cRaw=localStorage.getItem(STORAGE_CHAT);if(cRaw)chatMessages=JSON.parse(cRaw);}catch(e){loadPreloadedDocs();}}
+function loadPreloadedDocs(){documents=[];for(var d=0;d<PRELOADED_DOCS.length;d++){var src=PRELOADED_DOCS[d];var doc={id:src.id,filename:src.filename,addedAt:src.addedAt,pageCount:src.pageCount,tags:src.tags.slice(),charCount:0,chunks:[]};for(var c=0;c<src.chunks.length;c++){doc.chunks.push({id:src.id+"_c"+c,page:src.chunks[c].page,text:src.chunks[c].text,textLower:src.chunks[c].text.toLowerCase(),tokens:[]});}documents.push(doc);}initChunks();rebuildChunkMap();rebuildInvertedIndex();saveToStorage();}
+function scheduleSave(){if(saveTimeout)clearTimeout(saveTimeout);saveTimeout=setTimeout(saveToStorage,800);}
+function saveSettings(){try{localStorage.setItem(STORAGE_SETTINGS,JSON.stringify(settings));}catch(e){}}
+function saveHistory(){if(queryHistory.length>200)queryHistory=queryHistory.slice(-200);try{localStorage.setItem(STORAGE_HISTORY,JSON.stringify(queryHistory));}catch(e){}}
+function saveChatMessages(){try{var toSave=chatMessages.slice(-50);localStorage.setItem(STORAGE_CHAT,JSON.stringify(toSave));}catch(e){}}
+
+/* ============ INDEX MANAGEMENT ============ */
+function rebuildChunkMap(){chunkMap={};for(var d=0;d<documents.length;d++){var doc=documents[d];for(var c=0;c<doc.chunks.length;c++){chunkMap[doc.chunks[c].id]=doc.chunks[c];}}}
+function rebuildInvertedIndex(){invertedIndex={};for(var d=0;d<documents.length;d++){var doc=documents[d];for(var c=0;c<doc.chunks.length;c++){var ch=doc.chunks[c];for(var t=0;t<ch.tokens.length;t++){var tk=ch.tokens[t];if(!invertedIndex[tk])invertedIndex[tk]=[];invertedIndex[tk].push(ch.id);}}}}
+function getDocForChunk(chunkId){for(var d=0;d<documents.length;d++){if(chunkId.indexOf(documents[d].id)===0)return documents[d];}return null;}
+function getDocNameForChunk(chunkId){var doc=getDocForChunk(chunkId);return doc?doc.filename:"Unknown";}
+function getFullPageText(chunkId){var doc=getDocForChunk(chunkId);var chunk=chunkMap[chunkId];if(!doc||!chunk)return "";var texts=[];for(var c=0;c<doc.chunks.length;c++){if(doc.chunks[c].page===chunk.page)texts.push(doc.chunks[c].text);}return texts.join("\n\n");}
+
+/* ============ PDF PROCESSING ============ */
+function reconstructPageText(tc){var items=tc.items;if(!items||items.length===0)return "";var lines=[];var cl="";var ly=null;for(var i=0;i<items.length;i++){var it=items[i];var y=it.transform?it.transform[5]:null;if(ly!==null&&y!==null&&Math.abs(y-ly)>5){lines.push(cl);cl=it.str;}else{if(cl&&it.str&&!/[\s-]$/.test(cl))cl+=" ";cl+=it.str;}ly=y;}if(cl)lines.push(cl);return lines.join("\n");}
+function makeChunk(docId,idx,page,text){var lower=text.toLowerCase();var ts={};var words=lower.replace(/[^a-z0-9]/g," ").split(/\s+/);for(var i=0;i<words.length;i++){if(words[i].length>1)ts[words[i]]=true;}return {id:docId+"_c"+idx,page:page,text:text,textLower:lower,tokens:Object.keys(ts)};}
+function chunkPageText(pt,docId,pn,si){var chunks=[];var paras=pt.split(/\n{2,}|\n(?=\([A-Z]\d|Cross-|Listening|Speaking|Reading|Writing|Beginning|Intermediate|Advanced)/);var buf="";var idx=si;for(var i=0;i<paras.length;i++){var p=paras[i].replace(/\s+/g," ").trim();if(!p)continue;if(buf.length+p.length<800){buf+=(buf?"\n\n":"")+p;}else{if(buf)chunks.push(makeChunk(docId,idx++,pn,buf));if(p.length>800){var ss=p.match(/[^.!?]+[.!?]+\s*/g)||[p];buf="";for(var s=0;s<ss.length;s++){if(buf.length+ss[s].length>800&&buf){chunks.push(makeChunk(docId,idx++,pn,buf));buf=ss[s];}else buf+=ss[s];}}else buf=p;}}if(buf.trim())chunks.push(makeChunk(docId,idx++,pn,buf.trim()));return {chunks:chunks,nextIdx:idx};}
+function extractPdfText(ab,fn,onProg,onDone){pdfjsLib.getDocument({data:ab}).promise.then(function(pdf){var doc={id:"doc_"+Date.now(),filename:fn,addedAt:new Date().toISOString(),pageCount:pdf.numPages,charCount:0,chunks:[],tags:[]};var ci=0;function pp(pn){if(pn>pdf.numPages){doc.charCount=doc.chunks.reduce(function(s,c){return s+c.text.length;},0);pdf.destroy();onDone(doc,null);return;}if(onProg)onProg(pn,pdf.numPages);pdf.getPage(pn).then(function(pg){return pg.getTextContent();}).then(function(tc){var pt=reconstructPageText(tc);var r=chunkPageText(pt,doc.id,pn,ci);doc.chunks=doc.chunks.concat(r.chunks);ci=r.nextIdx;pp(pn+1);}).catch(function(){pp(pn+1);});}pp(1);}).catch(function(err){onDone(null,err.message||"Failed to load PDF");});}
+function handleFileInput(input){if(input.files&&input.files.length>0)handleFileUpload(input.files);input.value="";}
+function handleFileUpload(files){if(isProcessing)return;var pdfs=[];for(var i=0;i<files.length;i++){if(files[i].type==="application/pdf"||files[i].name.toLowerCase().endsWith(".pdf"))pdfs.push(files[i]);}if(pdfs.length===0){alert("Please select PDF files.");return;}isProcessing=true;var q=pdfs.slice();function next(){if(q.length===0){isProcessing=false;hideProgress();rebuildChunkMap();rebuildInvertedIndex();saveToStorage();renderDocList();renderStats();return;}var f=q.shift();var ex=null;for(var d=0;d<documents.length;d++){if(documents[d].filename===f.name){ex=d;break;}}if(ex!==null&&!confirm('"'+f.name+'" already exists. Replace it?')){next();return;}if(ex!==null)documents.splice(ex,1);showProgress("Reading "+f.name+"...",0);var rdr=new FileReader();rdr.onload=function(e){extractPdfText(e.target.result,f.name,function(p,t){showProgress("Processing "+f.name+" \u2014 page "+p+" of "+t,Math.round(p/t*100));},function(doc,err){if(err)alert("Error: "+err);else if(doc)documents.push(doc);next();});};rdr.readAsArrayBuffer(f);}next();}
+
+/* ============ SEARCH ENGINE ============ */
+function escapeRegex(s){return s.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");}
+function parseQuery(rq){var q=rq.trim();var ql=q.toLowerCase();var cm=q.match(/\b[Cc]\d[A-Za-z]\b/g);var codes=cm?cm.map(function(c){return c.toUpperCase();}):[];var levels=[];var lp=["beginning","intermediate","advanced high","advanced"];for(var i=0;i<lp.length;i++){if(ql.indexOf(lp[i])!==-1)levels.push(lp[i]);}var domains=[];var dp=["listening","speaking","reading","writing"];for(var i=0;i<dp.length;i++){if(ql.indexOf(dp[i])!==-1)domains.push(dp[i]);}var tokens=ql.replace(/[^a-z0-9]/g," ").split(/\s+/).filter(function(t){return t.length>1;});return {raw:q,codes:codes,levels:levels,domains:domains,tokens:tokens};}
+function scoreChunk(chunk,pq){var sc=0;var tl=chunk.textLower;for(var i=0;i<pq.codes.length;i++){if(tl.indexOf(pq.codes[i].toLowerCase())!==-1)sc+=50;}for(var i=0;i<pq.levels.length;i++){if(tl.indexOf(pq.levels[i])!==-1)sc+=20;}for(var i=0;i<pq.domains.length;i++){if(tl.indexOf(pq.domains[i])!==-1)sc+=15;}var tt=chunk.tokens.length||1;for(var i=0;i<pq.tokens.length;i++){var re=new RegExp(escapeRegex(pq.tokens[i]),"gi");var m=tl.match(re);if(m)sc+=(1+m.length/tt*10);}if(pq.raw.length>5&&tl.indexOf(pq.raw.toLowerCase())!==-1)sc+=30;return sc;}
+function searchKnowledgeBase(rq,max){max=max||10;var pq=parseQuery(rq);if(pq.tokens.length===0&&pq.codes.length===0)return [];var cids={};for(var i=0;i<pq.tokens.length;i++){var ids=invertedIndex[pq.tokens[i]]||[];for(var j=0;j<ids.length;j++)cids[ids[j]]=true;}for(var i=0;i<pq.codes.length;i++){var cl=pq.codes[i].toLowerCase();var ids1=invertedIndex[cl]||[];for(var j=0;j<ids1.length;j++)cids[ids1[j]]=true;if(cl.length>=2){var ids2=invertedIndex[cl.substring(0,2)]||[];for(var j=0;j<ids2.length;j++)cids[ids2[j]]=true;}}var results=[];var cl2=Object.keys(cids);for(var i=0;i<cl2.length;i++){var ch=chunkMap[cl2[i]];if(!ch)continue;var s=scoreChunk(ch,pq);if(s>0)results.push({chunk:ch,score:s});}results.sort(function(a,b){return b.score-a.score;});return results.slice(0,max);}
+function extractSnippet(ct,query,cc){cc=cc||250;var lo=ct.toLowerCase();var terms=query.toLowerCase().replace(/[^a-z0-9]/g," ").split(/\s+/).filter(function(t){return t.length>1;});var bp=-1;for(var i=0;i<terms.length;i++){var p=lo.indexOf(terms[i]);if(p!==-1&&(bp===-1||p<bp))bp=p;}if(bp===-1)bp=0;var st=Math.max(0,bp-Math.floor(cc/2));var en=Math.min(ct.length,st+cc);var sn=(st>0?"...":"")+ct.slice(st,en).trim()+(en<ct.length?"...":"");for(var i=0;i<terms.length;i++){var re=new RegExp("("+escapeRegex(terms[i])+")","gi");sn=sn.replace(re,"<mark>$1</mark>");}return sn;}
+function linkifyElpsCodes(html){return html.replace(/\b([Cc]\d[A-Za-z])\b/g,'<span class="elps-link" onclick="searchElpsCode(\'$1\')">$1</span>');}
+
+/* ============ AI INTEGRATION (STREAMING) ============ */
+function callClaudeStreaming(question,contextChunks,onChunk,onDone,onError){var apiKey=settings.apiKey;if(!apiKey){onError("No API key configured. Open Settings to add your Anthropic API key.");return;}var ctxParts=[];for(var i=0;i<contextChunks.length;i++){var c=contextChunks[i].chunk;ctxParts.push("[Source: "+getDocNameForChunk(c.id)+", Page "+c.page+"]\n"+c.text);}var ctx=ctxParts.join("\n\n---\n\n");var msgs=[];var recent=chatMessages.slice(-6);for(var i=0;i<recent.length;i++){if(recent[i].role==="user")msgs.push({role:"user",content:recent[i].content});else if(recent[i].role==="ai"&&recent[i].content)msgs.push({role:"assistant",content:recent[i].content});}msgs.push({role:"user",content:"Based on the following ELPS reference documents:\n\n"+ctx+"\n\n---\n\nQuestion: "+question});var body=JSON.stringify({model:settings.model,max_tokens:parseInt(settings.maxTokens)||1024,stream:true,system:settings.systemPrompt,messages:msgs});fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:body}).then(function(resp){if(!resp.ok){return resp.text().then(function(t){var msg="API error (HTTP "+resp.status+")";try{msg+=": "+JSON.parse(t).error.message;}catch(e){msg+=": "+t;}throw new Error(msg);});}var reader=resp.body.getReader();var decoder=new TextDecoder();var buffer="";function read(){reader.read().then(function(result){if(result.done){onDone();return;}buffer+=decoder.decode(result.value,{stream:true});var lines=buffer.split("\n");buffer=lines.pop()||"";for(var i=0;i<lines.length;i++){var line=lines[i].trim();if(line.startsWith("data: ")){var data=line.substring(6);if(data==="[DONE]"){onDone();return;}try{var evt=JSON.parse(data);if(evt.type==="content_block_delta"&&evt.delta&&evt.delta.text){onChunk(evt.delta.text);}}catch(e){}}}read();}).catch(function(err){onError(err.message);});}read();}).catch(function(err){onError(err.message);});}
+
+/* ============ CHAT INTERFACE ============ */
+function addChatMessage(role,content,extra){var msg={role:role,content:content,time:new Date().toISOString()};if(extra){for(var k in extra)msg[k]=extra[k];}chatMessages.push(msg);saveChatMessages();return msg;}
+function renderChat(){var area=document.getElementById("chatArea");var welcome=document.getElementById("chatWelcome");if(welcome&&chatMessages.length>0)welcome.style.display="none";var html="";for(var i=0;i<chatMessages.length;i++){var m=chatMessages[i];html+=renderChatBubble(m,i);}area.innerHTML=html;area.scrollTop=area.scrollHeight;}
+function renderChatBubble(m,idx){var cls=m.role==="user"?"user":"ai";var h='<div class="chat-msg '+cls+'">';h+='<div class="chat-bubble">';if(m.role==="user"){h+=escapeHtml(m.content);}else{var text=m.content||"";var followups=[];var sep=text.indexOf("---FOLLOWUPS---");if(sep!==-1){var fpText=text.substring(sep+16);text=text.substring(0,sep).trim();var fpLines=fpText.split("\n");for(var f=0;f<fpLines.length;f++){var fl=fpLines[f].replace(/^-\s*/,"").trim();if(fl)followups.push(fl);}}h+=linkifyElpsCodes(escapeHtml(text));}if(m.results&&m.results.length>0){for(var r=0;r<m.results.length;r++){var res=m.results[r];h+='<div class="result-inline">';h+='<div class="result-inline-header"><span class="result-inline-source">'+escapeHtml(getDocNameForChunk(res.chunkId))+", Page "+res.page+"</span><span>Score: "+Math.round(res.score)+"</span></div>";h+='<div class="result-inline-text">'+linkifyElpsCodes(res.snippet)+"</div>";h+='<span class="result-expand" onclick="toggleFullPage(this,\''+res.chunkId+'\')">Show full page</span>';h+='<div class="result-full-page" id="fp-'+idx+"-"+r+'"></div>';h+="</div>";}}if(m.sources){h+='<div class="chat-sources"><strong>Sources:</strong> '+escapeHtml(m.sources)+"</div>";}var followupsToShow=m.followUps||[];if(m.role==="ai"){var text2=m.content||"";var sep2=text2.indexOf("---FOLLOWUPS---");if(sep2!==-1){var fpText2=text2.substring(sep2+16);var fpLines2=fpText2.split("\n");for(var f2=0;f2<fpLines2.length;f2++){var fl2=fpLines2[f2].replace(/^-\s*/,"").trim();if(fl2&&followupsToShow.indexOf(fl2)===-1)followupsToShow.push(fl2);}}}if(followupsToShow.length>0){h+='<div class="chat-followups">';for(var f3=0;f3<followupsToShow.length;f3++){h+='<button class="followup-chip" onclick="askFollowUp(\''+escapeAttr(followupsToShow[f3])+'\')">'+escapeHtml(followupsToShow[f3])+"</button>";}h+="</div>";}if(m.role==="ai"&&m.content){h+='<div class="chat-actions">';h+='<button class="chat-action-btn" onclick="copyMessage('+idx+')">Copy</button>';h+='<button class="chat-action-btn" onclick="printMessage('+idx+')">Print</button>';h+="</div>";}h+="</div></div>";return h;}
+function toggleFullPage(el,chunkId){var container=el.nextElementSibling;if(container.style.display==="block"){container.style.display="none";el.textContent="Show full page";}else{container.textContent=getFullPageText(chunkId);container.style.display="block";el.textContent="Hide full page";}}
+function askFollowUp(q){document.getElementById("askInput").value=q;handleAskQuestion();}
+function clearChat(){chatMessages=[];saveChatMessages();document.getElementById("chatArea").innerHTML='<div id="chatWelcome" style="text-align:center;padding:40px 20px;color:var(--text-muted);font-size:13px">Chat cleared. Ask a new question to get started.</div>';}
+function copyMessage(idx){var m=chatMessages[idx];if(m){var text=m.content||"";var sep=text.indexOf("---FOLLOWUPS---");if(sep!==-1)text=text.substring(0,sep).trim();navigator.clipboard.writeText(text);}}
+function printMessage(idx){var m=chatMessages[idx];if(!m)return;var text=m.content||"";var sep=text.indexOf("---FOLLOWUPS---");if(sep!==-1)text=text.substring(0,sep).trim();var w=window.open("","_blank");w.document.write("<html><head><title>ELPS Agent Answer</title><style>body{font-family:Segoe UI,sans-serif;padding:40px;line-height:1.7;white-space:pre-wrap;}</style></head><body>"+escapeHtml(text)+"</body></html>");w.document.close();w.print();}
+function searchElpsCode(code){document.getElementById("askInput").value=code;handleAskQuestion();}
+function appendStreamText(text){var area=document.getElementById("chatArea");var last=area.querySelector(".streaming-bubble");if(last){var cursor=last.querySelector(".streaming-cursor");if(cursor)cursor.remove();last.innerHTML+=escapeHtml(text);last.innerHTML+='<span class="streaming-cursor"></span>';area.scrollTop=area.scrollHeight;}}
+
+/* ============ MAIN QUESTION HANDLER ============ */
+function handleAskQuestion(){var input=document.getElementById("askInput");var rawQuery=input.value.trim();if(!rawQuery&&activeFilters.length===0)return;var query=rawQuery;if(activeFilters.length>0)query=(query+" "+activeFilters.join(" ")).trim();if(documents.length===0){addChatMessage("ai","No documents in knowledge base. Upload PDF files first.");renderChat();return;}queryHistory.push({query:rawQuery,mode:searchMode,time:new Date().toISOString()});saveHistory();input.value="";addChatMessage("user",rawQuery);var results=searchKnowledgeBase(query,searchMode==="ai"?5:10);if(searchMode==="search"){var resultData=[];for(var i=0;i<results.length;i++){resultData.push({chunkId:results[i].chunk.id,page:results[i].chunk.page,score:results[i].score,snippet:extractSnippet(results[i].chunk.text,query)});}addChatMessage("ai",results.length>0?results.length+" result"+(results.length!==1?"s":"")+" found:":"No results found. Try different keywords.",{results:resultData});renderChat();}else{if(results.length===0){addChatMessage("ai","No relevant passages found for AI context. Try different keywords.");renderChat();return;}var srcList=[];var seen={};for(var i=0;i<results.length;i++){var nm=getDocNameForChunk(results[i].chunk.id)+", Page "+results[i].chunk.page;if(!seen[nm]){srcList.push(nm);seen[nm]=true;}}var aiMsg=addChatMessage("ai","",{sources:srcList.join(" | ")});renderChat();var area=document.getElementById("chatArea");var bubbles=area.querySelectorAll(".chat-bubble");var lastBubble=bubbles[bubbles.length-1];lastBubble.classList.add("streaming-bubble");lastBubble.innerHTML='<span class="streaming-cursor"></span>';document.getElementById("askBtn").disabled=true;isQuerying=true;var fullText="";callClaudeStreaming(rawQuery,results,function(text){fullText+=text;appendStreamText(text);},function(){isQuerying=false;document.getElementById("askBtn").disabled=false;aiMsg.content=fullText;chatMessages[chatMessages.length-1]=aiMsg;saveChatMessages();renderChat();},function(errMsg){isQuerying=false;document.getElementById("askBtn").disabled=false;aiMsg.content="Error: "+errMsg;chatMessages[chatMessages.length-1]=aiMsg;saveChatMessages();renderChat();});}}
+
+/* ============ UI RENDERING ============ */
+function renderStats(){var tc=0,tch=0;for(var d=0;d<documents.length;d++){tc+=documents[d].chunks.length;tch+=documents[d].charCount||0;}var sk=Math.round(estimateStorageSize()/1024);document.getElementById("statsRow").innerHTML='<span class="stat-item"><span class="stat-num">'+documents.length+"</span> documents</span>"+'<span class="stat-item"><span class="stat-num">'+tc+"</span> chunks</span>"+'<span class="stat-item"><span class="stat-num">'+formatNumber(tch)+"</span> characters</span>"+'<span class="stat-item"><span class="stat-num">'+sk+" KB</span> storage</span>";document.getElementById("docCountBadge").textContent=documents.length;}
+function renderDocList(){var c=document.getElementById("docList");if(documents.length===0){c.innerHTML='<div class="empty-docs">No documents uploaded yet.</div>';return;}var h='<ul class="doc-list">';for(var d=0;d<documents.length;d++){var doc=documents[d];var added=new Date(doc.addedAt).toLocaleDateString();h+='<li class="doc-item"><div class="doc-info"><div class="doc-name">'+escapeHtml(doc.filename)+"</div>"+'<div class="doc-meta">'+doc.pageCount+" pages &middot; "+doc.chunks.length+" chunks &middot; Added "+added+"</div>"+'<div class="doc-tags">';var tags=doc.tags||[];for(var t=0;t<tags.length;t++){h+='<span class="doc-tag" onclick="removeTag(\''+doc.id+"',"+t+')">'+escapeHtml(tags[t])+" &times;</span>";}h+='<button class="doc-tag-add" onclick="showAddTag(\''+doc.id+"')\">+ Tag</button></div></div>"+'<div class="doc-actions">';h+='<button class="doc-btn" onclick="showChunkEditor(\''+doc.id+"')\">Chunks</button>";h+='<button class="doc-btn danger" onclick="removeDocument(\''+doc.id+"')\">Remove</button>";h+="</div></li>";}h+="</ul>";c.innerHTML=h;}
+function renderQuickFilters(){var c=document.getElementById("filtersRow");var h="";for(var g=0;g<QUICK_FILTERS.length;g++){var gr=QUICK_FILTERS[g];h+='<span class="filter-group-label">'+gr.group+"</span>";for(var i=0;i<gr.items.length;i++){var it=gr.items[i];var active=activeFilters.indexOf(it)!==-1;h+='<button class="filter-chip'+(active?" active":"")+'" onclick="toggleFilter(\''+it+"')\">"+it+"</button>";}}c.innerHTML=h;}
+function toggleFilter(n){var i=activeFilters.indexOf(n);if(i!==-1)activeFilters.splice(i,1);else activeFilters.push(n);renderQuickFilters();}
+
+/* ============ DOCUMENT MANAGEMENT ============ */
+function removeDocument(id){if(!confirm("Remove this document?"))return;for(var d=0;d<documents.length;d++){if(documents[d].id===id){documents.splice(d,1);break;}}rebuildChunkMap();rebuildInvertedIndex();saveToStorage();renderDocList();renderStats();}
+function showAddTag(docId){tagTargetDocId=docId;document.getElementById("tagInput").value="";showModal("tagModal");document.getElementById("tagInput").focus();}
+function addTagConfirm(){var tag=document.getElementById("tagInput").value.trim();if(!tag){closeModal("tagModal");return;}for(var d=0;d<documents.length;d++){if(documents[d].id===tagTargetDocId){if(!documents[d].tags)documents[d].tags=[];if(documents[d].tags.indexOf(tag)===-1)documents[d].tags.push(tag);break;}}closeModal("tagModal");scheduleSave();renderDocList();}
+function removeTag(docId,idx){for(var d=0;d<documents.length;d++){if(documents[d].id===docId&&documents[d].tags){documents[d].tags.splice(idx,1);break;}}scheduleSave();renderDocList();}
+
+/* ============ CHUNK EDITOR ============ */
+function showChunkEditor(docId){editingChunkDocId=docId;var doc=null;for(var d=0;d<documents.length;d++){if(documents[d].id===docId){doc=documents[d];break;}}if(!doc)return;document.getElementById("chunkDocName").textContent=doc.filename;var h="";for(var c=0;c<doc.chunks.length;c++){var ch=doc.chunks[c];h+='<div class="chunk-item"><div class="chunk-meta"><span>Chunk '+(c+1)+" of "+doc.chunks.length+" | Page "+ch.page+" | "+ch.text.length+' chars</span></div><textarea id="chunk-edit-'+c+'">'+escapeHtml(ch.text)+"</textarea>"+'<div class="chunk-btns"><button onclick="splitChunk('+c+')">Split</button><button onclick="mergeChunk('+c+')">Merge with next</button></div></div>';}document.getElementById("chunkList").innerHTML=h;showModal("chunkModal");}
+function splitChunk(idx){var ta=document.getElementById("chunk-edit-"+idx);if(!ta)return;var text=ta.value;var mid=text.indexOf("\n\n");if(mid===-1)mid=Math.floor(text.length/2);if(mid<10||mid>text.length-10)return;var doc=null;for(var d=0;d<documents.length;d++){if(documents[d].id===editingChunkDocId){doc=documents[d];break;}}if(!doc)return;var ch=doc.chunks[idx];var t1=text.substring(0,mid).trim();var t2=text.substring(mid).trim();ch.text=t1;ch.textLower=t1.toLowerCase();ch.tokens=tokenize(t1);var newCh=makeChunk(doc.id,doc.chunks.length,ch.page,t2);doc.chunks.splice(idx+1,0,newCh);showChunkEditor(editingChunkDocId);}
+function mergeChunk(idx){var doc=null;for(var d=0;d<documents.length;d++){if(documents[d].id===editingChunkDocId){doc=documents[d];break;}}if(!doc||idx>=doc.chunks.length-1)return;var ta1=document.getElementById("chunk-edit-"+idx);var ta2=document.getElementById("chunk-edit-"+(idx+1));if(ta1&&ta2){doc.chunks[idx].text=ta1.value+"\n\n"+ta2.value;doc.chunks[idx].textLower=doc.chunks[idx].text.toLowerCase();doc.chunks[idx].tokens=tokenize(doc.chunks[idx].text);doc.chunks.splice(idx+1,1);showChunkEditor(editingChunkDocId);}}
+function saveChunkEdits(){var doc=null;for(var d=0;d<documents.length;d++){if(documents[d].id===editingChunkDocId){doc=documents[d];break;}}if(!doc){closeModal("chunkModal");return;}for(var c=0;c<doc.chunks.length;c++){var ta=document.getElementById("chunk-edit-"+c);if(ta){doc.chunks[c].text=ta.value;doc.chunks[c].textLower=ta.value.toLowerCase();doc.chunks[c].tokens=tokenize(ta.value);}}doc.charCount=doc.chunks.reduce(function(s,ch){return s+ch.text.length;},0);rebuildChunkMap();rebuildInvertedIndex();saveToStorage();renderStats();closeModal("chunkModal");}
+function tokenize(text){var ts={};var words=text.toLowerCase().replace(/[^a-z0-9]/g," ").split(/\s+/);for(var i=0;i<words.length;i++){if(words[i].length>1)ts[words[i]]=true;}return Object.keys(ts);}
+
+/* ============ COVERAGE MAP ============ */
+function renderCoverageMap(){var grid=document.getElementById("coverageGrid");var h="";var maxCount=1;var counts={};for(var d=0;d<ELPS_CODES.length;d++){var domain=ELPS_CODES[d];for(var c=0;c<domain.codes.length;c++){var code=domain.domain+domain.codes[c];var cl=code.toLowerCase();var count=0;var ids=invertedIndex[cl]||[];count=ids.length;counts[code]=count;if(count>maxCount)maxCount=count;}}h+='<div style="display:grid;grid-template-columns:60px repeat(11,1fr);gap:2px">';for(var d=0;d<ELPS_CODES.length;d++){var domain=ELPS_CODES[d];h+='<div style="grid-column:1/-1;padding:8px 4px 2px;font-size:12px;font-weight:700;color:var(--text-heading)">'+domain.domain+": "+domain.name+"</div>";h+='<div style="font-size:10px;color:var(--text-muted);padding:4px"></div>';for(var c=0;c<domain.codes.length;c++){var code=domain.domain+domain.codes[c];var count=counts[code]||0;var pct=count/maxCount;var bg=count===0?"var(--border-light)":"rgba(74,144,217,"+(.15+pct*.85)+")";var clr=pct>.5?"#fff":"var(--text)";h+='<div class="coverage-cell" style="background:'+bg+";color:"+clr+'" onclick="searchElpsCode(\''+code+"')\">"+code+"<br><span style=\"font-weight:400;font-size:9px\">"+count+"</span></div>";}for(var f=domain.codes.length;f<11;f++){h+='<div></div>';}}h+="</div>";grid.innerHTML=h;}
+
+/* ============ POPULAR QUERIES ============ */
+function showPopularQueries(){var freq={};for(var i=0;i<queryHistory.length;i++){var q=queryHistory[i].query.toLowerCase().trim();if(q){freq[q]=(freq[q]||0)+1;}}var items=[];for(var k in freq)items.push({query:k,count:freq[k]});items.sort(function(a,b){return b.count-a.count;});var h="";if(items.length===0){h='<li style="padding:12px;color:var(--text-muted);font-size:13px">No queries yet. Start asking questions!</li>';}else{for(var i=0;i<Math.min(items.length,20);i++){h+='<li class="query-item" onclick="askFollowUp(\''+escapeAttr(items[i].query)+'\')"><span>'+escapeHtml(items[i].query)+'</span><span class="query-count">'+items[i].count+"</span></li>";}}document.getElementById("popularList").innerHTML=h;showModal("popularModal");}
+
+/* ============ DARK MODE ============ */
+function toggleDarkMode(){var isDark=document.body.classList.toggle("dark");document.getElementById("darkBtn").textContent=isDark?"Light":"Dark";document.getElementById("darkBtn").classList.toggle("active",isDark);try{localStorage.setItem(STORAGE_DARK,isDark?"1":"0");}catch(e){}}
+function loadDarkMode(){try{var v=localStorage.getItem(STORAGE_DARK);if(v==="1"){document.body.classList.add("dark");document.getElementById("darkBtn").textContent="Light";document.getElementById("darkBtn").classList.add("active");}}catch(e){}}
+
+/* ============ ONBOARDING ============ */
+var onboardStep=0;
+function showOnboarding(){onboardStep=0;renderOnboardStep();document.getElementById("onboardOverlay").classList.add("show");}
+function renderOnboardStep(){var s=ONBOARD_STEPS[onboardStep];document.getElementById("onboardStep").textContent="Step "+(onboardStep+1)+" of "+ONBOARD_STEPS.length;document.getElementById("onboardTitle").textContent=s.title;document.getElementById("onboardText").textContent=s.text;var dots="";for(var i=0;i<ONBOARD_STEPS.length;i++){dots+='<div class="onboard-dot'+(i===onboardStep?" active":"")+'"></div>';}document.getElementById("onboardDots").innerHTML=dots;document.getElementById("onboardNext").textContent=onboardStep===ONBOARD_STEPS.length-1?"Get Started":"Next";}
+function nextOnboardStep(){if(onboardStep<ONBOARD_STEPS.length-1){onboardStep++;renderOnboardStep();}else{closeOnboarding();}}
+function closeOnboarding(){document.getElementById("onboardOverlay").classList.remove("show");try{localStorage.setItem(STORAGE_ONBOARD,"1");}catch(e){}}
+
+/* ============ IMPORT / EXPORT / RESET ============ */
+function exportData(){var data=JSON.stringify(collectState(),null,2);var blob=new Blob([data],{type:"application/json"});var url=URL.createObjectURL(blob);var a=document.createElement("a");a.href=url;a.download="elps_agent_backup_"+new Date().toISOString().slice(0,10)+".json";a.click();URL.revokeObjectURL(url);}
+function loadImportFile(input){if(!input.files||!input.files[0])return;var reader=new FileReader();reader.onload=function(e){document.getElementById("importData").value=e.target.result;};reader.readAsText(input.files[0]);}
+function confirmImport(){var raw=document.getElementById("importData").value.trim();if(!raw){alert("No data to import.");return;}try{var state=JSON.parse(raw);if(!state.documents)throw new Error("Invalid format");applyState(state);saveToStorage();renderDocList();renderStats();closeModal("importModal");document.getElementById("importData").value="";}catch(e){alert("Invalid JSON: "+e.message);}}
+function confirmReset(){localStorage.removeItem(STORAGE_DOCS);localStorage.removeItem(STORAGE_INDEX);localStorage.removeItem(STORAGE_SETTINGS);localStorage.removeItem(STORAGE_HISTORY);localStorage.removeItem(STORAGE_CHAT);localStorage.removeItem(STORAGE_ONBOARD);documents=[];invertedIndex={};chunkMap={};queryHistory=[];chatMessages=[];activeFilters=[];settings={apiKey:"",model:"claude-sonnet-4-20250514",maxTokens:1024,systemPrompt:DEFAULT_PROMPT};loadPreloadedDocs();renderDocList();renderStats();renderQuickFilters();renderChat();closeModal("resetModal");}
+
+/* ============ MODAL / SETTINGS ============ */
+function showModal(id){document.getElementById(id).classList.add("show");if(id==="coverageModal")renderCoverageMap();}
+function closeModal(id){document.getElementById(id).classList.remove("show");}
+function showSettingsModal(){document.getElementById("settingsApiKey").value=settings.apiKey;document.getElementById("settingsModel").value=settings.model;document.getElementById("settingsMaxTokens").value=settings.maxTokens;document.getElementById("settingsPrompt").value=settings.systemPrompt;showModal("settingsModal");}
+function saveSettingsFromModal(){settings.apiKey=document.getElementById("settingsApiKey").value.trim();settings.model=document.getElementById("settingsModel").value;settings.maxTokens=parseInt(document.getElementById("settingsMaxTokens").value)||1024;settings.systemPrompt=document.getElementById("settingsPrompt").value.trim()||DEFAULT_PROMPT;saveSettings();closeModal("settingsModal");}
+function resetSystemPrompt(){document.getElementById("settingsPrompt").value=DEFAULT_PROMPT;}
+
+/* ============ UI HELPERS ============ */
+function toggleDocList(){var b=document.getElementById("docListBody");var c=document.getElementById("docChev");if(b.style.display==="none"){b.style.display="block";c.innerHTML="&#9650;";}else{b.style.display="none";c.innerHTML="&#9660;";}}
+function setMode(mode){searchMode=mode;document.getElementById("modeSearch").className="mode-opt"+(mode==="search"?" active":"");document.getElementById("modeAI").className="mode-opt"+(mode==="ai"?" active":"");document.getElementById("askBtn").textContent=mode==="search"?"Search":"Ask AI";}
+function showProgress(msg,pct){document.getElementById("uploadProgress").style.display="block";document.getElementById("progressText").textContent=msg;document.getElementById("progressFill").style.width=pct+"%";}
+function hideProgress(){document.getElementById("uploadProgress").style.display="none";}
+function estimateStorageSize(){var total=0;var keys=[STORAGE_DOCS,STORAGE_INDEX,STORAGE_SETTINGS,STORAGE_HISTORY,STORAGE_CHAT];for(var i=0;i<keys.length;i++){var v=localStorage.getItem(keys[i]);if(v)total+=v.length*2;}return total;}
+function escapeHtml(s){var d=document.createElement("div");d.appendChild(document.createTextNode(s));return d.innerHTML;}
+function escapeAttr(s){return s.replace(/'/g,"\\'").replace(/"/g,"&quot;");}
+function formatNumber(n){return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g,",");}
+
+/* ============ KEYBOARD SHORTCUTS ============ */
+function setupKeyboard(){document.addEventListener("keydown",function(e){if(e.ctrlKey&&e.key==="k"){e.preventDefault();document.getElementById("askInput").focus();}if(e.ctrlKey&&e.key==="Enter"){e.preventDefault();setMode(searchMode==="search"?"ai":"search");var sr=document.querySelector('input[name="mode"][value="'+searchMode+'"]');if(sr)sr.checked=true;}if(e.key==="Escape"){var modals=document.querySelectorAll(".modal-overlay.show");for(var i=0;i<modals.length;i++)modals[i].classList.remove("show");closeOnboarding();}});}
+
+/* ============ DRAG AND DROP ============ */
+function setupDragDrop(){var zone=document.getElementById("uploadZone");zone.addEventListener("dragover",function(e){e.preventDefault();zone.classList.add("dragover");});zone.addEventListener("dragleave",function(){zone.classList.remove("dragover");});zone.addEventListener("drop",function(e){e.preventDefault();zone.classList.remove("dragover");if(e.dataTransfer.files.length>0)handleFileUpload(e.dataTransfer.files);});}
+function setupModalClose(){var overlays=document.querySelectorAll(".modal-overlay");for(var i=0;i<overlays.length;i++){(function(o){o.addEventListener("click",function(e){if(e.target===o)o.classList.remove("show");});})(overlays[i]);}}
+
+/* ============ INIT ============ */
+function init(){loadDarkMode();loadFromStorage();renderStats();renderDocList();renderQuickFilters();renderChat();setupDragDrop();setupModalClose();setupKeyboard();if(!localStorage.getItem(STORAGE_ONBOARD))showOnboarding();}
+
+window.handleAskQuestion=handleAskQuestion;window.handleFileInput=handleFileInput;window.removeDocument=removeDocument;window.exportData=exportData;window.loadImportFile=loadImportFile;window.confirmImport=confirmImport;window.confirmReset=confirmReset;window.showModal=showModal;window.closeModal=closeModal;window.showSettingsModal=showSettingsModal;window.saveSettingsFromModal=saveSettingsFromModal;window.resetSystemPrompt=resetSystemPrompt;window.toggleDocList=toggleDocList;window.setMode=setMode;window.toggleFilter=toggleFilter;window.toggleDarkMode=toggleDarkMode;window.nextOnboardStep=nextOnboardStep;window.closeOnboarding=closeOnboarding;window.askFollowUp=askFollowUp;window.clearChat=clearChat;window.copyMessage=copyMessage;window.printMessage=printMessage;window.searchElpsCode=searchElpsCode;window.toggleFullPage=toggleFullPage;window.showChunkEditor=showChunkEditor;window.splitChunk=splitChunk;window.mergeChunk=mergeChunk;window.saveChunkEdits=saveChunkEdits;window.showPopularQueries=showPopularQueries;window.showAddTag=showAddTag;window.addTagConfirm=addTagConfirm;window.removeTag=removeTag;window.renderCoverageMap=renderCoverageMap;
+init();
+</script>
+</body>
+</html>

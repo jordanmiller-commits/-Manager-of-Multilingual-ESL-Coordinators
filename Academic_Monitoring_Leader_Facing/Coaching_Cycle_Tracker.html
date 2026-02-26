@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Coaching Cycle Tracker &mdash; Observation to Growth</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh;padding:20px}
+.wrap{max-width:1140px;margin:0 auto}
+
+/* ============================
+   HEADER
+   ============================ */
+.header{background:linear-gradient(135deg,#2c3e6e,#4a90d9);color:#fff;padding:24px 28px 16px;border-radius:14px 14px 0 0}
+.header h1{font-size:21px;font-weight:800;margin-bottom:2px}
+.header p{font-size:12px;opacity:.85;margin-bottom:12px}
+.toolbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.tool-btn{background:rgba(255,255,255,.13);color:#fff;border:2px solid rgba(255,255,255,.35);padding:6px 13px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.tool-btn:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.55)}
+.tool-btn.danger{border-color:rgba(231,76,60,.6);color:#fdd}
+.tool-btn.danger:hover{background:rgba(231,76,60,.3);border-color:rgba(231,76,60,.9)}
+.tool-btn.success{border-color:rgba(39,174,96,.5)}
+.tool-btn.success:hover{background:rgba(39,174,96,.2);border-color:rgba(39,174,96,.8)}
+.save-indicator{font-size:10px;color:rgba(255,255,255,.6);margin-left:auto}
+.nav-links{display:flex;gap:6px;margin-top:8px}
+.nav-link{color:rgba(255,255,255,.7);font-size:11px;text-decoration:none;padding:3px 10px;border:1px solid rgba(255,255,255,.25);border-radius:5px;transition:all .15s}
+.nav-link:hover{color:#fff;border-color:rgba(255,255,255,.5);background:rgba(255,255,255,.1)}
+
+/* ============================
+   CARDS
+   ============================ */
+.card{background:#fff;border-radius:10px;box-shadow:0 1px 5px rgba(0,0,0,.07);padding:16px 20px;margin-bottom:12px}
+.first-card{border-radius:0 0 10px 10px;margin-top:0}
+
+/* ============================
+   SUMMARY STATS ROW
+   ============================ */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}
+.stat-card{background:#fff;border-radius:10px;box-shadow:0 1px 5px rgba(0,0,0,.07);padding:16px 20px;text-align:center}
+.stat-value{font-size:28px;font-weight:800;color:#2c3e6e;line-height:1.1}
+.stat-label{font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.4px;margin-top:4px}
+.stat-value.green{color:#27ae60}
+.stat-value.blue{color:#4a90d9}
+.stat-value.orange{color:#f39c12}
+
+/* ============================
+   FILTER BAR
+   ============================ */
+.filter-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.filter-bar label{font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.4px}
+.filter-bar select,.filter-bar input{padding:6px 10px;border:1px solid #ddd;border-radius:6px;font-size:12px;font-family:inherit}
+.filter-bar select:focus,.filter-bar input:focus{border-color:#4a90d9;outline:none;box-shadow:0 0 0 2px rgba(74,144,217,.15)}
+.filter-sep{flex:1}
+.btn{padding:6px 14px;border-radius:7px;border:1.5px solid #ddd;background:#fff;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;color:#555}
+.btn:hover{background:#eaf3fb;border-color:#4a90d9;color:#2c3e6e}
+.btn.primary{background:#4a90d9;color:#fff;border-color:#4a90d9}
+.btn.primary:hover{background:#3a7bc8}
+.btn.success{background:#27ae60;color:#fff;border-color:#27ae60}
+.btn.success:hover{background:#219a52}
+
+/* ============================
+   CYCLE CARDS
+   ============================ */
+.cycle-list{margin-top:12px}
+.cycle-card{background:#fff;border-radius:10px;box-shadow:0 1px 5px rgba(0,0,0,.07);margin-bottom:12px;overflow:hidden;transition:box-shadow .15s}
+.cycle-card:hover{box-shadow:0 2px 10px rgba(0,0,0,.12)}
+.cycle-header{display:flex;align-items:center;gap:12px;padding:16px 20px;cursor:pointer;user-select:none}
+.cycle-header:hover{background:#fafbfd}
+.cycle-avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#4a90d9,#2c3e6e);display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;font-weight:800;flex-shrink:0}
+.cycle-info{flex:1;min-width:0}
+.cycle-teacher{font-size:14px;font-weight:700;color:#2c3e6e}
+.cycle-meta{font-size:11px;color:#888;margin-top:2px}
+.cycle-meta span{margin-right:10px}
+.cycle-status-badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:700}
+.badge-active{background:#e3f2fd;color:#1565c0;border:1px solid #bbdefb}
+.badge-completed{background:#e8f5e9;color:#2e7d32;border:1px solid #c8e6c9}
+.cycle-chev{font-size:12px;color:#888;transition:transform .2s;flex-shrink:0}
+.cycle-chev.open{transform:rotate(180deg)}
+
+/* Pipeline (progress stages) */
+.pipeline{display:flex;align-items:center;gap:0;padding:0 20px 14px;flex-wrap:wrap}
+.pipe-stage{display:flex;align-items:center;gap:0}
+.pipe-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;border:2.5px solid #ddd;background:#fff;color:#aaa;position:relative;z-index:1;transition:all .2s}
+.pipe-dot.not-started{border-color:#ddd;background:#fff;color:#aaa}
+.pipe-dot.in-progress{border-color:#4a90d9;background:#e3f2fd;color:#4a90d9}
+.pipe-dot.complete{border-color:#27ae60;background:#27ae60;color:#fff}
+.pipe-line{width:28px;height:3px;background:#ddd;flex-shrink:0}
+.pipe-line.done{background:#27ae60}
+.pipe-line.active{background:#4a90d9}
+.pipe-label{font-size:8px;color:#888;text-align:center;margin-top:2px;max-width:60px;line-height:1.2}
+.pipe-stage-wrap{display:flex;flex-direction:column;align-items:center}
+
+/* Progress bar */
+.progress-bar-wrap{padding:0 20px 14px}
+.progress-bar-track{height:6px;background:#eee;border-radius:3px;overflow:hidden}
+.progress-bar-fill{height:100%;border-radius:3px;transition:width .3s;background:linear-gradient(90deg,#4a90d9,#27ae60)}
+
+/* Cycle body (expanded) */
+.cycle-body{display:none;border-top:1px solid #eee;padding:20px}
+.cycle-body.open{display:block}
+.stage-editor{margin-bottom:16px;padding:14px;border-radius:8px;border:1px solid #eee;background:#fafbfd}
+.stage-editor:last-child{margin-bottom:0}
+.stage-title{font-size:12px;font-weight:700;color:#2c3e6e;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.stage-title .stage-num{width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;flex-shrink:0}
+.stage-num.gray{background:#bbb}
+.stage-num.blue{background:#4a90d9}
+.stage-num.green{background:#27ae60}
+.stage-fields{display:grid;grid-template-columns:140px 1fr 140px;gap:10px;align-items:start}
+.stage-fields label{display:block;font-size:9px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px}
+.stage-fields input,.stage-fields textarea,.stage-fields select{width:100%;padding:7px 9px;border-radius:6px;border:1px solid #ddd;font-size:12px;font-family:inherit}
+.stage-fields input:focus,.stage-fields textarea:focus,.stage-fields select:focus{border-color:#4a90d9;outline:none;box-shadow:0 0 0 2px rgba(74,144,217,.15)}
+.stage-fields textarea{min-height:50px;resize:vertical}
+
+.cycle-footer{display:flex;justify-content:space-between;align-items:center;padding:12px 20px;border-top:1px solid #eee;background:#fafbfd}
+.cycle-footer .created-text{font-size:10px;color:#aaa}
+.del-btn{padding:5px 12px;border-radius:6px;border:1.5px solid #e74c3c;background:#fff;color:#e74c3c;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.del-btn:hover{background:#fef0ef;border-color:#c0392b}
+
+/* Empty state */
+.empty-state{text-align:center;padding:50px 20px;color:#aaa}
+.empty-state .empty-icon{font-size:48px;margin-bottom:12px}
+.empty-state p{font-size:13px;margin-bottom:16px}
+
+/* ============================
+   AUTOCOMPLETE
+   ============================ */
+.ac-wrap{position:relative}
+.ac-list{display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #ddd;border-top:none;border-radius:0 0 6px 6px;max-height:150px;overflow-y:auto;z-index:100;box-shadow:0 4px 12px rgba(0,0,0,.12)}
+.ac-list.open{display:block}
+.ac-item{padding:6px 10px;font-size:11px;cursor:pointer;border-bottom:1px solid #f5f5f5}
+.ac-item:hover,.ac-item.active{background:#eaf3fb;color:#2c3e6e}
+
+/* ============================
+   MODAL
+   ============================ */
+.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.45);z-index:1000;justify-content:center;align-items:center}
+.modal-overlay.active{display:flex}
+.modal{background:#fff;border-radius:12px;padding:22px 26px;max-width:620px;width:92%;box-shadow:0 10px 40px rgba(0,0,0,.2);max-height:85vh;overflow-y:auto}
+.modal h3{font-size:15px;color:#2c3e6e;margin-bottom:8px}
+.modal p{font-size:12px;color:#555;line-height:1.5;margin-bottom:14px}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+.btn-cancel{padding:7px 16px;border-radius:7px;border:1.5px solid #ddd;background:#fff;color:#666;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit}
+.btn-cancel:hover{background:#f0f2f7}
+.btn-confirm{padding:7px 16px;border-radius:7px;border:none;background:#e74c3c;color:#fff;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit}
+.btn-confirm:hover{background:#c0392b}
+.btn-import{padding:7px 16px;border-radius:7px;border:none;background:#4a90d9;color:#fff;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit}
+.btn-import:hover{background:#3a7bc8}
+
+/* Import walkthrough list */
+.import-wt-list{max-height:45vh;overflow-y:auto;margin:10px 0}
+.import-wt-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid #eee;border-radius:8px;margin-bottom:6px;transition:background .15s}
+.import-wt-item:hover{background:#f8fafd}
+.import-wt-item input[type=checkbox]{width:16px;height:16px;flex-shrink:0;accent-color:#4a90d9}
+.import-wt-info{flex:1;min-width:0}
+.import-wt-title{font-size:12px;font-weight:700;color:#2c3e6e}
+.import-wt-meta{font-size:10px;color:#888;margin-top:2px}
+.import-wt-count{font-size:11px;color:#4a90d9;font-weight:600;white-space:nowrap}
+.import-empty{text-align:center;padding:20px;color:#aaa;font-size:12px;font-style:italic}
+
+/* New cycle form */
+.new-cycle-form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.new-cycle-form label{display:block;font-size:9px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px}
+.new-cycle-form input,.new-cycle-form select{width:100%;padding:7px 9px;border-radius:6px;border:1px solid #ddd;font-size:12px;font-family:inherit}
+.new-cycle-form input:focus,.new-cycle-form select:focus{border-color:#4a90d9;outline:none;box-shadow:0 0 0 2px rgba(74,144,217,.15)}
+
+/* Export/Import data */
+.import-area{width:100%;min-height:100px;padding:8px;border:1.5px dashed #ccc;border-radius:8px;font-family:monospace;font-size:10px;resize:vertical;margin-bottom:10px}
+.import-area:focus{border-color:#4a90d9;outline:none}
+.import-file-row{display:flex;gap:8px;align-items:center;margin-bottom:10px}
+.import-file-row input[type=file]{font-size:11px}
+
+/* ============================
+   RESPONSIVE
+   ============================ */
+@media(max-width:768px){
+  .stats-row{grid-template-columns:repeat(2,1fr)}
+  .stage-fields{grid-template-columns:1fr}
+  .new-cycle-form{grid-template-columns:1fr}
+  .pipeline{gap:0;justify-content:center}
+}
+@media(max-width:600px){
+  body{padding:8px}
+  .header{padding:16px 14px}
+  .header h1{font-size:17px}
+  .toolbar{gap:4px}
+  .tool-btn{padding:5px 9px;font-size:10px}
+  .card{padding:12px}
+  .stats-row{grid-template-columns:1fr 1fr}
+  .stat-value{font-size:22px}
+  .filter-bar{flex-direction:column;align-items:stretch}
+  .filter-bar>*{width:100%}
+  .filter-sep{display:none}
+  .cycle-header{padding:12px 14px}
+  .pipeline{padding:0 14px 10px}
+  .cycle-body{padding:14px}
+  .stage-fields{grid-template-columns:1fr}
+}
+
+/* ============================
+   PRINT STYLES
+   ============================ */
+@media print{
+  body{background:#fff;padding:0;font-size:10px}
+  .toolbar,.tool-btn,.filter-bar,.nav-links,.del-btn,.modal-overlay,.btn,.save-indicator{display:none!important}
+  .wrap{max-width:100%}
+  .header{-webkit-print-color-adjust:exact;print-color-adjust:exact;border-radius:0;padding:12px 16px}
+  .header h1{font-size:16px}
+  .card,.stat-card,.cycle-card{box-shadow:none;border:1px solid #ddd}
+  .stat-card,.pipeline .pipe-dot,.pipeline .pipe-line,.progress-bar-fill,.cycle-avatar,.stage-num,.cycle-status-badge,.badge-active,.badge-completed{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .cycle-body{display:block!important}
+  .cycle-card{page-break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Header -->
+  <div class="header">
+    <h1>Coaching Cycle Tracker</h1>
+    <p>Full Coaching Pipeline &mdash; Observation &#8594; Feedback &#8594; Action Step &#8594; Follow-Up &#8594; Growth</p>
+    <div class="toolbar">
+      <button class="tool-btn success" onclick="showModal('importWTModal')">&#128229; Import from Walkthroughs</button>
+      <button class="tool-btn" onclick="showModal('newCycleModal')">&#10010; New Cycle</button>
+      <button class="tool-btn" onclick="exportData()">&#128190; Export</button>
+      <button class="tool-btn" onclick="showModal('importDataModal')">&#128194; Import</button>
+      <button class="tool-btn danger" onclick="showModal('resetModal')">&#128260; Reset</button>
+      <span class="save-indicator" id="saveStatus">Auto-save: ready</span>
+    </div>
+    <div class="nav-links">
+      <a class="nav-link" href="Academic_Monitoring_Planning_Template.html">&#8592; Planning Template</a>
+      <a class="nav-link" href="Walkthrough_Dashboard.html">&#128202; Dashboard</a>
+    </div>
+  </div>
+
+  <!-- Summary Stats -->
+  <div class="card first-card" style="padding:0;background:transparent;box-shadow:none">
+    <div class="stats-row" id="statsRow">
+      <div class="stat-card">
+        <div class="stat-value blue" id="statActive">0</div>
+        <div class="stat-label">Active Cycles</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value green" id="statCompleted">0</div>
+        <div class="stat-label">Completed Cycles</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value orange" id="statAvgDays">&mdash;</div>
+        <div class="stat-label">Avg Days to Complete</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statTeachers">0</div>
+        <div class="stat-label">Teachers in Coaching</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter Bar -->
+  <div class="card">
+    <div class="filter-bar">
+      <div>
+        <label for="filterTeacher">Teacher</label>
+        <input type="text" id="filterTeacher" placeholder="Search by name..." oninput="applyFilters()"/>
+      </div>
+      <div>
+        <label for="filterCampus">Campus</label>
+        <select id="filterCampus" onchange="applyFilters()">
+          <option value="">All Campuses</option>
+        </select>
+      </div>
+      <div>
+        <label for="filterStatus">Status</label>
+        <select id="filterStatus" onchange="applyFilters()">
+          <option value="all">All</option>
+          <option value="active">Active</option>
+          <option value="completed">Completed</option>
+        </select>
+      </div>
+      <div class="filter-sep"></div>
+      <div style="align-self:flex-end">
+        <button class="btn primary" onclick="showModal('newCycleModal')">+ New Cycle</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cycle Board -->
+  <div class="cycle-list" id="cycleList">
+    <div class="empty-state" id="emptyState">
+      <div class="empty-icon">&#128203;</div>
+      <p>No coaching cycles yet. Import from walkthroughs or create a new cycle to get started.</p>
+      <button class="btn primary" onclick="showModal('newCycleModal')" style="display:inline-block">+ New Cycle</button>
+    </div>
+  </div>
+
+</div><!-- /wrap -->
+
+<!-- IMPORT FROM WALKTHROUGHS MODAL -->
+<div class="modal-overlay" id="importWTModal">
+  <div class="modal">
+    <h3>&#128229; Import from Walkthroughs</h3>
+    <p>Select walkthrough sessions to import their coaching actions as new coaching cycles.</p>
+    <div class="import-wt-list" id="importWTList">
+      <div class="import-empty">No walkthrough history found.</div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal('importWTModal')">Cancel</button>
+      <button class="btn-import" onclick="confirmImportWT()">Import Selected</button>
+    </div>
+  </div>
+</div>
+
+<!-- NEW CYCLE MODAL -->
+<div class="modal-overlay" id="newCycleModal">
+  <div class="modal">
+    <h3>&#10010; New Coaching Cycle</h3>
+    <p>Create a new coaching cycle for a teacher. All stages start as "not started."</p>
+    <div class="new-cycle-form">
+      <div>
+        <label for="newTeacher">Teacher Name</label>
+        <div class="ac-wrap">
+          <input type="text" id="newTeacher" placeholder="e.g., Ms. Garcia" autocomplete="off" oninput="showAutocomplete(this,document.getElementById('newTeacherAC'),this.value)" onblur="hideAutocomplete(document.getElementById('newTeacherAC'))"/>
+          <div class="ac-list" id="newTeacherAC"></div>
+        </div>
+      </div>
+      <div>
+        <label for="newCampus">Campus</label>
+        <input type="text" id="newCampus" placeholder="e.g., Rise Academy"/>
+      </div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal('newCycleModal')">Cancel</button>
+      <button class="btn-import" onclick="confirmNewCycle()">Create Cycle</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESET MODAL -->
+<div class="modal-overlay" id="resetModal">
+  <div class="modal">
+    <h3>Reset All Data</h3>
+    <p>This will delete all coaching cycles and reset the tracker. This cannot be undone.</p>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal('resetModal')">Cancel</button>
+      <button class="btn-confirm" onclick="confirmReset()">Reset Everything</button>
+    </div>
+  </div>
+</div>
+
+<!-- IMPORT DATA MODAL -->
+<div class="modal-overlay" id="importDataModal">
+  <div class="modal">
+    <h3>Import Coaching Cycle Data</h3>
+    <p>Paste exported JSON below or select a file. This replaces all current data.</p>
+    <div class="import-file-row">
+      <input type="file" id="importFile" accept=".json" onchange="loadImportFile()"/>
+    </div>
+    <textarea class="import-area" id="importArea" placeholder="Paste JSON data here..."></textarea>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal('importDataModal')">Cancel</button>
+      <button class="btn-import" onclick="confirmImportData()">Import</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ======================================================
+   CONSTANTS
+   ====================================================== */
+
+var STORAGE_KEY = "coaching_cycles_data";
+var HISTORY_KEY = "walkthrough_history";
+var ROSTER_KEY = "shared_teacher_roster";
+
+var STAGES = [
+  {key: "observation", label: "Observation", short: "Obs", num: "1"},
+  {key: "feedback", label: "Feedback", short: "FB", num: "2"},
+  {key: "actionStep", label: "Action Step", short: "AS", num: "3"},
+  {key: "followUp", label: "Follow-Up", short: "FU", num: "4"},
+  {key: "growth", label: "Growth", short: "Gr", num: "5"}
+];
+
+var STATUS_OPTIONS = [
+  {value: "not-started", label: "Not Started"},
+  {value: "in-progress", label: "In Progress"},
+  {value: "complete", label: "Complete"}
+];
+
+/* ======================================================
+   STATE
+   ====================================================== */
+
+var cycles = [];
+var settings = {};
+var saveTimeout = null;
+var expandedCycles = {};
+
+/* ======================================================
+   UTILITIES
+   ====================================================== */
+
+function escHtml(str) {
+  if (!str) return "";
+  var d = document.createElement("div");
+  d.appendChild(document.createTextNode(str));
+  return d.innerHTML;
+}
+
+function genId() {
+  return "cyc" + Date.now() + Math.floor(Math.random() * 10000);
+}
+
+function formatDate(iso) {
+  if (!iso) return "";
+  try {
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return iso;
+    return d.toLocaleDateString();
+  } catch (e) { return iso; }
+}
+
+function daysBetween(d1, d2) {
+  if (!d1 || !d2) return null;
+  try {
+    var a = new Date(d1);
+    var b = new Date(d2);
+    if (isNaN(a.getTime()) || isNaN(b.getTime())) return null;
+    var diff = Math.abs(b.getTime() - a.getTime());
+    return Math.round(diff / (1000 * 60 * 60 * 24));
+  } catch (e) { return null; }
+}
+
+function teacherInitials(name) {
+  if (!name) return "?";
+  var parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+}
+
+/* ======================================================
+   STAGE HELPERS
+   ====================================================== */
+
+function createBlankStages() {
+  var stages = [];
+  for (var i = 0; i < STAGES.length; i++) {
+    stages.push({
+      key: STAGES[i].key,
+      status: "not-started",
+      date: "",
+      notes: ""
+    });
+  }
+  return stages;
+}
+
+function isCycleComplete(cycle) {
+  if (!cycle || !cycle.stages) return false;
+  for (var i = 0; i < cycle.stages.length; i++) {
+    if (cycle.stages[i].status !== "complete") return false;
+  }
+  return true;
+}
+
+function cycleProgress(cycle) {
+  if (!cycle || !cycle.stages) return 0;
+  var done = 0;
+  for (var i = 0; i < cycle.stages.length; i++) {
+    if (cycle.stages[i].status === "complete") done++;
+  }
+  return Math.round((done / cycle.stages.length) * 100);
+}
+
+function completedStageCount(cycle) {
+  if (!cycle || !cycle.stages) return 0;
+  var count = 0;
+  for (var i = 0; i < cycle.stages.length; i++) {
+    if (cycle.stages[i].status === "complete") count++;
+  }
+  return count;
+}
+
+/* ======================================================
+   ROSTER (shared teacher autocomplete)
+   ====================================================== */
+
+function getRoster() {
+  try {
+    var raw = localStorage.getItem(ROSTER_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) { return []; }
+}
+
+function saveRoster(arr) {
+  localStorage.setItem(ROSTER_KEY, JSON.stringify(arr));
+}
+
+function addToRoster(name) {
+  if (!name || !name.trim()) return;
+  name = name.trim();
+  var roster = getRoster();
+  for (var i = 0; i < roster.length; i++) {
+    if (roster[i].toLowerCase() === name.toLowerCase()) return;
+  }
+  roster.push(name);
+  roster.sort(function(a, b) { return a.toLowerCase().localeCompare(b.toLowerCase()); });
+  saveRoster(roster);
+}
+
+function showAutocomplete(inputEl, listEl, query) {
+  if (!query || query.length < 1) { listEl.classList.remove("open"); return; }
+  var roster = getRoster();
+  var q = query.toLowerCase();
+  var matches = [];
+  for (var i = 0; i < roster.length; i++) {
+    if (roster[i].toLowerCase().indexOf(q) !== -1) matches.push(roster[i]);
+  }
+  if (matches.length === 0) { listEl.classList.remove("open"); return; }
+  var html = "";
+  for (var j = 0; j < matches.length && j < 8; j++) {
+    html += '<div class="ac-item" onmousedown="selectAutocomplete(this,\'' + escHtml(matches[j]).replace(/'/g, "\\'") + '\')">' + escHtml(matches[j]) + '</div>';
+  }
+  listEl.innerHTML = html;
+  listEl.classList.add("open");
+}
+
+function selectAutocomplete(itemEl, value) {
+  var wrap = itemEl.parentElement.parentElement;
+  var input = wrap.querySelector("input");
+  if (input) {
+    input.value = value;
+    var event = document.createEvent("Event");
+    event.initEvent("input", true, true);
+    input.dispatchEvent(event);
+  }
+  itemEl.parentElement.classList.remove("open");
+}
+
+function hideAutocomplete(listEl) {
+  setTimeout(function() { listEl.classList.remove("open"); }, 150);
+}
+
+/* ======================================================
+   WALKTHROUGH HISTORY ACCESS
+   ====================================================== */
+
+function getWalkthroughHistory() {
+  try {
+    var raw = localStorage.getItem(HISTORY_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) { return []; }
+}
+
+/* ======================================================
+   PERSISTENCE
+   ====================================================== */
+
+function collectState() {
+  return {
+    version: 1,
+    savedAt: new Date().toISOString(),
+    cycles: cycles,
+    settings: settings
+  };
+}
+
+function saveToStorage() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(collectState()));
+    var el = document.getElementById("saveStatus");
+    el.textContent = "Saved " + new Date().toLocaleTimeString();
+    setTimeout(function() { el.textContent = "Auto-save: ready"; }, 2000);
+  } catch (e) {
+    var el2 = document.getElementById("saveStatus");
+    el2.textContent = "Save error!";
+  }
+}
+
+function loadFromStorage() {
+  try {
+    var raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    var state = JSON.parse(raw);
+    if (state.cycles) cycles = state.cycles;
+    if (state.settings) settings = state.settings;
+  } catch (e) { /* start fresh */ }
+}
+
+function scheduleSave() {
+  if (saveTimeout) clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(function() { saveToStorage(); }, 600);
+}
+
+/* ======================================================
+   SYNC STATE FROM DOM
+   ====================================================== */
+
+function syncFromDOM() {
+  for (var i = 0; i < cycles.length; i++) {
+    var c = cycles[i];
+    for (var s = 0; s < c.stages.length; s++) {
+      var prefix = "stage-" + c.id + "-" + c.stages[s].key;
+      var dateEl = document.getElementById(prefix + "-date");
+      var notesEl = document.getElementById(prefix + "-notes");
+      var statusEl = document.getElementById(prefix + "-status");
+      if (dateEl) c.stages[s].date = dateEl.value;
+      if (notesEl) c.stages[s].notes = notesEl.value;
+      if (statusEl) c.stages[s].status = statusEl.value;
+    }
+  }
+}
+
+/* ======================================================
+   SUMMARY STATS
+   ====================================================== */
+
+function renderStats() {
+  var active = 0;
+  var completed = 0;
+  var totalDays = 0;
+  var completedWithDays = 0;
+  var teacherSet = {};
+
+  for (var i = 0; i < cycles.length; i++) {
+    var c = cycles[i];
+    if (c.teacher) teacherSet[c.teacher.toLowerCase()] = true;
+    if (isCycleComplete(c)) {
+      completed++;
+      // Calculate days: from createdAt to last stage completion date
+      var lastDate = "";
+      for (var s = 0; s < c.stages.length; s++) {
+        if (c.stages[s].date && c.stages[s].date > lastDate) {
+          lastDate = c.stages[s].date;
+        }
+      }
+      var days = daysBetween(c.createdAt, lastDate);
+      if (days !== null) {
+        totalDays += days;
+        completedWithDays++;
+      }
+    } else {
+      active++;
+    }
+  }
+
+  var teacherCount = 0;
+  for (var k in teacherSet) {
+    if (teacherSet.hasOwnProperty(k)) teacherCount++;
+  }
+
+  document.getElementById("statActive").textContent = active;
+  document.getElementById("statCompleted").textContent = completed;
+  document.getElementById("statTeachers").textContent = teacherCount;
+
+  if (completedWithDays > 0) {
+    document.getElementById("statAvgDays").textContent = Math.round(totalDays / completedWithDays);
+  } else {
+    document.getElementById("statAvgDays").innerHTML = "&mdash;";
+  }
+}
+
+/* ======================================================
+   FILTER BAR
+   ====================================================== */
+
+function populateFilterDropdowns() {
+  var campuses = {};
+  for (var i = 0; i < cycles.length; i++) {
+    if (cycles[i].campus) campuses[cycles[i].campus] = true;
+  }
+
+  var campusSel = document.getElementById("filterCampus");
+  var currentVal = campusSel.value;
+  var html = '<option value="">All Campuses</option>';
+  for (var ck in campuses) {
+    if (campuses.hasOwnProperty(ck)) {
+      var sel = ck === currentVal ? " selected" : "";
+      html += '<option value="' + escHtml(ck) + '"' + sel + '>' + escHtml(ck) + '</option>';
+    }
+  }
+  campusSel.innerHTML = html;
+}
+
+function getFilteredCycles() {
+  var teacherQ = (document.getElementById("filterTeacher").value || "").toLowerCase().trim();
+  var campus = document.getElementById("filterCampus").value;
+  var status = document.getElementById("filterStatus").value;
+
+  var result = [];
+  for (var i = 0; i < cycles.length; i++) {
+    var c = cycles[i];
+
+    // Teacher filter
+    if (teacherQ && (c.teacher || "").toLowerCase().indexOf(teacherQ) === -1) continue;
+
+    // Campus filter
+    if (campus && c.campus !== campus) continue;
+
+    // Status filter
+    if (status === "active" && isCycleComplete(c)) continue;
+    if (status === "completed" && !isCycleComplete(c)) continue;
+
+    result.push(c);
+  }
+  return result;
+}
+
+function applyFilters() {
+  renderCycleList();
+}
+
+/* ======================================================
+   RENDER CYCLE LIST
+   ====================================================== */
+
+function renderCycleList() {
+  var container = document.getElementById("cycleList");
+  var emptyEl = document.getElementById("emptyState");
+  var filtered = getFilteredCycles();
+
+  if (cycles.length === 0) {
+    container.innerHTML = "";
+    container.appendChild(emptyEl);
+    emptyEl.style.display = "block";
+    return;
+  }
+
+  emptyEl.style.display = "none";
+
+  if (filtered.length === 0) {
+    container.innerHTML = '<div class="empty-state"><p>No cycles match the current filters.</p></div>';
+    return;
+  }
+
+  var html = "";
+  for (var i = 0; i < filtered.length; i++) {
+    html += buildCycleCard(filtered[i]);
+  }
+  container.innerHTML = html;
+}
+
+function buildCycleCard(cycle) {
+  var isComplete = isCycleComplete(cycle);
+  var progress = cycleProgress(cycle);
+  var isExpanded = expandedCycles[cycle.id] || false;
+
+  var html = '<div class="cycle-card" id="card-' + cycle.id + '">';
+
+  // Header
+  html += '<div class="cycle-header" onclick="toggleCycle(\'' + cycle.id + '\')">';
+  html += '<div class="cycle-avatar">' + escHtml(teacherInitials(cycle.teacher)) + '</div>';
+  html += '<div class="cycle-info">';
+  html += '<div class="cycle-teacher">' + escHtml(cycle.teacher || "Unnamed Teacher") + '</div>';
+  html += '<div class="cycle-meta">';
+  if (cycle.campus) html += '<span>' + escHtml(cycle.campus) + '</span>';
+  html += '<span>Created ' + formatDate(cycle.createdAt) + '</span>';
+  html += '<span>' + completedStageCount(cycle) + '/5 stages</span>';
+  if (cycle.sourceWalkthroughId) html += '<span style="color:#4a90d9">Imported</span>';
+  html += '</div>';
+  html += '</div>';
+  html += '<span class="cycle-status-badge ' + (isComplete ? 'badge-completed' : 'badge-active') + '">';
+  html += isComplete ? 'Completed' : 'Active';
+  html += '</span>';
+  html += '<span class="cycle-chev' + (isExpanded ? ' open' : '') + '">&#9660;</span>';
+  html += '</div>';
+
+  // Pipeline
+  html += '<div class="pipeline">';
+  for (var s = 0; s < STAGES.length; s++) {
+    var stage = cycle.stages[s];
+    var dotClass = "pipe-dot " + stage.status;
+
+    html += '<div class="pipe-stage-wrap">';
+    html += '<div class="pipe-stage">';
+    if (s > 0) {
+      var lineClass = "pipe-line";
+      var prevStage = cycle.stages[s - 1];
+      if (prevStage.status === "complete" && stage.status === "complete") {
+        lineClass += " done";
+      } else if (prevStage.status === "complete" && stage.status !== "not-started") {
+        lineClass += " active";
+      }
+      html += '<div class="' + lineClass + '"></div>';
+    }
+    html += '<div class="' + dotClass + '">' + STAGES[s].num + '</div>';
+    html += '</div>';
+    html += '<div class="pipe-label">' + STAGES[s].short + '</div>';
+    html += '</div>';
+  }
+  html += '</div>';
+
+  // Progress bar
+  html += '<div class="progress-bar-wrap">';
+  html += '<div class="progress-bar-track">';
+  html += '<div class="progress-bar-fill" style="width:' + progress + '%"></div>';
+  html += '</div>';
+  html += '</div>';
+
+  // Expandable body
+  html += '<div class="cycle-body' + (isExpanded ? ' open' : '') + '" id="body-' + cycle.id + '">';
+  for (var s2 = 0; s2 < STAGES.length; s2++) {
+    var st = cycle.stages[s2];
+    var stageConf = STAGES[s2];
+    var numClass = st.status === "complete" ? "green" : (st.status === "in-progress" ? "blue" : "gray");
+
+    html += '<div class="stage-editor">';
+    html += '<div class="stage-title">';
+    html += '<span class="stage-num ' + numClass + '">' + stageConf.num + '</span>';
+    html += stageConf.label;
+    html += '</div>';
+    html += '<div class="stage-fields">';
+
+    // Date
+    html += '<div>';
+    html += '<label>Date</label>';
+    html += '<input type="date" id="stage-' + cycle.id + '-' + stageConf.key + '-date" value="' + escHtml(st.date) + '" onchange="onStageChange(\'' + cycle.id + '\')" />';
+    html += '</div>';
+
+    // Notes
+    html += '<div>';
+    html += '<label>Notes</label>';
+    html += '<textarea id="stage-' + cycle.id + '-' + stageConf.key + '-notes" placeholder="' + escHtml(getStagePlaceholder(stageConf.key)) + '" oninput="onStageChange(\'' + cycle.id + '\')">' + escHtml(st.notes) + '</textarea>';
+    html += '</div>';
+
+    // Status
+    html += '<div>';
+    html += '<label>Status</label>';
+    html += '<select id="stage-' + cycle.id + '-' + stageConf.key + '-status" onchange="onStageChange(\'' + cycle.id + '\')">';
+    for (var so = 0; so < STATUS_OPTIONS.length; so++) {
+      var selected = st.status === STATUS_OPTIONS[so].value ? " selected" : "";
+      html += '<option value="' + STATUS_OPTIONS[so].value + '"' + selected + '>' + STATUS_OPTIONS[so].label + '</option>';
+    }
+    html += '</select>';
+    html += '</div>';
+
+    html += '</div>'; // stage-fields
+    html += '</div>'; // stage-editor
+  }
+  html += '</div>'; // cycle-body
+
+  // Footer
+  html += '<div class="cycle-footer">';
+  html += '<span class="created-text">ID: ' + escHtml(cycle.id) + '</span>';
+  html += '<button class="del-btn" onclick="deleteCycle(\'' + cycle.id + '\')">Delete Cycle</button>';
+  html += '</div>';
+
+  html += '</div>'; // cycle-card
+  return html;
+}
+
+function getStagePlaceholder(key) {
+  var placeholders = {
+    observation: "What was observed? Key behaviors, instructional moves, etc.",
+    feedback: "What feedback was given? Coaching conversation summary.",
+    actionStep: "What is the teacher's action step? Specific, measurable, time-bound.",
+    followUp: "How did the follow-up go? Was the action step implemented?",
+    growth: "What growth was observed? Evidence of change."
+  };
+  return placeholders[key] || "Notes...";
+}
+
+/* ======================================================
+   CYCLE INTERACTIONS
+   ====================================================== */
+
+function toggleCycle(cycleId) {
+  expandedCycles[cycleId] = !expandedCycles[cycleId];
+  var body = document.getElementById("body-" + cycleId);
+  var card = document.getElementById("card-" + cycleId);
+  if (body && card) {
+    var chev = card.querySelector(".cycle-chev");
+    if (expandedCycles[cycleId]) {
+      body.classList.add("open");
+      if (chev) chev.classList.add("open");
+    } else {
+      body.classList.remove("open");
+      if (chev) chev.classList.remove("open");
+    }
+  }
+}
+
+function onStageChange(cycleId) {
+  syncFromDOM();
+  scheduleSave();
+  // Re-render just the pipeline and stats without losing expanded state
+  renderStats();
+  // Rebuild the entire list to update pipeline visuals
+  renderCycleList();
+  populateFilterDropdowns();
+}
+
+function deleteCycle(cycleId) {
+  if (!confirm("Delete this coaching cycle? This cannot be undone.")) return;
+  syncFromDOM();
+  for (var i = 0; i < cycles.length; i++) {
+    if (cycles[i].id === cycleId) {
+      cycles.splice(i, 1);
+      break;
+    }
+  }
+  delete expandedCycles[cycleId];
+  saveToStorage();
+  renderAll();
+}
+
+/* ======================================================
+   NEW CYCLE
+   ====================================================== */
+
+function confirmNewCycle() {
+  var teacherEl = document.getElementById("newTeacher");
+  var campusEl = document.getElementById("newCampus");
+  var teacher = (teacherEl.value || "").trim();
+  var campus = (campusEl.value || "").trim();
+
+  if (!teacher) {
+    alert("Please enter a teacher name.");
+    teacherEl.focus();
+    return;
+  }
+
+  var cycle = {
+    id: genId(),
+    teacher: teacher,
+    campus: campus,
+    createdAt: new Date().toISOString(),
+    stages: createBlankStages(),
+    sourceWalkthroughId: null
+  };
+
+  addToRoster(teacher);
+  cycles.unshift(cycle);
+  expandedCycles[cycle.id] = true;
+  saveToStorage();
+  closeModal("newCycleModal");
+  teacherEl.value = "";
+  campusEl.value = "";
+  renderAll();
+}
+
+/* ======================================================
+   IMPORT FROM WALKTHROUGHS
+   ====================================================== */
+
+function renderImportWTList() {
+  var history = getWalkthroughHistory();
+  var container = document.getElementById("importWTList");
+
+  if (history.length === 0) {
+    container.innerHTML = '<div class="import-empty">No walkthrough history found. Save walkthroughs from the Planning Template first.</div>';
+    return;
+  }
+
+  // Find entries with coaching actions
+  var eligible = [];
+  for (var i = 0; i < history.length; i++) {
+    var h = history[i];
+    var coachCount = (h.coachingActions && h.coachingActions.length) ? h.coachingActions.length : 0;
+    if (coachCount > 0) {
+      eligible.push({entry: h, idx: i, coachCount: coachCount});
+    }
+  }
+
+  if (eligible.length === 0) {
+    container.innerHTML = '<div class="import-empty">No walkthrough sessions with coaching actions found. Add coaching follow-ups in the Planning Template before importing.</div>';
+    return;
+  }
+
+  var html = "";
+  for (var j = 0; j < eligible.length; j++) {
+    var e = eligible[j];
+    var entry = e.entry;
+    var dateStr = entry.meta && entry.meta.date ? entry.meta.date : "No date";
+    var leader = entry.meta && entry.meta.leader ? entry.meta.leader : "Unknown";
+    var campus = entry.meta && entry.meta.campus ? entry.meta.campus : "No campus";
+    var focus = entry.meta && entry.meta.focusLabel ? entry.meta.focusLabel : "No focus";
+
+    // Check how many are already imported
+    var alreadyImported = 0;
+    if (entry.id) {
+      for (var ci = 0; ci < cycles.length; ci++) {
+        if (cycles[ci].sourceWalkthroughId === entry.id) alreadyImported++;
+      }
+    }
+
+    html += '<div class="import-wt-item">';
+    html += '<input type="checkbox" id="import-wt-' + j + '" data-idx="' + e.idx + '" />';
+    html += '<div class="import-wt-info">';
+    html += '<div class="import-wt-title">' + escHtml(leader) + ' &mdash; ' + escHtml(campus) + '</div>';
+    html += '<div class="import-wt-meta">' + escHtml(dateStr) + ' &bull; ' + escHtml(focus);
+    if (alreadyImported > 0) {
+      html += ' &bull; <span style="color:#f39c12">' + alreadyImported + ' already imported</span>';
+    }
+    html += '</div>';
+    html += '</div>';
+    html += '<div class="import-wt-count">' + e.coachCount + ' action' + (e.coachCount !== 1 ? 's' : '') + '</div>';
+    html += '</div>';
+  }
+  container.innerHTML = html;
+}
+
+function confirmImportWT() {
+  var history = getWalkthroughHistory();
+  var checkboxes = document.querySelectorAll('#importWTList input[type=checkbox]:checked');
+  if (checkboxes.length === 0) {
+    alert("Please select at least one walkthrough to import.");
+    return;
+  }
+
+  var imported = 0;
+  for (var i = 0; i < checkboxes.length; i++) {
+    var idx = parseInt(checkboxes[i].getAttribute("data-idx"), 10);
+    if (isNaN(idx) || idx < 0 || idx >= history.length) continue;
+    var entry = history[idx];
+    if (!entry.coachingActions || entry.coachingActions.length === 0) continue;
+
+    var campus = entry.meta && entry.meta.campus ? entry.meta.campus : "";
+
+    for (var j = 0; j < entry.coachingActions.length; j++) {
+      var ca = entry.coachingActions[j];
+      var teacher = ca.teacher || "Unknown Teacher";
+
+      var stages = createBlankStages();
+
+      // Pre-fill observation stage from the coaching action's observation field
+      stages[0].status = "complete";
+      stages[0].date = entry.meta && entry.meta.date ? entry.meta.date : "";
+      stages[0].notes = ca.observation || "";
+
+      // Pre-fill feedback stage if feedback was given
+      if (ca.feedback) {
+        stages[1].status = ca.status === "completed" ? "complete" : "in-progress";
+        stages[1].date = entry.meta && entry.meta.date ? entry.meta.date : "";
+        stages[1].notes = ca.feedback || "";
+      }
+
+      // Pre-fill action step if next step was defined
+      if (ca.nextStep) {
+        stages[2].status = "in-progress";
+        stages[2].notes = ca.nextStep || "";
+        if (ca.deadline) stages[2].date = ca.deadline;
+      }
+
+      var cycle = {
+        id: genId(),
+        teacher: teacher,
+        campus: campus,
+        createdAt: new Date().toISOString(),
+        stages: stages,
+        sourceWalkthroughId: entry.id || null
+      };
+
+      addToRoster(teacher);
+      cycles.unshift(cycle);
+      imported++;
+    }
+  }
+
+  saveToStorage();
+  closeModal("importWTModal");
+  renderAll();
+  alert("Imported " + imported + " coaching cycle" + (imported !== 1 ? "s" : "") + " from walkthrough history.");
+}
+
+/* ======================================================
+   EXPORT / IMPORT DATA
+   ====================================================== */
+
+function exportData() {
+  syncFromDOM();
+  var state = collectState();
+  var json = JSON.stringify(state, null, 2);
+  var blob = new Blob([json], {type: "application/json"});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url;
+  a.download = "coaching_cycles_" + new Date().toISOString().slice(0, 10) + ".json";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function loadImportFile() {
+  var fileInput = document.getElementById("importFile");
+  if (!fileInput.files || !fileInput.files[0]) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    document.getElementById("importArea").value = e.target.result;
+  };
+  reader.readAsText(fileInput.files[0]);
+}
+
+function confirmImportData() {
+  var raw = document.getElementById("importArea").value.trim();
+  if (!raw) {
+    alert("Please paste JSON data or select a file.");
+    return;
+  }
+  try {
+    var data = JSON.parse(raw);
+    if (!data.cycles || !Array.isArray(data.cycles)) {
+      alert("Invalid data format: missing cycles array.");
+      return;
+    }
+    if (!confirm("This will replace all current coaching cycles. Continue?")) return;
+    cycles = data.cycles;
+    settings = data.settings || {};
+    expandedCycles = {};
+    saveToStorage();
+    closeModal("importDataModal");
+    document.getElementById("importArea").value = "";
+    renderAll();
+  } catch (e) {
+    alert("Invalid JSON: " + e.message);
+  }
+}
+
+/* ======================================================
+   RESET
+   ====================================================== */
+
+function confirmReset() {
+  cycles = [];
+  settings = {};
+  expandedCycles = {};
+  localStorage.removeItem(STORAGE_KEY);
+  closeModal("resetModal");
+  renderAll();
+}
+
+/* ======================================================
+   MODALS
+   ====================================================== */
+
+function showModal(id) {
+  var el = document.getElementById(id);
+  if (el) {
+    el.classList.add("active");
+    if (id === "importWTModal") renderImportWTList();
+  }
+}
+
+function closeModal(id) {
+  var el = document.getElementById(id);
+  if (el) el.classList.remove("active");
+}
+
+// Close modals on overlay click
+document.addEventListener("click", function(e) {
+  if (e.target.classList.contains("modal-overlay") && e.target.classList.contains("active")) {
+    e.target.classList.remove("active");
+  }
+});
+
+// Close modals on Escape
+document.addEventListener("keydown", function(e) {
+  if (e.key === "Escape" || e.keyCode === 27) {
+    var modals = document.querySelectorAll(".modal-overlay.active");
+    for (var i = 0; i < modals.length; i++) {
+      modals[i].classList.remove("active");
+    }
+  }
+});
+
+/* ======================================================
+   RENDER ALL
+   ====================================================== */
+
+function renderAll() {
+  renderStats();
+  populateFilterDropdowns();
+  renderCycleList();
+}
+
+/* ======================================================
+   INIT
+   ====================================================== */
+
+function init() {
+  loadFromStorage();
+  renderAll();
+}
+
+init();
+</script>
+</body>
+</html>
