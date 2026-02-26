@@ -3,388 +3,569 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Coordinator Workload Dashboard</title>
-<link rel="manifest" href="manifest.json"/>
+<title>Coordinator Workload &mdash; ESL Manager Suite</title>
+<link rel="manifest" href="./manifest.json"/>
 <meta name="theme-color" content="#2c3e6e"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh;padding:20px;color:#333;transition:background .3s,color .3s}
-.wrap{max-width:1200px;margin:0 auto}
-.header{background:linear-gradient(135deg,#2c3e6e,#4a90d9);color:#fff;padding:24px 28px 16px;border-radius:14px;margin-bottom:16px}
-.header h1{font-size:21px;font-weight:800;margin-bottom:2px}
-.header p{font-size:12px;opacity:.85;margin-bottom:12px}
-.toolbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-.tool-btn{background:rgba(255,255,255,.13);color:#fff;border:2px solid rgba(255,255,255,.35);padding:6px 13px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
-.tool-btn:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.55)}
-.save-indicator{font-size:10px;color:rgba(255,255,255,.6);margin-left:auto}
-.nav-links{display:flex;gap:6px;margin-top:8px}
-.nav-link{color:rgba(255,255,255,.7);font-size:11px;text-decoration:none;padding:3px 10px;border:1px solid rgba(255,255,255,.25);border-radius:5px;transition:all .15s}
-.nav-link:hover{color:#fff;border-color:rgba(255,255,255,.5);background:rgba(255,255,255,.1)}
-.month-nav{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:16px}
-.month-nav button{padding:6px 14px;border-radius:6px;border:1.5px solid #ddd;background:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;color:#555;transition:all .15s}
-.month-nav button:hover{background:#eaf3fb;border-color:#4a90d9;color:#2c3e6e}
-.month-label{font-size:18px;font-weight:700;color:#2c3e6e;min-width:200px;text-align:center}
-.coord-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:16px}
-.coord-card{background:#fff;border-radius:10px;box-shadow:0 1px 5px rgba(0,0,0,.07);padding:18px;border-top:4px solid #4a90d9}
-.coord-card:nth-child(2){border-top-color:#27ae60}
-.coord-card:nth-child(3){border-top-color:#8e44ad}
-.coord-card:nth-child(4){border-top-color:#f39c12}
-.coord-name{font-size:16px;font-weight:800;color:#2c3e6e;margin-bottom:4px}
-.coord-campuses{font-size:11px;color:#888;margin-bottom:10px}
-.workload-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:12px;border-bottom:1px solid #f0f0f0}
-.workload-row:last-child{border-bottom:none}
-.workload-label{color:#555}
-.workload-value{font-weight:700;color:#2c3e6e}
-.capacity-meter{margin-top:10px}
-.capacity-bar-track{height:8px;background:#eee;border-radius:4px;overflow:hidden}
-.capacity-bar-fill{height:100%;border-radius:4px;transition:width .3s}
-.capacity-bar-fill.green{background:#27ae60}
-.capacity-bar-fill.yellow{background:#f1c40f}
-.capacity-bar-fill.red{background:#e74c3c}
-.capacity-label{font-size:10px;font-weight:700;text-transform:uppercase;margin-bottom:4px}
-.capacity-label.green{color:#27ae60}
-.capacity-label.yellow{color:#f39c12}
-.capacity-label.red{color:#e74c3c}
-.overdue-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;background:#fef0ef;color:#e74c3c;border:1px solid #f5b7b1;margin-top:6px}
-.assess-scores{margin-top:8px;display:flex;gap:4px;flex-wrap:wrap}
-.assess-chip{padding:2px 6px;border-radius:8px;font-size:9px;font-weight:600;background:#f5eefb;color:#8e44ad;border:1px solid #e8d5f5}
-.summary-card{background:#fff;border-radius:10px;box-shadow:0 1px 5px rgba(0,0,0,.07);padding:16px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;text-align:center;margin-bottom:12px}
-.summary-stat{padding:8px}
-.summary-value{font-size:24px;font-weight:800;color:#2c3e6e}
-.summary-label{font-size:10px;font-weight:700;color:#888;text-transform:uppercase;margin-top:2px}
-.coverage-gaps{margin-top:12px;padding:12px;border-radius:8px;border:1.5px solid #f39c12;background:#fff8e6;font-size:12px;color:#856404}
-.coverage-ok{padding:12px;border-radius:8px;background:#eafaf1;border:1.5px solid #a9dfbf;font-size:12px;color:#1b5e20;margin-top:12px}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh;padding:20px;color:#333}
+.wrap{max-width:1100px;margin:0 auto}
 
+/* Header */
+.header{background:linear-gradient(135deg,#2c3e6e,#4a90d9);border-radius:14px 14px 0 0;padding:24px 28px 18px;color:#fff;margin-bottom:0}
+.header h1{font-size:22px;font-weight:800;margin-bottom:2px}
+.header p{font-size:12px;opacity:.85;margin-bottom:12px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.tool-btn{background:rgba(255,255,255,.13);color:#fff;border:2px solid rgba(255,255,255,.35);padding:6px 13px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;text-decoration:none;display:inline-block}
+.tool-btn:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.55)}
+
+/* Cards */
+.card{background:#fff;border-radius:10px;box-shadow:0 1px 5px rgba(0,0,0,.07);padding:20px;margin-bottom:14px}
+.first-card{border-radius:0 0 10px 10px;margin-top:0}
+.card-title{font-size:14px;font-weight:700;color:#2c3e6e;margin-bottom:14px;display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
+.card-title .chev{font-size:11px;color:#aaa;transition:transform .2s;margin-left:auto}
+.card-title .chev.open{transform:rotate(180deg)}
+.collapsible-body.collapsed{display:none}
+
+/* Stats row */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+.stat-card{background:#fff;border-radius:10px;box-shadow:0 1px 5px rgba(0,0,0,.07);padding:16px 18px;text-align:center}
+.stat-val{font-size:28px;font-weight:900;color:#2c3e6e;line-height:1.1}
+.stat-label{font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.4px;margin-top:4px}
+
+/* Campus assignment */
+.assign-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.assign-row{display:flex;flex-direction:column;gap:4px}
+.assign-row label{font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.4px}
+.assign-row input{padding:7px 10px;border:1px solid #ddd;border-radius:6px;font-size:12px;font-family:inherit;width:100%}
+.assign-row input:focus{border-color:#4a90d9;outline:none;box-shadow:0 0 0 2px rgba(74,144,217,.15)}
+.btn-save{margin-top:12px;padding:8px 20px;border-radius:7px;border:none;background:#4a90d9;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity .15s}
+.btn-save:hover{opacity:.88}
+
+/* Coordinator cards grid */
+.coord-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:14px}
+.coord-card{background:#fff;border-radius:10px;box-shadow:0 1px 5px rgba(0,0,0,.07);padding:18px 20px}
+.coord-header{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.coord-avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#4a90d9,#2c3e6e);display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;font-weight:800;flex-shrink:0}
+.coord-name{font-size:14px;font-weight:700;color:#2c3e6e}
+.coord-id{font-size:10px;color:#aaa;font-family:'Courier New',monospace;margin-top:1px}
+.coord-stat-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.coord-stat{background:#f8f9fb;border-radius:7px;padding:8px 12px;text-align:center;flex:1;min-width:80px}
+.coord-stat .csval{font-size:18px;font-weight:800;color:#2c3e6e}
+.coord-stat .cslbl{font-size:9px;font-weight:700;text-transform:uppercase;color:#888;margin-top:2px}
+.coord-campuses{font-size:11px;color:#555;margin-bottom:10px;line-height:1.5}
+.coord-campuses strong{color:#2c3e6e;font-weight:700}
+.campus-pill{display:inline-block;background:#e3f2fd;color:#1565c0;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;margin:2px}
+.progress-bar-wrap{margin-top:8px}
+.progress-bar-label{display:flex;justify-content:space-between;font-size:10px;color:#888;margin-bottom:3px}
+.progress-bar-track{height:7px;background:#eee;border-radius:4px;overflow:hidden}
+.progress-bar-fill{height:100%;border-radius:4px;transition:width .4s}
+
+/* Recent activity pills */
+.recent-dates{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
+.date-pill{display:inline-block;background:#eaf3fb;color:#1565c0;border:1px solid #bbdefb;padding:3px 9px;border-radius:10px;font-size:10px;font-weight:600}
+.no-data-pill{display:inline-block;color:#aaa;font-size:10px;font-style:italic;margin-top:4px}
+.recent-row{margin-bottom:14px}
+.recent-row-name{font-size:12px;font-weight:700;margin-bottom:4px}
+
+/* Chart */
+.chart-wrap{position:relative;height:220px}
+
+/* Section title */
+.section-title{font-size:13px;font-weight:700;color:#2c3e6e;margin-bottom:10px}
+
+/* Dark mode */
 body.dark-mode{background:#1a1a2e;color:#e0e0e0}
 body.dark-mode .header{background:linear-gradient(135deg,#1a1a2e,#2d3a6e)}
-body.dark-mode .coord-card,body.dark-mode .summary-card{background:#16213e;box-shadow:0 1px 5px rgba(0,0,0,.3)}
+body.dark-mode .card,body.dark-mode .stat-card,body.dark-mode .coord-card{background:#16213e;box-shadow:0 1px 5px rgba(0,0,0,.3)}
+body.dark-mode .card-title,body.dark-mode .section-title{color:#7eb8f7}
+body.dark-mode .stat-val{color:#7eb8f7}
+body.dark-mode .stat-label{color:#aaa}
+body.dark-mode .assign-row label{color:#aaa}
+body.dark-mode .assign-row input{background:#1a2744;color:#e0e0e0;border-color:#2d3a6e}
 body.dark-mode .coord-name{color:#7eb8f7}
-body.dark-mode .workload-label{color:#bbb}
-body.dark-mode .workload-value{color:#7eb8f7}
-body.dark-mode .workload-row{border-bottom-color:#2d3a6e}
-body.dark-mode .month-label{color:#7eb8f7}
-body.dark-mode .month-nav button{background:#16213e;color:#e0e0e0;border-color:#2d3a6e}
-body.dark-mode .month-nav button:hover{background:#2d3a6e}
-body.dark-mode .capacity-bar-track{background:#2d3a6e}
-body.dark-mode .summary-value{color:#7eb8f7}
-body.dark-mode .summary-label{color:#aaa}
-body.dark-mode .coverage-gaps{background:#2d2a1a;border-color:#664d03;color:#f0c27a}
-body.dark-mode .coverage-ok{background:#1a2e1a;border-color:#2a5a2a;color:#66bb6a}
-body.dark-mode .overdue-badge{background:#3a1a1a;border-color:#5a2a2a;color:#f5b7b1}
-body.dark-mode .assess-chip{background:#2a1a3e;color:#b39ddb;border-color:#5a3a7e}
+body.dark-mode .coord-id{color:#666}
+body.dark-mode .coord-stat{background:#1a2744}
+body.dark-mode .coord-stat .csval{color:#7eb8f7}
+body.dark-mode .coord-stat .cslbl{color:#aaa}
+body.dark-mode .coord-campuses{color:#bbb}
+body.dark-mode .coord-campuses strong{color:#7eb8f7}
+body.dark-mode .campus-pill{background:#0d2847;color:#64b5f6}
+body.dark-mode .progress-bar-track{background:#2d3a6e}
+body.dark-mode .date-pill{background:#0d2847;color:#64b5f6;border-color:#1a3a5c}
 
+/* Toast */
+.toast{position:fixed;bottom:24px;right:24px;background:#2c3e6e;color:#fff;padding:12px 20px;border-radius:8px;font-size:13px;font-weight:600;box-shadow:0 4px 15px rgba(0,0,0,.2);z-index:2000;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+body.dark-mode .toast{background:#7eb8f7;color:#1a1a2e}
+
+/* Responsive */
 @media(max-width:768px){
+  .stats-row{grid-template-columns:1fr 1fr}
   .coord-grid{grid-template-columns:1fr}
-  .summary-card{grid-template-columns:1fr}
+  .assign-grid{grid-template-columns:1fr}
 }
 @media(max-width:600px){
   body{padding:8px}
   .header{padding:16px 14px}
-  .header h1{font-size:17px}
+  .header h1{font-size:18px}
   .toolbar{gap:4px}
-  .tool-btn{padding:5px 9px;font-size:10px}
+  .tool-btn,button,input,select{min-height:44px}
+  .stats-row{grid-template-columns:1fr 1fr}
 }
+
+/* Print */
 @media print{
   body{background:#fff!important;padding:0;color:#333!important}
-  .header .toolbar,.header .nav-links,.month-nav button{display:none!important}
-  .coord-card,.summary-card{box-shadow:none!important;border:1px solid #ddd}
-  .capacity-bar-fill,.coord-card{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  body.dark-mode,body.dark-mode .coord-card,body.dark-mode .summary-card{background:#fff!important;color:#333!important}
+  .header .toolbar,.tool-btn{display:none!important}
+  .card,.stat-card,.coord-card{box-shadow:none!important;border:1px solid #ddd}
+  .toast{display:none!important}
+  .wrap{max-width:100%}
+  .header{-webkit-print-color-adjust:exact;print-color-adjust:exact;border-radius:0;padding:12px 16px}
+  .coord-grid{grid-template-columns:repeat(2,1fr)}
 }
 </style>
 </head>
 <body>
 <div class="wrap">
+
+  <!-- Header -->
   <div class="header">
-    <h1>Coordinator Workload Dashboard</h1>
-    <p>Monitor team capacity, workload balance, and campus coverage</p>
+    <h1>&#128203; Coordinator Workload</h1>
+    <p>Team capacity and campus coverage</p>
     <div class="toolbar">
-      <button class="tool-btn" onclick="toggleDarkMode()" id="darkModeToggle">Dark</button>
-      <span class="save-indicator">Data: read-only from shared storage</span>
-    </div>
-    <div class="nav-links">
-      <a class="nav-link" href="index.html">&#127968; Home</a>
-      <a class="nav-link" href="Academic_Monitoring_Leader_Facing/Coaching_Cycle_Tracker.html">Coaching Tracker</a>
-      <a class="nav-link" href="ESL_Programming_Plans/ESL_Coordinator_Scope_Sequence.html">Scope &amp; Sequence</a>
+      <button class="tool-btn" onclick="loadData()">&#8635; Refresh</button>
+      <button class="tool-btn" onclick="toggleDarkMode()" id="darkModeToggle" aria-label="Toggle dark mode">&#9789; Dark</button>
+      <a class="tool-btn" href="index.html" style="margin-left:auto">&#127968; Home</a>
     </div>
   </div>
 
-  <div class="month-nav">
-    <button onclick="navigateMonth(-1)">&larr; Previous</button>
-    <div class="month-label" id="monthLabel"></div>
-    <button onclick="navigateMonth(1)">Next &rarr;</button>
+  <!-- Campus Assignment Panel (collapsible, first card) -->
+  <div class="card first-card">
+    <div class="card-title" onclick="toggleSection('assignBody','assignChev')">
+      &#127979; Campus Assignments
+      <span class="chev open" id="assignChev">&#9660;</span>
+    </div>
+    <div class="collapsible-body" id="assignBody">
+      <div class="assign-grid" id="assignGrid"></div>
+      <button class="btn-save" onclick="saveAssignments()">&#10003; Save Assignments</button>
+    </div>
   </div>
 
+  <!-- Stats Grid -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-val" id="statWT">0</div>
+      <div class="stat-label">Total Walkthroughs</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" id="statAudit">0</div>
+      <div class="stat-label">Total Audits</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" id="statTeachers">0</div>
+      <div class="stat-label">Teachers in Roster</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" id="statCycles">0</div>
+      <div class="stat-label">Active Coaching Cycles</div>
+    </div>
+  </div>
+
+  <!-- Coordinator Cards -->
+  <div class="section-title">Coordinator Overview</div>
   <div class="coord-grid" id="coordGrid"></div>
 
-  <div class="summary-card" id="summaryCard"></div>
+  <!-- Workload Balance Chart -->
+  <div class="card">
+    <div class="section-title">Workload Balance</div>
+    <div class="chart-wrap"><canvas id="workloadChart"></canvas></div>
+  </div>
 
-  <div id="coverageGaps"></div>
+  <!-- Recent Activity per Coordinator -->
+  <div class="card">
+    <div class="section-title">Recent Walkthrough Activity</div>
+    <div id="recentActivity"></div>
+  </div>
+
 </div>
+<div class="toast" id="toast"></div>
 
 <script>
-var currentMonth = new Date().getMonth();
-var currentYear = new Date().getFullYear();
+// =============================================
+// CONSTANTS
+// =============================================
+var COORDINATORS = [
+  {id:'jmiller',   name:'J. Miller'},
+  {id:'kpatterson',name:'K. Patterson'},
+  {id:'pokolo',    name:'P. Okolo'},
+  {id:'vpalencia', name:'V. Palencia'}
+];
 
-function toggleDarkMode() {
-  var d = document.body.classList.toggle("dark-mode");
-  localStorage.setItem("esl_app_theme", d ? "dark" : "light");
-  var b = document.getElementById("darkModeToggle");
-  if (b) b.textContent = d ? "Light" : "Dark";
-}
+var CARD_COLORS = ['#4a90d9','#27ae60','#e67e22','#8e44ad'];
 
-(function(){
-  if (localStorage.getItem("esl_app_theme") === "dark") {
-    document.body.classList.add("dark-mode");
-    var b = document.getElementById("darkModeToggle");
-    if (b) b.textContent = "Light";
-  }
-})();
+// =============================================
+// GLOBALS
+// =============================================
+var walkthroughHistory = [];
+var auditHistory = [];
+var coachingData = null;
+var roster = [];
+var workloadAssignments = {};
+var workloadChart = null;
 
-function navigateMonth(delta) {
-  currentMonth += delta;
-  if (currentMonth > 11) { currentMonth = 0; currentYear++; }
-  if (currentMonth < 0) { currentMonth = 11; currentYear--; }
-  renderAll();
-}
-
-function getMonthLabel() {
-  var months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-  return months[currentMonth] + " " + currentYear;
-}
-
-function isInMonth(dateStr, month, year) {
-  if (!dateStr) return false;
-  try {
-    var d = new Date(dateStr);
-    return d.getMonth() === month && d.getFullYear() === year;
-  } catch(e) { return false; }
-}
-
-function safeGet(key) {
-  try {
-    var raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : null;
-  } catch(e) { return null; }
-}
-
-function getCoordinatorData() {
-  var scopeData = safeGet("esl_scope_data");
-  var coordNames = ["Coordinator 1", "Coordinator 2", "Coordinator 3", "Coordinator 4"];
-  var coordCampuses = [[], [], [], []];
-
-  if (scopeData) {
-    if (scopeData.coordNames) {
-      for (var i = 0; i < 4; i++) {
-        if (scopeData.coordNames[i]) coordNames[i] = scopeData.coordNames[i];
-      }
-    }
-    if (scopeData.coordCampuses) {
-      for (var j = 0; j < 4; j++) {
-        if (scopeData.coordCampuses[j]) coordCampuses[j] = scopeData.coordCampuses[j];
-      }
-    }
-  }
-
-  return {names: coordNames, campuses: coordCampuses, scopeData: scopeData};
-}
-
-function campusMatch(campusList, campusName) {
-  if (!campusList || campusList.length === 0) return false;
-  var cn = (campusName || "").toLowerCase();
-  for (var i = 0; i < campusList.length; i++) {
-    if (campusList[i].toLowerCase() === cn) return true;
-  }
-  return false;
-}
-
-function getCoordWorkload(coordCampuses, month, year) {
-  var result = {activeCycles: 0, walkthroughs: 0, audits: 0, overdue: 0, totalActive: 0};
-
-  // Coaching cycles
-  var cd = safeGet("coaching_cycles_data");
-  var cycs = cd && cd.cycles ? cd.cycles : [];
-  for (var i = 0; i < cycs.length; i++) {
-    var c = cycs[i];
-    if (coordCampuses.length > 0 && !campusMatch(coordCampuses, c.campus)) continue;
-    var isComplete = true;
-    for (var s = 0; s < (c.stages || []).length; s++) {
-      if (c.stages[s].status !== "complete") { isComplete = false; break; }
-    }
-    if (!isComplete) {
-      result.activeCycles++;
-      for (var s2 = 0; s2 < (c.stages || []).length; s2++) {
-        if (c.stages[s2].date && c.stages[s2].status !== "complete") {
-          var stageDate = new Date(c.stages[s2].date);
-          if (stageDate < new Date()) result.overdue++;
-        }
-      }
-    }
-  }
-
-  // Walkthroughs
-  var wh = safeGet("walkthrough_history") || [];
-  for (var wi = 0; wi < wh.length; wi++) {
-    var wCampus = (wh[wi].meta && wh[wi].meta.campus) || "";
-    if (coordCampuses.length > 0 && !campusMatch(coordCampuses, wCampus)) continue;
-    var wDate = (wh[wi].meta && wh[wi].meta.date) || "";
-    if (isInMonth(wDate, month, year)) result.walkthroughs++;
-  }
-
-  // Audits
-  var ah = safeGet("esl_audit_history") || [];
-  for (var ai = 0; ai < ah.length; ai++) {
-    var aCampus = (ah[ai].meta && ah[ai].meta.campus) || "";
-    if (coordCampuses.length > 0 && !campusMatch(coordCampuses, aCampus)) continue;
-    var aDate = (ah[ai].meta && ah[ai].meta.date) || "";
-    if (isInMonth(aDate, month, year)) result.audits++;
-  }
-
-  result.totalActive = result.activeCycles + result.walkthroughs + result.audits;
-  return result;
-}
-
-function getLatestAssessment(coordId) {
-  var data = safeGet("coordinator_self_assessments");
-  if (!data || !data.assessments) return null;
-  var latest = null;
-  for (var i = 0; i < data.assessments.length; i++) {
-    if (data.assessments[i].coordId === coordId) {
-      if (!latest || (data.assessments[i].date || "") > (latest.date || "")) {
-        latest = data.assessments[i];
-      }
-    }
-  }
-  return latest;
-}
-
+// =============================================
+// UTILITIES
+// =============================================
 function escHtml(str) {
-  if (!str) return "";
-  var d = document.createElement("div");
-  d.appendChild(document.createTextNode(str));
+  var d = document.createElement('div');
+  d.appendChild(document.createTextNode(str || ''));
   return d.innerHTML;
 }
 
-function renderCoordCard(name, campuses, workload, coordIdx) {
-  var colors = ["#4a90d9", "#27ae60", "#8e44ad", "#f39c12"];
-  var capClass = "green";
-  var capLabel = "On Track";
-  var capPct = Math.min(100, Math.round((workload.totalActive / 12) * 100));
-  if (workload.totalActive > 8) { capClass = "red"; capLabel = "Over Capacity"; }
-  else if (workload.totalActive > 5) { capClass = "yellow"; capLabel = "Near Capacity"; }
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 3000);
+}
 
-  var html = "<div class='coord-card' style='border-top-color:" + colors[coordIdx % 4] + "'>";
-  html += "<div class='coord-name'>" + escHtml(name) + "</div>";
-  html += "<div class='coord-campuses'>" + (campuses.length > 0 ? escHtml(campuses.join(", ")) : "No campuses assigned") + "</div>";
+function toggleDarkMode() {
+  var body = document.body;
+  var btn = document.getElementById('darkModeToggle');
+  if (body.classList.contains('dark-mode')) {
+    body.classList.remove('dark-mode');
+    btn.innerHTML = '&#9789; Dark';
+    localStorage.setItem('esl_app_theme','light');
+  } else {
+    body.classList.add('dark-mode');
+    btn.innerHTML = '&#9728; Light';
+    localStorage.setItem('esl_app_theme','dark');
+  }
+  renderChart();
+}
 
-  html += "<div class='workload-row'><span class='workload-label'>Active Coaching Cycles</span><span class='workload-value'>" + workload.activeCycles + "</span></div>";
-  html += "<div class='workload-row'><span class='workload-label'>Walkthroughs This Month</span><span class='workload-value'>" + workload.walkthroughs + "</span></div>";
-  html += "<div class='workload-row'><span class='workload-label'>Audits This Month</span><span class='workload-value'>" + workload.audits + "</span></div>";
+function toggleSection(bodyId, chevId) {
+  var body = document.getElementById(bodyId);
+  var chev = document.getElementById(chevId);
+  if (body.classList.contains('collapsed')) {
+    body.classList.remove('collapsed');
+    if (chev) chev.classList.add('open');
+  } else {
+    body.classList.add('collapsed');
+    if (chev) chev.classList.remove('open');
+  }
+}
 
-  html += "<div class='capacity-meter'>";
-  html += "<div class='capacity-label " + capClass + "'>" + capLabel + " (" + workload.totalActive + " active items)</div>";
-  html += "<div class='capacity-bar-track'><div class='capacity-bar-fill " + capClass + "' style='width:" + capPct + "%'></div></div>";
-  html += "</div>";
+// =============================================
+// DATA LOADING
+// =============================================
+function loadData() {
+  try { walkthroughHistory = JSON.parse(localStorage.getItem('walkthrough_history') || '[]'); }
+  catch(e) { walkthroughHistory = []; }
 
-  if (workload.overdue > 0) {
-    html += "<div class='overdue-badge'>" + workload.overdue + " overdue item" + (workload.overdue !== 1 ? "s" : "") + "</div>";
+  try { auditHistory = JSON.parse(localStorage.getItem('esl_audit_history') || '[]'); }
+  catch(e) { auditHistory = []; }
+
+  try { coachingData = JSON.parse(localStorage.getItem('coaching_cycles_data') || 'null'); }
+  catch(e) { coachingData = null; }
+
+  try { roster = JSON.parse(localStorage.getItem('shared_teacher_roster') || '[]'); }
+  catch(e) { roster = []; }
+
+  try { workloadAssignments = JSON.parse(localStorage.getItem('esl_workload_campuses') || '{}'); }
+  catch(e) { workloadAssignments = {}; }
+
+  // Compute global stats
+  var totalWT = walkthroughHistory.length;
+  var totalAudit = auditHistory.length;
+  var totalTeachers = roster.length;
+
+  var activeCycles = 0;
+  if (coachingData && coachingData.cycles) {
+    for (var ci = 0; ci < coachingData.cycles.length; ci++) {
+      var cyc = coachingData.cycles[ci];
+      var allDone = false;
+      if (cyc.stages && cyc.stages.length > 0) {
+        allDone = true;
+        for (var si = 0; si < cyc.stages.length; si++) {
+          if (cyc.stages[si].status !== 'complete') { allDone = false; break; }
+        }
+      }
+      if (!allDone) activeCycles++;
+    }
   }
 
-  var assess = getLatestAssessment(coordIdx);
-  if (assess && assess.ratings) {
-    html += "<div class='assess-scores'>";
-    var rKeys = ["coaching", "pd", "dataUse", "relationships"];
-    var rLabels = ["Coach", "PD", "Data", "Rel"];
-    for (var ri = 0; ri < rKeys.length; ri++) {
-      if (assess.ratings[rKeys[ri]]) {
-        html += "<span class='assess-chip'>" + rLabels[ri] + ": " + assess.ratings[rKeys[ri]] + "/4</span>";
+  document.getElementById('statWT').textContent = totalWT;
+  document.getElementById('statAudit').textContent = totalAudit;
+  document.getElementById('statTeachers').textContent = totalTeachers;
+  document.getElementById('statCycles').textContent = activeCycles;
+
+  populateAssignGrid();
+  renderCards();
+  renderChart();
+  renderRecentActivity();
+}
+
+// =============================================
+// CAMPUS ASSIGNMENT PANEL
+// =============================================
+function populateAssignGrid() {
+  var grid = document.getElementById('assignGrid');
+  var html = '';
+  for (var i = 0; i < COORDINATORS.length; i++) {
+    var coord = COORDINATORS[i];
+    var campuses = (workloadAssignments[coord.id] || []).join(', ');
+    html += '<div class="assign-row">' +
+      '<label for="assign_' + escHtml(coord.id) + '">' + escHtml(coord.name) + '</label>' +
+      '<input type="text" id="assign_' + escHtml(coord.id) + '" value="' + escHtml(campuses) + '" placeholder="Campus A, Campus B..."/>' +
+    '</div>';
+  }
+  grid.innerHTML = html;
+}
+
+function saveAssignments() {
+  var result = {};
+  for (var i = 0; i < COORDINATORS.length; i++) {
+    var coord = COORDINATORS[i];
+    var input = document.getElementById('assign_' + coord.id);
+    if (!input) continue;
+    var val = input.value.trim();
+    var campuses = [];
+    if (val) {
+      var parts = val.split(',');
+      for (var j = 0; j < parts.length; j++) {
+        var c = parts[j].trim();
+        if (c) campuses.push(c);
       }
     }
-    html += "</div>";
+    result[coord.id] = campuses;
   }
-
-  html += "</div>";
-  return html;
+  workloadAssignments = result;
+  localStorage.setItem('esl_workload_campuses', JSON.stringify(result));
+  showToast('Campus assignments saved.');
+  renderCards();
 }
 
-function renderAll() {
-  document.getElementById("monthLabel").textContent = getMonthLabel();
+// =============================================
+// PER-COORDINATOR STATS HELPER
+// =============================================
+function getCoordStats(coord) {
+  var wtCount = 0;
+  var auditCount = 0;
+  var recentDates = [];
+  var nameLower = coord.name.toLowerCase();
 
-  var coordData = getCoordinatorData();
-  var allWorkloads = [];
-  var coordHtml = "";
-
-  for (var i = 0; i < 4; i++) {
-    var workload = getCoordWorkload(coordData.campuses[i], currentMonth, currentYear);
-    allWorkloads.push(workload);
-    coordHtml += renderCoordCard(coordData.names[i], coordData.campuses[i], workload, i);
-  }
-
-  document.getElementById("coordGrid").innerHTML = coordHtml;
-
-  // Summary
-  var totalCycles = 0, totalWalkthroughs = 0, totalAudits = 0;
-  for (var j = 0; j < allWorkloads.length; j++) {
-    totalCycles += allWorkloads[j].activeCycles;
-    totalWalkthroughs += allWorkloads[j].walkthroughs;
-    totalAudits += allWorkloads[j].audits;
-  }
-
-  var summaryHtml = "";
-  summaryHtml += "<div class='summary-stat'><div class='summary-value'>" + totalCycles + "</div><div class='summary-label'>Active Coaching Cycles</div></div>";
-  summaryHtml += "<div class='summary-stat'><div class='summary-value'>" + totalWalkthroughs + "</div><div class='summary-label'>Walkthroughs This Month</div></div>";
-  summaryHtml += "<div class='summary-stat'><div class='summary-value'>" + totalAudits + "</div><div class='summary-label'>Audits This Month</div></div>";
-  document.getElementById("summaryCard").innerHTML = summaryHtml;
-
-  // Coverage gaps
-  var allCampuses = {};
-  for (var ci = 0; ci < coordData.campuses.length; ci++) {
-    for (var cj = 0; cj < coordData.campuses[ci].length; cj++) {
-      allCampuses[coordData.campuses[ci][cj]] = false;
+  for (var i = 0; i < walkthroughHistory.length; i++) {
+    var wt = walkthroughHistory[i];
+    var leader = '';
+    if (wt.meta && wt.meta.leader) leader = wt.meta.leader.toLowerCase();
+    if (!leader && wt.leader) leader = (wt.leader + '').toLowerCase();
+    if (leader && leader.indexOf(nameLower) !== -1) {
+      wtCount++;
+      var d = (wt.meta && wt.meta.date) ? wt.meta.date : (wt.date || '');
+      if (d) recentDates.push(d);
     }
   }
 
-  var wh2 = safeGet("walkthrough_history") || [];
-  for (var wi2 = 0; wi2 < wh2.length; wi2++) {
-    var wc2 = (wh2[wi2].meta && wh2[wi2].meta.campus) || "";
-    var wd2 = (wh2[wi2].meta && wh2[wi2].meta.date) || "";
-    if (isInMonth(wd2, currentMonth, currentYear) && allCampuses.hasOwnProperty(wc2)) {
-      allCampuses[wc2] = true;
-    }
+  recentDates.sort(function(a, b) {
+    return b > a ? 1 : (b < a ? -1 : 0);
+  });
+  recentDates = recentDates.slice(0, 3);
+
+  for (var j = 0; j < auditHistory.length; j++) {
+    var audit = auditHistory[j];
+    var observer = '';
+    if (audit.meta && audit.meta.observer) observer = audit.meta.observer.toLowerCase();
+    if (observer && observer.indexOf(nameLower) !== -1) auditCount++;
   }
 
-  var ah2 = safeGet("esl_audit_history") || [];
-  for (var ai2 = 0; ai2 < ah2.length; ai2++) {
-    var ac2 = (ah2[ai2].meta && ah2[ai2].meta.campus) || "";
-    var ad2 = (ah2[ai2].meta && ah2[ai2].meta.date) || "";
-    if (isInMonth(ad2, currentMonth, currentYear) && allCampuses.hasOwnProperty(ac2)) {
-      allCampuses[ac2] = true;
-    }
+  var totalCycles = 0;
+  if (coachingData && coachingData.cycles) {
+    totalCycles = coachingData.cycles.length;
   }
 
-  var gaps = [];
-  var campusCount = 0;
-  for (var gk in allCampuses) {
-    if (allCampuses.hasOwnProperty(gk)) {
-      campusCount++;
-      if (!allCampuses[gk]) gaps.push(gk);
-    }
-  }
-
-  var gapEl = document.getElementById("coverageGaps");
-  if (gaps.length > 0) {
-    gapEl.innerHTML = "<div class='coverage-gaps'><strong>Campus Coverage Gaps:</strong> " + escHtml(gaps.join(", ")) + " &mdash; no walkthroughs or audits this month</div>";
-  } else if (campusCount > 0) {
-    gapEl.innerHTML = "<div class='coverage-ok'><strong>Full Coverage:</strong> All assigned campuses have activity this month.</div>";
-  } else {
-    gapEl.innerHTML = "";
-  }
+  var campuses = workloadAssignments[coord.id] || [];
+  return {wtCount:wtCount, auditCount:auditCount, totalCycles:totalCycles, campuses:campuses, recentDates:recentDates};
 }
 
-renderAll();
+// =============================================
+// COORDINATOR CARDS
+// =============================================
+function renderCards() {
+  var grid = document.getElementById('coordGrid');
+  var teamWT = 0;
+  var allStats = [];
+  var i, j, k;
+
+  for (i = 0; i < COORDINATORS.length; i++) {
+    var s = getCoordStats(COORDINATORS[i]);
+    allStats.push(s);
+    teamWT += s.wtCount;
+  }
+
+  var html = '';
+  for (i = 0; i < COORDINATORS.length; i++) {
+    var coord = COORDINATORS[i];
+    var stats = allStats[i];
+    var color = CARD_COLORS[i];
+    var initial = coord.name.charAt(0);
+    var pct = teamWT > 0 ? Math.round((stats.wtCount / teamWT) * 100) : 0;
+
+    // Campus pills
+    var campusHtml = '';
+    if (stats.campuses.length > 0) {
+      for (k = 0; k < stats.campuses.length; k++) {
+        campusHtml += '<span class="campus-pill">' + escHtml(stats.campuses[k]) + '</span> ';
+      }
+    } else {
+      campusHtml = '<span style="font-style:italic;color:#aaa;font-size:11px">Not assigned</span>';
+    }
+
+    html += '<div class="coord-card">' +
+      '<div class="coord-header">' +
+        '<div class="coord-avatar" style="background:linear-gradient(135deg,' + color + ',#2c3e6e)">' + escHtml(initial) + '</div>' +
+        '<div>' +
+          '<div class="coord-name">' + escHtml(coord.name) + '</div>' +
+          '<div class="coord-id">' + escHtml(coord.id) + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="coord-campuses"><strong>Campuses:</strong><br/>' + campusHtml + '</div>' +
+      '<div class="coord-stat-row">' +
+        '<div class="coord-stat">' +
+          '<div class="csval" style="color:' + color + '">' + stats.wtCount + '</div>' +
+          '<div class="cslbl">Walkthroughs</div>' +
+        '</div>' +
+        '<div class="coord-stat">' +
+          '<div class="csval" style="color:' + color + '">' + stats.auditCount + '</div>' +
+          '<div class="cslbl">Audits</div>' +
+        '</div>' +
+        '<div class="coord-stat">' +
+          '<div class="csval" style="color:' + color + '">' + stats.totalCycles + '</div>' +
+          '<div class="cslbl">Coaching Cycles (all)</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="progress-bar-wrap">' +
+        '<div class="progress-bar-label"><span>Walkthrough share</span><span>' + pct + '%</span></div>' +
+        '<div class="progress-bar-track">' +
+          '<div class="progress-bar-fill" style="width:' + pct + '%;background:' + color + '"></div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }
+  grid.innerHTML = html;
+}
+
+// =============================================
+// WORKLOAD BALANCE CHART
+// =============================================
+function renderChart() {
+  var isDark = document.body.classList.contains('dark-mode');
+  var labels = [];
+  var wtData = [];
+  var auditData = [];
+
+  for (var i = 0; i < COORDINATORS.length; i++) {
+    var stats = getCoordStats(COORDINATORS[i]);
+    labels.push(COORDINATORS[i].name);
+    wtData.push(stats.wtCount);
+    auditData.push(stats.auditCount);
+  }
+
+  var ctx = document.getElementById('workloadChart').getContext('2d');
+  if (workloadChart) { workloadChart.destroy(); workloadChart = null; }
+
+  var gridColor = isDark ? 'rgba(255,255,255,.1)' : 'rgba(0,0,0,.07)';
+  var tickColor = isDark ? '#aaa' : '#555';
+
+  workloadChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: 'Walkthroughs',
+          data: wtData,
+          backgroundColor: 'rgba(74,144,217,.75)',
+          borderColor: '#4a90d9',
+          borderWidth: 1.5,
+          borderRadius: 4
+        },
+        {
+          label: 'Audits',
+          data: auditData,
+          backgroundColor: 'rgba(39,174,96,.7)',
+          borderColor: '#27ae60',
+          borderWidth: 1.5,
+          borderRadius: 4
+        }
+      ]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: tickColor, font: { size: 11 } } }
+      },
+      scales: {
+        x: {
+          beginAtZero: true,
+          ticks: { color: tickColor, stepSize: 1 },
+          grid: { color: gridColor }
+        },
+        y: {
+          ticks: { color: tickColor, font: { size: 12 } },
+          grid: { color: gridColor }
+        }
+      }
+    }
+  });
+}
+
+// =============================================
+// RECENT ACTIVITY PER COORDINATOR
+// =============================================
+function renderRecentActivity() {
+  var container = document.getElementById('recentActivity');
+  var html = '';
+
+  for (var i = 0; i < COORDINATORS.length; i++) {
+    var coord = COORDINATORS[i];
+    var stats = getCoordStats(coord);
+    var color = CARD_COLORS[i];
+
+    html += '<div class="recent-row">' +
+      '<div class="recent-row-name" style="color:' + color + '">' + escHtml(coord.name) + ' &mdash; Recent Walkthroughs</div>';
+
+    if (stats.recentDates.length > 0) {
+      html += '<div class="recent-dates">';
+      for (var j = 0; j < stats.recentDates.length; j++) {
+        html += '<span class="date-pill">&#128197; ' + escHtml(stats.recentDates[j]) + '</span>';
+      }
+      html += '</div>';
+    } else {
+      html += '<div class="no-data-pill">No walkthroughs recorded yet</div>';
+    }
+    html += '</div>';
+  }
+  container.innerHTML = html;
+}
+
+// =============================================
+// INIT
+// =============================================
+(function init() {
+  if (localStorage.getItem('esl_app_theme') === 'dark') {
+    document.body.classList.add('dark-mode');
+    document.getElementById('darkModeToggle').innerHTML = '&#9728; Light';
+  }
+  loadData();
+}());
 
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("service-worker.js").catch(function() {});
+  navigator.serviceWorker.register("./service-worker.js").catch(function(){});
 }
 </script>
 </body>

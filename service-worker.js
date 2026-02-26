@@ -1,9 +1,17 @@
-var CACHE_NAME = "esl-suite-v3";
+var CACHE_NAME = "esl-suite-v4";
 var ASSETS = [
   "./index.html",
   "./Data_Backup_Hub.html",
   "./Team_Overview.html",
   "./Onboarding.html",
+  "./Coordinator_Workload.html",
+  "./PD_Tracker.html",
+  "./Meeting_Notes.html",
+  "./Parent_Communication_Log.html",
+  "./Compliance_Checklist.html",
+  "./Goal_Setting.html",
+  "./Student_Roster.html",
+  "./TELPAS_Tracker.html",
   "./manifest.json",
   "./Academic_Monitoring_Leader_Facing/Academic_Monitoring_Planning_Template.html",
   "./Academic_Monitoring_Leader_Facing/Walkthrough_Dashboard.html",

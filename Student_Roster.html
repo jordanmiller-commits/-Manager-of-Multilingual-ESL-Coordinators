@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>EB Student Roster</title>
+<link rel="manifest" href="./manifest.json"/>
+<meta name="theme-color" content="#2c3e6e"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh;padding:20px}
+.wrap{max-width:1200px;margin:0 auto}
+
+/* HEADER */
+.header{background:linear-gradient(135deg,#2c3e6e,#4a90d9);color:#fff;padding:24px 28px 16px;border-radius:14px 14px 0 0}
+.header h1{font-size:22px;font-weight:800;margin-bottom:2px}
+.header p{font-size:12px;opacity:.85;margin-bottom:12px}
+.toolbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.tool-btn{background:rgba(255,255,255,.13);color:#fff;border:2px solid rgba(255,255,255,.35);padding:6px 13px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;text-decoration:none;display:inline-block}
+.tool-btn:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.55)}
+
+/* CARDS */
+.card{background:#fff;border-radius:10px;box-shadow:0 1px 5px rgba(0,0,0,.07);padding:16px 20px;margin-bottom:12px}
+.first-card{border-radius:0 0 10px 10px;margin-top:0}
+
+/* FERPA BANNER */
+.ferpa-banner{background:#fff8e1;border:1.5px solid #ffcc02;border-radius:10px;padding:14px 18px;margin-bottom:12px;display:flex;gap:12px;align-items:flex-start}
+.ferpa-banner .ferpa-icon{font-size:20px;flex-shrink:0;margin-top:1px}
+.ferpa-banner .ferpa-text{font-size:11px;color:#6d4c00;line-height:1.6}
+.ferpa-banner .ferpa-text strong{font-size:12px;display:block;margin-bottom:3px;color:#5a3d00}
+
+/* STATS ROW */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}
+.stat-card{background:#fff;border-radius:10px;box-shadow:0 1px 5px rgba(0,0,0,.07);padding:14px 16px;text-align:center}
+.stat-value{font-size:26px;font-weight:800;color:#2c3e6e;line-height:1.1}
+.stat-label{font-size:9px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.4px;margin-top:4px}
+.badge-pills{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-top:6px}
+.pill{display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700}
+.pill-beg{background:#fde8e8;color:#b71c1c}
+.pill-int{background:#fff3e0;color:#e65100}
+.pill-adv{background:#e3f2fd;color:#1565c0}
+.pill-ah{background:#e8f5e9;color:#1b5e20}
+.pill-esl{background:#ede7f6;color:#4527a0}
+.pill-bil{background:#e0f7fa;color:#006064}
+.pill-slife{background:#fce4ec;color:#880e4f}
+.pill-new{background:#f3e5f5;color:#6a1b9a}
+
+/* FILTER BAR */
+.filter-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-bottom:12px}
+.filter-bar label{font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:3px}
+.filter-bar select,.filter-bar input{padding:7px 10px;border:1px solid #ddd;border-radius:6px;font-size:12px;font-family:inherit;background:#fff}
+.filter-bar select:focus,.filter-bar input:focus{border-color:#4a90d9;outline:none;box-shadow:0 0 0 2px rgba(74,144,217,.15)}
+.filter-group{display:flex;flex-direction:column}
+.btn{padding:7px 14px;border-radius:7px;border:1.5px solid #ddd;background:#fff;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;color:#555}
+.btn:hover{background:#eaf3fb;border-color:#4a90d9;color:#2c3e6e}
+.btn.primary{background:#4a90d9;color:#fff;border-color:#4a90d9}
+.btn.primary:hover{background:#3a7bc8}
+.btn.danger{background:#fff;color:#e74c3c;border-color:#e74c3c}
+.btn.danger:hover{background:#fef0ef}
+
+/* TABLE */
+.table-section{display:flex;gap:20px;align-items:flex-start}
+.table-wrap{flex:1;overflow-x:auto}
+.result-count{font-size:11px;color:#888;margin-bottom:8px}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:#f8f9fb;padding:9px 10px;text-align:left;font-size:10px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.3px;border-bottom:2px solid #eee;white-space:nowrap}
+td{padding:8px 10px;border-bottom:1px solid #f5f5f5;color:#444;vertical-align:middle}
+tr:hover td{background:#fafbfd}
+.tbl-actions{display:flex;gap:4px}
+.tbl-btn{padding:4px 9px;border-radius:5px;border:1px solid #ddd;background:#fff;font-size:10px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .12s;white-space:nowrap}
+.tbl-btn:hover{background:#eaf3fb;border-color:#4a90d9;color:#2c3e6e}
+.tbl-btn.del{border-color:#f5c6c6;color:#c0392b}
+.tbl-btn.del:hover{background:#fef0ef;border-color:#e74c3c}
+
+/* CHART SIDEBAR */
+.chart-sidebar{width:200px;flex-shrink:0}
+.chart-sidebar .card{padding:12px}
+.chart-sidebar canvas{display:block;margin:0 auto}
+.chart-title{font-size:11px;font-weight:700;color:#2c3e6e;margin-bottom:8px;text-align:center}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.45);z-index:1000;justify-content:center;align-items:flex-start;padding:40px 20px;overflow-y:auto}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.2);width:100%;max-width:560px;overflow:hidden}
+.modal-header{background:linear-gradient(135deg,#2c3e6e,#4a90d9);color:#fff;padding:18px 22px;display:flex;justify-content:space-between;align-items:center}
+.modal-header h3{font-size:16px;font-weight:800}
+.modal-close{background:none;border:none;color:#fff;font-size:20px;cursor:pointer;line-height:1;padding:0 4px}
+.modal-body{padding:20px 22px}
+.modal-footer{padding:14px 22px;border-top:1px solid #eee;display:flex;gap:8px;justify-content:flex-end;background:#fafbfd}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-field{display:flex;flex-direction:column;gap:4px}
+.form-field.full{grid-column:1/-1}
+.form-field label{font-size:10px;font-weight:700;color:#777;text-transform:uppercase;letter-spacing:.3px}
+.form-field input,.form-field select,.form-field textarea{padding:8px 10px;border:1px solid #ddd;border-radius:6px;font-size:12px;font-family:inherit}
+.form-field input:focus,.form-field select:focus,.form-field textarea:focus{border-color:#4a90d9;outline:none;box-shadow:0 0 0 2px rgba(74,144,217,.15)}
+.form-field textarea{min-height:60px;resize:vertical}
+.form-field input[type="date"]{cursor:pointer}
+
+/* CONFIRM MODAL */
+.confirm-modal{max-width:420px}
+.confirm-modal .modal-body{font-size:13px;color:#444;line-height:1.6}
+.confirm-options{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+.confirm-options label{display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer}
+
+/* CSV PREVIEW */
+.csv-preview-info{background:#f0f4fb;border-radius:6px;padding:10px 12px;font-size:12px;color:#2c3e6e;margin-bottom:12px}
+
+/* EMPTY STATE */
+.empty-state{text-align:center;padding:50px 20px;color:#aaa}
+.empty-state .es-icon{font-size:48px;margin-bottom:12px}
+.empty-state p{font-size:13px}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(30px);background:#2c3e6e;color:#fff;padding:10px 22px;border-radius:24px;font-size:13px;font-weight:600;z-index:9999;opacity:0;transition:opacity .3s,transform .3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* DARK MODE */
+body.dark-mode{background:#1a1a2e;color:#e0e0e0}
+body.dark-mode .header{background:linear-gradient(135deg,#1a1a2e,#2d3a6e)}
+body.dark-mode .card,body.dark-mode .stat-card{background:#16213e;box-shadow:0 1px 5px rgba(0,0,0,.3)}
+body.dark-mode .modal{background:#16213e;color:#e0e0e0}
+body.dark-mode .modal-body{background:#16213e}
+body.dark-mode .modal-footer{background:#1a1a2e;border-color:#2d3a6e}
+body.dark-mode .form-field input,body.dark-mode .form-field select,body.dark-mode .form-field textarea{background:#1a1a2e;border-color:#2d3a6e;color:#e0e0e0}
+body.dark-mode .filter-bar select,body.dark-mode .filter-bar input{background:#1a1a2e;border-color:#2d3a6e;color:#e0e0e0}
+body.dark-mode table th{background:#1a1a2e;color:#aaa;border-color:#2d3a6e}
+body.dark-mode table td{border-color:#2d3a6e;color:#ccc}
+body.dark-mode tr:hover td{background:#1e2a4a}
+body.dark-mode .tbl-btn{background:#1a1a2e;border-color:#2d3a6e;color:#aaa}
+body.dark-mode .btn{background:#1a1a2e;border-color:#2d3a6e;color:#aaa}
+body.dark-mode .ferpa-banner{background:#2a2000;border-color:#5a4800}
+body.dark-mode .ferpa-banner .ferpa-text{color:#e6c44f}
+body.dark-mode .ferpa-banner .ferpa-text strong{color:#ffd54f}
+body.dark-mode .csv-preview-info{background:#1e2a4a;color:#90caf9}
+body.dark-mode .result-count{color:#777}
+body.dark-mode .empty-state{color:#555}
+
+/* PRINT */
+@media print{
+  .toolbar,.filter-bar,.tbl-actions,.ferpa-banner,.modal-overlay,.toast{display:none!important}
+  body{background:#fff!important;padding:0}
+  .header{border-radius:0;print-color-adjust:exact}
+  .card,.stat-card{box-shadow:none;border:1px solid #eee}
+}
+
+/* MOBILE */
+@media(max-width:600px){
+  .stats-row{grid-template-columns:repeat(2,1fr)}
+  .form-grid{grid-template-columns:1fr}
+  .table-section{flex-direction:column}
+  .chart-sidebar{width:100%}
+  .filter-bar select,.filter-bar input,.tool-btn,.btn,.tbl-btn,.form-field input,.form-field select,.form-field textarea{min-height:44px}
+  .modal-overlay{padding:20px 10px}
+}
+@media(max-width:768px){
+  .stats-row{grid-template-columns:repeat(2,1fr)}
+  .filter-bar{flex-direction:column;align-items:stretch}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <!-- HEADER -->
+  <div class="header">
+    <h1>&#128101; EB Student Roster</h1>
+    <p>Emergent Bilingual student records — stored locally in this browser only</p>
+    <div class="toolbar">
+      <button class="tool-btn" onclick="openStudentModal(null)">&#65291; Add Student</button>
+      <button class="tool-btn" onclick="triggerImport()">&#8679; Import CSV</button>
+      <button class="tool-btn" onclick="exportCsv()">&#8681; Export CSV</button>
+      <button class="tool-btn" onclick="toggleDark()">&#9790; Dark Mode</button>
+      <a class="tool-btn" href="index.html" style="margin-left:auto">&#127968; Home</a>
+    </div>
+  </div>
+
+  <!-- FERPA BANNER -->
+  <div class="ferpa-banner">
+    <div class="ferpa-icon">&#9888;</div>
+    <div class="ferpa-text">
+      <strong>FERPA Notice</strong>
+      Student data in this tool is stored locally in your browser only and is never transmitted to external servers. Do not share devices or browser profiles with unauthorized users. Clear this data before retiring or reassigning a device using the <a href="Data_Backup_Hub.html" style="color:#4a90d9">Data Backup Hub</a>.
+    </div>
+  </div>
+
+  <!-- STATS ROW -->
+  <div class="stats-row" id="statsRow">
+    <div class="stat-card"><div class="stat-value" id="statTotal">0</div><div class="stat-label">Total Students</div></div>
+    <div class="stat-card"><div class="stat-value" id="statCampuses">0</div><div class="stat-label">Campuses</div></div>
+    <div class="stat-card" id="statProfCard" style="text-align:left;padding:10px 14px">
+      <div class="stat-label" style="margin-bottom:6px">Proficiency Distribution</div>
+      <div class="badge-pills" id="profPills"></div>
+    </div>
+    <div class="stat-card" id="statProgCard" style="text-align:left;padding:10px 14px">
+      <div class="stat-label" style="margin-bottom:6px">Program Types</div>
+      <div class="badge-pills" id="progPills"></div>
+    </div>
+  </div>
+
+  <!-- FILTER BAR -->
+  <div class="card" style="padding:14px 18px;margin-bottom:12px">
+    <div class="filter-bar">
+      <div class="filter-group">
+        <label>Coordinator</label>
+        <select id="filterCoord" onchange="renderAll()">
+          <option value="">All Coordinators</option>
+          <option value="jmiller">J. Miller</option>
+          <option value="kpatterson">K. Patterson</option>
+          <option value="pokolo">P. Okolo</option>
+          <option value="vpalencia">V. Palencia</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Campus</label>
+        <input type="text" id="filterCampus" placeholder="Type campus..." oninput="renderAll()" style="width:150px"/>
+      </div>
+      <div class="filter-group">
+        <label>Grade</label>
+        <select id="filterGrade" onchange="renderAll()">
+          <option value="">All Grades</option>
+          <option value="K">K</option>
+          <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+          <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+          <option value="7">7</option><option value="8">8</option><option value="9">9</option>
+          <option value="10">10</option><option value="11">11</option><option value="12">12</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Proficiency</label>
+        <select id="filterProf" onchange="renderAll()">
+          <option value="">All Levels</option>
+          <option value="Beginning">Beginning</option>
+          <option value="Intermediate">Intermediate</option>
+          <option value="Advanced">Advanced</option>
+          <option value="Advanced High">Advanced High</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Program Type</label>
+        <select id="filterProg" onchange="renderAll()">
+          <option value="">All Programs</option>
+          <option value="ESL">ESL</option>
+          <option value="Bilingual">Bilingual</option>
+          <option value="SLIFE">SLIFE</option>
+          <option value="Newcomer">Newcomer</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Search Name</label>
+        <input type="text" id="filterName" placeholder="Last or first name..." oninput="renderAll()" style="width:160px"/>
+      </div>
+      <div class="filter-group" style="justify-content:flex-end">
+        <label>&nbsp;</label>
+        <button class="btn" onclick="clearFilters()">Clear Filters</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABLE + CHART -->
+  <div class="card" style="padding:14px 20px">
+    <div class="table-section">
+      <div class="table-wrap">
+        <div class="result-count" id="resultCount"></div>
+        <table id="studentTable">
+          <thead>
+            <tr>
+              <th>Last Name</th>
+              <th>First Name</th>
+              <th>Campus</th>
+              <th>Grade</th>
+              <th>Coordinator</th>
+              <th>Proficiency</th>
+              <th>Program</th>
+              <th>Entry Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="studentTbody">
+            <tr><td colspan="9"><div class="empty-state"><div class="es-icon">&#128101;</div><p>No students yet. Click "+ Add Student" to get started.</p></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="chart-sidebar" id="chartSidebar" style="display:none">
+        <div class="card">
+          <div class="chart-title">Proficiency Distribution</div>
+          <canvas id="profChart" width="176" height="176"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD/EDIT STUDENT MODAL -->
+<div class="modal-overlay" id="studentModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalTitle">Add Student</h3>
+      <button class="modal-close" onclick="closeStudentModal()">&#10005;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-field">
+          <label>First Name *</label>
+          <input type="text" id="fFirstName" placeholder="First name"/>
+        </div>
+        <div class="form-field">
+          <label>Last Name *</label>
+          <input type="text" id="fLastName" placeholder="Last name"/>
+        </div>
+        <div class="form-field">
+          <label>Campus *</label>
+          <input type="text" id="fCampus" placeholder="Campus name"/>
+        </div>
+        <div class="form-field">
+          <label>Grade *</label>
+          <select id="fGrade">
+            <option value="">-- Select --</option>
+            <option value="K">K</option>
+            <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+            <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+            <option value="7">7</option><option value="8">8</option><option value="9">9</option>
+            <option value="10">10</option><option value="11">11</option><option value="12">12</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Coordinator *</label>
+          <select id="fCoordinator">
+            <option value="">-- Select --</option>
+            <option value="jmiller">J. Miller</option>
+            <option value="kpatterson">K. Patterson</option>
+            <option value="pokolo">P. Okolo</option>
+            <option value="vpalencia">V. Palencia</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Proficiency Level *</label>
+          <select id="fProficiency">
+            <option value="">-- Select --</option>
+            <option value="Beginning">Beginning</option>
+            <option value="Intermediate">Intermediate</option>
+            <option value="Advanced">Advanced</option>
+            <option value="Advanced High">Advanced High</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Program Type *</label>
+          <select id="fProgramType">
+            <option value="">-- Select --</option>
+            <option value="ESL">ESL</option>
+            <option value="Bilingual">Bilingual</option>
+            <option value="SLIFE">SLIFE</option>
+            <option value="Newcomer">Newcomer</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Entry Date</label>
+          <input type="date" id="fEntryDate"/>
+        </div>
+        <div class="form-field full">
+          <label>Notes</label>
+          <textarea id="fNotes" placeholder="Optional notes about this student..."></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeStudentModal()">Cancel</button>
+      <button class="btn primary" onclick="saveStudent()">Save Student</button>
+    </div>
+  </div>
+</div>
+
+<!-- IMPORT MODAL -->
+<div class="modal-overlay" id="importModal">
+  <div class="modal confirm-modal">
+    <div class="modal-header">
+      <h3>Import CSV</h3>
+      <button class="modal-close" onclick="closeImportModal()">&#10005;</button>
+    </div>
+    <div class="modal-body">
+      <div class="csv-preview-info" id="importPreviewInfo"></div>
+      <p style="font-size:12px;color:#555;margin-bottom:10px">Expected columns (header row): <code>firstName, lastName, campus, grade, coordinator, proficiencyLevel, programType, entryDate, notes</code></p>
+      <p style="font-size:12px;color:#555;margin-bottom:10px">How should duplicates (same first name + last name + campus) be handled?</p>
+      <div class="confirm-options">
+        <label><input type="radio" name="importMode" value="merge" checked/> Merge (keep existing, skip duplicates)</label>
+        <label><input type="radio" name="importMode" value="replace"/> Replace (overwrite existing duplicates)</label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeImportModal()">Cancel</button>
+      <button class="btn primary" onclick="confirmImport()">Import</button>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE CONFIRM MODAL -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal confirm-modal">
+    <div class="modal-header" style="background:linear-gradient(135deg,#c0392b,#e74c3c)">
+      <h3>Delete Student</h3>
+      <button class="modal-close" onclick="closeDeleteModal()">&#10005;</button>
+    </div>
+    <div class="modal-body">
+      <p>Are you sure you want to delete <strong id="deleteStudentName"></strong>? This action cannot be undone.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeDeleteModal()">Cancel</button>
+      <button class="btn danger" onclick="confirmDelete()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- HIDDEN FILE INPUT -->
+<input type="file" id="csvFileInput" accept=".csv" style="display:none" onchange="handleCsvFile(event)"/>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+var DATA_KEY = "student_roster_data";
+var data = {version:1, students:[]};
+var profChart = null;
+var editingId = null;
+var pendingImportRows = [];
+var deletingId = null;
+
+/* =====================
+   INIT
+   ===================== */
+function init() {
+  applyTheme();
+  loadData();
+  renderAll();
+}
+
+function applyTheme() {
+  var t = localStorage.getItem("esl_app_theme");
+  if (t === "dark") { document.body.classList.add("dark-mode"); }
+}
+
+function toggleDark() {
+  var isDark = document.body.classList.toggle("dark-mode");
+  localStorage.setItem("esl_app_theme", isDark ? "dark" : "light");
+}
+
+/* =====================
+   DATA
+   ===================== */
+function loadData() {
+  try {
+    var raw = localStorage.getItem(DATA_KEY);
+    if (raw) { data = JSON.parse(raw); }
+    if (!data.students) { data.students = []; }
+  } catch(e) {
+    data = {version:1, students:[]};
+  }
+}
+
+function saveData() {
+  try {
+    localStorage.setItem(DATA_KEY, JSON.stringify(data));
+  } catch(e) {
+    showToast("Error saving data — storage may be full.");
+  }
+}
+
+/* =====================
+   FILTER
+   ===================== */
+function applyFilters() {
+  var coord = document.getElementById("filterCoord").value;
+  var campus = document.getElementById("filterCampus").value.toLowerCase().trim();
+  var grade = document.getElementById("filterGrade").value;
+  var prof = document.getElementById("filterProf").value;
+  var prog = document.getElementById("filterProg").value;
+  var name = document.getElementById("filterName").value.toLowerCase().trim();
+
+  return data.students.filter(function(s) {
+    if (coord && s.coordinator !== coord) return false;
+    if (campus && s.campus.toLowerCase().indexOf(campus) === -1) return false;
+    if (grade && s.grade !== grade) return false;
+    if (prof && s.proficiencyLevel !== prof) return false;
+    if (prog && s.programType !== prog) return false;
+    if (name) {
+      var full = (s.lastName + " " + s.firstName).toLowerCase();
+      if (full.indexOf(name) === -1) return false;
+    }
+    return true;
+  }).sort(function(a,b) {
+    return (a.lastName || "").localeCompare(b.lastName || "");
+  });
+}
+
+function clearFilters() {
+  document.getElementById("filterCoord").value = "";
+  document.getElementById("filterCampus").value = "";
+  document.getElementById("filterGrade").value = "";
+  document.getElementById("filterProf").value = "";
+  document.getElementById("filterProg").value = "";
+  document.getElementById("filterName").value = "";
+  renderAll();
+}
+
+/* =====================
+   RENDER
+   ===================== */
+function renderAll() {
+  var filtered = applyFilters();
+  renderStats();
+  renderTable(filtered);
+  renderChart();
+}
+
+function renderStats() {
+  var sts = data.students;
+  document.getElementById("statTotal").textContent = sts.length;
+
+  var campSet = {};
+  sts.forEach(function(s) { if(s.campus) campSet[s.campus] = 1; });
+  document.getElementById("statCampuses").textContent = Object.keys(campSet).length;
+
+  var profCounts = {Beginning:0, Intermediate:0, Advanced:0, "Advanced High":0};
+  sts.forEach(function(s) { if(profCounts[s.proficiencyLevel] !== undefined) profCounts[s.proficiencyLevel]++; });
+  var profHtml = "";
+  profHtml += "<span class='pill pill-beg'>B: " + profCounts["Beginning"] + "</span>";
+  profHtml += "<span class='pill pill-int'>I: " + profCounts["Intermediate"] + "</span>";
+  profHtml += "<span class='pill pill-adv'>A: " + profCounts["Advanced"] + "</span>";
+  profHtml += "<span class='pill pill-ah'>AH: " + profCounts["Advanced High"] + "</span>";
+  document.getElementById("profPills").innerHTML = profHtml;
+
+  var progCounts = {ESL:0, Bilingual:0, SLIFE:0, Newcomer:0};
+  sts.forEach(function(s) { if(progCounts[s.programType] !== undefined) progCounts[s.programType]++; });
+  var progHtml = "";
+  progHtml += "<span class='pill pill-esl'>ESL: " + progCounts["ESL"] + "</span>";
+  progHtml += "<span class='pill pill-bil'>Bil: " + progCounts["Bilingual"] + "</span>";
+  progHtml += "<span class='pill pill-slife'>SLIFE: " + progCounts["SLIFE"] + "</span>";
+  progHtml += "<span class='pill pill-new'>New: " + progCounts["Newcomer"] + "</span>";
+  document.getElementById("progPills").innerHTML = progHtml;
+}
+
+function profPillHtml(level) {
+  var classes = {
+    "Beginning": "pill-beg",
+    "Intermediate": "pill-int",
+    "Advanced": "pill-adv",
+    "Advanced High": "pill-ah"
+  };
+  var abbr = {"Beginning":"Beg","Intermediate":"Int","Advanced":"Adv","Advanced High":"Adv High"};
+  var cls = classes[level] || "pill-beg";
+  return "<span class='pill " + cls + "'>" + escHtml(abbr[level] || level) + "</span>";
+}
+
+function progPillHtml(prog) {
+  var classes = {ESL:"pill-esl",Bilingual:"pill-bil",SLIFE:"pill-slife",Newcomer:"pill-new"};
+  var cls = classes[prog] || "pill-esl";
+  return "<span class='pill " + cls + "'>" + escHtml(prog) + "</span>";
+}
+
+function coordLabel(id) {
+  var map = {jmiller:"J. Miller",kpatterson:"K. Patterson",pokolo:"P. Okolo",vpalencia:"V. Palencia"};
+  return map[id] || escHtml(id);
+}
+
+function renderTable(filtered) {
+  var count = document.getElementById("resultCount");
+  count.textContent = "Showing " + filtered.length + " of " + data.students.length + " student" + (data.students.length !== 1 ? "s" : "");
+
+  var tbody = document.getElementById("studentTbody");
+  if (filtered.length === 0) {
+    tbody.innerHTML = "<tr><td colspan='9'><div class='empty-state'><div class='es-icon'>&#128101;</div><p>" +
+      (data.students.length === 0 ? "No students yet. Click \"+&nbsp;Add Student\" to get started." : "No students match the current filters.") +
+      "</p></div></td></tr>";
+    return;
+  }
+
+  var html = "";
+  for (var i = 0; i < filtered.length; i++) {
+    var s = filtered[i];
+    html += "<tr>";
+    html += "<td>" + escHtml(s.lastName) + "</td>";
+    html += "<td>" + escHtml(s.firstName) + "</td>";
+    html += "<td>" + escHtml(s.campus) + "</td>";
+    html += "<td>" + escHtml(s.grade) + "</td>";
+    html += "<td>" + escHtml(coordLabel(s.coordinator)) + "</td>";
+    html += "<td>" + profPillHtml(s.proficiencyLevel) + "</td>";
+    html += "<td>" + progPillHtml(s.programType) + "</td>";
+    html += "<td>" + escHtml(s.entryDate || "") + "</td>";
+    html += "<td><div class='tbl-actions'>";
+    html += "<button class='tbl-btn' onclick='openStudentModal(\"" + escHtml(s.id) + "\")'>Edit</button>";
+    html += "<button class='tbl-btn del' onclick='openDeleteModal(\"" + escHtml(s.id) + "\")'>Delete</button>";
+    html += "</div></td>";
+    html += "</tr>";
+  }
+  tbody.innerHTML = html;
+}
+
+function renderChart() {
+  var sidebar = document.getElementById("chartSidebar");
+  if (data.students.length < 5) {
+    sidebar.style.display = "none";
+    if (profChart) { profChart.destroy(); profChart = null; }
+    return;
+  }
+  sidebar.style.display = "block";
+
+  var counts = {Beginning:0, Intermediate:0, Advanced:0, "Advanced High":0};
+  data.students.forEach(function(s) {
+    if (counts[s.proficiencyLevel] !== undefined) counts[s.proficiencyLevel]++;
+  });
+
+  var canvas = document.getElementById("profChart");
+  if (profChart) { profChart.destroy(); }
+  profChart = new Chart(canvas, {
+    type: "doughnut",
+    data: {
+      labels: ["Beginning","Intermediate","Advanced","Adv High"],
+      datasets: [{
+        data: [counts["Beginning"], counts["Intermediate"], counts["Advanced"], counts["Advanced High"]],
+        backgroundColor: ["#ef9a9a","#ffcc80","#90caf9","#a5d6a7"],
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: false,
+      plugins: {
+        legend: {
+          position: "bottom",
+          labels: { font: { size: 9 }, padding: 6, boxWidth: 12 }
+        }
+      }
+    }
+  });
+}
+
+/* =====================
+   MODAL — ADD/EDIT
+   ===================== */
+function openStudentModal(id) {
+  editingId = id;
+  var title = document.getElementById("modalTitle");
+  if (id === null) {
+    title.textContent = "Add Student";
+    document.getElementById("fFirstName").value = "";
+    document.getElementById("fLastName").value = "";
+    document.getElementById("fCampus").value = "";
+    document.getElementById("fGrade").value = "";
+    document.getElementById("fCoordinator").value = "";
+    document.getElementById("fProficiency").value = "";
+    document.getElementById("fProgramType").value = "";
+    document.getElementById("fEntryDate").value = "";
+    document.getElementById("fNotes").value = "";
+  } else {
+    title.textContent = "Edit Student";
+    var s = findStudent(id);
+    if (!s) return;
+    document.getElementById("fFirstName").value = s.firstName || "";
+    document.getElementById("fLastName").value = s.lastName || "";
+    document.getElementById("fCampus").value = s.campus || "";
+    document.getElementById("fGrade").value = s.grade || "";
+    document.getElementById("fCoordinator").value = s.coordinator || "";
+    document.getElementById("fProficiency").value = s.proficiencyLevel || "";
+    document.getElementById("fProgramType").value = s.programType || "";
+    document.getElementById("fEntryDate").value = s.entryDate || "";
+    document.getElementById("fNotes").value = s.notes || "";
+  }
+  document.getElementById("studentModal").classList.add("open");
+  document.getElementById("fFirstName").focus();
+}
+
+function closeStudentModal() {
+  document.getElementById("studentModal").classList.remove("open");
+  editingId = null;
+}
+
+function saveStudent() {
+  var firstName = document.getElementById("fFirstName").value.trim();
+  var lastName = document.getElementById("fLastName").value.trim();
+  var campus = document.getElementById("fCampus").value.trim();
+  var grade = document.getElementById("fGrade").value;
+  var coordinator = document.getElementById("fCoordinator").value;
+  var proficiencyLevel = document.getElementById("fProficiency").value;
+  var programType = document.getElementById("fProgramType").value;
+  var entryDate = document.getElementById("fEntryDate").value;
+  var notes = document.getElementById("fNotes").value.trim();
+
+  if (!firstName || !lastName || !campus || !grade || !coordinator || !proficiencyLevel || !programType) {
+    showToast("Please fill in all required fields.");
+    return;
+  }
+
+  if (editingId === null) {
+    var newStudent = {
+      id: "stu-" + Date.now() + "-" + Math.random().toString(36).slice(2,6),
+      firstName: firstName,
+      lastName: lastName,
+      campus: campus,
+      grade: grade,
+      coordinator: coordinator,
+      proficiencyLevel: proficiencyLevel,
+      programType: programType,
+      entryDate: entryDate,
+      notes: notes,
+      createdAt: new Date().toISOString()
+    };
+    data.students.push(newStudent);
+    showToast("Student added.");
+  } else {
+    var s = findStudent(editingId);
+    if (s) {
+      s.firstName = firstName;
+      s.lastName = lastName;
+      s.campus = campus;
+      s.grade = grade;
+      s.coordinator = coordinator;
+      s.proficiencyLevel = proficiencyLevel;
+      s.programType = programType;
+      s.entryDate = entryDate;
+      s.notes = notes;
+    }
+    showToast("Student updated.");
+  }
+
+  saveData();
+  renderAll();
+  closeStudentModal();
+}
+
+function findStudent(id) {
+  for (var i = 0; i < data.students.length; i++) {
+    if (data.students[i].id === id) return data.students[i];
+  }
+  return null;
+}
+
+/* =====================
+   DELETE
+   ===================== */
+function openDeleteModal(id) {
+  deletingId = id;
+  var s = findStudent(id);
+  if (!s) return;
+  document.getElementById("deleteStudentName").textContent = s.firstName + " " + s.lastName;
+  document.getElementById("deleteModal").classList.add("open");
+}
+
+function closeDeleteModal() {
+  document.getElementById("deleteModal").classList.remove("open");
+  deletingId = null;
+}
+
+function confirmDelete() {
+  if (!deletingId) return;
+  data.students = data.students.filter(function(s) { return s.id !== deletingId; });
+  saveData();
+  renderAll();
+  closeDeleteModal();
+  showToast("Student deleted.");
+}
+
+function deleteStudent(id) {
+  openDeleteModal(id);
+}
+
+/* =====================
+   CSV IMPORT
+   ===================== */
+function triggerImport() {
+  document.getElementById("csvFileInput").value = "";
+  document.getElementById("csvFileInput").click();
+}
+
+function handleCsvFile(evt) {
+  var file = evt.target.files[0];
+  if (!file) return;
+  importCsv(file);
+}
+
+function importCsv(file) {
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var text = e.target.result;
+    var rows = parseCsv(text);
+    if (rows.length < 2) {
+      showToast("CSV appears empty or has no data rows.");
+      return;
+    }
+    var header = rows[0].map(function(h) { return h.trim().toLowerCase(); });
+    var dataRows = rows.slice(1).filter(function(r) { return r.join("").trim() !== ""; });
+    pendingImportRows = dataRows.map(function(row) {
+      var obj = {};
+      header.forEach(function(h, i) { obj[h] = (row[i] || "").trim(); });
+      return obj;
+    }).filter(function(r) { return r.firstname || r.lastname; });
+
+    document.getElementById("importPreviewInfo").textContent =
+      "Found " + pendingImportRows.length + " student record" + (pendingImportRows.length !== 1 ? "s" : "") + " in the CSV file.";
+    document.getElementById("importModal").classList.add("open");
+  };
+  reader.readAsText(file);
+}
+
+function parseCsv(text) {
+  var rows = [];
+  var lines = text.split(/\r?\n/);
+  for (var i = 0; i < lines.length; i++) {
+    rows.push(parseCsvLine(lines[i]));
+  }
+  return rows;
+}
+
+function parseCsvLine(line) {
+  var fields = [];
+  var cur = "";
+  var inQ = false;
+  for (var i = 0; i < line.length; i++) {
+    var ch = line[i];
+    if (ch === '"') {
+      if (inQ && line[i+1] === '"') { cur += '"'; i++; }
+      else { inQ = !inQ; }
+    } else if (ch === ',' && !inQ) {
+      fields.push(cur);
+      cur = "";
+    } else {
+      cur += ch;
+    }
+  }
+  fields.push(cur);
+  return fields;
+}
+
+function closeImportModal() {
+  document.getElementById("importModal").classList.remove("open");
+  pendingImportRows = [];
+}
+
+function confirmImport() {
+  var modeEl = document.querySelector("input[name='importMode']:checked");
+  var mode = modeEl ? modeEl.value : "merge";
+  var added = 0;
+  var updated = 0;
+
+  pendingImportRows.forEach(function(row) {
+    var firstName = row.firstname || row.firstName || "";
+    var lastName = row.lastname || row.lastName || "";
+    var campus = row.campus || "";
+    var grade = row.grade || "";
+    var coordinator = row.coordinator || "";
+    var proficiencyLevel = row.proficiencylevel || row.proficiencyLevel || row.proficiency || "";
+    var programType = row.programtype || row.programType || row.program || "";
+    var entryDate = row.entrydate || row.entryDate || row.entry_date || "";
+    var notes = row.notes || "";
+
+    // Find duplicate
+    var existing = null;
+    for (var i = 0; i < data.students.length; i++) {
+      var s = data.students[i];
+      if (s.firstName.toLowerCase() === firstName.toLowerCase() &&
+          s.lastName.toLowerCase() === lastName.toLowerCase() &&
+          s.campus.toLowerCase() === campus.toLowerCase()) {
+        existing = s;
+        break;
+      }
+    }
+
+    if (existing) {
+      if (mode === "replace") {
+        existing.grade = grade || existing.grade;
+        existing.coordinator = coordinator || existing.coordinator;
+        existing.proficiencyLevel = proficiencyLevel || existing.proficiencyLevel;
+        existing.programType = programType || existing.programType;
+        existing.entryDate = entryDate || existing.entryDate;
+        existing.notes = notes || existing.notes;
+        updated++;
+      }
+    } else {
+      data.students.push({
+        id: "stu-" + Date.now() + "-" + Math.random().toString(36).slice(2,6),
+        firstName: firstName,
+        lastName: lastName,
+        campus: campus,
+        grade: grade,
+        coordinator: coordinator,
+        proficiencyLevel: proficiencyLevel,
+        programType: programType,
+        entryDate: entryDate,
+        notes: notes,
+        createdAt: new Date().toISOString()
+      });
+      added++;
+    }
+  });
+
+  saveData();
+  renderAll();
+  closeImportModal();
+  showToast("Imported: " + added + " added, " + updated + " updated.");
+}
+
+/* =====================
+   CSV EXPORT
+   ===================== */
+function exportCsv() {
+  var filtered = applyFilters();
+  if (filtered.length === 0) { showToast("No students to export."); return; }
+
+  var header = ["firstName","lastName","campus","grade","coordinator","proficiencyLevel","programType","entryDate","notes"];
+  var lines = [header.join(",")];
+  filtered.forEach(function(s) {
+    var row = [
+      csvField(s.firstName),
+      csvField(s.lastName),
+      csvField(s.campus),
+      csvField(s.grade),
+      csvField(s.coordinator),
+      csvField(s.proficiencyLevel),
+      csvField(s.programType),
+      csvField(s.entryDate),
+      csvField(s.notes)
+    ];
+    lines.push(row.join(","));
+  });
+
+  var blob = new Blob([lines.join("\n")], {type:"text/csv"});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url;
+  a.download = "EB_Student_Roster_" + dateStamp() + ".csv";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast("Exported " + filtered.length + " records.");
+}
+
+function csvField(val) {
+  var str = (val || "").toString();
+  if (str.indexOf(",") !== -1 || str.indexOf('"') !== -1 || str.indexOf("\n") !== -1) {
+    return '"' + str.replace(/"/g, '""') + '"';
+  }
+  return str;
+}
+
+function dateStamp() {
+  var d = new Date();
+  return d.getFullYear() + "-" + pad(d.getMonth()+1) + "-" + pad(d.getDate());
+}
+
+function pad(n) { return n < 10 ? "0" + n : "" + n; }
+
+/* =====================
+   UTILITIES
+   ===================== */
+function escHtml(str) {
+  if (!str) return "";
+  return ("" + str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function showToast(msg) {
+  var t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(function() { t.classList.remove("show"); }, 3000);
+}
+
+/* Close modals on overlay click */
+document.getElementById("studentModal").addEventListener("click", function(e) {
+  if (e.target === this) closeStudentModal();
+});
+document.getElementById("importModal").addEventListener("click", function(e) {
+  if (e.target === this) closeImportModal();
+});
+document.getElementById("deleteModal").addEventListener("click", function(e) {
+  if (e.target === this) closeDeleteModal();
+});
+
+/* PWA */
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("./service-worker.js").catch(function() {});
+}
+
+init();
+</script>
+</body>
+</html>

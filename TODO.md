@@ -1,6 +1,6 @@
 # ESL Manager Suite — Project TODO
 
-Last updated: 2026-02-26
+Last updated: 2026-02-26 (updated after major expansion build)
 
 ---
 
@@ -22,70 +22,48 @@ Last updated: 2026-02-26
 
 ## 🐛 Known Issues / Polish
 
-- [ ] Planning Template calendar export: if dateTime cell has no year (e.g. "Period 2, 9:15 AM"), the ICS falls back to today's date — consider prompting for a date if none is found
-- [ ] Team Overview "Send Reminders" only passes coordinatorId/name, not email — emails must be in `COORDINATOR_EMAIL_MAP` in Code.gs; add a note in the UI explaining this
-- [ ] Onboarding Step 3: no validation preventing spaces in Coordinator ID — add client-side check
-- [ ] service-worker.js: bump to v4 whenever new HTML files are added to the repo
-- [ ] `Coordinator_Workload.html` is linked in `index.html` tool grid but the file does not exist yet — build it or remove the card
+- [x] Planning Template calendar export: warns which round numbers had no date rather than silently using today
+- [x] Team Overview "Send Reminders" — tooltip + help text added explaining COORDINATOR_EMAIL_MAP requirement
+- [x] Onboarding Step 3: coordinator ID now strips spaces and lowercases automatically with toast feedback
+- [x] service-worker.js: bumped to v4 with all new HTML files in ASSETS
+- [x] `Coordinator_Workload.html` — built
 
 ---
 
 ## 🚀 High-Value Expansions
 
-### Coordinator Workload Dashboard (`Coordinator_Workload.html`)
-> Card already exists in index.html — file needs to be built.
-- Per-coordinator breakdown: campuses covered, walkthroughs completed, teachers in coaching, audits completed
-- Workload balance bar comparing all 4 coordinators side by side
-- Campus coverage map (text-based, not geographic) showing which coordinator owns which campus
-
-### TELPAS / Language Proficiency Tracker
-- Import TELPAS composite scores per student (CSV upload)
-- Track year-over-year growth by proficiency level (Beginning → Advanced High)
-- Flag students showing language decline (tie into existing Language Decline Research in `Data_Analysis/`)
-- Per-coordinator view showing their campuses' EB population progress
-
-### Student Roster & EB Population Manager
-- Lightweight student roster: name, campus, grade, proficiency level, program type (ESL/Bilingual)
-- Filter by coordinator, campus, proficiency band
-- Link individual students to relevant walkthroughs and audits
-- FERPA note: keep data local (localStorage only), no Drive sync for student records without explicit consent workflow
-
-### Professional Development Tracker
-- Log PD sessions attended or facilitated per coordinator
-- Track hours by category (ELPS, Sheltered Instruction, Coaching, Data Literacy)
-- Generate PD summary report for end-of-year reviews
-- Connect to Coaching Cycle Tracker (PD as a growth action)
-
-### Meeting Notes & Agenda Builder
-- Simple meeting template: date, attendees, agenda items, action items with owners + deadlines
-- Archive of past meeting notes searchable by keyword or attendee
-- Export to `.docx` or print-optimized PDF
-- Link action items to Coaching Cycle Tracker
-
-### Parent Communication Log
-- Log parent contacts per teacher or campus: date, type (call/email/conference), language, outcome
-- Tie into Newcomer Resources — track which families have received which materials
-- Searchable by teacher, campus, or date range
-
-### ESL Program Compliance Checklist
-- Annual or semester checklist of ESL non-negotiables (based on existing `ESL Nonnegotiables (1).pdf`)
-- Per-campus completion tracking
-- Generate compliance summary report for district review
-
-### Goal-Setting & Growth Planning Tool
-- Manager sets campus or coordinator-level goals at start of semester
-- Progress check-ins at mid-semester and end-of-semester
-- Connect to walkthrough fidelity data and coaching cycle completion rates as evidence
+- [x] **Coordinator Workload Dashboard** (`Coordinator_Workload.html`) — campus assignment panel, per-coordinator stats, workload balance chart, recent activity pills
+- [x] **TELPAS Tracker** (`TELPAS_Tracker.html`) — CSV import, composite + domain levels, growth tracking table, language decline alert, proficiency distribution chart, FERPA banner
+- [x] **Student Roster** (`Student_Roster.html`) — FERPA-safe localStorage only, CRUD, proficiency/program/grade filters, CSV import/export, doughnut chart
+- [x] **PD Tracker** (`PD_Tracker.html`) — 8 categories (ELPS, Sheltered Instruction, Coaching, Data Literacy, Newcomer/SIFE, Bilingual, Family Engagement, EdTech), session log, hour targets, two Chart.js views, CSV export
+- [x] **Meeting Notes** (`Meeting_Notes.html`) — 4 meeting templates, split-pane editor + archive, agenda + action items, search, auto-save, export to Coaching Tracker
+- [x] **Parent Communication Log** (`Parent_Communication_Log.html`) — configurable contact types + languages, searchable log, stats, paginated table, CSV export
+- [x] **Compliance Checklist** (`Compliance_Checklist.html`) — custom items by category, per-campus per-semester tracking, notes + completed-by fields, campus summary cards, cross-campus report
+- [x] **Goal-Setting & Growth Planning** (`Goal_Setting.html`) — shared manager+coordinator goals, action step checklists, mid/end-semester check-ins (1-4 rating), walkthrough fidelity + coaching cycle connections
 
 ---
 
 ## 🔧 Infrastructure / Developer Experience
 
-- [ ] Add a `CHANGELOG.md` to track version history as the suite grows
-- [ ] Consider migrating from `var`/ES5 to modern JS (`const`/`let`, arrow functions) once IE/legacy browser support is confirmed unnecessary — would significantly clean up the codebase
-- [ ] Add test data generator scripts (similar to `ESL_Classroom_Audit/test-data-generator.js`) for walkthroughs and coaching cycles to make UI testing easier
-- [ ] Set up GitHub Actions workflow to auto-check for accidentally committed secrets on every push
-- [ ] Document the GAS deployment process (version, access level, CORS settings) in `google_apps_script/README.md` so a new manager can redeploy without tribal knowledge
+- [x] `CHANGELOG.md` — created with full version history (v1.0.0 → v3.0.0)
+- [ ] Modern JS migration (ES5 → const/let/arrow functions) — **deferred by choice**, keeping ES5 for stability
+- [x] Test data generator — `Academic_Monitoring_Leader_Facing/test-data-generator.js`; run `generateTestData()` in browser console; generates 15 walkthroughs, 8 coaching cycles, 5 audits, 8-teacher roster
+- [x] GitHub Actions secret scan — `.github/workflows/secret-scan.yml`; checks for GAS URLs, GitHub PATs, Drive folder IDs on every push/PR
+- [x] GAS deployment guide — `google_apps_script/README.md`; covers initial deploy, redeployment, all endpoints, troubleshooting
+
+---
+
+## 🔒 Security Hardening (still pending — next priority)
+
+- [ ] **[CRITICAL] Add shared API secret to Code.gs** — validate on every doGet/doPost
+- [ ] **[CRITICAL] Verify Google Drive folder permissions** — folder should be owner-only
+- [ ] **[HIGH] GitHub PAT stored in plaintext** — add "Clear PAT" button to Data Backup Hub; warn about fine-grained PAT scope
+- [ ] **[HIGH] GAS input validation** — sanitize coordinatorId, reject payloads >5MB
+- [ ] **[MEDIUM] Content Security Policy** — add CSP meta tags to all HTML files
+- [ ] **[MEDIUM] GAS audit logging** — log writes to a Google Sheet
+- [ ] **[MEDIUM] GitHub secrets scanning** — enable in repo Settings → Code security (separate from the Actions workflow)
+- [ ] **[LOW] Encrypt sensitive localStorage keys** — SubtleCrypto AES-GCM
+- [ ] **[LOW] GAS rate limiting** — CacheService throttle per coordinatorId
 
 ---
 
@@ -110,3 +88,19 @@ Last updated: 2026-02-26
 - [x] Coordinator email map populated (jmiller, kpatterson, pokolo, vpalencia)
 - [x] SPED Time Tracker Excel workbook (`Data_Analysis/SPED_Time_Tracker/`)
 - [x] ELPS Knowledge Base Agent with PDF.js + optional Anthropic API
+- [x] Calendar export warning when no date found in Date/Time cell (Planning Template)
+- [x] Team Overview Send Reminders — tooltip + help text for COORDINATOR_EMAIL_MAP
+- [x] Onboarding coordinator ID — strips spaces + lowercases automatically
+- [x] service-worker.js bumped to v4 with all new HTML files cached
+- [x] Coordinator Workload Dashboard (`Coordinator_Workload.html`)
+- [x] PD Tracker (`PD_Tracker.html`) — 8 categories, Chart.js, hour targets, CSV export
+- [x] Meeting Notes (`Meeting_Notes.html`) — 4 templates, archive, action items → Coaching Tracker
+- [x] Parent Communication Log (`Parent_Communication_Log.html`) — configurable types/languages
+- [x] Compliance Checklist (`Compliance_Checklist.html`) — custom items, per-campus report
+- [x] Goal-Setting & Growth Planning (`Goal_Setting.html`) — shared goals, check-ins, evidence
+- [x] Student Roster (`Student_Roster.html`) — FERPA-safe, CSV import/export, doughnut chart
+- [x] TELPAS Tracker (`TELPAS_Tracker.html`) — CSV import, growth tracking, decline alerts
+- [x] CHANGELOG.md — full version history v1.0.0 → v3.0.0
+- [x] GitHub Actions secret scan (`.github/workflows/secret-scan.yml`)
+- [x] GAS deployment guide (`google_apps_script/README.md`)
+- [x] Test data generator (`Academic_Monitoring_Leader_Facing/test-data-generator.js`)

@@ -1765,6 +1765,7 @@ function exportCalendar() {
 
   var uid_base = "esl-walkthrough-" + Date.now();
   var lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//ESL Manager Suite//Walkthrough Calendar//EN", "CALSCALE:GREGORIAN", "METHOD:PUBLISH"];
+  var missingDateRounds = [];
 
   for (var i = 0; i < roundsArr.length; i++) {
     var round = roundsArr[i];
@@ -1774,6 +1775,7 @@ function exportCalendar() {
 
     // Try to extract a date from dateTime cell (YYYY-MM-DD) or fallback to meta date
     var dateMatch = dateTimeText.match(/\b(\d{4}-\d{2}-\d{2})\b/);
+    if (!dateMatch && !meta.date) missingDateRounds.push(roundNum);
     var dateStr = dateMatch ? dateMatch[1] : (meta.date || new Date().toISOString().slice(0, 10));
 
     var startTime = parseTimeFromText(dateTimeText) || {hours: 8, minutes: 0};
@@ -1811,7 +1813,11 @@ function exportCalendar() {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
-  showToast("Calendar exported — " + roundsArr.length + " round" + (roundsArr.length !== 1 ? "s" : ""));
+  if (missingDateRounds.length > 0) {
+    showToast("Warning: Round" + (missingDateRounds.length > 1 ? "s" : "") + " " + missingDateRounds.join(", ") + " had no date — today's date used. Add YYYY-MM-DD to Date/Time cells for accuracy.");
+  } else {
+    showToast("Calendar exported — " + roundsArr.length + " round" + (roundsArr.length !== 1 ? "s" : ""));
+  }
 }
 
 /* ======================================================

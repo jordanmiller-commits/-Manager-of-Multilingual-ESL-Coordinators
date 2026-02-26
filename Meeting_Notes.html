@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Meeting Notes &amp; Agenda Builder</title>
+<link rel="manifest" href="./manifest.json"/>
+<meta name="theme-color" content="#2c3e6e"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh;padding:20px}
+.wrap{max-width:1200px;margin:0 auto}
+
+/* HEADER */
+.header{background:linear-gradient(135deg,#2c3e6e,#4a90d9);color:#fff;padding:24px 28px 16px;border-radius:14px 14px 0 0}
+.header h1{font-size:21px;font-weight:800;margin-bottom:2px}
+.header p{font-size:12px;opacity:.85;margin-bottom:12px}
+.toolbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.tool-btn{background:rgba(255,255,255,.13);color:#fff;border:2px solid rgba(255,255,255,.35);padding:6px 13px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;text-decoration:none;display:inline-block}
+.tool-btn:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.55)}
+
+/* CARDS */
+.card{background:#fff;border-radius:10px;box-shadow:0 1px 5px rgba(0,0,0,.07);padding:16px 20px;margin-bottom:12px}
+.first-card{border-radius:0 0 10px 10px;margin-top:0}
+
+/* SEARCH */
+.search-wrap{position:relative;margin-bottom:16px}
+.search-input{width:100%;padding:11px 16px 11px 40px;border-radius:8px;border:1px solid #ddd;font-size:13px;font-family:inherit;background:#fff;transition:border-color .2s}
+.search-input:focus{outline:none;border-color:#4a90d9;box-shadow:0 0 0 2px rgba(74,144,217,.12)}
+.search-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:15px;color:#aaa;pointer-events:none}
+
+/* TWO-COLUMN LAYOUT */
+.main-cols{display:grid;grid-template-columns:320px 1fr;gap:14px;align-items:start}
+
+/* ARCHIVE */
+.archive-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.archive-header .sec-title{font-size:13px;font-weight:700;color:#2c3e6e}
+.archive-count{font-size:10px;color:#888;font-weight:600}
+.archive-list{max-height:calc(100vh - 260px);overflow-y:auto}
+.archive-item{padding:12px 14px;border-radius:8px;border:1.5px solid #eee;background:#fff;margin-bottom:8px;cursor:pointer;transition:all .15s}
+.archive-item:hover{border-color:#4a90d9;box-shadow:0 2px 8px rgba(74,144,217,.12)}
+.archive-item.selected{border-color:#4a90d9;background:#f0f6ff}
+.archive-item .ai-type{display:inline-block;padding:2px 9px;border-radius:10px;font-size:9px;font-weight:700;margin-bottom:5px}
+.archive-item .ai-date{font-size:12px;font-weight:700;color:#2c3e6e;margin-bottom:3px}
+.archive-item .ai-meta{font-size:10px;color:#888;display:flex;gap:10px;flex-wrap:wrap}
+.archive-empty{text-align:center;padding:30px 16px;color:#bbb;font-size:12px;font-style:italic}
+
+/* TYPE PILLS */
+.type-weekly{background:#e3f2fd;color:#1565c0}
+.type-campus{background:#e8f5e9;color:#2e7d32}
+.type-dept{background:#fff3e0;color:#e65100}
+.type-district{background:#f3e8ff;color:#6a1b9a}
+
+/* EDITOR */
+.editor-empty{text-align:center;padding:60px 20px;color:#bbb;font-size:13px;font-style:italic}
+.editor-empty .ei{font-size:42px;margin-bottom:12px}
+.editor-header{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.editor-type-pill{padding:4px 12px;border-radius:12px;font-size:11px;font-weight:700}
+.editor-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-left:auto}
+.btn{padding:6px 14px;border-radius:7px;border:1.5px solid #ddd;background:#fff;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;color:#555}
+.btn:hover{background:#eaf3fb;border-color:#4a90d9;color:#2c3e6e}
+.btn.primary{background:#4a90d9;color:#fff;border-color:#4a90d9}
+.btn.primary:hover{background:#3a7bc8}
+.btn.danger{background:#fff;color:#e74c3c;border-color:#e74c3c}
+.btn.danger:hover{background:#fef0ef}
+.btn.success{background:#27ae60;color:#fff;border-color:#27ae60}
+.btn.success:hover{background:#219a52}
+
+.field-group{margin-bottom:16px}
+.field-group label{display:block;font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px}
+.field-group input,.field-group textarea,.field-group select{width:100%;padding:8px 10px;border-radius:6px;border:1px solid #ddd;font-size:13px;font-family:inherit;background:#fff;color:#333}
+.field-group input:focus,.field-group textarea:focus,.field-group select:focus{border-color:#4a90d9;outline:none;box-shadow:0 0 0 2px rgba(74,144,217,.12)}
+.field-group textarea{resize:vertical;min-height:80px}
+
+/* AGENDA / ACTION ITEM LISTS */
+.sec-title-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.sec-label{font-size:12px;font-weight:700;color:#2c3e6e}
+.item-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #f5f5f5}
+.item-row:last-child{border-bottom:none}
+.item-cb{width:16px;height:16px;flex-shrink:0;accent-color:#4a90d9;cursor:pointer}
+.item-text{flex:1;padding:5px 8px;border-radius:5px;border:1px solid #ddd;font-size:12px;font-family:inherit;background:#fff;color:#333}
+.item-text:focus{border-color:#4a90d9;outline:none}
+.item-text.done-text{text-decoration:line-through;color:#bbb}
+.del-row-btn{background:none;border:none;color:#ccc;cursor:pointer;font-size:16px;padding:0 4px;flex-shrink:0;line-height:1}
+.del-row-btn:hover{color:#e74c3c}
+
+/* ACTION ITEM TABLE */
+.action-row{display:grid;grid-template-columns:1fr 120px 120px 30px 30px;gap:6px;align-items:center;padding:6px 0;border-bottom:1px solid #f5f5f5}
+.action-row:last-child{border-bottom:none}
+.action-row input{padding:5px 8px;border-radius:5px;border:1px solid #ddd;font-size:12px;font-family:inherit;background:#fff;color:#333;width:100%}
+.action-row input:focus{border-color:#4a90d9;outline:none}
+.action-row .action-labels{display:grid;grid-template-columns:1fr 120px 120px 30px 30px;gap:6px;font-size:9px;font-weight:700;color:#aaa;text-transform:uppercase;margin-bottom:4px}
+.overdue-badge{display:inline-block;padding:1px 7px;border-radius:8px;font-size:9px;font-weight:700;background:#fef0ef;color:#e74c3c;margin-left:4px}
+
+/* SAVE INDICATOR */
+.save-ind{font-size:10px;color:#27ae60;font-weight:600;opacity:0;transition:opacity .4s}
+.save-ind.show{opacity:1}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.45);z-index:1000;justify-content:center;align-items:center}
+.modal-overlay.active{display:flex}
+.modal{background:#fff;border-radius:12px;padding:24px 28px;max-width:500px;width:92%;box-shadow:0 10px 40px rgba(0,0,0,.2)}
+.modal h3{font-size:16px;font-weight:800;color:#2c3e6e;margin-bottom:6px}
+.modal p{font-size:12px;color:#666;margin-bottom:18px}
+.type-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.type-btn{padding:16px 14px;border-radius:10px;border:2px solid #eee;background:#fff;cursor:pointer;text-align:center;transition:all .15s;font-family:inherit}
+.type-btn:hover{border-color:#4a90d9;box-shadow:0 2px 10px rgba(74,144,217,.15)}
+.type-btn .tb-icon{font-size:24px;margin-bottom:6px}
+.type-btn .tb-name{font-size:11px;font-weight:700;color:#2c3e6e;line-height:1.3}
+.modal-cancel{display:block;margin-top:14px;text-align:center;font-size:11px;color:#aaa;cursor:pointer;padding:6px}
+.modal-cancel:hover{color:#555}
+
+/* EMPTY STATE */
+.empty-state{text-align:center;padding:40px 20px;color:#bbb}
+.empty-state .es-icon{font-size:36px;margin-bottom:8px}
+.empty-state p{font-size:12px}
+
+/* PRINT STYLES */
+@media print{
+  body{background:#fff!important;padding:0;color:#333!important}
+  .toolbar,.search-wrap,.main-cols .archive-col,.editor-actions .btn.danger,.editor-actions .btn.success,
+  .modal-overlay,.toast{display:none!important}
+  .main-cols{display:block!important}
+  .card{box-shadow:none!important;border:1px solid #ddd;margin-bottom:8px}
+  .header{-webkit-print-color-adjust:exact;print-color-adjust:exact;border-radius:0;padding:12px 16px}
+  .header h1{font-size:16px}
+  .print-section{page-break-inside:avoid}
+  body.dark-mode,body.dark-mode .card,body.dark-mode .modal{background:#fff!important;color:#333!important}
+}
+
+/* DARK MODE */
+body.dark-mode{background:#1a1a2e;color:#e0e0e0}
+body.dark-mode .header{background:linear-gradient(135deg,#1a1a2e,#2d3a6e)}
+body.dark-mode .card{background:#16213e;box-shadow:0 1px 5px rgba(0,0,0,.3)}
+body.dark-mode .sec-label,body.dark-mode .archive-header .sec-title{color:#7eb8f7}
+body.dark-mode .archive-item{background:#16213e;border-color:#2d3a6e}
+body.dark-mode .archive-item:hover{border-color:#4a90d9}
+body.dark-mode .archive-item.selected{background:#1a2744;border-color:#4a90d9}
+body.dark-mode .archive-item .ai-date{color:#7eb8f7}
+body.dark-mode .archive-item .ai-meta{color:#aaa}
+body.dark-mode .editor-empty{color:#555}
+body.dark-mode .field-group label{color:#aaa}
+body.dark-mode .field-group input,body.dark-mode .field-group textarea,body.dark-mode .field-group select,
+body.dark-mode .item-text,body.dark-mode .action-row input,body.dark-mode .search-input{background:#1a2744;color:#e0e0e0;border-color:#2d3a6e}
+body.dark-mode .btn{background:#1a2744;color:#e0e0e0;border-color:#2d3a6e}
+body.dark-mode .btn:hover{background:#2d3a6e}
+body.dark-mode .btn.primary{background:#4a90d9;color:#fff;border-color:#4a90d9}
+body.dark-mode .btn.danger{background:#1a2744;color:#f87171;border-color:#c0392b}
+body.dark-mode .btn.success{background:#1a3a2a;color:#66bb6a;border-color:#27ae60}
+body.dark-mode .item-row{border-color:#2d3a6e}
+body.dark-mode .action-row{border-color:#2d3a6e}
+body.dark-mode .del-row-btn{color:#555}
+body.dark-mode .del-row-btn:hover{color:#f87171}
+body.dark-mode .modal{background:#16213e}
+body.dark-mode .modal h3{color:#7eb8f7}
+body.dark-mode .modal p{color:#aaa}
+body.dark-mode .type-btn{background:#1a2744;border-color:#2d3a6e}
+body.dark-mode .type-btn:hover{border-color:#4a90d9}
+body.dark-mode .type-btn .tb-name{color:#7eb8f7}
+body.dark-mode .type-weekly{background:#0d2847;color:#64b5f6}
+body.dark-mode .type-campus{background:#1a3a1a;color:#66bb6a}
+body.dark-mode .type-dept{background:#3e2a10;color:#f5c842}
+body.dark-mode .type-district{background:#2a1a3e;color:#b39ddb}
+body.dark-mode .archive-count{color:#666}
+body.dark-mode .modal-cancel{color:#666}
+body.dark-mode .modal-cancel:hover{color:#aaa}
+body.dark-mode .save-ind{color:#66bb6a}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .main-cols{grid-template-columns:1fr}
+  .archive-list{max-height:260px}
+}
+@media(max-width:768px){
+  .action-row{grid-template-columns:1fr 1fr 1fr 30px 30px}
+}
+@media(max-width:600px){
+  body{padding:8px}
+  .header{padding:16px 14px}
+  .header h1{font-size:17px}
+  .toolbar{gap:4px}
+  .tool-btn{padding:5px 9px;font-size:10px}
+  .card{padding:12px}
+  button,input,select,textarea{min-height:44px}
+  .action-row{grid-template-columns:1fr 30px 30px}
+}
+
+/* TOAST */
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#4a90d9;color:#fff;padding:10px 22px;border-radius:8px;font-size:13px;font-weight:600;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+body.dark-mode .toast{background:#7eb8f7;color:#1a1a2e}
+
+.teacher-link{color:#4a90d9;text-decoration:none;font-weight:600}
+.teacher-link:hover{text-decoration:underline;color:#2c3e6e}
+body.dark-mode .teacher-link{color:#7eb8f7}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <h1>&#128221; Meeting Notes &amp; Agenda Builder</h1>
+    <p>Create, track, and archive meeting agendas, action items, and notes</p>
+    <div class="toolbar">
+      <button class="tool-btn" onclick="openTypeModal()">&#43; New Meeting</button>
+      <button class="tool-btn" onclick="window.print()">&#128438; Print</button>
+      <button class="tool-btn" onclick="toggleDarkMode()" id="darkModeToggle">&#9789; Dark</button>
+      <a class="tool-btn" href="index.html" style="margin-left:auto">&#127968; Home</a>
+    </div>
+  </div>
+
+  <!-- Search -->
+  <div class="card first-card" style="padding:14px 20px">
+    <div class="search-wrap" style="margin-bottom:0">
+      <span class="search-icon">&#128269;</span>
+      <input type="text" class="search-input" id="searchBox" placeholder="Search meetings, attendees, agenda items, action items..." oninput="runSearch(this.value)" aria-label="Search meetings"/>
+    </div>
+  </div>
+
+  <!-- Main two-column layout -->
+  <div class="main-cols">
+    <!-- Archive column -->
+    <div class="archive-col">
+      <div class="card">
+        <div class="archive-header">
+          <span class="sec-title">&#128451; Archive</span>
+          <span class="archive-count" id="archiveCount">0 meetings</span>
+        </div>
+        <div class="archive-list" id="archiveList">
+          <div class="archive-empty">No meetings yet. Click &ldquo;+ New Meeting&rdquo; to start.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Editor column -->
+    <div class="editor-col">
+      <div class="card" id="editorCard">
+        <div class="editor-empty" id="editorEmpty">
+          <div class="ei">&#128221;</div>
+          <p>Select a meeting from the archive<br/>or create a new one to get started.</p>
+        </div>
+        <div id="editorBody" style="display:none">
+          <!-- Editor header -->
+          <div class="editor-header" id="editorHeaderRow">
+            <span class="editor-type-pill" id="editorTypePill"></span>
+            <span class="save-ind" id="saveInd">Saved &#10003;</span>
+            <div class="editor-actions">
+              <button class="btn success" onclick="exportToCoachingTracker()" id="btnExportCoaching" title="Send undone action items to Coaching Cycle Tracker">&#128172; Export to Coaching</button>
+              <button class="btn danger" onclick="deleteMeeting()" id="btnDelete">&#128465; Delete</button>
+            </div>
+          </div>
+
+          <!-- Date & Attendees -->
+          <div style="display:grid;grid-template-columns:180px 1fr;gap:12px;margin-bottom:16px" id="topGrid">
+            <div class="field-group" style="margin-bottom:0">
+              <label>Date</label>
+              <input type="date" id="edDate" onchange="schedSave()"/>
+            </div>
+            <div class="field-group" style="margin-bottom:0">
+              <label>Attendees (comma-separated)</label>
+              <input type="text" id="edAttendees" placeholder="e.g. J. Miller, K. Patterson" oninput="schedSave()"/>
+            </div>
+          </div>
+
+          <!-- Agenda Items -->
+          <div class="print-section" style="margin-bottom:18px">
+            <div class="sec-title-row">
+              <span class="sec-label">&#9989; Agenda Items</span>
+              <button class="btn" onclick="addAgendaItem()">&#43; Add Item</button>
+            </div>
+            <div id="agendaList"></div>
+          </div>
+
+          <!-- Action Items -->
+          <div class="print-section" style="margin-bottom:18px">
+            <div class="sec-title-row">
+              <span class="sec-label">&#128203; Action Items</span>
+              <button class="btn" onclick="addActionItem()">&#43; Add Action</button>
+            </div>
+            <div class="action-row action-labels" id="actionLabels" style="padding:0 0 4px">
+              <span>Task</span><span>Owner</span><span>Deadline</span><span></span><span></span>
+            </div>
+            <div id="actionList"></div>
+          </div>
+
+          <!-- Notes -->
+          <div class="print-section field-group" style="margin-bottom:0">
+            <label>Notes</label>
+            <textarea id="edNotes" rows="5" placeholder="Freeform meeting notes..." oninput="schedSave()"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Type Selection Modal -->
+<div class="modal-overlay" id="typeModal">
+  <div class="modal">
+    <h3>Select Meeting Type</h3>
+    <p>Choose the type of meeting to create:</p>
+    <div class="type-grid">
+      <button class="type-btn" onclick="newMeeting('weekly')">
+        <div class="tb-icon">&#128101;</div>
+        <div class="tb-name">Weekly Coordinator Team Meeting</div>
+      </button>
+      <button class="type-btn" onclick="newMeeting('campus')">
+        <div class="tb-icon">&#127891;</div>
+        <div class="tb-name">Campus Check-In<br/>(Coordinator + Principal)</div>
+      </button>
+      <button class="type-btn" onclick="newMeeting('dept')">
+        <div class="tb-icon">&#128104;&#8205;&#127979;</div>
+        <div class="tb-name">ESL Department Meeting<br/>(Coordinator + Teachers)</div>
+      </button>
+      <button class="type-btn" onclick="newMeeting('district')">
+        <div class="tb-icon">&#127970;</div>
+        <div class="tb-name">District / Manager Review Meeting</div>
+      </button>
+    </div>
+    <div class="modal-cancel" onclick="closeTypeModal()">Cancel</div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ======================================================
+   DARK MODE
+   ====================================================== */
+function toggleDarkMode(){
+  var d = document.body.classList.toggle("dark-mode");
+  localStorage.setItem("esl_app_theme", d ? "dark" : "light");
+  var b = document.getElementById("darkModeToggle");
+  if(b) b.innerHTML = d ? "&#9788; Light" : "&#9789; Dark";
+}
+(function(){
+  if(localStorage.getItem("esl_app_theme") === "dark"){
+    document.body.classList.add("dark-mode");
+    var b = document.getElementById("darkModeToggle");
+    if(b) b.innerHTML = "&#9788; Light";
+  }
+})();
+
+/* ======================================================
+   TOAST
+   ====================================================== */
+function showToast(msg){
+  var el = document.getElementById("toast");
+  if(!el) return;
+  el.textContent = msg;
+  el.classList.add("show");
+  setTimeout(function(){ el.classList.remove("show"); }, 3000);
+}
+
+/* ======================================================
+   ESCAPE HTML UTILITY
+   ====================================================== */
+function escHtml(str){
+  if(!str) return "";
+  var d = document.createElement("div");
+  d.appendChild(document.createTextNode(String(str)));
+  return d.innerHTML;
+}
+
+/* ======================================================
+   CONSTANTS
+   ====================================================== */
+var STORAGE_KEY = "meeting_notes_data";
+
+var MEETING_TYPES = {
+  weekly:   { label: "Weekly Coordinator Team Meeting",          cls: "type-weekly",   defaultAttendees: "J. Miller, K. Patterson, P. Okolo, V. Palencia" },
+  campus:   { label: "Campus Check-In (Coordinator + Principal)", cls: "type-campus",  defaultAttendees: "" },
+  dept:     { label: "ESL Department Meeting (Coordinator + Teachers)", cls: "type-dept", defaultAttendees: "" },
+  district: { label: "District / Manager Review Meeting",         cls: "type-district", defaultAttendees: "" }
+};
+
+/* ======================================================
+   DATA LAYER
+   ====================================================== */
+var _data = { version: 1, meetings: [] };
+var _activeMtgId = null;
+var _saveTimer = null;
+
+function loadData(){
+  try{
+    var raw = localStorage.getItem(STORAGE_KEY);
+    if(raw){
+      var parsed = JSON.parse(raw);
+      if(parsed && Array.isArray(parsed.meetings)){
+        _data = parsed;
+      }
+    }
+  } catch(e){ _data = { version: 1, meetings: [] }; }
+}
+
+function saveData(){
+  _data.version = 1;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(_data));
+  var ind = document.getElementById("saveInd");
+  if(ind){ ind.classList.add("show"); setTimeout(function(){ ind.classList.remove("show"); }, 1800); }
+}
+
+/* ======================================================
+   ID GENERATOR
+   ====================================================== */
+function genId(){
+  return "mtg-" + Date.now() + "-" + Math.floor(Math.random() * 9999);
+}
+
+/* ======================================================
+   ARCHIVE RENDER
+   ====================================================== */
+function renderArchive(filterQuery){
+  var list = document.getElementById("archiveList");
+  var countEl = document.getElementById("archiveCount");
+  if(!list) return;
+
+  var meetings = _data.meetings.slice();
+  // newest first
+  meetings.sort(function(a, b){ return (b.date || b.createdAt || "") > (a.date || a.createdAt || "") ? 1 : -1; });
+
+  if(filterQuery && filterQuery.length > 0){
+    var q = filterQuery.toLowerCase();
+    meetings = meetings.filter(function(m){
+      var typeInfo = MEETING_TYPES[m.type] || {};
+      if((typeInfo.label || "").toLowerCase().indexOf(q) >= 0) return true;
+      if((m.attendees || "").toLowerCase().indexOf(q) >= 0) return true;
+      if((m.notes || "").toLowerCase().indexOf(q) >= 0) return true;
+      if((m.date || "").indexOf(q) >= 0) return true;
+      var agendaMatch = false;
+      if(Array.isArray(m.agendaItems)){
+        for(var i = 0; i < m.agendaItems.length; i++){
+          if((m.agendaItems[i].text || "").toLowerCase().indexOf(q) >= 0){ agendaMatch = true; break; }
+        }
+      }
+      if(agendaMatch) return true;
+      if(Array.isArray(m.actionItems)){
+        for(var j = 0; j < m.actionItems.length; j++){
+          var ai = m.actionItems[j];
+          if((ai.text || "").toLowerCase().indexOf(q) >= 0) return true;
+          if((ai.owner || "").toLowerCase().indexOf(q) >= 0) return true;
+        }
+      }
+      return false;
+    });
+  }
+
+  countEl.textContent = meetings.length + " meeting" + (meetings.length === 1 ? "" : "s");
+
+  if(meetings.length === 0){
+    list.innerHTML = '<div class="archive-empty">No meetings found.</div>';
+    return;
+  }
+
+  var html = "";
+  for(var i = 0; i < meetings.length; i++){
+    var m = meetings[i];
+    var typeInfo = MEETING_TYPES[m.type] || { label: m.type, cls: "type-weekly" };
+    var openCount = 0;
+    if(Array.isArray(m.actionItems)){
+      for(var k = 0; k < m.actionItems.length; k++){
+        if(!m.actionItems[k].done) openCount++;
+      }
+    }
+    var attendeeCount = m.attendees ? m.attendees.split(",").filter(function(s){ return s.trim().length > 0; }).length : 0;
+    var displayDate = m.date ? formatDateDisplay(m.date) : "No date";
+    var sel = (_activeMtgId === m.id) ? " selected" : "";
+    html += '<div class="archive-item' + sel + '" onclick="openMeeting(\'' + escHtml(m.id) + '\')" data-id="' + escHtml(m.id) + '">';
+    html += '<span class="ai-type ' + typeInfo.cls + '">' + escHtml(typeInfo.label) + '</span>';
+    html += '<div class="ai-date">' + escHtml(displayDate) + '</div>';
+    html += '<div class="ai-meta">';
+    html += '<span>&#128101; ' + attendeeCount + ' attendee' + (attendeeCount === 1 ? "" : "s") + '</span>';
+    if(openCount > 0){
+      html += '<span style="color:#e65100;font-weight:700">&#9888; ' + openCount + ' open action' + (openCount === 1 ? "" : "s") + '</span>';
+    }
+    html += '</div></div>';
+  }
+  list.innerHTML = html;
+}
+
+function formatDateDisplay(dateStr){
+  if(!dateStr) return "";
+  var parts = dateStr.split("-");
+  if(parts.length === 3){
+    var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    var m = parseInt(parts[1], 10) - 1;
+    return months[m] + " " + parseInt(parts[2], 10) + ", " + parts[0];
+  }
+  return dateStr;
+}
+
+/* ======================================================
+   OPEN MEETING (EDITOR)
+   ====================================================== */
+function openMeeting(id){
+  _activeMtgId = id;
+  var mtg = getMtgById(id);
+  if(!mtg) return;
+
+  document.getElementById("editorEmpty").style.display = "none";
+  document.getElementById("editorBody").style.display = "block";
+
+  var typeInfo = MEETING_TYPES[mtg.type] || { label: mtg.type, cls: "type-weekly" };
+  var pill = document.getElementById("editorTypePill");
+  pill.textContent = typeInfo.label;
+  pill.className = "editor-type-pill " + typeInfo.cls;
+
+  document.getElementById("edDate").value = mtg.date || "";
+  document.getElementById("edAttendees").value = mtg.attendees || "";
+  document.getElementById("edNotes").value = mtg.notes || "";
+
+  renderAgendaItems(mtg);
+  renderActionItems(mtg);
+  renderArchive(document.getElementById("searchBox").value);
+}
+
+function getMtgById(id){
+  for(var i = 0; i < _data.meetings.length; i++){
+    if(_data.meetings[i].id === id) return _data.meetings[i];
+  }
+  return null;
+}
+
+/* ======================================================
+   AGENDA ITEMS RENDER
+   ====================================================== */
+function renderAgendaItems(mtg){
+  var container = document.getElementById("agendaList");
+  if(!container) return;
+  if(!Array.isArray(mtg.agendaItems) || mtg.agendaItems.length === 0){
+    container.innerHTML = '<div class="empty-state" style="padding:14px 0"><p style="color:#bbb;font-size:12px">No agenda items yet.</p></div>';
+    return;
+  }
+  var html = "";
+  for(var i = 0; i < mtg.agendaItems.length; i++){
+    var item = mtg.agendaItems[i];
+    var idx = i;
+    var doneClass = item.done ? " done-text" : "";
+    html += '<div class="item-row">';
+    html += '<input type="checkbox" class="item-cb"' + (item.done ? " checked" : "") + ' onchange="toggleAgendaDone(' + idx + ',this.checked)" aria-label="Mark done"/>';
+    html += '<input type="text" class="item-text' + doneClass + '" value="' + escHtml(item.text) + '" placeholder="Agenda item..." oninput="updateAgendaText(' + idx + ',this.value)" onchange="schedSave()"/>';
+    html += '<button class="del-row-btn" onclick="removeAgendaItem(' + idx + ')" aria-label="Remove item">&#215;</button>';
+    html += '</div>';
+  }
+  container.innerHTML = html;
+}
+
+function addAgendaItem(){
+  var mtg = getMtgById(_activeMtgId);
+  if(!mtg) return;
+  if(!Array.isArray(mtg.agendaItems)) mtg.agendaItems = [];
+  mtg.agendaItems.push({ text: "", done: false });
+  saveData();
+  renderAgendaItems(mtg);
+  // focus the new input
+  var rows = document.querySelectorAll("#agendaList .item-text");
+  if(rows.length > 0) rows[rows.length - 1].focus();
+}
+
+function removeAgendaItem(idx){
+  var mtg = getMtgById(_activeMtgId);
+  if(!mtg || !Array.isArray(mtg.agendaItems)) return;
+  mtg.agendaItems.splice(idx, 1);
+  saveData();
+  renderAgendaItems(mtg);
+}
+
+function toggleAgendaDone(idx, val){
+  var mtg = getMtgById(_activeMtgId);
+  if(!mtg || !Array.isArray(mtg.agendaItems) || !mtg.agendaItems[idx]) return;
+  mtg.agendaItems[idx].done = val;
+  schedSave();
+  // toggle strike class without full re-render
+  var rows = document.querySelectorAll("#agendaList .item-text");
+  if(rows[idx]){
+    if(val){ rows[idx].classList.add("done-text"); } else { rows[idx].classList.remove("done-text"); }
+  }
+}
+
+function updateAgendaText(idx, val){
+  var mtg = getMtgById(_activeMtgId);
+  if(!mtg || !Array.isArray(mtg.agendaItems) || !mtg.agendaItems[idx]) return;
+  mtg.agendaItems[idx].text = val;
+  schedSave();
+}
+
+/* ======================================================
+   ACTION ITEMS RENDER
+   ====================================================== */
+function renderActionItems(mtg){
+  var container = document.getElementById("actionList");
+  var labelsEl = document.getElementById("actionLabels");
+  if(!container) return;
+  if(!Array.isArray(mtg.actionItems) || mtg.actionItems.length === 0){
+    if(labelsEl) labelsEl.style.display = "none";
+    container.innerHTML = '<div class="empty-state" style="padding:14px 0"><p style="color:#bbb;font-size:12px">No action items yet.</p></div>';
+    return;
+  }
+  if(labelsEl) labelsEl.style.display = "grid";
+  var today = todayStr();
+  var html = "";
+  for(var i = 0; i < mtg.actionItems.length; i++){
+    var item = mtg.actionItems[i];
+    var idx = i;
+    var overdueHtml = "";
+    if(!item.done && item.deadline && item.deadline < today){
+      overdueHtml = '<span class="overdue-badge">OVERDUE</span>';
+    }
+    html += '<div class="action-row">';
+    html += '<div style="display:flex;align-items:center;gap:4px">';
+    html += '<input type="text" value="' + escHtml(item.text) + '" placeholder="Task description..." oninput="updateActionField(' + idx + ',\'text\',this.value)" style="flex:1"/>';
+    html += overdueHtml;
+    html += '</div>';
+    html += '<input type="text" value="' + escHtml(item.owner) + '" placeholder="Owner" oninput="updateActionField(' + idx + ',\'owner\',this.value)"/>';
+    html += '<input type="date" value="' + escHtml(item.deadline) + '" onchange="updateActionField(' + idx + ',\'deadline\',this.value)"/>';
+    html += '<input type="checkbox"' + (item.done ? " checked" : "") + ' onchange="updateActionField(' + idx + ',\'done\',this.checked)" title="Mark done" style="justify-self:center"/>';
+    html += '<button class="del-row-btn" onclick="removeActionItem(' + idx + ')" aria-label="Remove action">&#215;</button>';
+    html += '</div>';
+  }
+  container.innerHTML = html;
+}
+
+function addActionItem(){
+  var mtg = getMtgById(_activeMtgId);
+  if(!mtg) return;
+  if(!Array.isArray(mtg.actionItems)) mtg.actionItems = [];
+  mtg.actionItems.push({ text: "", owner: "", deadline: "", done: false });
+  saveData();
+  renderActionItems(mtg);
+  var rows = document.querySelectorAll("#actionList input[type=text]");
+  if(rows.length > 0) rows[rows.length - 2].focus();
+}
+
+function removeActionItem(idx){
+  var mtg = getMtgById(_activeMtgId);
+  if(!mtg || !Array.isArray(mtg.actionItems)) return;
+  mtg.actionItems.splice(idx, 1);
+  saveData();
+  renderActionItems(mtg);
+}
+
+function updateActionField(idx, field, val){
+  var mtg = getMtgById(_activeMtgId);
+  if(!mtg || !Array.isArray(mtg.actionItems) || !mtg.actionItems[idx]) return;
+  mtg.actionItems[idx][field] = val;
+  schedSave();
+}
+
+/* ======================================================
+   DEBOUNCED SAVE
+   ====================================================== */
+function schedSave(){
+  if(_saveTimer) clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(function(){ saveMeeting(); }, 800);
+}
+
+function saveMeeting(){
+  if(!_activeMtgId) return;
+  var mtg = getMtgById(_activeMtgId);
+  if(!mtg) return;
+  mtg.date = document.getElementById("edDate").value;
+  mtg.attendees = document.getElementById("edAttendees").value;
+  mtg.notes = document.getElementById("edNotes").value;
+  // agendaItems and actionItems updated inline via updateAgenda/updateAction
+  mtg.updatedAt = new Date().toISOString();
+  saveData();
+  renderArchive(document.getElementById("searchBox").value);
+}
+
+/* ======================================================
+   NEW MEETING
+   ====================================================== */
+function newMeeting(type){
+  closeTypeModal();
+  var typeInfo = MEETING_TYPES[type] || MEETING_TYPES.weekly;
+  var today = todayStr();
+  var mtg = {
+    id: genId(),
+    type: type,
+    date: today,
+    attendees: typeInfo.defaultAttendees,
+    agendaItems: [],
+    actionItems: [],
+    notes: "",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+  _data.meetings.push(mtg);
+  saveData();
+  renderArchive("");
+  document.getElementById("searchBox").value = "";
+  openMeeting(mtg.id);
+  showToast("New meeting created.");
+}
+
+/* ======================================================
+   DELETE MEETING
+   ====================================================== */
+function deleteMeeting(){
+  if(!_activeMtgId) return;
+  if(!confirm("Delete this meeting? This cannot be undone.")) return;
+  _data.meetings = _data.meetings.filter(function(m){ return m.id !== _activeMtgId; });
+  _activeMtgId = null;
+  saveData();
+  document.getElementById("editorEmpty").style.display = "";
+  document.getElementById("editorBody").style.display = "none";
+  renderArchive(document.getElementById("searchBox").value);
+  showToast("Meeting deleted.");
+}
+
+/* ======================================================
+   SEARCH
+   ====================================================== */
+function runSearch(query){
+  renderArchive(query);
+}
+
+/* ======================================================
+   TYPE MODAL
+   ====================================================== */
+function openTypeModal(){
+  document.getElementById("typeModal").classList.add("active");
+}
+
+function closeTypeModal(){
+  document.getElementById("typeModal").classList.remove("active");
+}
+
+// Close modal on overlay click
+document.getElementById("typeModal").addEventListener("click", function(e){
+  if(e.target === this) closeTypeModal();
+});
+
+/* ======================================================
+   EXPORT TO COACHING TRACKER
+   ====================================================== */
+function exportToCoachingTracker(){
+  var mtg = getMtgById(_activeMtgId);
+  if(!mtg) return;
+  var undone = [];
+  if(Array.isArray(mtg.actionItems)){
+    for(var i = 0; i < mtg.actionItems.length; i++){
+      var ai = mtg.actionItems[i];
+      if(!ai.done && ai.owner && ai.owner.trim().length > 0){
+        undone.push(ai);
+      }
+    }
+  }
+  if(undone.length === 0){
+    showToast("No undone action items with an owner to export.");
+    return;
+  }
+  var typeInfo = MEETING_TYPES[mtg.type] || { label: mtg.type };
+  var handoff = {
+    sourceId: mtg.id,
+    sourceType: "meeting",
+    meetingType: typeInfo.label,
+    meetingDate: mtg.date,
+    actions: undone.map(function(ai){
+      return { text: ai.text, owner: ai.owner, deadline: ai.deadline };
+    })
+  };
+  localStorage.setItem("coaching_cycle_handoff", JSON.stringify(handoff));
+  window.open("Academic_Monitoring_Leader_Facing/Coaching_Cycle_Tracker.html", "_blank");
+  showToast("Exported " + undone.length + " action item" + (undone.length === 1 ? "" : "s") + " to Coaching Tracker.");
+}
+
+/* ======================================================
+   UTILITY
+   ====================================================== */
+function todayStr(){
+  var d = new Date();
+  var mo = String(d.getMonth() + 1).padStart(2, "0");
+  var da = String(d.getDate()).padStart(2, "0");
+  return d.getFullYear() + "-" + mo + "-" + da;
+}
+
+/* ======================================================
+   INIT
+   ====================================================== */
+(function init(){
+  loadData();
+  renderArchive("");
+})();
+
+/* ======================================================
+   PWA
+   ====================================================== */
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.register("./service-worker.js").catch(function(){});
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PD Tracker &mdash; ESL Manager Suite</title>
+<link rel="manifest" href="./manifest.json"/>
+<meta name="theme-color" content="#2c3e6e"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh;padding:20px;color:#333}
+.wrap{max-width:1100px;margin:0 auto}
+
+/* Header */
+.header{background:linear-gradient(135deg,#2c3e6e,#4a90d9);border-radius:14px 14px 0 0;padding:24px 28px 18px;color:#fff;margin-bottom:0}
+.header h1{font-size:22px;font-weight:800;margin-bottom:2px}
+.header p{font-size:12px;opacity:.85;margin-bottom:12px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.tool-btn{background:rgba(255,255,255,.13);color:#fff;border:2px solid rgba(255,255,255,.35);padding:6px 13px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;text-decoration:none;display:inline-block}
+.tool-btn:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.55)}
+.tool-btn.accent{border-color:rgba(39,174,96,.6)}
+.tool-btn.accent:hover{background:rgba(39,174,96,.2)}
+
+/* Cards */
+.card{background:#fff;border-radius:10px;box-shadow:0 1px 5px rgba(0,0,0,.07);padding:20px;margin-bottom:14px}
+.first-card{border-radius:0 0 10px 10px;margin-top:0}
+.card-title{font-size:14px;font-weight:700;color:#2c3e6e;margin-bottom:14px;display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
+.card-title .chev{font-size:11px;color:#aaa;transition:transform .2s;margin-left:auto}
+.card-title .chev.open{transform:rotate(180deg)}
+.collapsible-body.collapsed{display:none}
+
+/* Stats row */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+.stat-card{background:#fff;border-radius:10px;box-shadow:0 1px 5px rgba(0,0,0,.07);padding:16px 18px;text-align:center}
+.stat-val{font-size:28px;font-weight:900;color:#2c3e6e;line-height:1.1}
+.stat-label{font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.4px;margin-top:4px}
+
+/* Filter bar */
+.filter-bar{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:14px}
+.filter-group{display:flex;flex-direction:column;gap:3px}
+.filter-group label{font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.4px}
+.filter-group select,.filter-group input{padding:7px 10px;border:1px solid #ddd;border-radius:6px;font-size:12px;font-family:inherit;background:#fff}
+.filter-group select:focus,.filter-group input:focus{border-color:#4a90d9;outline:none;box-shadow:0 0 0 2px rgba(74,144,217,.15)}
+
+/* Section label */
+.section-title{font-size:13px;font-weight:700;color:#2c3e6e;margin-bottom:10px}
+
+/* Chart */
+.chart-wrap{position:relative;height:260px;margin-bottom:8px}
+.chart-wrap-sm{position:relative;height:220px}
+
+/* Table */
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-top:4px}
+.pd-table{width:100%;border-collapse:collapse;font-size:12px}
+.pd-table th{background:#2c3e6e;color:#fff;padding:8px 10px;text-align:left;font-weight:600;white-space:nowrap;font-size:11px}
+.pd-table td{padding:8px 10px;border-bottom:1px solid #eee;vertical-align:middle}
+.pd-table tr:hover td{background:#f8fafd}
+.pd-table td:last-child{white-space:nowrap}
+.cat-pill{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;white-space:nowrap}
+.notes-cell{max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.del-btn{padding:3px 9px;border-radius:5px;border:1px solid #e74c3c;background:#fff;color:#e74c3c;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s}
+.del-btn:hover{background:#fef0ef}
+.empty-state{text-align:center;padding:40px 20px;color:#aaa}
+.empty-state .empty-icon{font-size:42px;margin-bottom:10px}
+.empty-state p{font-size:13px}
+
+/* Modal */
+.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.45);z-index:1000;justify-content:center;align-items:center;padding:20px}
+.modal-overlay.active{display:flex}
+.modal{background:#fff;border-radius:12px;padding:24px 28px;max-width:560px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,.2);max-height:88vh;overflow-y:auto}
+.modal h3{font-size:16px;font-weight:800;color:#2c3e6e;margin-bottom:16px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:4px}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-group.full{grid-column:1/-1}
+.form-group label{font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.4px}
+.form-group input,.form-group select,.form-group textarea{padding:8px 10px;border:1px solid #ddd;border-radius:6px;font-size:12px;font-family:inherit;width:100%}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:#4a90d9;outline:none;box-shadow:0 0 0 2px rgba(74,144,217,.15)}
+.form-group textarea{min-height:60px;resize:vertical}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+.btn-cancel{padding:8px 18px;border-radius:7px;border:1.5px solid #ddd;background:#fff;color:#666;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.btn-cancel:hover{background:#f0f2f7}
+.btn-primary{padding:8px 18px;border-radius:7px;border:none;background:#4a90d9;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity .15s}
+.btn-primary:hover{opacity:.88}
+
+/* Settings - progress bars */
+.settings-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.settings-row{display:flex;flex-direction:column;gap:4px}
+.settings-row label{font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.4px}
+.settings-row input{padding:7px 10px;border:1px solid #ddd;border-radius:6px;font-size:12px;font-family:inherit;width:100%}
+.settings-row input:focus{border-color:#4a90d9;outline:none;box-shadow:0 0 0 2px rgba(74,144,217,.15)}
+.btn-save{margin-top:12px;padding:8px 20px;border-radius:7px;border:none;background:#4a90d9;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity .15s}
+.btn-save:hover{opacity:.88}
+.target-grid{display:grid;grid-template-columns:1fr;gap:10px;margin-top:12px}
+.target-row{display:flex;align-items:center;gap:12px;font-size:12px}
+.target-name{min-width:110px;font-weight:600;color:#2c3e6e}
+.target-bar-wrap{flex:1}
+.target-bar-track{height:8px;background:#eee;border-radius:4px;overflow:hidden;margin-bottom:2px}
+.target-bar-fill{height:100%;border-radius:4px;transition:width .4s;background:linear-gradient(90deg,#4a90d9,#27ae60)}
+.target-pct{font-size:10px;color:#888;min-width:40px;text-align:right}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;right:24px;background:#2c3e6e;color:#fff;padding:12px 20px;border-radius:8px;font-size:13px;font-weight:600;box-shadow:0 4px 15px rgba(0,0,0,.2);z-index:2000;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+
+/* Dark mode */
+body.dark-mode{background:#1a1a2e;color:#e0e0e0}
+body.dark-mode .header{background:linear-gradient(135deg,#1a1a2e,#2d3a6e)}
+body.dark-mode .card,body.dark-mode .stat-card{background:#16213e;box-shadow:0 1px 5px rgba(0,0,0,.3)}
+body.dark-mode .card-title,body.dark-mode .section-title{color:#7eb8f7}
+body.dark-mode .stat-val{color:#7eb8f7}
+body.dark-mode .stat-label{color:#aaa}
+body.dark-mode .filter-group label{color:#aaa}
+body.dark-mode .filter-group select,body.dark-mode .filter-group input{background:#1a2744;color:#e0e0e0;border-color:#2d3a6e}
+body.dark-mode .pd-table th{background:#1a2744}
+body.dark-mode .pd-table td{border-color:#2d3a6e;color:#ccc}
+body.dark-mode .pd-table tr:hover td{background:#1a2744}
+body.dark-mode .modal{background:#16213e}
+body.dark-mode .modal h3{color:#7eb8f7}
+body.dark-mode .form-group label,body.dark-mode .settings-row label{color:#aaa}
+body.dark-mode .form-group input,body.dark-mode .form-group select,body.dark-mode .form-group textarea,body.dark-mode .settings-row input{background:#1a2744;color:#e0e0e0;border-color:#2d3a6e}
+body.dark-mode .btn-cancel{background:#1a2744;color:#ccc;border-color:#2d3a6e}
+body.dark-mode .btn-cancel:hover{background:#2d3a6e}
+body.dark-mode .target-name{color:#7eb8f7}
+body.dark-mode .target-bar-track{background:#2d3a6e}
+body.dark-mode .target-pct{color:#aaa}
+body.dark-mode .toast{background:#7eb8f7;color:#1a1a2e}
+body.dark-mode .del-btn{background:#16213e}
+body.dark-mode .empty-state{color:#666}
+
+/* Responsive */
+@media(max-width:768px){
+  .stats-row{grid-template-columns:1fr 1fr}
+  .filter-bar{flex-direction:column;align-items:stretch}
+  .filter-group{width:100%}
+  .form-grid{grid-template-columns:1fr}
+  .settings-grid{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+  body{padding:8px}
+  .header{padding:16px 14px}
+  .header h1{font-size:18px}
+  .toolbar{gap:4px}
+  .tool-btn,button,input,select{min-height:44px}
+  .stats-row{grid-template-columns:1fr 1fr}
+}
+
+/* Print */
+@media print{
+  body{background:#fff!important;padding:0;color:#333!important}
+  .header .toolbar,.tool-btn,.filter-bar,.modal-overlay,.toast{display:none!important}
+  .card,.stat-card{box-shadow:none!important;border:1px solid #ddd}
+  .wrap{max-width:100%}
+  .header{-webkit-print-color-adjust:exact;print-color-adjust:exact;border-radius:0;padding:12px 16px}
+  .cat-pill,.pd-table th{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Header -->
+  <div class="header">
+    <h1>&#128218; Professional Development Tracker</h1>
+    <p>Log, track, and analyze PD hours across the ESL coordinator team</p>
+    <div class="toolbar">
+      <button class="tool-btn accent" onclick="openLogModal()">&#xff0b; Log Session</button>
+      <button class="tool-btn" onclick="exportCsv()">&#128190; Export CSV</button>
+      <button class="tool-btn" onclick="toggleDarkMode()" id="darkModeToggle" aria-label="Toggle dark mode">&#9789; Dark</button>
+      <a class="tool-btn" href="index.html" style="margin-left:auto">&#127968; Home</a>
+    </div>
+  </div>
+
+  <!-- Filter Bar -->
+  <div class="card first-card">
+    <div class="filter-bar" id="filterBar">
+      <div class="filter-group">
+        <label for="filterCoord">Coordinator</label>
+        <select id="filterCoord" onchange="renderAll()">
+          <option value="">All / Team</option>
+          <option value="jmiller">J. Miller</option>
+          <option value="kpatterson">K. Patterson</option>
+          <option value="pokolo">P. Okolo</option>
+          <option value="vpalencia">V. Palencia</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="filterCat">Category</label>
+        <select id="filterCat" onchange="renderAll()">
+          <option value="">All Categories</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="filterSY">School Year</label>
+        <select id="filterSY" onchange="renderAll()">
+          <option value="2024-25">2024-25</option>
+          <option value="2025-26">2025-26</option>
+          <option value="2026-27">2026-27</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="filterFrom">From</label>
+        <input type="date" id="filterFrom" onchange="renderAll()"/>
+      </div>
+      <div class="filter-group">
+        <label for="filterTo">To</label>
+        <input type="date" id="filterTo" onchange="renderAll()"/>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Row -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-val" id="statSessions">0</div>
+      <div class="stat-label">Total Sessions</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" id="statHours">0</div>
+      <div class="stat-label">Total Hours</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" id="statTopCat" style="font-size:14px;padding-top:6px">&mdash;</div>
+      <div class="stat-label">Most Active Category</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" id="statAvgHours">0</div>
+      <div class="stat-label">Avg Hours / Session</div>
+    </div>
+  </div>
+
+  <!-- Hours by Category Chart -->
+  <div class="card">
+    <div class="section-title">Hours by Category</div>
+    <div class="chart-wrap"><canvas id="catChart"></canvas></div>
+  </div>
+
+  <!-- Hours Over Time Chart (only shown when "All" coordinator selected) -->
+  <div class="card" id="timeChartCard">
+    <div class="section-title">Hours Over Time (Monthly, by Coordinator)</div>
+    <div class="chart-wrap-sm"><canvas id="timeChart"></canvas></div>
+  </div>
+
+  <!-- Sessions Table -->
+  <div class="card">
+    <div class="section-title">Sessions</div>
+    <div class="table-wrap">
+      <table class="pd-table" id="sessionsTable">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Coordinator</th>
+            <th>Category</th>
+            <th>Title</th>
+            <th>Hours</th>
+            <th>Facilitator</th>
+            <th>Notes</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="sessionsBody"></tbody>
+      </table>
+      <div id="emptyState" class="empty-state" style="display:none">
+        <div class="empty-icon">&#128218;</div>
+        <p>No sessions logged yet. Click <strong>+ Log Session</strong> to add one.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings (collapsible) -->
+  <div class="card">
+    <div class="card-title" onclick="toggleSection('settingsBody','settingsChev')">
+      &#9881; Settings &mdash; Annual Hour Targets &amp; Progress
+      <span class="chev" id="settingsChev">&#9660;</span>
+    </div>
+    <div class="collapsible-body collapsed" id="settingsBody">
+      <div style="font-size:11px;color:#888;margin-bottom:10px">Set the annual PD hour target per coordinator. Progress below shows hours logged for the current school year vs target.</div>
+      <div class="settings-grid" id="settingsGrid"></div>
+      <button class="btn-save" onclick="saveSettings()">&#10003; Save Targets</button>
+      <div class="target-grid" id="targetGrid" style="margin-top:20px"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Log Session Modal -->
+<div class="modal-overlay" id="logModal">
+  <div class="modal">
+    <h3>&#128218; Log PD Session</h3>
+    <div class="form-grid">
+      <div class="form-group">
+        <label for="fDate">Date</label>
+        <input type="date" id="fDate"/>
+      </div>
+      <div class="form-group">
+        <label for="fCoord">Coordinator</label>
+        <select id="fCoord">
+          <option value="jmiller">J. Miller</option>
+          <option value="kpatterson">K. Patterson</option>
+          <option value="pokolo">P. Okolo</option>
+          <option value="vpalencia">V. Palencia</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="fCat">Category</label>
+        <select id="fCat"></select>
+      </div>
+      <div class="form-group">
+        <label for="fHours">Hours</label>
+        <input type="number" id="fHours" min="0.5" max="40" step="0.5" value="1"/>
+      </div>
+      <div class="form-group full">
+        <label for="fTitle">Title / Topic</label>
+        <input type="text" id="fTitle" placeholder="PD session title..."/>
+      </div>
+      <div class="form-group full">
+        <label for="fFacilitator">Facilitator (optional)</label>
+        <input type="text" id="fFacilitator" placeholder="Presenter or organization..."/>
+      </div>
+      <div class="form-group full">
+        <label for="fNotes">Notes (optional)</label>
+        <textarea id="fNotes" placeholder="Key takeaways, action items..."></textarea>
+      </div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeLogModal()">Cancel</button>
+      <button class="btn-primary" onclick="saveSession()">&#10003; Save Session</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// =============================================
+// CONSTANTS
+// =============================================
+var PD_CATEGORIES = [
+  'ELPS / Language Acquisition',
+  'Sheltered Instruction / ESL Strategies',
+  'Coaching & Instructional Leadership',
+  'Data Literacy / Assessment',
+  'Newcomer / SIFE Support',
+  'Bilingual Program Design',
+  'Family & Community Engagement',
+  'Technology / EdTech for EBs'
+];
+
+var CAT_COLORS = [
+  '#4a90d9','#27ae60','#8e44ad','#e67e22',
+  '#e74c3c','#1abc9c','#f39c12','#2980b9'
+];
+
+var CAT_BG = [
+  '#e3f2fd','#e8f5e9','#f3e8ff','#fff3e0',
+  '#fdecea','#e0f7f4','#fef9e7','#e8f4fd'
+];
+
+var CAT_FG = [
+  '#1565c0','#2e7d32','#6a0dad','#bf5000',
+  '#b71c1c','#00695c','#e65100','#0d47a1'
+];
+
+var COORDINATORS = [
+  {id:'jmiller',   name:'J. Miller'},
+  {id:'kpatterson',name:'K. Patterson'},
+  {id:'pokolo',    name:'P. Okolo'},
+  {id:'vpalencia', name:'V. Palencia'}
+];
+
+var COORD_LINE_COLORS = ['#4a90d9','#27ae60','#e67e22','#8e44ad'];
+
+var SCHOOL_YEARS = {
+  '2024-25': {start:'2024-08-01', end:'2025-07-31'},
+  '2025-26': {start:'2025-08-01', end:'2026-07-31'},
+  '2026-27': {start:'2026-08-01', end:'2027-07-31'}
+};
+
+// =============================================
+// GLOBALS
+// =============================================
+var pdData = {version:1, sessions:[], settings:{hourTargets:{}}};
+var catChart = null;
+var timeChart = null;
+
+// =============================================
+// UTILITIES
+// =============================================
+function escHtml(str) {
+  var d = document.createElement('div');
+  d.appendChild(document.createTextNode(str || ''));
+  return d.innerHTML;
+}
+
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 3000);
+}
+
+function toggleDarkMode() {
+  var body = document.body;
+  var btn = document.getElementById('darkModeToggle');
+  if (body.classList.contains('dark-mode')) {
+    body.classList.remove('dark-mode');
+    btn.innerHTML = '&#9789; Dark';
+    localStorage.setItem('esl_app_theme','light');
+  } else {
+    body.classList.add('dark-mode');
+    btn.innerHTML = '&#9728; Light';
+    localStorage.setItem('esl_app_theme','dark');
+  }
+  renderAll();
+}
+
+function toggleSection(bodyId, chevId) {
+  var body = document.getElementById(bodyId);
+  var chev = document.getElementById(chevId);
+  if (body.classList.contains('collapsed')) {
+    body.classList.remove('collapsed');
+    if (chev) chev.classList.add('open');
+    renderSettings();
+  } else {
+    body.classList.add('collapsed');
+    if (chev) chev.classList.remove('open');
+  }
+}
+
+function getCurrentSchoolYear() {
+  var now = new Date();
+  var month = now.getMonth() + 1; // 1-12
+  var year = now.getFullYear();
+  // School year starts August. If month >= 8, current SY is year-(year+1)
+  if (month >= 8) {
+    return year + '-' + String(year + 1).slice(2);
+  } else {
+    return (year - 1) + '-' + String(year).slice(2);
+  }
+}
+
+function genId() {
+  return 'pd-' + Date.now() + '-' + Math.random().toString(36).slice(2,7);
+}
+
+function todayStr() {
+  var d = new Date();
+  var y = d.getFullYear();
+  var m = String(d.getMonth() + 1).padStart(2, '0');
+  var day = String(d.getDate()).padStart(2, '0');
+  return y + '-' + m + '-' + day;
+}
+
+function getCoordName(id) {
+  for (var i = 0; i < COORDINATORS.length; i++) {
+    if (COORDINATORS[i].id === id) return COORDINATORS[i].name;
+  }
+  return id;
+}
+
+function getCatIndex(cat) {
+  for (var i = 0; i < PD_CATEGORIES.length; i++) {
+    if (PD_CATEGORIES[i] === cat) return i;
+  }
+  return 0;
+}
+
+// =============================================
+// DATA PERSISTENCE
+// =============================================
+function loadData() {
+  try {
+    var raw = localStorage.getItem('pd_tracker_data');
+    if (raw) {
+      var parsed = JSON.parse(raw);
+      if (parsed && parsed.sessions) {
+        pdData = parsed;
+        if (!pdData.settings) pdData.settings = {hourTargets:{}};
+        if (!pdData.settings.hourTargets) pdData.settings.hourTargets = {};
+      }
+    }
+  } catch(e) { /* keep defaults */ }
+}
+
+function saveData() {
+  localStorage.setItem('pd_tracker_data', JSON.stringify(pdData));
+}
+
+// =============================================
+// FILTERS
+// =============================================
+function applyFilters() {
+  var coordVal = document.getElementById('filterCoord').value;
+  var catVal   = document.getElementById('filterCat').value;
+  var syVal    = document.getElementById('filterSY').value;
+  var fromVal  = document.getElementById('filterFrom').value;
+  var toVal    = document.getElementById('filterTo').value;
+
+  // Compute school-year date bounds if no explicit from/to override
+  var syStart = '';
+  var syEnd = '';
+  if (syVal && SCHOOL_YEARS[syVal]) {
+    syStart = SCHOOL_YEARS[syVal].start;
+    syEnd   = SCHOOL_YEARS[syVal].end;
+  }
+
+  var effectiveFrom = fromVal || syStart;
+  var effectiveTo   = toVal   || syEnd;
+
+  var filtered = [];
+  for (var i = 0; i < pdData.sessions.length; i++) {
+    var s = pdData.sessions[i];
+    if (coordVal && s.coordinatorId !== coordVal) continue;
+    if (catVal && s.category !== catVal) continue;
+    if (effectiveFrom && s.date < effectiveFrom) continue;
+    if (effectiveTo && s.date > effectiveTo) continue;
+    filtered.push(s);
+  }
+
+  // Sort date descending
+  filtered.sort(function(a, b) {
+    return b.date > a.date ? 1 : (b.date < a.date ? -1 : 0);
+  });
+  return filtered;
+}
+
+// =============================================
+// RENDER ALL
+// =============================================
+function renderAll() {
+  var filtered = applyFilters();
+  renderStats(filtered);
+  renderCatChart(filtered);
+  renderTimeChart();
+  renderTable(filtered);
+}
+
+// =============================================
+// STATS
+// =============================================
+function renderStats(filtered) {
+  var totalSessions = filtered.length;
+  var totalHours = 0;
+  var catHours = {};
+  var i;
+
+  for (i = 0; i < filtered.length; i++) {
+    totalHours += (filtered[i].hours || 0);
+    var cat = filtered[i].category || 'Other';
+    catHours[cat] = (catHours[cat] || 0) + (filtered[i].hours || 0);
+  }
+
+  var topCat = '';
+  var topHrs = 0;
+  for (var key in catHours) {
+    if (catHours[key] > topHrs) {
+      topHrs = catHours[key];
+      topCat = key;
+    }
+  }
+
+  var avgHours = totalSessions > 0 ? (totalHours / totalSessions).toFixed(1) : '0';
+
+  document.getElementById('statSessions').textContent = totalSessions;
+  document.getElementById('statHours').textContent = totalHours.toFixed(1);
+  document.getElementById('statTopCat').textContent = topCat || '\u2014';
+  document.getElementById('statAvgHours').textContent = avgHours;
+}
+
+// =============================================
+// HOURS BY CATEGORY CHART
+// =============================================
+function renderCatChart(filtered) {
+  var isDark = document.body.classList.contains('dark-mode');
+  var catHours = {};
+  var i;
+
+  for (i = 0; i < PD_CATEGORIES.length; i++) {
+    catHours[PD_CATEGORIES[i]] = 0;
+  }
+  for (i = 0; i < filtered.length; i++) {
+    var cat = filtered[i].category;
+    if (cat && catHours[cat] !== undefined) {
+      catHours[cat] += (filtered[i].hours || 0);
+    }
+  }
+
+  var labels = [];
+  var data = [];
+  var bgColors = [];
+  var borderColors = [];
+
+  for (i = 0; i < PD_CATEGORIES.length; i++) {
+    var c = PD_CATEGORIES[i];
+    labels.push(c);
+    data.push(catHours[c] || 0);
+    bgColors.push(CAT_COLORS[i] + 'bb');
+    borderColors.push(CAT_COLORS[i]);
+  }
+
+  var ctx = document.getElementById('catChart').getContext('2d');
+  if (catChart) { catChart.destroy(); catChart = null; }
+
+  var gridColor = isDark ? 'rgba(255,255,255,.1)' : 'rgba(0,0,0,.07)';
+  var tickColor = isDark ? '#aaa' : '#555';
+
+  catChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Hours',
+        data: data,
+        backgroundColor: bgColors,
+        borderColor: borderColors,
+        borderWidth: 1.5,
+        borderRadius: 4
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        x: {
+          beginAtZero: true,
+          ticks: { color: tickColor },
+          grid: { color: gridColor }
+        },
+        y: {
+          ticks: { color: tickColor, font: { size: 11 } },
+          grid: { color: gridColor }
+        }
+      }
+    }
+  });
+}
+
+// =============================================
+// HOURS OVER TIME CHART
+// =============================================
+function renderTimeChart() {
+  var coordVal = document.getElementById('filterCoord').value;
+  var timeCard = document.getElementById('timeChartCard');
+
+  // Only show when "All" coordinator selected
+  if (coordVal) {
+    timeCard.style.display = 'none';
+    return;
+  }
+  timeCard.style.display = '';
+
+  var isDark = document.body.classList.contains('dark-mode');
+  var syVal = document.getElementById('filterSY').value || getCurrentSchoolYear();
+  var syRange = SCHOOL_YEARS[syVal] || SCHOOL_YEARS[getCurrentSchoolYear()];
+  var startDate = syRange ? syRange.start : '2025-08-01';
+  var endDate   = syRange ? syRange.end   : '2026-07-31';
+
+  // Build month labels from startDate to endDate
+  var months = [];
+  var cur = new Date(startDate + 'T00:00:00');
+  var end = new Date(endDate + 'T00:00:00');
+  while (cur <= end) {
+    var label = cur.toLocaleString('default', {month:'short'}) + ' ' + String(cur.getFullYear()).slice(2);
+    months.push({label:label, key: String(cur.getFullYear()) + '-' + String(cur.getMonth() + 1).padStart(2,'0')});
+    cur.setMonth(cur.getMonth() + 1);
+  }
+
+  var datasets = [];
+  var i, j;
+
+  for (i = 0; i < COORDINATORS.length; i++) {
+    var coord = COORDINATORS[i];
+    var coordSessions = [];
+    for (j = 0; j < pdData.sessions.length; j++) {
+      var s = pdData.sessions[j];
+      if (s.coordinatorId === coord.id && s.date >= startDate && s.date <= endDate) {
+        coordSessions.push(s);
+      }
+    }
+
+    // Build cumulative monthly hours
+    var monthlyHours = {};
+    for (j = 0; j < months.length; j++) {
+      monthlyHours[months[j].key] = 0;
+    }
+    for (j = 0; j < coordSessions.length; j++) {
+      var d = coordSessions[j].date;
+      var mkey = d.slice(0,7); // YYYY-MM
+      if (monthlyHours[mkey] !== undefined) {
+        monthlyHours[mkey] += (coordSessions[j].hours || 0);
+      }
+    }
+
+    // Cumulative
+    var cumData = [];
+    var running = 0;
+    for (j = 0; j < months.length; j++) {
+      running += monthlyHours[months[j].key];
+      cumData.push(running);
+    }
+
+    datasets.push({
+      label: coord.name,
+      data: cumData,
+      borderColor: COORD_LINE_COLORS[i],
+      backgroundColor: COORD_LINE_COLORS[i] + '22',
+      borderWidth: 2,
+      pointRadius: 3,
+      tension: 0.3,
+      fill: false
+    });
+  }
+
+  var ctx = document.getElementById('timeChart').getContext('2d');
+  if (timeChart) { timeChart.destroy(); timeChart = null; }
+
+  var gridColor = isDark ? 'rgba(255,255,255,.1)' : 'rgba(0,0,0,.07)';
+  var tickColor = isDark ? '#aaa' : '#555';
+
+  timeChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: months.map(function(m){ return m.label; }),
+      datasets: datasets
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: tickColor, font: { size: 11 } } }
+      },
+      scales: {
+        x: { ticks: { color: tickColor, font: { size: 10 } }, grid: { color: gridColor } },
+        y: { beginAtZero: true, ticks: { color: tickColor }, grid: { color: gridColor } }
+      }
+    }
+  });
+}
+
+// =============================================
+// SESSIONS TABLE
+// =============================================
+function renderTable(filtered) {
+  var tbody = document.getElementById('sessionsBody');
+  var emptyState = document.getElementById('emptyState');
+  var table = document.getElementById('sessionsTable');
+
+  if (filtered.length === 0) {
+    table.style.display = 'none';
+    emptyState.style.display = '';
+    return;
+  }
+  table.style.display = '';
+  emptyState.style.display = 'none';
+
+  var html = '';
+  for (var i = 0; i < filtered.length; i++) {
+    var s = filtered[i];
+    var catIdx = getCatIndex(s.category);
+    var notes = (s.notes || '');
+    if (notes.length > 60) notes = notes.slice(0, 60) + '...';
+
+    var catPill = '<span class="cat-pill" style="background:' + CAT_BG[catIdx] + ';color:' + CAT_FG[catIdx] + '">' +
+      escHtml(s.category) + '</span>';
+
+    html += '<tr>' +
+      '<td>' + escHtml(s.date) + '</td>' +
+      '<td>' + escHtml(getCoordName(s.coordinatorId)) + '</td>' +
+      '<td>' + catPill + '</td>' +
+      '<td>' + escHtml(s.title) + '</td>' +
+      '<td>' + escHtml(String(s.hours)) + '</td>' +
+      '<td>' + escHtml(s.facilitator || '') + '</td>' +
+      '<td class="notes-cell" title="' + escHtml(s.notes || '') + '">' + escHtml(notes) + '</td>' +
+      '<td><button class="del-btn" onclick="deleteSession(\'' + escHtml(s.id) + '\')">&#10005;</button></td>' +
+    '</tr>';
+  }
+  tbody.innerHTML = html;
+}
+
+// =============================================
+// LOG SESSION MODAL
+// =============================================
+function openLogModal() {
+  document.getElementById('fDate').value = todayStr();
+  document.getElementById('fHours').value = '1';
+  document.getElementById('fTitle').value = '';
+  document.getElementById('fFacilitator').value = '';
+  document.getElementById('fNotes').value = '';
+  document.getElementById('logModal').classList.add('active');
+}
+
+function closeLogModal() {
+  document.getElementById('logModal').classList.remove('active');
+}
+
+function saveSession() {
+  var date = document.getElementById('fDate').value;
+  var coordId = document.getElementById('fCoord').value;
+  var cat = document.getElementById('fCat').value;
+  var title = document.getElementById('fTitle').value.trim();
+  var hours = parseFloat(document.getElementById('fHours').value) || 0;
+  var facilitator = document.getElementById('fFacilitator').value.trim();
+  var notes = document.getElementById('fNotes').value.trim();
+
+  if (!date) { showToast('Please enter a date.'); return; }
+  if (!title) { showToast('Please enter a title.'); return; }
+  if (hours <= 0) { showToast('Please enter valid hours.'); return; }
+
+  var session = {
+    id: genId(),
+    date: date,
+    coordinatorId: coordId,
+    coordinatorName: getCoordName(coordId),
+    category: cat,
+    title: title,
+    hours: hours,
+    facilitator: facilitator,
+    notes: notes,
+    createdAt: new Date().toISOString()
+  };
+
+  pdData.sessions.push(session);
+  saveData();
+  closeLogModal();
+  renderAll();
+  renderSettings();
+  showToast('Session logged: ' + title);
+}
+
+// =============================================
+// DELETE SESSION
+// =============================================
+function deleteSession(id) {
+  if (!confirm('Delete this PD session?')) return;
+  var newSessions = [];
+  for (var i = 0; i < pdData.sessions.length; i++) {
+    if (pdData.sessions[i].id !== id) newSessions.push(pdData.sessions[i]);
+  }
+  pdData.sessions = newSessions;
+  saveData();
+  renderAll();
+  renderSettings();
+  showToast('Session deleted.');
+}
+
+// =============================================
+// EXPORT CSV
+// =============================================
+function exportCsv() {
+  var filtered = applyFilters();
+  if (filtered.length === 0) { showToast('No sessions to export.'); return; }
+
+  var header = ['Date','Coordinator','Category','Title','Hours','Facilitator','Notes'];
+  var rows = [header.join(',')];
+
+  for (var i = 0; i < filtered.length; i++) {
+    var s = filtered[i];
+    var row = [
+      s.date,
+      getCoordName(s.coordinatorId),
+      s.category,
+      '"' + (s.title || '').replace(/"/g, '""') + '"',
+      s.hours,
+      '"' + (s.facilitator || '').replace(/"/g, '""') + '"',
+      '"' + (s.notes || '').replace(/"/g, '""') + '"'
+    ];
+    rows.push(row.join(','));
+  }
+
+  var csv = rows.join('\r\n');
+  var blob = new Blob([csv], {type:'text/csv'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'PD_Sessions_' + todayStr() + '.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('CSV exported.');
+}
+
+// =============================================
+// SETTINGS — HOUR TARGETS & PROGRESS
+// =============================================
+function populateSettingsGrid() {
+  var grid = document.getElementById('settingsGrid');
+  var html = '';
+  for (var i = 0; i < COORDINATORS.length; i++) {
+    var coord = COORDINATORS[i];
+    var target = (pdData.settings.hourTargets[coord.id] !== undefined)
+      ? pdData.settings.hourTargets[coord.id] : 20;
+    html += '<div class="settings-row">' +
+      '<label for="target_' + escHtml(coord.id) + '">' + escHtml(coord.name) + ' &mdash; Annual Target (hrs)</label>' +
+      '<input type="number" id="target_' + escHtml(coord.id) + '" value="' + escHtml(String(target)) + '" min="1" max="200" step="1"/>' +
+    '</div>';
+  }
+  grid.innerHTML = html;
+}
+
+function saveSettings() {
+  for (var i = 0; i < COORDINATORS.length; i++) {
+    var coord = COORDINATORS[i];
+    var input = document.getElementById('target_' + coord.id);
+    if (input) {
+      var val = parseFloat(input.value) || 20;
+      pdData.settings.hourTargets[coord.id] = val;
+    }
+  }
+  saveData();
+  renderTargetProgress();
+  showToast('Hour targets saved.');
+}
+
+function renderTargetProgress() {
+  var targetGrid = document.getElementById('targetGrid');
+  var sy = getCurrentSchoolYear();
+  var syRange = SCHOOL_YEARS[sy] || {start:'2025-08-01', end:'2026-07-31'};
+
+  var html = '<div style="font-size:11px;font-weight:700;color:#888;margin-bottom:8px;text-transform:uppercase;letter-spacing:.4px">Progress vs Target &mdash; ' + escHtml(sy) + '</div>';
+
+  for (var i = 0; i < COORDINATORS.length; i++) {
+    var coord = COORDINATORS[i];
+    var target = (pdData.settings.hourTargets[coord.id] !== undefined)
+      ? pdData.settings.hourTargets[coord.id] : 20;
+    var hours = 0;
+    for (var j = 0; j < pdData.sessions.length; j++) {
+      var s = pdData.sessions[j];
+      if (s.coordinatorId === coord.id && s.date >= syRange.start && s.date <= syRange.end) {
+        hours += (s.hours || 0);
+      }
+    }
+    var pct = target > 0 ? Math.min(100, Math.round((hours / target) * 100)) : 0;
+    var color = COORD_LINE_COLORS[i];
+
+    html += '<div class="target-row">' +
+      '<div class="target-name">' + escHtml(coord.name) + '</div>' +
+      '<div class="target-bar-wrap">' +
+        '<div class="target-bar-track">' +
+          '<div class="target-bar-fill" style="width:' + pct + '%;background:' + color + '"></div>' +
+        '</div>' +
+        '<div style="font-size:10px;color:#888">' + hours.toFixed(1) + ' / ' + target + ' hrs</div>' +
+      '</div>' +
+      '<div class="target-pct">' + pct + '%</div>' +
+    '</div>';
+  }
+  targetGrid.innerHTML = html;
+}
+
+function renderSettings() {
+  populateSettingsGrid();
+  renderTargetProgress();
+}
+
+// =============================================
+// POPULATE CATEGORY DROPDOWNS
+// =============================================
+function populateCategoryDropdowns() {
+  var filterCat = document.getElementById('filterCat');
+  var fCat = document.getElementById('fCat');
+  var i;
+
+  filterCat.innerHTML = '<option value="">All Categories</option>';
+  fCat.innerHTML = '';
+
+  for (i = 0; i < PD_CATEGORIES.length; i++) {
+    var opt1 = document.createElement('option');
+    opt1.value = PD_CATEGORIES[i];
+    opt1.textContent = PD_CATEGORIES[i];
+    filterCat.appendChild(opt1);
+
+    var opt2 = document.createElement('option');
+    opt2.value = PD_CATEGORIES[i];
+    opt2.textContent = PD_CATEGORIES[i];
+    fCat.appendChild(opt2);
+  }
+}
+
+// =============================================
+// CLOSE MODAL ON OVERLAY CLICK
+// =============================================
+document.getElementById('logModal').addEventListener('click', function(e) {
+  if (e.target === this) closeLogModal();
+});
+
+// =============================================
+// INIT
+// =============================================
+(function init() {
+  if (localStorage.getItem('esl_app_theme') === 'dark') {
+    document.body.classList.add('dark-mode');
+    document.getElementById('darkModeToggle').innerHTML = '&#9728; Light';
+  }
+
+  // Set school year filter default
+  var sy = getCurrentSchoolYear();
+  var sySelect = document.getElementById('filterSY');
+  for (var i = 0; i < sySelect.options.length; i++) {
+    if (sySelect.options[i].value === sy) {
+      sySelect.selectedIndex = i;
+      break;
+    }
+  }
+
+  populateCategoryDropdowns();
+  loadData();
+  renderAll();
+}());
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("./service-worker.js").catch(function(){});
+}
+</script>
+</body>
+</html>

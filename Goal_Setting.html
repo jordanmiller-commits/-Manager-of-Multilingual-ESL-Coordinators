@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Goal-Setting &amp; Growth Planning</title>
+<link rel="manifest" href="./manifest.json"/>
+<meta name="theme-color" content="#2c3e6e"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh;padding:20px;color:#333}
+.wrap{max-width:1100px;margin:0 auto}
+
+/* HEADER */
+.header{background:linear-gradient(135deg,#2c3e6e,#4a90d9);color:#fff;padding:24px 28px 16px;border-radius:14px 14px 0 0}
+.header h1{font-size:22px;font-weight:800;margin-bottom:2px}
+.header p{font-size:12px;opacity:.85;margin-bottom:12px}
+.toolbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.tool-btn{background:rgba(255,255,255,.13);color:#fff;border:2px solid rgba(255,255,255,.35);padding:6px 13px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;text-decoration:none;display:inline-flex;align-items:center;gap:5px}
+.tool-btn:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.55)}
+.tool-btn.accent{border-color:rgba(46,204,113,.5);background:rgba(46,204,113,.15)}
+.tool-btn.accent:hover{background:rgba(46,204,113,.3)}
+
+/* CARDS */
+.card{background:#fff;border-radius:10px;box-shadow:0 1px 5px rgba(0,0,0,.07);padding:18px 20px;margin-bottom:14px}
+.first-card{border-radius:0 0 10px 10px;margin-top:0;margin-bottom:14px}
+
+/* FILTER BAR */
+.filter-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.filter-bar label{font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.4px}
+.filter-bar select{padding:7px 10px;border:1.5px solid #ddd;border-radius:7px;font-size:12px;font-family:inherit;background:#fff;color:#333;cursor:pointer}
+.filter-bar select:focus{outline:none;border-color:#4a90d9;box-shadow:0 0 0 2px rgba(74,144,217,.15)}
+
+/* STATS ROW */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+.stat-card{background:#fff;border-radius:10px;box-shadow:0 1px 5px rgba(0,0,0,.07);padding:16px 18px;text-align:center}
+.stat-val{font-size:28px;font-weight:900;color:#2c3e6e;line-height:1.1}
+.stat-val.green{color:#27ae60}
+.stat-val.blue{color:#4a90d9}
+.stat-val.orange{color:#f39c12}
+.stat-label{font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.4px;margin-top:4px}
+
+/* GOALS BOARD */
+.goals-board{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+.goal-card{background:#fff;border-radius:10px;box-shadow:0 1px 5px rgba(0,0,0,.07);overflow:hidden;display:flex;flex-direction:column;transition:box-shadow .15s;border-top:4px solid #4a90d9}
+.goal-card:hover{box-shadow:0 3px 12px rgba(0,0,0,.12)}
+.goal-card-top{padding:14px 16px 10px}
+.goal-card-meta{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+.coord-badge{display:inline-block;padding:2px 9px;border-radius:10px;font-size:10px;font-weight:700;color:#fff}
+.semester-pill{display:inline-block;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:600;background:#f0f2f7;color:#555}
+.goal-title{font-size:14px;font-weight:800;color:#2c3e6e;margin-bottom:4px;line-height:1.4}
+.goal-metric{font-size:11px;color:#888;margin-bottom:6px;line-height:1.4}
+.goal-manager-target{font-size:11px;color:#555;background:#f8f9fb;padding:5px 8px;border-radius:5px;border-left:3px solid #4a90d9;margin-bottom:8px;line-height:1.4}
+
+/* ACTION STEPS */
+.action-steps-header{font-size:10px;font-weight:700;color:#888;text-transform:uppercase;margin-bottom:5px}
+.action-step-row{display:flex;align-items:flex-start;gap:6px;padding:3px 0;font-size:12px;color:#555}
+.action-step-row input[type="checkbox"]{margin-top:2px;cursor:pointer;accent-color:#4a90d9;flex-shrink:0}
+.action-step-text{flex:1;line-height:1.4}
+.action-step-text.done{text-decoration:line-through;color:#aaa}
+.action-progress-bar{height:4px;background:#eee;border-radius:2px;overflow:hidden;margin:6px 0 8px}
+.action-progress-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,#4a90d9,#27ae60);transition:width .3s}
+.action-progress-label{font-size:10px;color:#888;margin-bottom:8px}
+
+/* STATUS + CHECK-IN BADGES */
+.badge-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.status-badge{display:inline-block;padding:2px 9px;border-radius:10px;font-size:10px;font-weight:700}
+.badge-active{background:#e3f2fd;color:#1565c0;border:1px solid #bbdefb}
+.badge-achieved{background:#e8f5e9;color:#2e7d32;border:1px solid #c8e6c9}
+.badge-discontinued{background:#f5f5f5;color:#888;border:1px solid #ddd}
+.checkin-pill{display:inline-block;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:700;border:1px solid #ddd}
+.checkin-pill.done-mid{background:#e3f2fd;color:#1565c0;border-color:#bbdefb}
+.checkin-pill.done-end{background:#e8f5e9;color:#2e7d32;border-color:#c8e6c9}
+.checkin-pill.pending{background:#f5f5f5;color:#aaa;border-color:#eee}
+
+/* WALKTHROUGH CONNECT */
+.walkthrough-connect{background:#f8f9fb;border-top:1px solid #eee;padding:10px 16px;display:flex;gap:14px;flex-wrap:wrap}
+.wc-item{display:flex;align-items:center;gap:6px;font-size:11px;color:#555}
+.wc-label{font-weight:600;color:#888}
+.wc-badge{display:inline-block;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:700;background:#e3f2fd;color:#1565c0;border:1px solid #bbdefb}
+.wc-badge.green{background:#e8f5e9;color:#2e7d32;border-color:#c8e6c9}
+.wc-badge.gray{background:#f5f5f5;color:#888;border-color:#ddd}
+
+/* CARD ACTIONS */
+.goal-card-actions{display:flex;gap:6px;padding:10px 16px;border-top:1px solid #f0f2f7;flex-wrap:wrap}
+.btn{padding:5px 11px;border-radius:6px;border:1.5px solid #ddd;background:#fff;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;color:#555}
+.btn:hover{background:#eaf3fb;border-color:#4a90d9;color:#2c3e6e}
+.btn.primary{background:#4a90d9;color:#fff;border-color:#4a90d9}
+.btn.primary:hover{background:#3a7bc8}
+.btn.success{background:#27ae60;color:#fff;border-color:#27ae60}
+.btn.success:hover{background:#219a52}
+.btn.danger{color:#e74c3c;border-color:#f5c6cb}
+.btn.danger:hover{background:#fdecea;border-color:#e74c3c}
+
+/* EMPTY STATE */
+.empty-state{text-align:center;padding:48px 20px;color:#aaa;font-size:13px;font-style:italic}
+
+/* MODAL */
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);display:none;justify-content:center;align-items:flex-start;z-index:1000;padding:24px 14px;overflow-y:auto}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:12px;padding:24px;max-width:580px;width:100%;box-shadow:0 8px 30px rgba(0,0,0,.2);margin:auto}
+.modal h3{font-size:17px;font-weight:800;color:#2c3e6e;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.modal-close{margin-left:auto;background:none;border:none;font-size:18px;cursor:pointer;color:#888;padding:0 4px;line-height:1}
+.modal-close:hover{color:#333}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-field{display:flex;flex-direction:column;gap:4px}
+.form-field.full{grid-column:1/-1}
+.form-field label{font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.3px}
+.form-field input,.form-field textarea,.form-field select{padding:8px 10px;border:1.5px solid #ddd;border-radius:7px;font-size:13px;font-family:inherit;background:#fff;color:#333;transition:border-color .2s}
+.form-field input:focus,.form-field textarea:focus,.form-field select:focus{outline:none;border-color:#4a90d9;box-shadow:0 0 0 2px rgba(74,144,217,.15)}
+.form-field textarea{resize:vertical;min-height:68px}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;padding-top:14px;border-top:1px solid #eee}
+
+/* ACTION STEPS IN MODAL */
+.steps-list{margin-bottom:8px}
+.step-edit-row{display:flex;gap:6px;align-items:center;margin-bottom:6px}
+.step-edit-row input{flex:1;padding:7px 9px;border:1.5px solid #ddd;border-radius:6px;font-size:12px;font-family:inherit}
+.step-edit-row input:focus{outline:none;border-color:#4a90d9}
+.step-edit-row .btn-icon{padding:4px 8px;border:1px solid #f5c6cb;border-radius:5px;background:#fff;color:#e74c3c;cursor:pointer;font-size:12px;flex-shrink:0;transition:all .15s}
+.step-edit-row .btn-icon:hover{background:#fdecea}
+
+/* CHECK-IN MODAL */
+.rating-row{display:flex;gap:10px;flex-wrap:wrap}
+.rating-opt{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer}
+.rating-opt input[type="radio"]{cursor:pointer;accent-color:#4a90d9}
+.rating-opt .rating-dot{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;border:2.5px solid #ddd;color:#aaa;transition:all .2s}
+.rating-opt.r1 .rating-dot{border-color:#e74c3c;color:#e74c3c}
+.rating-opt.r2 .rating-dot{border-color:#f39c12;color:#f39c12}
+.rating-opt.r3 .rating-dot{border-color:#27ae60;color:#27ae60}
+.rating-opt.r4 .rating-dot{border-color:#4a90d9;color:#4a90d9}
+.rating-opt input:checked + .rating-dot{background:#2c3e6e;color:#fff;border-color:#2c3e6e}
+.rating-label{font-size:9px;color:#888;font-weight:600;text-align:center;max-width:52px}
+.type-row{display:flex;gap:14px;margin-bottom:4px}
+.type-opt{display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:#555}
+.type-opt input{cursor:pointer;accent-color:#4a90d9}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:#2c3e6e;color:#fff;padding:12px 20px;border-radius:8px;font-size:13px;font-weight:600;box-shadow:0 4px 15px rgba(0,0,0,.2);z-index:3000;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+
+/* COORDINATOR COLORS */
+.coord-jmiller{background:#7e57c2}
+.coord-kpatterson{background:#26a69a}
+.coord-pokolo{background:#ef5350}
+.coord-vpalencia{background:#42a5f5}
+
+/* DARK MODE */
+body.dark-mode{background:#1a1a2e;color:#e0e0e0}
+body.dark-mode .header{background:linear-gradient(135deg,#1a1a2e,#2d3a6e)}
+body.dark-mode .card,.dark-mode .stat-card{background:#16213e;box-shadow:0 1px 5px rgba(0,0,0,.3)}
+body.dark-mode .first-card{background:#16213e}
+body.dark-mode .stat-card{background:#16213e;box-shadow:0 1px 5px rgba(0,0,0,.3)}
+body.dark-mode .stat-val{color:#7eb8f7}
+body.dark-mode .filter-bar select{background:#16213e;color:#e0e0e0;border-color:#2d3a6e}
+body.dark-mode .goals-board .goal-card{background:#16213e;box-shadow:0 1px 5px rgba(0,0,0,.3)}
+body.dark-mode .goal-title{color:#7eb8f7}
+body.dark-mode .goal-metric,.dark-mode .goal-card-meta .semester-pill{color:#aaa}
+body.dark-mode .semester-pill{background:#1a2744;color:#aaa}
+body.dark-mode .goal-manager-target{background:#1a2744;color:#ccc;border-left-color:#7eb8f7}
+body.dark-mode .action-step-row{color:#ccc}
+body.dark-mode .action-progress-bar{background:#2d3a6e}
+body.dark-mode .walkthrough-connect{background:#1a2744;border-top-color:#2d3a6e}
+body.dark-mode .wc-label{color:#888}
+body.dark-mode .wc-item{color:#ccc}
+body.dark-mode .goal-card-actions{border-top-color:#2d3a6e}
+body.dark-mode .btn{background:#16213e;color:#ccc;border-color:#2d3a6e}
+body.dark-mode .btn:hover{background:#1a2744;border-color:#4a90d9;color:#7eb8f7}
+body.dark-mode .modal{background:#16213e;color:#e0e0e0}
+body.dark-mode .modal h3{color:#7eb8f7}
+body.dark-mode .modal-actions{border-top-color:#2d3a6e}
+body.dark-mode .form-field input,.dark-mode .form-field textarea,.dark-mode .form-field select{background:#1a2744;color:#e0e0e0;border-color:#2d3a6e}
+body.dark-mode .form-field label{color:#aaa}
+body.dark-mode .step-edit-row input{background:#1a2744;color:#e0e0e0;border-color:#2d3a6e}
+body.dark-mode .toast{background:#7eb8f7;color:#1a1a2e}
+body.dark-mode .badge-discontinued{background:#2d3a6e;color:#aaa;border-color:#3d4a6e}
+body.dark-mode .checkin-pill.pending{background:#1a2744;color:#666;border-color:#2d3a6e}
+body.dark-mode .wc-badge.gray{background:#1a2744;color:#666;border-color:#2d3a6e}
+body.dark-mode .steps-list .action-step-text{color:#ccc}
+body.dark-mode .action-step-text.done{color:#555}
+body.dark-mode .empty-state{color:#666}
+
+/* MOBILE */
+@media(max-width:768px){
+  .stats-row{grid-template-columns:1fr 1fr}
+  .goals-board{grid-template-columns:1fr}
+  .form-grid{grid-template-columns:1fr}
+  .form-field.full{grid-column:unset}
+  .filter-bar{flex-direction:column;align-items:flex-start}
+}
+@media(max-width:600px){
+  body{padding:8px}
+  .header{padding:18px 16px}
+  .tool-btn,.btn,.filter-bar select{min-height:44px}
+  .stat-card{padding:12px 10px}
+  .stat-val{font-size:22px}
+}
+
+/* PRINT */
+@media print{
+  body{background:#fff!important;padding:0;color:#000}
+  .header .toolbar,.tool-btn,.filter-bar,.goal-card-actions,.walkthrough-connect .btn{display:none!important}
+  .goal-card{box-shadow:none;border:1px solid #ddd;break-inside:avoid}
+  .stat-card{box-shadow:none;border:1px solid #ddd}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HEADER -->
+  <div class="header">
+    <h1>&#127919; Goal-Setting &amp; Growth Planning</h1>
+    <p>Set, track, and reflect on coordinator growth goals across semesters</p>
+    <div class="toolbar">
+      <button class="tool-btn accent" onclick="openGoalModal(null)">&#65291; New Goal</button>
+      <button class="tool-btn" onclick="toggleDarkMode()" id="darkModeToggle">&#9789; Dark</button>
+      <a class="tool-btn" href="index.html" style="margin-left:auto">&#127968; Home</a>
+    </div>
+  </div>
+
+  <!-- FILTER BAR -->
+  <div class="card first-card">
+    <div class="filter-bar">
+      <div>
+        <label for="filterCoord">Coordinator</label><br/>
+        <select id="filterCoord" onchange="renderGoals();renderStats()">
+          <option value="">All Coordinators</option>
+          <option value="jmiller">J. Miller</option>
+          <option value="kpatterson">K. Patterson</option>
+          <option value="pokolo">P. Okolo</option>
+          <option value="vpalencia">V. Palencia</option>
+        </select>
+      </div>
+      <div>
+        <label for="filterSem">Semester</label><br/>
+        <select id="filterSem" onchange="renderGoals();renderStats()">
+          <option value="">All Semesters</option>
+          <option value="Fall 2024-25">Fall 2024-25</option>
+          <option value="Spring 2024-25">Spring 2024-25</option>
+          <option value="Fall 2025-26">Fall 2025-26</option>
+          <option value="Spring 2025-26">Spring 2025-26</option>
+          <option value="Fall 2026-27">Fall 2026-27</option>
+          <option value="Spring 2026-27">Spring 2026-27</option>
+        </select>
+      </div>
+      <div>
+        <label for="filterStatus">Status</label><br/>
+        <select id="filterStatus" onchange="renderGoals();renderStats()">
+          <option value="">All Statuses</option>
+          <option value="active">Active</option>
+          <option value="achieved">Achieved</option>
+          <option value="discontinued">Discontinued</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS ROW -->
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-val" id="statTotal">0</div><div class="stat-label">Total Goals</div></div>
+    <div class="stat-card"><div class="stat-val blue" id="statActive">0</div><div class="stat-label">Active</div></div>
+    <div class="stat-card"><div class="stat-val green" id="statAchieved">0</div><div class="stat-label">Achieved</div></div>
+    <div class="stat-card"><div class="stat-val orange" id="statAvgRating">--</div><div class="stat-label">Avg Rating (1-4)</div></div>
+  </div>
+
+  <!-- GOALS BOARD -->
+  <div class="goals-board" id="goalsBoard"></div>
+
+</div><!-- /wrap -->
+
+<!-- GOAL MODAL -->
+<div class="modal-overlay" id="goalModal">
+  <div class="modal">
+    <h3 id="goalModalTitle">&#127919; New Goal <button class="modal-close" onclick="closeGoalModal()">&#10005;</button></h3>
+    <input type="hidden" id="editGoalId"/>
+    <div class="form-grid">
+      <div class="form-field">
+        <label>Coordinator</label>
+        <select id="goalCoord">
+          <option value="jmiller">J. Miller</option>
+          <option value="kpatterson">K. Patterson</option>
+          <option value="pokolo">P. Okolo</option>
+          <option value="vpalencia">V. Palencia</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Semester</label>
+        <select id="goalSem">
+          <option value="Fall 2024-25">Fall 2024-25</option>
+          <option value="Spring 2024-25">Spring 2024-25</option>
+          <option value="Fall 2025-26">Fall 2025-26</option>
+          <option value="Spring 2025-26">Spring 2025-26</option>
+          <option value="Fall 2026-27">Fall 2026-27</option>
+          <option value="Spring 2026-27">Spring 2026-27</option>
+        </select>
+      </div>
+      <div class="form-field full">
+        <label>Goal Title</label>
+        <input type="text" id="goalTitle" placeholder="e.g., Increase walkthrough fidelity scores"/>
+      </div>
+      <div class="form-field full">
+        <label>Description</label>
+        <textarea id="goalDesc" placeholder="Describe the goal in more detail..."></textarea>
+      </div>
+      <div class="form-field full">
+        <label>Success Metric &mdash; what does achievement look like?</label>
+        <textarea id="goalMetric" placeholder="e.g., Average fidelity score above 80% on all walkthroughs by end of semester"></textarea>
+      </div>
+      <div class="form-field full">
+        <label>Manager Target (specific measurable target)</label>
+        <input type="text" id="goalMgrTarget" placeholder="e.g., 20 walkthroughs per semester"/>
+      </div>
+      <div class="form-field full">
+        <label>Status</label>
+        <select id="goalStatus">
+          <option value="active">Active</option>
+          <option value="achieved">Achieved</option>
+          <option value="discontinued">Discontinued</option>
+        </select>
+      </div>
+      <div class="form-field full">
+        <label>Action Steps</label>
+        <div class="steps-list" id="stepsEditList"></div>
+        <button class="btn" onclick="addStepField()" style="margin-top:2px">+ Add Step</button>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeGoalModal()">Cancel</button>
+      <button class="btn primary" onclick="saveGoal()">Save Goal</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHECK-IN MODAL -->
+<div class="modal-overlay" id="checkinModal">
+  <div class="modal">
+    <h3>&#128203; Add Check-In <button class="modal-close" onclick="closeCheckinModal()">&#10005;</button></h3>
+    <input type="hidden" id="checkinGoalId"/>
+    <div class="form-grid">
+      <div class="form-field full">
+        <label>Check-In Type</label>
+        <div class="type-row">
+          <label class="type-opt"><input type="radio" name="checkinType" value="mid" checked/> Mid-Semester</label>
+          <label class="type-opt"><input type="radio" name="checkinType" value="end"/> End-of-Semester</label>
+        </div>
+      </div>
+      <div class="form-field">
+        <label>Date</label>
+        <input type="date" id="checkinDate"/>
+      </div>
+      <div class="form-field full">
+        <label>Evidence (data or observation supporting progress)</label>
+        <textarea id="checkinEvidence" placeholder="Describe the evidence of progress..."></textarea>
+      </div>
+      <div class="form-field full">
+        <label>Rating</label>
+        <div class="rating-row">
+          <label class="rating-opt r1">
+            <input type="radio" name="checkinRating" value="1"/>
+            <div class="rating-dot">1</div>
+            <span class="rating-label">Not Yet</span>
+          </label>
+          <label class="rating-opt r2">
+            <input type="radio" name="checkinRating" value="2"/>
+            <div class="rating-dot">2</div>
+            <span class="rating-label">Developing</span>
+          </label>
+          <label class="rating-opt r3">
+            <input type="radio" name="checkinRating" value="3"/>
+            <div class="rating-dot">3</div>
+            <span class="rating-label">Proficient</span>
+          </label>
+          <label class="rating-opt r4">
+            <input type="radio" name="checkinRating" value="4"/>
+            <div class="rating-dot">4</div>
+            <span class="rating-label">Exceeds</span>
+          </label>
+        </div>
+      </div>
+      <div class="form-field full">
+        <label>Manager Notes</label>
+        <textarea id="checkinMgrNotes" placeholder="Manager observations and feedback..."></textarea>
+      </div>
+      <div class="form-field full">
+        <label>Coordinator Reflection</label>
+        <textarea id="checkinCoordNotes" placeholder="Coordinator self-reflection..."></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeCheckinModal()">Cancel</button>
+      <button class="btn primary" onclick="saveCheckin()">Save Check-In</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+var STORAGE_KEY = 'goal_setting_data';
+var appData = null;
+var _saveTimer = null;
+
+var COORD_NAMES = {
+  jmiller: 'J. Miller',
+  kpatterson: 'K. Patterson',
+  pokolo: 'P. Okolo',
+  vpalencia: 'V. Palencia'
+};
+
+var COORD_COLORS = {
+  jmiller: '#7e57c2',
+  kpatterson: '#26a69a',
+  pokolo: '#ef5350',
+  vpalencia: '#42a5f5'
+};
+
+/* =====================
+   UTILITIES
+   ===================== */
+function escHtml(str) {
+  if (str === undefined || str === null) return '';
+  return String(str)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 3000);
+}
+
+function genId() {
+  return 'g_' + Date.now() + '_' + Math.floor(Math.random()*9999);
+}
+
+function todayStr() {
+  var d = new Date();
+  var mm = d.getMonth()+1;
+  var dd = d.getDate();
+  var yyyy = d.getFullYear();
+  return yyyy + '-' + (mm<10?'0'+mm:mm) + '-' + (dd<10?'0'+dd:dd);
+}
+
+/* =====================
+   PERSISTENCE
+   ===================== */
+function loadData() {
+  var raw = localStorage.getItem(STORAGE_KEY);
+  if (raw) {
+    try { appData = JSON.parse(raw); } catch(e) { appData = null; }
+  }
+  if (!appData) {
+    appData = {version: 1, goals: [], checkins: []};
+  }
+  if (!appData.goals) appData.goals = [];
+  if (!appData.checkins) appData.checkins = [];
+}
+
+function saveData() {
+  clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(function() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+  }, 300);
+}
+
+/* =====================
+   CROSS-TOOL READS
+   ===================== */
+function getFidelityForCoord(coordName) {
+  var raw = localStorage.getItem('walkthrough_history');
+  if (!raw) return null;
+  var history = null;
+  try { history = JSON.parse(raw); } catch(e) { return null; }
+  if (!Array.isArray(history)) return null;
+  var total = 0;
+  var count = 0;
+  history.forEach(function(session) {
+    if (!session.observations) return;
+    session.observations.forEach(function(obs) {
+      var teacher = (obs.teacher || '').toLowerCase();
+      var coordLower = coordName.toLowerCase();
+      // Match by last name or first initial + last name
+      var parts = coordName.split(' ');
+      var lastName = parts.length > 1 ? parts[parts.length-1].toLowerCase() : coordLower;
+      if (teacher.indexOf(lastName) !== -1) {
+        if (typeof obs.fidelityPct === 'number') {
+          total += obs.fidelityPct;
+          count++;
+        }
+      }
+    });
+    // Also check session-level leader match
+    if ((session.leader || '').toLowerCase().indexOf(coordName.toLowerCase().split(' ').pop()) !== -1) {
+      if (typeof session.avgFidelity === 'number') {
+        total += session.avgFidelity;
+        count++;
+      }
+    }
+  });
+  if (!count) return null;
+  return Math.round(total / count);
+}
+
+function getCycleCountForCoord(coordName) {
+  var raw = localStorage.getItem('coaching_cycles_data');
+  if (!raw) return {active: 0, completed: 0};
+  var data = null;
+  try { data = JSON.parse(raw); } catch(e) { return {active: 0, completed: 0}; }
+  var cycles = (data && data.cycles) ? data.cycles : (Array.isArray(data) ? data : []);
+  var active = 0;
+  var completed = 0;
+  var lastName = coordName.toLowerCase().split(' ').pop();
+  cycles.forEach(function(c) {
+    var teacher = (c.teacher || '').toLowerCase();
+    if (teacher.indexOf(lastName) !== -1 || (c.campus || '').toLowerCase().indexOf(lastName) !== -1) {
+      if (c.status === 'completed' || c.completed) completed++;
+      else active++;
+    }
+  });
+  return {active: active, completed: completed};
+}
+
+/* =====================
+   ACTION PROGRESS
+   ===================== */
+function getActionProgress(goal) {
+  if (!goal.actionSteps || !goal.actionSteps.length) return {done: 0, total: 0};
+  var done = 0;
+  goal.actionSteps.forEach(function(s) { if (s.done) done++; });
+  return {done: done, total: goal.actionSteps.length};
+}
+
+/* =====================
+   STATS
+   ===================== */
+function renderStats() {
+  var filterCoord = document.getElementById('filterCoord').value;
+  var filterSem = document.getElementById('filterSem').value;
+  var filterStatus = document.getElementById('filterStatus').value;
+
+  var goals = getFilteredGoals(filterCoord, filterSem, filterStatus);
+  var active = 0, achieved = 0;
+  goals.forEach(function(g) {
+    if (g.status === 'active') active++;
+    if (g.status === 'achieved') achieved++;
+  });
+
+  var goalIds = {};
+  goals.forEach(function(g) { goalIds[g.id] = 1; });
+  var ratingSum = 0;
+  var ratingCount = 0;
+  appData.checkins.forEach(function(c) {
+    if (goalIds[c.goalId] && c.rating) {
+      ratingSum += parseInt(c.rating, 10);
+      ratingCount++;
+    }
+  });
+
+  document.getElementById('statTotal').textContent = goals.length;
+  document.getElementById('statActive').textContent = active;
+  document.getElementById('statAchieved').textContent = achieved;
+  document.getElementById('statAvgRating').textContent = ratingCount ? (ratingSum/ratingCount).toFixed(1) : '--';
+}
+
+/* =====================
+   FILTERING
+   ===================== */
+function getFilteredGoals(coordId, semester, status) {
+  return appData.goals.filter(function(g) {
+    if (coordId && g.coordinatorId !== coordId) return false;
+    if (semester && g.semester !== semester) return false;
+    if (status && g.status !== status) return false;
+    return true;
+  });
+}
+
+/* =====================
+   GOALS RENDER
+   ===================== */
+function renderGoals() {
+  var filterCoord = document.getElementById('filterCoord').value;
+  var filterSem = document.getElementById('filterSem').value;
+  var filterStatus = document.getElementById('filterStatus').value;
+
+  var goals = getFilteredGoals(filterCoord, filterSem, filterStatus);
+  var board = document.getElementById('goalsBoard');
+
+  if (!goals.length) {
+    board.innerHTML = '<div class="empty-state" style="grid-column:1/-1">No goals found. Click <strong>+ New Goal</strong> to create one.</div>';
+    return;
+  }
+
+  var html = '';
+  goals.forEach(function(goal) {
+    html += buildGoalCard(goal);
+  });
+  board.innerHTML = html;
+}
+
+function buildGoalCard(goal) {
+  var coordName = COORD_NAMES[goal.coordinatorId] || goal.coordinatorName || goal.coordinatorId;
+  var coordColor = COORD_COLORS[goal.coordinatorId] || '#888';
+  var prog = getActionProgress(goal);
+  var progPct = prog.total ? Math.round((prog.done / prog.total) * 100) : 0;
+
+  // Check-in status
+  var hasMid = false;
+  var hasEnd = false;
+  appData.checkins.forEach(function(c) {
+    if (c.goalId === goal.id) {
+      if (c.type === 'mid') hasMid = true;
+      if (c.type === 'end') hasEnd = true;
+    }
+  });
+
+  // Status badge
+  var statusBadgeClass = 'badge-active';
+  var statusLabel = 'Active';
+  if (goal.status === 'achieved') { statusBadgeClass = 'badge-achieved'; statusLabel = 'Achieved'; }
+  if (goal.status === 'discontinued') { statusBadgeClass = 'badge-discontinued'; statusLabel = 'Discontinued'; }
+
+  var borderColor = goal.status === 'achieved' ? '#27ae60' : (goal.status === 'discontinued' ? '#bbb' : coordColor);
+
+  // Walkthrough connection
+  var fidelity = getFidelityForCoord(coordName);
+  var cycles = getCycleCountForCoord(coordName);
+  var fidelityHtml = fidelity !== null
+    ? '<span class="wc-badge ' + (fidelity >= 75 ? 'green' : '') + '">' + fidelity + '% avg fidelity</span>'
+    : '<span class="wc-badge gray">No walkthrough data</span>';
+  var cyclesHtml = (cycles.active + cycles.completed) > 0
+    ? '<span class="wc-badge">' + cycles.active + ' active / ' + cycles.completed + ' completed</span>'
+    : '<span class="wc-badge gray">No cycles</span>';
+
+  var html = '<div class="goal-card" style="border-top-color:' + coordColor + '">';
+  html += '<div class="goal-card-top">';
+
+  // Meta row
+  html += '<div class="goal-card-meta">';
+  html += '<span class="coord-badge" style="background:' + coordColor + '">' + escHtml(coordName) + '</span>';
+  html += '<span class="semester-pill">' + escHtml(goal.semester) + '</span>';
+  html += '</div>';
+
+  // Title
+  html += '<div class="goal-title">' + escHtml(goal.title) + '</div>';
+
+  // Success metric
+  if (goal.successMetric) {
+    html += '<div class="goal-metric">&#127959; ' + escHtml(goal.successMetric) + '</div>';
+  }
+
+  // Manager target
+  if (goal.managerTarget) {
+    html += '<div class="goal-manager-target">&#127919; Target: ' + escHtml(goal.managerTarget) + '</div>';
+  }
+
+  // Action steps
+  if (goal.actionSteps && goal.actionSteps.length) {
+    html += '<div class="action-steps-header">Action Steps</div>';
+    goal.actionSteps.forEach(function(step, idx) {
+      var doneClass = step.done ? 'done' : '';
+      var ck = step.done ? 'checked' : '';
+      html += '<div class="action-step-row">';
+      html += '<input type="checkbox" ' + ck + ' onclick="toggleStep(\'' + escHtml(goal.id) + '\',' + idx + ',this.checked)"/>';
+      html += '<span class="action-step-text ' + doneClass + '">' + escHtml(step.text) + '</span>';
+      html += '</div>';
+    });
+    html += '<div class="action-progress-bar"><div class="action-progress-fill" style="width:' + progPct + '%"></div></div>';
+    html += '<div class="action-progress-label">' + prog.done + '/' + prog.total + ' steps complete</div>';
+  }
+
+  // Badges
+  html += '<div class="badge-row">';
+  html += '<span class="status-badge ' + statusBadgeClass + '">' + statusLabel + '</span>';
+  html += '<span class="checkin-pill ' + (hasMid ? 'done-mid' : 'pending') + '">Mid ' + (hasMid ? '&#10003;' : '&#9675;') + '</span>';
+  html += '<span class="checkin-pill ' + (hasEnd ? 'done-end' : 'pending') + '">End ' + (hasEnd ? '&#10003;' : '&#9675;') + '</span>';
+  html += '</div>';
+
+  html += '</div>'; // /goal-card-top
+
+  // Walkthrough connection panel
+  html += '<div class="walkthrough-connect">';
+  html += '<div class="wc-item"><span class="wc-label">Walkthroughs:</span>' + fidelityHtml + '</div>';
+  html += '<div class="wc-item"><span class="wc-label">Coaching:</span>' + cyclesHtml + '</div>';
+  html += '</div>';
+
+  // Card actions
+  html += '<div class="goal-card-actions">';
+  html += '<button class="btn primary" onclick="openCheckinModal(\'' + escHtml(goal.id) + '\')">&#43; Check-In</button>';
+  html += '<button class="btn" onclick="openGoalModal(\'' + escHtml(goal.id) + '\')">&#9999; Edit</button>';
+  html += '<button class="btn danger" onclick="deleteGoal(\'' + escHtml(goal.id) + '\')">&#128465; Delete</button>';
+  html += '</div>';
+
+  html += '</div>'; // /goal-card
+  return html;
+}
+
+/* =====================
+   TOGGLE STEP (on card)
+   ===================== */
+function toggleStep(goalId, stepIdx, checked) {
+  for (var i = 0; i < appData.goals.length; i++) {
+    if (appData.goals[i].id === goalId) {
+      if (appData.goals[i].actionSteps && appData.goals[i].actionSteps[stepIdx] !== undefined) {
+        appData.goals[i].actionSteps[stepIdx].done = checked;
+      }
+      break;
+    }
+  }
+  saveData();
+  renderGoals();
+  renderStats();
+}
+
+/* =====================
+   GOAL MODAL
+   ===================== */
+function openGoalModal(id) {
+  var modal = document.getElementById('goalModal');
+  var titleEl = document.getElementById('goalModalTitle');
+  document.getElementById('editGoalId').value = id || '';
+  document.getElementById('stepsEditList').innerHTML = '';
+
+  if (id) {
+    var goal = null;
+    for (var i = 0; i < appData.goals.length; i++) {
+      if (appData.goals[i].id === id) { goal = appData.goals[i]; break; }
+    }
+    if (!goal) { showToast('Goal not found.'); return; }
+    titleEl.innerHTML = '&#9999; Edit Goal <button class="modal-close" onclick="closeGoalModal()">&#10005;</button>';
+    document.getElementById('goalCoord').value = goal.coordinatorId || 'jmiller';
+    document.getElementById('goalSem').value = goal.semester || 'Fall 2025-26';
+    document.getElementById('goalTitle').value = goal.title || '';
+    document.getElementById('goalDesc').value = goal.description || '';
+    document.getElementById('goalMetric').value = goal.successMetric || '';
+    document.getElementById('goalMgrTarget').value = goal.managerTarget || '';
+    document.getElementById('goalStatus').value = goal.status || 'active';
+    var steps = goal.actionSteps || [];
+    steps.forEach(function(s) { addStepField(s.text); });
+    if (!steps.length) addStepField('');
+  } else {
+    titleEl.innerHTML = '&#127919; New Goal <button class="modal-close" onclick="closeGoalModal()">&#10005;</button>';
+    document.getElementById('goalCoord').value = 'jmiller';
+    document.getElementById('goalSem').value = 'Fall 2025-26';
+    document.getElementById('goalTitle').value = '';
+    document.getElementById('goalDesc').value = '';
+    document.getElementById('goalMetric').value = '';
+    document.getElementById('goalMgrTarget').value = '';
+    document.getElementById('goalStatus').value = 'active';
+    addStepField('');
+  }
+
+  modal.classList.add('open');
+}
+
+function closeGoalModal() {
+  document.getElementById('goalModal').classList.remove('open');
+}
+
+function addStepField(text) {
+  var list = document.getElementById('stepsEditList');
+  var idx = list.children.length;
+  var div = document.createElement('div');
+  div.className = 'step-edit-row';
+  div.innerHTML = '<input type="text" placeholder="Action step ' + (idx+1) + '..." value="' + escHtml(text || '') + '"/><button class="btn-icon" onclick="removeStepField(this)" title="Remove step">&#10005;</button>';
+  list.appendChild(div);
+}
+
+function removeStepField(btn) {
+  var row = btn.parentNode;
+  row.parentNode.removeChild(row);
+}
+
+function saveGoal() {
+  var id = document.getElementById('editGoalId').value;
+  var coordId = document.getElementById('goalCoord').value;
+  var semester = document.getElementById('goalSem').value;
+  var title = document.getElementById('goalTitle').value.trim();
+  var desc = document.getElementById('goalDesc').value.trim();
+  var metric = document.getElementById('goalMetric').value.trim();
+  var mgrTarget = document.getElementById('goalMgrTarget').value.trim();
+  var status = document.getElementById('goalStatus').value;
+
+  if (!title) { showToast('Goal title is required.'); return; }
+
+  // Collect action steps
+  var steps = [];
+  var stepInputs = document.getElementById('stepsEditList').querySelectorAll('input[type="text"]');
+  for (var i = 0; i < stepInputs.length; i++) {
+    var txt = stepInputs[i].value.trim();
+    if (txt) steps.push({text: txt, done: false});
+  }
+  if (!steps.length) { showToast('At least one action step is required.'); return; }
+
+  if (id) {
+    // Edit
+    for (var j = 0; j < appData.goals.length; j++) {
+      if (appData.goals[j].id === id) {
+        var existing = appData.goals[j];
+        // Preserve done state for existing steps by matching text
+        var prevSteps = existing.actionSteps || [];
+        var prevMap = {};
+        prevSteps.forEach(function(ps) { prevMap[ps.text] = ps.done; });
+        steps = steps.map(function(s) {
+          return {text: s.text, done: prevMap[s.text] || false};
+        });
+        existing.coordinatorId = coordId;
+        existing.coordinatorName = COORD_NAMES[coordId];
+        existing.semester = semester;
+        existing.title = title;
+        existing.description = desc;
+        existing.successMetric = metric;
+        existing.managerTarget = mgrTarget;
+        existing.actionSteps = steps;
+        existing.status = status;
+        break;
+      }
+    }
+    showToast('Goal updated.');
+  } else {
+    // New
+    var newGoal = {
+      id: genId(),
+      coordinatorId: coordId,
+      coordinatorName: COORD_NAMES[coordId],
+      semester: semester,
+      title: title,
+      description: desc,
+      successMetric: metric,
+      managerTarget: mgrTarget,
+      actionSteps: steps,
+      status: status,
+      createdAt: new Date().toISOString(),
+      createdBy: 'manager'
+    };
+    appData.goals.push(newGoal);
+    showToast('Goal created.');
+  }
+
+  saveData();
+  closeGoalModal();
+  renderGoals();
+  renderStats();
+}
+
+function deleteGoal(id) {
+  if (!confirm('Delete this goal? All check-ins for this goal will also be removed.')) return;
+  appData.goals = appData.goals.filter(function(g) { return g.id !== id; });
+  appData.checkins = appData.checkins.filter(function(c) { return c.goalId !== id; });
+  saveData();
+  renderGoals();
+  renderStats();
+  showToast('Goal deleted.');
+}
+
+/* =====================
+   CHECK-IN MODAL
+   ===================== */
+function openCheckinModal(goalId) {
+  document.getElementById('checkinGoalId').value = goalId;
+  document.querySelectorAll('input[name="checkinType"]')[0].checked = true;
+  document.getElementById('checkinDate').value = todayStr();
+  document.getElementById('checkinEvidence').value = '';
+  var ratings = document.querySelectorAll('input[name="checkinRating"]');
+  for (var i = 0; i < ratings.length; i++) ratings[i].checked = false;
+  document.getElementById('checkinMgrNotes').value = '';
+  document.getElementById('checkinCoordNotes').value = '';
+  document.getElementById('checkinModal').classList.add('open');
+}
+
+function closeCheckinModal() {
+  document.getElementById('checkinModal').classList.remove('open');
+}
+
+function saveCheckin() {
+  var goalId = document.getElementById('checkinGoalId').value;
+  if (!goalId) { showToast('No goal selected.'); return; }
+
+  var typeRadios = document.querySelectorAll('input[name="checkinType"]');
+  var type = 'mid';
+  for (var i = 0; i < typeRadios.length; i++) {
+    if (typeRadios[i].checked) { type = typeRadios[i].value; break; }
+  }
+
+  var date = document.getElementById('checkinDate').value;
+  var evidence = document.getElementById('checkinEvidence').value.trim();
+  var mgrNotes = document.getElementById('checkinMgrNotes').value.trim();
+  var coordNotes = document.getElementById('checkinCoordNotes').value.trim();
+
+  var ratingRadios = document.querySelectorAll('input[name="checkinRating"]');
+  var rating = 0;
+  for (var j = 0; j < ratingRadios.length; j++) {
+    if (ratingRadios[j].checked) { rating = parseInt(ratingRadios[j].value, 10); break; }
+  }
+
+  if (!rating) { showToast('Please select a rating.'); return; }
+  if (!date) { showToast('Please enter a date.'); return; }
+
+  var checkin = {
+    id: genId(),
+    goalId: goalId,
+    type: type,
+    date: date,
+    evidence: evidence,
+    rating: rating,
+    managerNotes: mgrNotes,
+    coordinatorNotes: coordNotes,
+    createdAt: new Date().toISOString()
+  };
+
+  appData.checkins.push(checkin);
+  saveData();
+  closeCheckinModal();
+  renderGoals();
+  renderStats();
+  showToast('Check-in saved.');
+}
+
+/* =====================
+   DARK MODE
+   ===================== */
+function toggleDarkMode() {
+  document.body.classList.toggle('dark-mode');
+  var isDark = document.body.classList.contains('dark-mode');
+  localStorage.setItem('esl_app_theme', isDark ? 'dark' : 'light');
+  document.getElementById('darkModeToggle').textContent = isDark ? '\u2600 Light' : '\u263d Dark';
+}
+
+function applyTheme() {
+  var theme = localStorage.getItem('esl_app_theme');
+  if (theme === 'dark') {
+    document.body.classList.add('dark-mode');
+    document.getElementById('darkModeToggle').textContent = '\u2600 Light';
+  }
+}
+
+/* =====================
+   INIT
+   ===================== */
+function init() {
+  applyTheme();
+  loadData();
+  renderStats();
+  renderGoals();
+}
+
+init();
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./service-worker.js').catch(function(){});
+}
+</script>
+</body>
+</html>

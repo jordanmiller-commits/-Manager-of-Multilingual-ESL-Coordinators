@@ -223,6 +223,48 @@ body.dark-mode .teacher-link:hover{color:#a8d4ff}
       <div class="tc-desc">Manager dashboard — aggregate walkthroughs, audits, and coaching cycles across all coordinators via Drive Sync.</div>
       <div class="tc-meta" id="metaTeamOverview"></div>
     </a>
+    <a class="tool-card" href="PD_Tracker.html">
+      <div class="tc-icon">&#128218;</div>
+      <div class="tc-name">PD Tracker</div>
+      <div class="tc-desc">Log and track professional development sessions across 8 categories. Charts, hour targets, and CSV export.</div>
+      <div class="tc-meta" id="metaPD"></div>
+    </a>
+    <a class="tool-card" href="Meeting_Notes.html">
+      <div class="tc-icon">&#128221;</div>
+      <div class="tc-name">Meeting Notes</div>
+      <div class="tc-desc">Agenda builder and searchable archive for team, campus, department, and district meetings. Action items link to Coaching Tracker.</div>
+      <div class="tc-meta" id="metaMeetings"></div>
+    </a>
+    <a class="tool-card" href="Parent_Communication_Log.html">
+      <div class="tc-icon">&#128222;</div>
+      <div class="tc-name">Parent Communication Log</div>
+      <div class="tc-desc">Log and search parent contacts by teacher, campus, language, and contact type. Configurable dropdowns, CSV export.</div>
+      <div class="tc-meta" id="metaParentComm"></div>
+    </a>
+    <a class="tool-card" href="Compliance_Checklist.html">
+      <div class="tc-icon">&#9989;</div>
+      <div class="tc-name">Compliance Checklist</div>
+      <div class="tc-desc">Custom ESL program compliance checklist tracked per campus per semester. Side-by-side campus comparison report.</div>
+      <div class="tc-meta" id="metaCompliance"></div>
+    </a>
+    <a class="tool-card" href="Goal_Setting.html">
+      <div class="tc-icon">&#127919;</div>
+      <div class="tc-name">Goal-Setting &amp; Growth</div>
+      <div class="tc-desc">Shared manager + coordinator goal planning with action steps, mid/end-semester check-ins, and evidence linking.</div>
+      <div class="tc-meta" id="metaGoals"></div>
+    </a>
+    <a class="tool-card" href="Student_Roster.html">
+      <div class="tc-icon">&#128101;</div>
+      <div class="tc-name">EB Student Roster</div>
+      <div class="tc-desc">FERPA-safe local roster of English Learners with proficiency levels, program types, and CSV import/export.</div>
+      <div class="tc-meta" id="metaStudents"></div>
+    </a>
+    <a class="tool-card" href="TELPAS_Tracker.html">
+      <div class="tc-icon">&#128200;</div>
+      <div class="tc-name">TELPAS Tracker</div>
+      <div class="tc-desc">Import TELPAS composite and domain scores, track year-over-year growth, and flag language decline. FERPA-safe local storage.</div>
+      <div class="tc-meta" id="metaTELPAS"></div>
+    </a>
   </div>
 
   <!-- Recent Activity -->
@@ -667,6 +709,71 @@ function loadExtraMeta() {
     metaTeamOverview.innerHTML = (gasSync && gasSync.gasUrl)
       ? '<span class="tc-badge green">Drive sync configured</span>'
       : '<span class="tc-badge gray">Drive sync not configured</span>';
+  }
+  var metaPD = document.getElementById("metaPD");
+  if (metaPD) {
+    var pdData = safeGet("pd_tracker_data");
+    var pdSessions = (pdData && pdData.sessions) ? pdData.sessions.length : 0;
+    metaPD.innerHTML = pdSessions > 0
+      ? '<span class="tc-badge blue">' + pdSessions + ' sessions logged</span>'
+      : '<span class="tc-badge gray">No sessions yet</span>';
+  }
+  var metaMeetings = document.getElementById("metaMeetings");
+  if (metaMeetings) {
+    var mtgData = safeGet("meeting_notes_data");
+    var mtgCount = (mtgData && mtgData.meetings) ? mtgData.meetings.length : 0;
+    metaMeetings.innerHTML = mtgCount > 0
+      ? '<span class="tc-badge blue">' + mtgCount + ' meeting' + (mtgCount !== 1 ? 's' : '') + '</span>'
+      : '<span class="tc-badge gray">No meetings yet</span>';
+  }
+  var metaParentComm = document.getElementById("metaParentComm");
+  if (metaParentComm) {
+    var pcData = safeGet("parent_comm_log");
+    var pcCount = (pcData && pcData.entries) ? pcData.entries.length : 0;
+    metaParentComm.innerHTML = pcCount > 0
+      ? '<span class="tc-badge blue">' + pcCount + ' contact' + (pcCount !== 1 ? 's' : '') + ' logged</span>'
+      : '<span class="tc-badge gray">No contacts yet</span>';
+  }
+  var metaCompliance = document.getElementById("metaCompliance");
+  if (metaCompliance) {
+    var ccData = safeGet("compliance_checklist_data");
+    var ccItems = (ccData && ccData.items) ? ccData.items.length : 0;
+    metaCompliance.innerHTML = ccItems > 0
+      ? '<span class="tc-badge green">' + ccItems + ' items configured</span>'
+      : '<span class="tc-badge gray">Not configured yet</span>';
+  }
+  var metaGoals = document.getElementById("metaGoals");
+  if (metaGoals) {
+    var gsData = safeGet("goal_setting_data");
+    var gsGoals = (gsData && gsData.goals) ? gsData.goals : [];
+    var gsActive = 0;
+    for (var gi = 0; gi < gsGoals.length; gi++) { if (gsGoals[gi].status === "active") gsActive++; }
+    metaGoals.innerHTML = gsGoals.length > 0
+      ? '<span class="tc-badge orange">' + gsActive + ' active</span><span class="tc-badge green">' + (gsGoals.length - gsActive) + ' achieved</span>'
+      : '<span class="tc-badge gray">No goals yet</span>';
+  }
+  var metaStudents = document.getElementById("metaStudents");
+  if (metaStudents) {
+    var srData = safeGet("student_roster_data");
+    var srCount = (srData && srData.students) ? srData.students.length : 0;
+    metaStudents.innerHTML = srCount > 0
+      ? '<span class="tc-badge blue">' + srCount + ' student' + (srCount !== 1 ? 's' : '') + '</span>'
+      : '<span class="tc-badge gray">No students yet</span>';
+  }
+  var metaTELPAS = document.getElementById("metaTELPAS");
+  if (metaTELPAS) {
+    var ttData = safeGet("telpas_tracker_data");
+    var ttCount = (ttData && ttData.records) ? ttData.records.length : 0;
+    metaTELPAS.innerHTML = ttCount > 0
+      ? '<span class="tc-badge blue">' + ttCount + ' record' + (ttCount !== 1 ? 's' : '') + '</span>'
+      : '<span class="tc-badge gray">No records yet</span>';
+  }
+  var metaWorkload = document.getElementById("metaWorkload");
+  if (metaWorkload) {
+    var wlData = safeGet("esl_workload_campuses");
+    metaWorkload.innerHTML = wlData
+      ? '<span class="tc-badge green">Assignments configured</span>'
+      : '<span class="tc-badge gray">No assignments set</span>';
   }
 }
 

@@ -96,7 +96,7 @@ body.dark-mode .toast{background:#7eb8f7;color:#1a1a2e}
     <p>Manager dashboard — aggregate view across all coordinators via Google Drive Sync</p>
     <div class="header-row">
       <button class="tool-btn" onclick="fetchAll()" id="refreshBtn">&#8635; Refresh</button>
-      <button class="tool-btn" onclick="sendReminders()" style="border-color:rgba(155,89,182,.5)">&#128140; Send Reminders</button>
+      <button class="tool-btn" onclick="sendReminders()" style="border-color:rgba(155,89,182,.5)" title="Emails coordinators with overdue/stalled cycles. Requires COORDINATOR_EMAIL_MAP to be configured in Code.gs.">&#128140; Send Reminders</button>
       <button class="tool-btn" onclick="toggleDarkMode()" id="darkModeToggle">&#9789; Dark</button>
       <a class="tool-btn" href="index.html" style="margin-left:auto">&#127968; Home</a>
     </div>
@@ -110,6 +110,7 @@ body.dark-mode .toast{background:#7eb8f7;color:#1a1a2e}
       <button class="tool-btn" onclick="fetchAll()" style="background:rgba(39,174,96,.2);border-color:rgba(39,174,96,.6);color:#27ae60;font-size:12px;padding:8px 16px">Load Data</button>
     </div>
     <div style="font-size:10px;color:#aaa;margin-top:6px">URL is saved automatically. Find it in <a href="Data_Backup_Hub.html" style="color:#4a90d9">Data Backup Hub</a> → Drive Sync Settings.</div>
+    <div style="font-size:10px;color:#aaa;margin-top:4px">&#128140; <strong>Send Reminders</strong> emails coordinators about overdue/stalled coaching cycles. Requires coordinator emails to be set in <code style="background:#f0f2f7;padding:1px 4px;border-radius:3px">COORDINATOR_EMAIL_MAP</code> inside <code style="background:#f0f2f7;padding:1px 4px;border-radius:3px">Code.gs</code> and redeployed.</div>
   </div>
 
   <!-- Stats row -->

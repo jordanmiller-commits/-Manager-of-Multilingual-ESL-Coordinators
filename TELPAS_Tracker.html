@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TELPAS Language Proficiency Tracker</title>
+<link rel="manifest" href="./manifest.json"/>
+<meta name="theme-color" content="#2c3e6e"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh;padding:20px}
+.wrap{max-width:1200px;margin:0 auto}
+
+/* HEADER */
+.header{background:linear-gradient(135deg,#2c3e6e,#4a90d9);color:#fff;padding:24px 28px 16px;border-radius:14px 14px 0 0}
+.header h1{font-size:22px;font-weight:800;margin-bottom:2px}
+.header p{font-size:12px;opacity:.85;margin-bottom:12px}
+.toolbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.tool-btn{background:rgba(255,255,255,.13);color:#fff;border:2px solid rgba(255,255,255,.35);padding:6px 13px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;text-decoration:none;display:inline-block}
+.tool-btn:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.55)}
+
+/* CARDS */
+.card{background:#fff;border-radius:10px;box-shadow:0 1px 5px rgba(0,0,0,.07);padding:16px 20px;margin-bottom:12px}
+.first-card{border-radius:0 0 10px 10px;margin-top:0}
+
+/* FERPA BANNER */
+.ferpa-banner{background:#fff8e1;border:1.5px solid #ffcc02;border-radius:10px;padding:14px 18px;margin-bottom:12px;display:flex;gap:12px;align-items:flex-start}
+.ferpa-banner .ferpa-icon{font-size:20px;flex-shrink:0;margin-top:1px}
+.ferpa-banner .ferpa-text{font-size:11px;color:#6d4c00;line-height:1.6}
+.ferpa-banner .ferpa-text strong{font-size:12px;display:block;margin-bottom:3px;color:#5a3d00}
+
+/* DECLINE ALERT */
+.decline-alert{background:#fff3e0;border:1.5px solid #ffb74d;border-radius:10px;padding:14px 18px;margin-bottom:12px;display:flex;gap:12px;align-items:center}
+.decline-alert .da-icon{font-size:22px;flex-shrink:0}
+.decline-alert .da-text{font-size:12px;color:#e65100;flex:1}
+.decline-alert .da-text strong{font-weight:700}
+.decline-alert a{color:#4a90d9;font-weight:600;text-decoration:none}
+.decline-alert a:hover{text-decoration:underline}
+
+/* STATS ROW */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}
+.stat-card{background:#fff;border-radius:10px;box-shadow:0 1px 5px rgba(0,0,0,.07);padding:14px 16px;text-align:center}
+.stat-value{font-size:26px;font-weight:800;color:#2c3e6e;line-height:1.1}
+.stat-label{font-size:9px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.4px;margin-top:4px}
+
+/* FILTER BAR */
+.filter-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-bottom:12px}
+.filter-bar label{font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:3px}
+.filter-bar select,.filter-bar input{padding:7px 10px;border:1px solid #ddd;border-radius:6px;font-size:12px;font-family:inherit;background:#fff}
+.filter-bar select:focus,.filter-bar input:focus{border-color:#4a90d9;outline:none;box-shadow:0 0 0 2px rgba(74,144,217,.15)}
+.filter-group{display:flex;flex-direction:column}
+.btn{padding:7px 14px;border-radius:7px;border:1.5px solid #ddd;background:#fff;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;color:#555}
+.btn:hover{background:#eaf3fb;border-color:#4a90d9;color:#2c3e6e}
+.btn.primary{background:#4a90d9;color:#fff;border-color:#4a90d9}
+.btn.primary:hover{background:#3a7bc8}
+
+/* CHART */
+.chart-wrap{height:260px;position:relative}
+
+/* SECTION TITLES */
+.section-title{font-size:14px;font-weight:700;color:#2c3e6e;margin-bottom:12px;padding-bottom:6px;border-bottom:2px solid #eef2f8}
+
+/* GROWTH TABLE */
+.growth-badge{display:inline-block;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:700}
+.growth-up{color:#1b5e20;background:#e8f5e9}
+.growth-same{color:#546e7a;background:#f5f5f5}
+.growth-down{color:#b71c1c;background:#fde8e8}
+.decline-flag{display:inline-block;padding:2px 7px;border-radius:10px;font-size:9px;font-weight:700;background:#fde8e8;color:#b71c1c;margin-left:6px;border:1px solid #f5c6c6}
+
+/* TABLE */
+.result-count{font-size:11px;color:#888;margin-bottom:8px}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:#f8f9fb;padding:9px 10px;text-align:left;font-size:10px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.3px;border-bottom:2px solid #eee;white-space:nowrap}
+td{padding:8px 10px;border-bottom:1px solid #f5f5f5;color:#444;vertical-align:middle}
+tr:hover td{background:#fafbfd}
+.tbl-btn{padding:4px 9px;border-radius:5px;border:1px solid #f5c6c6;background:#fff;font-size:10px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .12s;color:#c0392b}
+.tbl-btn:hover{background:#fef0ef;border-color:#e74c3c}
+
+/* PILL */
+.pill{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700}
+.pill-beg{background:#fde8e8;color:#b71c1c}
+.pill-int{background:#fff3e0;color:#e65100}
+.pill-adv{background:#e3f2fd;color:#1565c0}
+.pill-ah{background:#e8f5e9;color:#1b5e20}
+
+/* NOTES ICON */
+.notes-icon{display:inline-block;cursor:help;font-size:14px}
+
+/* PAGINATION */
+.pagination{display:flex;gap:6px;align-items:center;margin-top:12px;justify-content:center;flex-wrap:wrap}
+.pg-btn{padding:5px 11px;border-radius:6px;border:1px solid #ddd;background:#fff;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .12s}
+.pg-btn:hover{background:#eaf3fb;border-color:#4a90d9}
+.pg-btn.active{background:#4a90d9;color:#fff;border-color:#4a90d9}
+.pg-info{font-size:11px;color:#888}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.45);z-index:1000;justify-content:center;align-items:flex-start;padding:40px 20px;overflow-y:auto}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.2);width:100%;max-width:480px;overflow:hidden}
+.modal-header{background:linear-gradient(135deg,#2c3e6e,#4a90d9);color:#fff;padding:16px 20px;display:flex;justify-content:space-between;align-items:center}
+.modal-header h3{font-size:15px;font-weight:800}
+.modal-close{background:none;border:none;color:#fff;font-size:20px;cursor:pointer;line-height:1;padding:0 4px}
+.modal-body{padding:18px 20px;font-size:13px;color:#444;line-height:1.6}
+.modal-footer{padding:12px 20px;border-top:1px solid #eee;display:flex;gap:8px;justify-content:flex-end;background:#fafbfd}
+
+/* CSV PREVIEW */
+.csv-preview-info{background:#f0f4fb;border-radius:6px;padding:10px 12px;font-size:12px;color:#2c3e6e;margin-bottom:12px}
+.confirm-options{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px}
+.confirm-options label{display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer}
+
+/* EMPTY STATE */
+.empty-state{text-align:center;padding:40px 20px;color:#aaa}
+.empty-state .es-icon{font-size:42px;margin-bottom:10px}
+.empty-state p{font-size:12px}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(30px);background:#2c3e6e;color:#fff;padding:10px 22px;border-radius:24px;font-size:13px;font-weight:600;z-index:9999;opacity:0;transition:opacity .3s,transform .3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* DARK MODE */
+body.dark-mode{background:#1a1a2e;color:#e0e0e0}
+body.dark-mode .header{background:linear-gradient(135deg,#1a1a2e,#2d3a6e)}
+body.dark-mode .card,body.dark-mode .stat-card{background:#16213e;box-shadow:0 1px 5px rgba(0,0,0,.3)}
+body.dark-mode .modal{background:#16213e;color:#e0e0e0}
+body.dark-mode .modal-body{background:#16213e}
+body.dark-mode .modal-footer{background:#1a1a2e;border-color:#2d3a6e}
+body.dark-mode .filter-bar select,.filter-bar input{background:#1a1a2e;border-color:#2d3a6e;color:#e0e0e0}
+body.dark-mode table th{background:#1a1a2e;color:#aaa;border-color:#2d3a6e}
+body.dark-mode table td{border-color:#2d3a6e;color:#ccc}
+body.dark-mode tr:hover td{background:#1e2a4a}
+body.dark-mode .btn{background:#1a1a2e;border-color:#2d3a6e;color:#aaa}
+body.dark-mode .pg-btn{background:#1a1a2e;border-color:#2d3a6e;color:#aaa}
+body.dark-mode .ferpa-banner{background:#2a2000;border-color:#5a4800}
+body.dark-mode .ferpa-banner .ferpa-text{color:#e6c44f}
+body.dark-mode .ferpa-banner .ferpa-text strong{color:#ffd54f}
+body.dark-mode .decline-alert{background:#2a1800;border-color:#bf6000}
+body.dark-mode .decline-alert .da-text{color:#ffb74d}
+body.dark-mode .csv-preview-info{background:#1e2a4a;color:#90caf9}
+body.dark-mode .section-title{color:#90caf9;border-color:#2d3a6e}
+body.dark-mode .result-count{color:#777}
+body.dark-mode .empty-state{color:#555}
+
+/* PRINT */
+@media print{
+  .toolbar,.filter-bar,.modal-overlay,.toast{display:none!important}
+  body{background:#fff!important;padding:0}
+  .header{border-radius:0;print-color-adjust:exact}
+  .card,.stat-card{box-shadow:none;border:1px solid #eee}
+}
+
+/* MOBILE */
+@media(max-width:600px){
+  .stats-row{grid-template-columns:repeat(2,1fr)}
+  .filter-bar select,.filter-bar input,.tool-btn,.btn,.tbl-btn{min-height:44px}
+  .modal-overlay{padding:20px 10px}
+}
+@media(max-width:768px){
+  .stats-row{grid-template-columns:repeat(2,1fr)}
+  .filter-bar{flex-direction:column;align-items:stretch}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <!-- HEADER -->
+  <div class="header">
+    <h1>&#128202; TELPAS Language Proficiency Tracker</h1>
+    <p>TELPAS composite scores and domain-level progress</p>
+    <div class="toolbar">
+      <button class="tool-btn" onclick="triggerImport()">&#8679; Import CSV</button>
+      <button class="tool-btn" onclick="exportCsv()">&#8681; Export CSV</button>
+      <button class="tool-btn" onclick="toggleDark()">&#9790; Dark Mode</button>
+      <a class="tool-btn" href="index.html" style="margin-left:auto">&#127968; Home</a>
+    </div>
+  </div>
+
+  <!-- FERPA BANNER -->
+  <div class="ferpa-banner">
+    <div class="ferpa-icon">&#9888;</div>
+    <div class="ferpa-text">
+      <strong>FERPA Notice</strong>
+      Student data stored locally only. Never transmitted externally. Do not share devices or browser profiles with unauthorized users. Clear this data before retiring or reassigning a device using the <a href="Data_Backup_Hub.html" style="color:#4a90d9">Data Backup Hub</a>.
+    </div>
+  </div>
+
+  <!-- DECLINE ALERT -->
+  <div class="decline-alert" id="declineAlert" style="display:none">
+    <div class="da-icon">&#128276;</div>
+    <div class="da-text" id="declineAlertText"></div>
+  </div>
+
+  <!-- STATS ROW -->
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-value" id="statTotal">0</div><div class="stat-label">Total Records</div></div>
+    <div class="stat-card"><div class="stat-value" id="statCampuses">0</div><div class="stat-label">Campuses</div></div>
+    <div class="stat-card"><div class="stat-value" id="statAvgLevel" style="font-size:16px;padding-top:4px">-</div><div class="stat-label">Avg Composite Level</div></div>
+    <div class="stat-card"><div class="stat-value" id="statAdvanced">0</div><div class="stat-label">Advanced / Adv High</div></div>
+  </div>
+
+  <!-- FILTER BAR -->
+  <div class="card" style="padding:14px 18px;margin-bottom:12px">
+    <div class="filter-bar">
+      <div class="filter-group">
+        <label>School Year</label>
+        <select id="filterYear" onchange="renderAll()">
+          <option value="2026-27">2026-27</option>
+          <option value="2025-26" selected>2025-26</option>
+          <option value="2024-25">2024-25</option>
+          <option value="2023-24">2023-24</option>
+          <option value="2022-23">2022-23</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Campus</label>
+        <input type="text" id="filterCampus" placeholder="Type campus..." oninput="renderAll()" style="width:150px"/>
+      </div>
+      <div class="filter-group">
+        <label>Coordinator</label>
+        <select id="filterCoord" onchange="renderAll()">
+          <option value="">All Coordinators</option>
+          <option value="jmiller">J. Miller</option>
+          <option value="kpatterson">K. Patterson</option>
+          <option value="pokolo">P. Okolo</option>
+          <option value="vpalencia">V. Palencia</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Proficiency Level</label>
+        <select id="filterProf" onchange="renderAll()">
+          <option value="">All Levels</option>
+          <option value="Beginning">Beginning</option>
+          <option value="Intermediate">Intermediate</option>
+          <option value="Advanced">Advanced</option>
+          <option value="Advanced High">Advanced High</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Grade</label>
+        <select id="filterGrade" onchange="renderAll()">
+          <option value="">All Grades</option>
+          <option value="K">K</option>
+          <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+          <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+          <option value="7">7</option><option value="8">8</option><option value="9">9</option>
+          <option value="10">10</option><option value="11">11</option><option value="12">12</option>
+        </select>
+      </div>
+      <div class="filter-group" style="justify-content:flex-end">
+        <label>&nbsp;</label>
+        <button class="btn" onclick="clearFilters()">Clear Filters</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DISTRIBUTION CHART -->
+  <div class="card" id="chartCard">
+    <div class="section-title">Proficiency Distribution — Current vs Prior Year</div>
+    <div class="chart-wrap"><canvas id="distChart"></canvas></div>
+  </div>
+
+  <!-- GROWTH TRACKING -->
+  <div class="card" id="growthSection">
+    <div class="section-title">Growth Tracking <span id="growthYearLabel" style="font-size:12px;font-weight:400;color:#888"></span></div>
+    <div id="growthContent">
+      <div class="empty-state"><div class="es-icon">&#128200;</div><p>No matched records for growth comparison.</p></div>
+    </div>
+  </div>
+
+  <!-- FULL RECORDS TABLE -->
+  <div class="card">
+    <div class="section-title">All Records</div>
+    <div class="result-count" id="resultCount"></div>
+    <div style="overflow-x:auto">
+      <table id="recordsTable">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Campus</th>
+            <th>Grade</th>
+            <th>Coordinator</th>
+            <th>Year</th>
+            <th>Composite</th>
+            <th>Listening</th>
+            <th>Speaking</th>
+            <th>Reading</th>
+            <th>Writing</th>
+            <th>Test Date</th>
+            <th>Notes</th>
+            <th>Del</th>
+          </tr>
+        </thead>
+        <tbody id="recordsTbody"></tbody>
+      </table>
+    </div>
+    <div class="pagination" id="pagination"></div>
+  </div>
+</div>
+
+<!-- IMPORT MODAL -->
+<div class="modal-overlay" id="importModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Import TELPAS CSV</h3>
+      <button class="modal-close" onclick="closeImportModal()">&#10005;</button>
+    </div>
+    <div class="modal-body">
+      <div class="csv-preview-info" id="importPreviewInfo"></div>
+      <p style="font-size:12px;color:#555;margin-bottom:8px">Expected columns (header row): <code>firstName, lastName, campus, grade, coordinator, schoolYear, compositeLevel, listeningLevel, speakingLevel, readingLevel, writingLevel, testDate, notes</code></p>
+      <p style="font-size:12px;color:#555">Duplicate = same firstName + lastName + schoolYear + campus. Existing duplicate records will be updated.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeImportModal()">Cancel</button>
+      <button class="btn primary" onclick="confirmImport()">Import</button>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE CONFIRM MODAL -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal">
+    <div class="modal-header" style="background:linear-gradient(135deg,#c0392b,#e74c3c)">
+      <h3>Delete Record</h3>
+      <button class="modal-close" onclick="closeDeleteModal()">&#10005;</button>
+    </div>
+    <div class="modal-body">
+      <p>Delete the TELPAS record for <strong id="deleteRecordName"></strong>? This cannot be undone.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeDeleteModal()">Cancel</button>
+      <button class="btn" style="background:#e74c3c;color:#fff;border-color:#e74c3c" onclick="confirmDelete()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTES MODAL -->
+<div class="modal-overlay" id="notesModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Notes</h3>
+      <button class="modal-close" onclick="closeNotesModal()">&#10005;</button>
+    </div>
+    <div class="modal-body" id="notesModalBody" style="white-space:pre-wrap"></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeNotesModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- HIDDEN FILE INPUT -->
+<input type="file" id="csvFileInput" accept=".csv" style="display:none" onchange="handleCsvFile(event)"/>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+var DATA_KEY = "telpas_tracker_data";
+var data = {version:1, records:[]};
+var distChartObj = null;
+var currentPage = 1;
+var PAGE_SIZE = 25;
+var pendingImportRows = [];
+var deletingId = null;
+
+var YEARS = ["2026-27","2025-26","2024-25","2023-24","2022-23"];
+var LEVEL_LABELS = ["Beginning","Intermediate","Advanced","Advanced High"];
+var LEVEL_VALUES = {Beginning:1, Intermediate:2, Advanced:3, "Advanced High":4};
+
+/* =====================
+   INIT
+   ===================== */
+function init() {
+  applyTheme();
+  loadData();
+  renderAll();
+}
+
+function applyTheme() {
+  var t = localStorage.getItem("esl_app_theme");
+  if (t === "dark") { document.body.classList.add("dark-mode"); }
+}
+
+function toggleDark() {
+  var isDark = document.body.classList.toggle("dark-mode");
+  localStorage.setItem("esl_app_theme", isDark ? "dark" : "light");
+}
+
+/* =====================
+   DATA
+   ===================== */
+function loadData() {
+  try {
+    var raw = localStorage.getItem(DATA_KEY);
+    if (raw) { data = JSON.parse(raw); }
+    if (!data.records) { data.records = []; }
+  } catch(e) {
+    data = {version:1, records:[]};
+  }
+}
+
+function saveData() {
+  try {
+    localStorage.setItem(DATA_KEY, JSON.stringify(data));
+  } catch(e) {
+    showToast("Error saving — storage may be full.");
+  }
+}
+
+/* =====================
+   LEVEL UTILITIES
+   ===================== */
+function getLevelValue(levelStr) {
+  return LEVEL_VALUES[levelStr] || 0;
+}
+
+function getLevelLabel(num) {
+  if (num === 1) return "Beginning";
+  if (num === 2) return "Intermediate";
+  if (num === 3) return "Advanced";
+  if (num === 4) return "Advanced High";
+  return "—";
+}
+
+function pilClass(level) {
+  var map = {"Beginning":"pill-beg","Intermediate":"pill-int","Advanced":"pill-adv","Advanced High":"pill-ah"};
+  return map[level] || "pill-beg";
+}
+
+function coordLabel(id) {
+  var map = {jmiller:"J. Miller",kpatterson:"K. Patterson",pokolo:"P. Okolo",vpalencia:"V. Palencia"};
+  return map[id] || (id || "");
+}
+
+function priorYear(year) {
+  var idx = YEARS.indexOf(year);
+  if (idx === -1 || idx === YEARS.length - 1) return null;
+  return YEARS[idx + 1];
+}
+
+/* =====================
+   FILTER
+   ===================== */
+function getFilterYear() { return document.getElementById("filterYear").value; }
+function getFilterCampus() { return document.getElementById("filterCampus").value.toLowerCase().trim(); }
+function getFilterCoord() { return document.getElementById("filterCoord").value; }
+function getFilterProf() { return document.getElementById("filterProf").value; }
+function getFilterGrade() { return document.getElementById("filterGrade").value; }
+
+function applyFilters() {
+  var year = getFilterYear();
+  var campus = getFilterCampus();
+  var coord = getFilterCoord();
+  var prof = getFilterProf();
+  var grade = getFilterGrade();
+
+  return data.records.filter(function(r) {
+    if (r.schoolYear !== year) return false;
+    if (campus && (r.campus || "").toLowerCase().indexOf(campus) === -1) return false;
+    if (coord && r.coordinator !== coord) return false;
+    if (prof && r.compositeLevel !== prof) return false;
+    if (grade && r.grade !== grade) return false;
+    return true;
+  });
+}
+
+function clearFilters() {
+  document.getElementById("filterYear").value = "2025-26";
+  document.getElementById("filterCampus").value = "";
+  document.getElementById("filterCoord").value = "";
+  document.getElementById("filterProf").value = "";
+  document.getElementById("filterGrade").value = "";
+  currentPage = 1;
+  renderAll();
+}
+
+/* =====================
+   COMPUTE GROWTH
+   ===================== */
+function computeGrowth() {
+  var year = getFilterYear();
+  var prior = priorYear(year);
+  if (!prior) return [];
+
+  var campus = getFilterCampus();
+  var coord = getFilterCoord();
+  var grade = getFilterGrade();
+
+  var currentRecs = data.records.filter(function(r) {
+    if (r.schoolYear !== year) return false;
+    if (campus && (r.campus || "").toLowerCase().indexOf(campus) === -1) return false;
+    if (coord && r.coordinator !== coord) return false;
+    if (grade && r.grade !== grade) return false;
+    return true;
+  });
+
+  var priorRecs = data.records.filter(function(r) {
+    if (r.schoolYear !== prior) return false;
+    return true;
+  });
+
+  var pairs = [];
+  currentRecs.forEach(function(cur) {
+    var match = null;
+    for (var i = 0; i < priorRecs.length; i++) {
+      var p = priorRecs[i];
+      if (p.firstName.toLowerCase() === cur.firstName.toLowerCase() &&
+          p.lastName.toLowerCase() === cur.lastName.toLowerCase() &&
+          p.campus.toLowerCase() === cur.campus.toLowerCase()) {
+        match = p;
+        break;
+      }
+    }
+    if (match) {
+      pairs.push({cur: cur, prior: match});
+    }
+  });
+
+  pairs.sort(function(a, b) {
+    var da = getLevelValue(a.cur.compositeLevel) - getLevelValue(a.prior.compositeLevel);
+    var db = getLevelValue(b.cur.compositeLevel) - getLevelValue(b.prior.compositeLevel);
+    return da - db;
+  });
+
+  return pairs;
+}
+
+/* =====================
+   RENDER ALL
+   ===================== */
+function renderAll() {
+  currentPage = 1;
+  var filtered = applyFilters();
+  renderStats(filtered);
+  renderDeclineAlert();
+  renderDistributionChart(filtered);
+  renderGrowthTable();
+  renderRecordsTable(filtered);
+}
+
+/* =====================
+   STATS
+   ===================== */
+function renderStats(filtered) {
+  document.getElementById("statTotal").textContent = filtered.length;
+
+  var campSet = {};
+  filtered.forEach(function(r) { if(r.campus) campSet[r.campus] = 1; });
+  document.getElementById("statCampuses").textContent = Object.keys(campSet).length;
+
+  var sum = 0; var cnt = 0;
+  var advCnt = 0;
+  filtered.forEach(function(r) {
+    var v = getLevelValue(r.compositeLevel);
+    if (v) { sum += v; cnt++; }
+    if (r.compositeLevel === "Advanced" || r.compositeLevel === "Advanced High") advCnt++;
+  });
+  document.getElementById("statAvgLevel").textContent = cnt ? getLevelLabel(Math.round(sum/cnt)) : "—";
+  document.getElementById("statAdvanced").textContent = advCnt;
+}
+
+/* =====================
+   DECLINE ALERT
+   ===================== */
+function renderDeclineAlert() {
+  var pairs = computeGrowth();
+  var year = getFilterYear();
+  var prior = priorYear(year);
+  var declines = pairs.filter(function(p) {
+    return getLevelValue(p.cur.compositeLevel) < getLevelValue(p.prior.compositeLevel);
+  });
+
+  var alertEl = document.getElementById("declineAlert");
+  if (declines.length === 0 || !prior) {
+    alertEl.style.display = "none";
+    return;
+  }
+  alertEl.style.display = "flex";
+  document.getElementById("declineAlertText").innerHTML =
+    "<strong>" + declines.length + " student" + (declines.length !== 1 ? "s" : "") +
+    " show language decline from " + escHtml(prior) + " to " + escHtml(year) + ".</strong> " +
+    "Review the <a href='#growthSection' onclick='document.getElementById(\"growthSection\").scrollIntoView({behavior:\"smooth\"});return false;'>Growth Tracking table</a> below.";
+}
+
+/* =====================
+   DISTRIBUTION CHART
+   ===================== */
+function renderDistributionChart(filtered) {
+  var chartCard = document.getElementById("chartCard");
+  if (data.records.length === 0) {
+    chartCard.style.display = "none";
+    if (distChartObj) { distChartObj.destroy(); distChartObj = null; }
+    return;
+  }
+  chartCard.style.display = "block";
+
+  var year = getFilterYear();
+  var prior = priorYear(year);
+
+  var curCounts = [0,0,0,0]; // Beg, Int, Adv, AH
+  filtered.forEach(function(r) {
+    var v = getLevelValue(r.compositeLevel);
+    if (v >= 1 && v <= 4) curCounts[v-1]++;
+  });
+
+  var priorCounts = [0,0,0,0];
+  if (prior) {
+    data.records.filter(function(r) { return r.schoolYear === prior; }).forEach(function(r) {
+      var v = getLevelValue(r.compositeLevel);
+      if (v >= 1 && v <= 4) priorCounts[v-1]++;
+    });
+  }
+
+  var canvas = document.getElementById("distChart");
+  if (distChartObj) { distChartObj.destroy(); }
+
+  var datasets = [
+    {
+      label: year + " (Current)",
+      data: curCounts,
+      backgroundColor: "rgba(74,144,217,.75)",
+      borderColor: "#4a90d9",
+      borderWidth: 1
+    }
+  ];
+  if (prior) {
+    datasets.push({
+      label: prior + " (Prior)",
+      data: priorCounts,
+      backgroundColor: "rgba(160,160,160,.5)",
+      borderColor: "#aaa",
+      borderWidth: 1
+    });
+  }
+
+  distChartObj = new Chart(canvas, {
+    type: "bar",
+    data: {
+      labels: ["Beginning","Intermediate","Advanced","Adv High"],
+      datasets: datasets
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: "top", labels: { font: { size: 11 } } }
+      },
+      scales: {
+        y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 10 } }, title: { display: true, text: "Count", font: { size: 10 } } },
+        x: { ticks: { font: { size: 11 } } }
+      }
+    }
+  });
+}
+
+/* =====================
+   GROWTH TABLE
+   ===================== */
+function renderGrowthTable() {
+  var year = getFilterYear();
+  var prior = priorYear(year);
+  var labelEl = document.getElementById("growthYearLabel");
+  if (!prior) {
+    labelEl.textContent = "(No prior year data available)";
+    document.getElementById("growthContent").innerHTML =
+      "<div class='empty-state'><div class='es-icon'>&#128200;</div><p>No prior year available for comparison.</p></div>";
+    return;
+  }
+  labelEl.textContent = "(" + prior + " vs " + year + ")";
+
+  var pairs = computeGrowth();
+  if (pairs.length === 0) {
+    document.getElementById("growthContent").innerHTML =
+      "<div class='empty-state'><div class='es-icon'>&#128200;</div><p>No matched student records found across " + escHtml(prior) + " and " + escHtml(year) + ". Import data for both years to see growth.</p></div>";
+    return;
+  }
+
+  var html = "<div style='overflow-x:auto'><table><thead><tr>";
+  html += "<th>Name</th><th>Campus</th><th>Grade</th>";
+  html += "<th>Prior (" + escHtml(prior) + ")</th>";
+  html += "<th>Current (" + escHtml(year) + ")</th>";
+  html += "<th>Growth</th>";
+  html += "</tr></thead><tbody>";
+
+  pairs.forEach(function(p) {
+    var priorVal = getLevelValue(p.prior.compositeLevel);
+    var curVal = getLevelValue(p.cur.compositeLevel);
+    var diff = curVal - priorVal;
+    var growthHtml = "";
+    if (diff > 0) {
+      growthHtml = "<span class='growth-badge growth-up'>&#8593; +" + diff + "</span>";
+    } else if (diff === 0) {
+      growthHtml = "<span class='growth-badge growth-same'>&#8594; Same</span>";
+    } else {
+      growthHtml = "<span class='growth-badge growth-down'>&#8595; " + diff + "</span>" +
+        "<span class='decline-flag'>Flagged for Decline</span>";
+    }
+    html += "<tr>";
+    html += "<td>" + escHtml(p.cur.lastName) + ", " + escHtml(p.cur.firstName) + "</td>";
+    html += "<td>" + escHtml(p.cur.campus) + "</td>";
+    html += "<td>" + escHtml(p.cur.grade) + "</td>";
+    html += "<td><span class='pill " + pilClass(p.prior.compositeLevel) + "'>" + escHtml(p.prior.compositeLevel) + "</span></td>";
+    html += "<td><span class='pill " + pilClass(p.cur.compositeLevel) + "'>" + escHtml(p.cur.compositeLevel) + "</span></td>";
+    html += "<td>" + growthHtml + "</td>";
+    html += "</tr>";
+  });
+
+  html += "</tbody></table></div>";
+  document.getElementById("growthContent").innerHTML = html;
+}
+
+/* =====================
+   RECORDS TABLE
+   ===================== */
+function renderRecordsTable(filtered) {
+  var count = document.getElementById("resultCount");
+  count.textContent = "Showing " + filtered.length + " record" + (filtered.length !== 1 ? "s" : "");
+
+  var tbody = document.getElementById("recordsTbody");
+  if (filtered.length === 0) {
+    tbody.innerHTML = "<tr><td colspan='13'><div class='empty-state'><div class='es-icon'>&#128202;</div>" +
+      "<p>" + (data.records.length === 0 ? "No records yet. Import a CSV to get started." : "No records match current filters.") + "</p></div></td></tr>";
+    document.getElementById("pagination").innerHTML = "";
+    return;
+  }
+
+  var totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  if (currentPage > totalPages) currentPage = totalPages;
+  var start = (currentPage - 1) * PAGE_SIZE;
+  var pageRecs = filtered.slice(start, start + PAGE_SIZE);
+
+  var html = "";
+  pageRecs.forEach(function(r) {
+    var notesHtml = r.notes ? "<span class='notes-icon' title='" + escHtml(r.notes) + "' onclick='showNotes(\"" + escHtml(r.id) + "\")'>&#128203;</span>" : "—";
+    html += "<tr>";
+    html += "<td>" + escHtml(r.lastName) + ", " + escHtml(r.firstName) + "</td>";
+    html += "<td>" + escHtml(r.campus) + "</td>";
+    html += "<td>" + escHtml(r.grade) + "</td>";
+    html += "<td>" + escHtml(coordLabel(r.coordinator)) + "</td>";
+    html += "<td>" + escHtml(r.schoolYear) + "</td>";
+    html += "<td><span class='pill " + pilClass(r.compositeLevel) + "'>" + escHtml(r.compositeLevel) + "</span></td>";
+    html += "<td><span class='pill " + pilClass(r.listeningLevel) + "'>" + abbr(r.listeningLevel) + "</span></td>";
+    html += "<td><span class='pill " + pilClass(r.speakingLevel) + "'>" + abbr(r.speakingLevel) + "</span></td>";
+    html += "<td><span class='pill " + pilClass(r.readingLevel) + "'>" + abbr(r.readingLevel) + "</span></td>";
+    html += "<td><span class='pill " + pilClass(r.writingLevel) + "'>" + abbr(r.writingLevel) + "</span></td>";
+    html += "<td>" + escHtml(r.testDate || "—") + "</td>";
+    html += "<td>" + notesHtml + "</td>";
+    html += "<td><button class='tbl-btn' onclick='openDeleteModal(\"" + escHtml(r.id) + "\")'>&#128465;</button></td>";
+    html += "</tr>";
+  });
+  tbody.innerHTML = html;
+
+  renderPagination(totalPages, filtered.length);
+}
+
+function abbr(level) {
+  var map = {"Beginning":"Beg","Intermediate":"Int","Advanced":"Adv","Advanced High":"AH"};
+  return escHtml(map[level] || (level || "—"));
+}
+
+function renderPagination(totalPages, total) {
+  var pg = document.getElementById("pagination");
+  if (totalPages <= 1) { pg.innerHTML = ""; return; }
+
+  var html = "";
+  html += "<button class='pg-btn' onclick='goPage(" + (currentPage-1) + ")'" + (currentPage===1?" disabled":"") + ">&#8249; Prev</button>";
+  for (var i = 1; i <= totalPages; i++) {
+    html += "<button class='pg-btn" + (i===currentPage?" active":"") + "' onclick='goPage(" + i + ")'>" + i + "</button>";
+  }
+  html += "<button class='pg-btn' onclick='goPage(" + (currentPage+1) + ")'" + (currentPage===totalPages?" disabled":"") + ">Next &#8250;</button>";
+  html += "<span class='pg-info'>Page " + currentPage + " of " + totalPages + " (" + total + " records)</span>";
+  pg.innerHTML = html;
+}
+
+function goPage(n) {
+  currentPage = n;
+  var filtered = applyFilters();
+  renderRecordsTable(filtered);
+}
+
+/* =====================
+   NOTES MODAL
+   ===================== */
+function showNotes(id) {
+  var r = findRecord(id);
+  if (!r) return;
+  document.getElementById("notesModalBody").textContent = r.notes || "(No notes)";
+  document.getElementById("notesModal").classList.add("open");
+}
+
+function closeNotesModal() {
+  document.getElementById("notesModal").classList.remove("open");
+}
+
+/* =====================
+   DELETE
+   ===================== */
+function openDeleteModal(id) {
+  deletingId = id;
+  var r = findRecord(id);
+  if (!r) return;
+  document.getElementById("deleteRecordName").textContent =
+    r.firstName + " " + r.lastName + " (" + r.schoolYear + ")";
+  document.getElementById("deleteModal").classList.add("open");
+}
+
+function closeDeleteModal() {
+  document.getElementById("deleteModal").classList.remove("open");
+  deletingId = null;
+}
+
+function confirmDelete() {
+  if (!deletingId) return;
+  data.records = data.records.filter(function(r) { return r.id !== deletingId; });
+  saveData();
+  renderAll();
+  closeDeleteModal();
+  showToast("Record deleted.");
+}
+
+function findRecord(id) {
+  for (var i = 0; i < data.records.length; i++) {
+    if (data.records[i].id === id) return data.records[i];
+  }
+  return null;
+}
+
+/* =====================
+   CSV IMPORT
+   ===================== */
+function triggerImport() {
+  document.getElementById("csvFileInput").value = "";
+  document.getElementById("csvFileInput").click();
+}
+
+function handleCsvFile(evt) {
+  var file = evt.target.files[0];
+  if (!file) return;
+  importCsv(file);
+}
+
+function importCsv(file) {
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var text = e.target.result;
+    var rows = parseCsv(text);
+    if (rows.length < 2) {
+      showToast("CSV appears empty or has no data rows.");
+      return;
+    }
+    var header = rows[0].map(function(h) { return h.trim().toLowerCase().replace(/[^a-z]/g,""); });
+    var dataRows = rows.slice(1).filter(function(r) { return r.join("").trim() !== ""; });
+
+    pendingImportRows = dataRows.map(function(row) {
+      var obj = {};
+      header.forEach(function(h, i) { obj[h] = (row[i] || "").trim(); });
+      return obj;
+    }).filter(function(r) { return r.firstname || r.lastname; });
+
+    document.getElementById("importPreviewInfo").textContent =
+      "Found " + pendingImportRows.length + " record" + (pendingImportRows.length !== 1 ? "s" : "") + " in the CSV file.";
+    document.getElementById("importModal").classList.add("open");
+  };
+  reader.readAsText(file);
+}
+
+function parseCsv(text) {
+  var rows = [];
+  var lines = text.split(/\r?\n/);
+  for (var i = 0; i < lines.length; i++) {
+    rows.push(parseCsvLine(lines[i]));
+  }
+  return rows;
+}
+
+function parseCsvLine(line) {
+  var fields = [];
+  var cur = "";
+  var inQ = false;
+  for (var i = 0; i < line.length; i++) {
+    var ch = line[i];
+    if (ch === '"') {
+      if (inQ && line[i+1] === '"') { cur += '"'; i++; }
+      else { inQ = !inQ; }
+    } else if (ch === ',' && !inQ) {
+      fields.push(cur);
+      cur = "";
+    } else {
+      cur += ch;
+    }
+  }
+  fields.push(cur);
+  return fields;
+}
+
+function closeImportModal() {
+  document.getElementById("importModal").classList.remove("open");
+  pendingImportRows = [];
+}
+
+function normLevel(val) {
+  var map = {
+    "beginning":"Beginning","beg":"Beginning","b":"Beginning",
+    "intermediate":"Intermediate","int":"Intermediate","i":"Intermediate",
+    "advanced":"Advanced","adv":"Advanced","a":"Advanced",
+    "advanced high":"Advanced High","advancedhigh":"Advanced High","ah":"Advanced High"
+  };
+  return map[(val || "").toLowerCase().trim()] || val;
+}
+
+function confirmImport() {
+  var added = 0; var updated = 0;
+
+  pendingImportRows.forEach(function(row) {
+    var firstName = row.firstname || "";
+    var lastName = row.lastname || "";
+    var campus = row.campus || "";
+    var grade = row.grade || "";
+    var coordinator = row.coordinator || "";
+    var schoolYear = row.schoolyear || row.year || "";
+    var compositeLevel = normLevel(row.compositelevel || row.composite || "");
+    var listeningLevel = normLevel(row.listeningLevel || row.listening || "");
+    var speakingLevel = normLevel(row.speakinglevel || row.speaking || "");
+    var readingLevel = normLevel(row.readinglevel || row.reading || "");
+    var writingLevel = normLevel(row.writinglevel || row.writing || "");
+    var testDate = row.testdate || "";
+    var notes = row.notes || "";
+
+    var existing = null;
+    for (var i = 0; i < data.records.length; i++) {
+      var r = data.records[i];
+      if (r.firstName.toLowerCase() === firstName.toLowerCase() &&
+          r.lastName.toLowerCase() === lastName.toLowerCase() &&
+          (r.schoolYear || "").toLowerCase() === schoolYear.toLowerCase() &&
+          r.campus.toLowerCase() === campus.toLowerCase()) {
+        existing = r;
+        break;
+      }
+    }
+
+    if (existing) {
+      existing.grade = grade || existing.grade;
+      existing.coordinator = coordinator || existing.coordinator;
+      existing.compositeLevel = compositeLevel || existing.compositeLevel;
+      existing.listeningLevel = listeningLevel || existing.listeningLevel;
+      existing.speakingLevel = speakingLevel || existing.speakingLevel;
+      existing.readingLevel = readingLevel || existing.readingLevel;
+      existing.writingLevel = writingLevel || existing.writingLevel;
+      existing.testDate = testDate || existing.testDate;
+      existing.notes = notes || existing.notes;
+      updated++;
+    } else {
+      data.records.push({
+        id: "telpas-" + Date.now() + "-" + Math.random().toString(36).slice(2,6),
+        firstName: firstName,
+        lastName: lastName,
+        campus: campus,
+        grade: grade,
+        coordinator: coordinator,
+        schoolYear: schoolYear,
+        compositeLevel: compositeLevel,
+        listeningLevel: listeningLevel,
+        speakingLevel: speakingLevel,
+        readingLevel: readingLevel,
+        writingLevel: writingLevel,
+        testDate: testDate,
+        notes: notes
+      });
+      added++;
+    }
+  });
+
+  saveData();
+  renderAll();
+  closeImportModal();
+  showToast("Imported: " + added + " added, " + updated + " updated.");
+}
+
+/* =====================
+   CSV EXPORT
+   ===================== */
+function exportCsv() {
+  var filtered = applyFilters();
+  if (filtered.length === 0) { showToast("No records to export."); return; }
+
+  var header = ["firstName","lastName","campus","grade","coordinator","schoolYear",
+    "compositeLevel","listeningLevel","speakingLevel","readingLevel","writingLevel","testDate","notes"];
+  var lines = [header.join(",")];
+  filtered.forEach(function(r) {
+    var row = [
+      csvField(r.firstName), csvField(r.lastName), csvField(r.campus), csvField(r.grade),
+      csvField(r.coordinator), csvField(r.schoolYear), csvField(r.compositeLevel),
+      csvField(r.listeningLevel), csvField(r.speakingLevel),
+      csvField(r.readingLevel), csvField(r.writingLevel),
+      csvField(r.testDate), csvField(r.notes)
+    ];
+    lines.push(row.join(","));
+  });
+
+  var blob = new Blob([lines.join("\n")], {type:"text/csv"});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url;
+  a.download = "TELPAS_Data_" + getFilterYear() + "_" + dateStamp() + ".csv";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast("Exported " + filtered.length + " records.");
+}
+
+function csvField(val) {
+  var str = (val || "").toString();
+  if (str.indexOf(",") !== -1 || str.indexOf('"') !== -1 || str.indexOf("\n") !== -1) {
+    return '"' + str.replace(/"/g, '""') + '"';
+  }
+  return str;
+}
+
+function dateStamp() {
+  var d = new Date();
+  return d.getFullYear() + "-" + pad(d.getMonth()+1) + "-" + pad(d.getDate());
+}
+
+function pad(n) { return n < 10 ? "0" + n : "" + n; }
+
+/* =====================
+   UTILITIES
+   ===================== */
+function escHtml(str) {
+  if (!str) return "";
+  return ("" + str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function showToast(msg) {
+  var t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(function() { t.classList.remove("show"); }, 3000);
+}
+
+/* CLOSE MODALS ON OVERLAY CLICK */
+document.getElementById("importModal").addEventListener("click", function(e) {
+  if (e.target === this) closeImportModal();
+});
+document.getElementById("deleteModal").addEventListener("click", function(e) {
+  if (e.target === this) closeDeleteModal();
+});
+document.getElementById("notesModal").addEventListener("click", function(e) {
+  if (e.target === this) closeNotesModal();
+});
+
+/* PWA */
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("./service-worker.js").catch(function() {});
+}
+
+init();
+</script>
+</body>
+</html>

@@ -379,6 +379,13 @@ function saveCoordSetup() {
   var coordName = document.getElementById("coordName").value.trim();
 
   if (!coordId) { showToast("Please enter a Coordinator ID."); return; }
+  // Strip spaces and warn if any were removed
+  var cleanId = coordId.replace(/\s+/g, "").toLowerCase();
+  if (cleanId !== coordId) {
+    showToast("Spaces and capitals removed from ID. Your ID is: " + cleanId);
+    document.getElementById("coordId").value = cleanId;
+    coordId = cleanId;
+  }
   if (!coordName) { showToast("Please enter your display name."); return; }
 
   var existing = {};
