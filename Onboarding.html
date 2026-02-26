@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Setup Guide — ESL Manager Suite</title>
+<link rel="manifest" href="./manifest.json"/>
+<meta name="theme-color" content="#2c3e6e"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh;padding:20px}
+.wrap{max-width:860px;margin:0 auto}
+
+.header{background:linear-gradient(135deg,#2c3e6e,#4a90d9);color:#fff;padding:28px 32px 20px;border-radius:14px 14px 0 0}
+.header h1{font-size:24px;font-weight:800;margin-bottom:4px}
+.header p{font-size:12px;opacity:.85;margin-bottom:14px}
+.header-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tool-btn{background:rgba(255,255,255,.13);color:#fff;border:2px solid rgba(255,255,255,.35);padding:6px 13px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;text-decoration:none;display:inline-block}
+.tool-btn:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.55)}
+
+.progress-bar-wrap{background:rgba(255,255,255,.2);border-radius:10px;height:8px;margin-top:10px;overflow:hidden}
+.progress-bar-fill{background:#fff;height:8px;border-radius:10px;transition:width .4s}
+.progress-label{font-size:11px;opacity:.85;margin-top:4px}
+
+.card{background:#fff;border-radius:10px;box-shadow:0 1px 5px rgba(0,0,0,.07);padding:20px 24px;margin-bottom:14px}
+.first-card{border-radius:0 0 10px 10px;margin-top:0;margin-bottom:14px}
+
+/* Step cards */
+.step-card{border-radius:10px;box-shadow:0 1px 5px rgba(0,0,0,.07);padding:20px 24px;margin-bottom:14px;border-left:5px solid #4a90d9;background:#fff;transition:border-color .2s}
+.step-card.done{border-left-color:#27ae60;background:#f7fff9}
+.step-header{display:flex;align-items:center;gap:12px;margin-bottom:10px;cursor:pointer}
+.step-num{width:32px;height:32px;border-radius:50%;background:#4a90d9;color:#fff;font-size:14px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.step-card.done .step-num{background:#27ae60}
+.step-title{font-size:15px;font-weight:700;color:#2c3e6e;flex:1}
+.step-check{font-size:20px;color:#27ae60}
+.step-body{font-size:13px;color:#555;line-height:1.7}
+.step-body p{margin-bottom:8px}
+.step-body ul{padding-left:20px;margin-bottom:8px}
+.step-body li{margin-bottom:4px}
+.step-body code{background:#f0f2f7;padding:1px 6px;border-radius:4px;font-family:monospace;font-size:12px}
+
+/* URL display */
+.url-box{background:#f0f2f7;border-radius:7px;padding:10px 14px;font-size:11px;font-family:monospace;word-break:break-all;color:#2c3e6e;margin:8px 0;user-select:all}
+
+/* Inline form */
+.form-row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-top:10px}
+.form-group{display:flex;flex-direction:column;gap:4px;flex:1;min-width:140px}
+.form-group label{font-size:11px;font-weight:600;color:#555}
+.form-group input{padding:8px 12px;border:1px solid #ddd;border-radius:7px;font-size:13px;font-family:inherit;min-height:38px}
+.form-group input:focus{outline:none;border-color:#4a90d9}
+.save-btn{background:#27ae60;color:#fff;border:none;border-radius:7px;padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;min-height:38px}
+.save-btn:hover{background:#219a52}
+.save-confirm{color:#27ae60;font-size:12px;font-weight:600;display:none;margin-top:4px}
+
+/* Platform badges */
+.platform-list{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.platform-item{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:#f8f9fb;border-radius:7px;font-size:12px}
+.platform-icon{font-size:18px;flex-shrink:0}
+.platform-name{font-weight:600;color:#2c3e6e;margin-bottom:2px}
+
+/* Dark Mode */
+body.dark-mode{background:#1a1a2e;color:#e0e0e0}
+body.dark-mode .header{background:linear-gradient(135deg,#1a1a2e,#2d3a6e)}
+body.dark-mode .card,.dark-mode .step-card{background:#16213e;box-shadow:0 1px 5px rgba(0,0,0,.3)}
+body.dark-mode .step-card.done{background:#0d2017;border-left-color:#27ae60}
+body.dark-mode .step-title,.dark-mode .platform-name{color:#7eb8f7}
+body.dark-mode .step-body{color:#ccc}
+body.dark-mode .url-box{background:#0d1a2e;color:#7eb8f7}
+body.dark-mode .form-group input{background:#16213e;color:#e0e0e0;border-color:#2d3a6e}
+body.dark-mode .platform-item{background:#1a2744}
+body.dark-mode .form-group label{color:#aaa}
+
+/* Print */
+@media print{
+  .header .tool-btn{display:none!important}
+  body{background:#fff!important;padding:0}
+  .step-card{break-inside:avoid}
+}
+@media(max-width:600px){
+  body{padding:8px}
+  .header{padding:18px 16px}
+  .tool-btn,input{min-height:44px}
+  .form-row{flex-direction:column}
+  .save-btn{width:100%}
+}
+.toast{position:fixed;bottom:24px;right:24px;background:#2c3e6e;color:#fff;padding:12px 20px;border-radius:8px;font-size:13px;font-weight:600;box-shadow:0 4px 15px rgba(0,0,0,.2);z-index:2000;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+body.dark-mode .toast{background:#7eb8f7;color:#1a1a2e}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <h1>&#9881; Welcome to ESL Manager Suite</h1>
+    <p>Get set up in 5 steps &mdash; takes about 5 minutes</p>
+    <div class="header-row">
+      <button class="tool-btn" onclick="window.print()">&#128424; Print</button>
+      <button class="tool-btn" onclick="toggleDarkMode()" id="darkModeToggle">&#9789; Dark</button>
+      <a class="tool-btn" href="index.html" style="margin-left:auto">&#127968; Home</a>
+    </div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
+    </div>
+    <div class="progress-label" id="progressLabel">0 of 5 steps complete</div>
+  </div>
+
+  <!-- Checklist overview -->
+  <div class="card first-card">
+    <div style="font-size:13px;font-weight:600;color:#2c3e6e;margin-bottom:8px">Quick Checklist</div>
+    <div id="checklistOverview" style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:#555"></div>
+  </div>
+
+  <!-- Step 1: What is this? -->
+  <div class="step-card" id="step1">
+    <div class="step-header" onclick="toggleStep('step1-body')">
+      <div class="step-num">1</div>
+      <div class="step-title">What is the ESL Manager Suite?</div>
+      <span class="step-check" id="check1" style="display:none">&#10003;</span>
+    </div>
+    <div id="step1-body" class="step-body">
+      <p>The ESL Manager Suite is a set of web tools for managing multilingual/ESL coordinator teams. Everything runs in your browser — no installation, no login required.</p>
+      <p><strong>Tools included:</strong></p>
+      <ul>
+        <li><strong>Classroom Environment Audit</strong> — 58-item observation checklist</li>
+        <li><strong>Walkthrough Planning Template</strong> — plan rounds, record observations, track coaching</li>
+        <li><strong>Coaching Cycle Tracker</strong> — 5-stage coaching pipeline (Observation → Growth)</li>
+        <li><strong>Walkthrough &amp; Audit Dashboards</strong> — Chart.js analytics</li>
+        <li><strong>Teacher 360 Profile</strong> — aggregate view per teacher</li>
+        <li><strong>Scope &amp; Sequence Tracker</strong> — coordinator activity calendar</li>
+        <li><strong>ELPS Knowledge Base</strong> — AI-powered ELPS document Q&amp;A</li>
+        <li><strong>Team Overview</strong> — manager dashboard across all coordinators</li>
+      </ul>
+      <p><strong>Your suite URL:</strong></p>
+      <div class="url-box" id="suiteUrl">Loading...</div>
+      <p style="margin-top:8px">Share this URL with your team so everyone uses the same version.</p>
+      <button class="save-btn" onclick="markCheck(1)" style="background:#4a90d9;margin-top:4px">&#10003; Got it</button>
+    </div>
+  </div>
+
+  <!-- Step 2: Install as App (PWA) -->
+  <div class="step-card" id="step2">
+    <div class="step-header" onclick="toggleStep('step2-body')">
+      <div class="step-num">2</div>
+      <div class="step-title">Install as an App (PWA)</div>
+      <span class="step-check" id="check2" style="display:none">&#10003;</span>
+    </div>
+    <div id="step2-body" class="step-body" style="display:none">
+      <p>Install the suite to your home screen or taskbar for quick access and offline use.</p>
+      <div class="platform-list">
+        <div class="platform-item">
+          <span class="platform-icon">&#128187;</span>
+          <div>
+            <div class="platform-name">Chrome / Edge (Desktop)</div>
+            <div>Look for the install icon (&#11835;) in the address bar, or go to <strong>Menu → Install app</strong>. The app installs to your desktop.</div>
+          </div>
+        </div>
+        <div class="platform-item">
+          <span class="platform-icon">&#128241;</span>
+          <div>
+            <div class="platform-name">Android (Chrome)</div>
+            <div>Tap the 3-dot menu → <strong>Add to Home screen</strong>. The app icon appears on your home screen.</div>
+          </div>
+        </div>
+        <div class="platform-item">
+          <span class="platform-icon">&#127822;</span>
+          <div>
+            <div class="platform-name">iPhone / iPad (Safari)</div>
+            <div>Tap the Share button &#8679; → <strong>Add to Home Screen</strong>. Safari must be used (not Chrome on iOS).</div>
+          </div>
+        </div>
+      </div>
+      <p style="margin-top:10px;font-size:12px;color:#aaa">Once installed, all tools work offline using cached data.</p>
+      <button class="save-btn" onclick="markCheck(2)" style="background:#4a90d9;margin-top:8px">&#10003; Done / Skip</button>
+    </div>
+  </div>
+
+  <!-- Step 3: Set Coordinator ID -->
+  <div class="step-card" id="step3">
+    <div class="step-header" onclick="toggleStep('step3-body')">
+      <div class="step-num">3</div>
+      <div class="step-title">Set Your Coordinator ID &amp; Name</div>
+      <span class="step-check" id="check3" style="display:none">&#10003;</span>
+    </div>
+    <div id="step3-body" class="step-body" style="display:none">
+      <p>Your Coordinator ID and display name are used to keep your data separate when syncing to Google Drive. Your manager may have provided a specific ID for you.</p>
+      <p>The Script URL below should be pre-filled if your manager sent you this page with the link. Otherwise, get it from your manager or the <a href="Data_Backup_Hub.html" style="color:#4a90d9">Data Backup Hub</a>.</p>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Script URL</label>
+          <input type="url" id="coordGasUrl" placeholder="https://script.google.com/macros/s/..."/>
+        </div>
+        <div class="form-group">
+          <label>Coordinator ID (no spaces)</label>
+          <input type="text" id="coordId" placeholder="e.g., jsmith" maxlength="40"/>
+        </div>
+        <div class="form-group">
+          <label>Display Name</label>
+          <input type="text" id="coordName" placeholder="e.g., Jane Smith" maxlength="60"/>
+        </div>
+        <button class="save-btn" onclick="saveCoordSetup()">Save</button>
+      </div>
+      <div class="save-confirm" id="saveConfirm">&#10003; Saved to this device</div>
+    </div>
+  </div>
+
+  <!-- Step 4: Sync to Drive -->
+  <div class="step-card" id="step4">
+    <div class="step-header" onclick="toggleStep('step4-body')">
+      <div class="step-num">4</div>
+      <div class="step-title">Sync Your Data to Google Drive</div>
+      <span class="step-check" id="check4" style="display:none">&#10003;</span>
+    </div>
+    <div id="step4-body" class="step-body" style="display:none">
+      <p>Syncing uploads your local data to a shared Google Drive folder so your manager can see your activity in the <strong>Team Overview</strong> dashboard.</p>
+      <ol style="padding-left:20px;margin-bottom:10px">
+        <li>Open the <strong>Data Backup Hub</strong> (link below)</li>
+        <li>Scroll to the <strong>Drive Sync</strong> section</li>
+        <li>Confirm your Coordinator ID and Script URL are filled in</li>
+        <li>Click <strong>Push to Drive</strong></li>
+        <li>You should see "Sync successful" — your manager can now see your data</li>
+      </ol>
+      <p>After syncing, come back and mark this step complete.</p>
+      <a href="Data_Backup_Hub.html" class="save-btn" style="display:inline-block;text-decoration:none;background:#4a90d9;margin-top:4px">&#128190; Open Data Backup Hub</a>
+      <button class="save-btn" onclick="markCheck(4)" style="background:#27ae60;margin-left:8px;margin-top:4px">&#10003; I synced</button>
+    </div>
+  </div>
+
+  <!-- Step 5: Export to Outlook -->
+  <div class="step-card" id="step5">
+    <div class="step-header" onclick="toggleStep('step5-body')">
+      <div class="step-num">5</div>
+      <div class="step-title">Export Walkthroughs to Outlook Calendar</div>
+      <span class="step-check" id="check5" style="display:none">&#10003;</span>
+    </div>
+    <div id="step5-body" class="step-body" style="display:none">
+      <p>You can export your planned walkthrough rounds directly to Outlook (or Google Calendar) as calendar events.</p>
+      <p><strong>From the Walkthrough Planning Template:</strong></p>
+      <ol style="padding-left:20px;margin-bottom:10px">
+        <li>Open the <a href="Academic_Monitoring_Leader_Facing/Academic_Monitoring_Planning_Template.html" style="color:#4a90d9">Walkthrough Planning Template</a></li>
+        <li>Fill in the <strong>Date / Time Block</strong> row for each round (e.g., <code>2026-03-10 9:15–10:00 AM</code>)</li>
+        <li>Click the <strong>&#128197; Calendar</strong> button in the toolbar</li>
+        <li>A <code>.ics</code> file will download — open it to import into Outlook or Google Calendar</li>
+      </ol>
+      <p><strong>From the Coaching Cycle Tracker:</strong></p>
+      <ol style="padding-left:20px;margin-bottom:10px">
+        <li>Open the <a href="Academic_Monitoring_Leader_Facing/Coaching_Cycle_Tracker.html" style="color:#4a90d9">Coaching Cycle Tracker</a></li>
+        <li>Click <strong>Export Calendar</strong> to download coaching deadlines as a <code>.ics</code> file</li>
+      </ol>
+      <button class="save-btn" onclick="markCheck(5)" style="background:#4a90d9;margin-top:4px">&#10003; Got it</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+/* ============================================================
+   DARK MODE
+   ============================================================ */
+function toggleDarkMode() {
+  var isDark = document.body.classList.toggle("dark-mode");
+  localStorage.setItem("esl_app_theme", isDark ? "dark" : "light");
+  var btn = document.getElementById("darkModeToggle");
+  if (btn) btn.innerHTML = isDark ? "&#9788; Light" : "&#9789; Dark";
+}
+(function() {
+  if (localStorage.getItem("esl_app_theme") === "dark") {
+    document.body.classList.add("dark-mode");
+    var btn = document.getElementById("darkModeToggle");
+    if (btn) btn.innerHTML = "&#9788; Light";
+  }
+})();
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+function showToast(msg) {
+  var t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(function() { t.classList.remove("show"); }, 3000);
+}
+
+/* ============================================================
+   CHECKLIST PERSISTENCE
+   ============================================================ */
+var CHECKLIST_KEY = "esl_onboarding_complete";
+
+function loadChecklist() {
+  var raw = localStorage.getItem(CHECKLIST_KEY);
+  return raw ? JSON.parse(raw) : {};
+}
+
+function saveChecklist(data) {
+  localStorage.setItem(CHECKLIST_KEY, JSON.stringify(data));
+}
+
+function markCheck(n) {
+  var data = loadChecklist();
+  data["step" + n] = true;
+  saveChecklist(data);
+  updateChecklistProgress();
+  showToast("Step " + n + " marked complete!");
+}
+
+function updateChecklistProgress() {
+  var data = loadChecklist();
+  var stepsInfo = [
+    {n: 1, label: "Understand the suite"},
+    {n: 2, label: "Install as app (PWA)"},
+    {n: 3, label: "Set Coordinator ID"},
+    {n: 4, label: "Sync to Drive"},
+    {n: 5, label: "Set up calendar export"}
+  ];
+  var done = 0;
+
+  for (var i = 0; i < stepsInfo.length; i++) {
+    var s = stepsInfo[i];
+    var isDone = !!data["step" + s.n];
+    if (isDone) done++;
+
+    // Update step card style
+    var card = document.getElementById("step" + s.n);
+    if (card) {
+      if (isDone) card.classList.add("done");
+      else card.classList.remove("done");
+    }
+    // Update check mark
+    var check = document.getElementById("check" + s.n);
+    if (check) check.style.display = isDone ? "inline" : "none";
+  }
+
+  // Progress bar
+  var pct = Math.round((done / stepsInfo.length) * 100);
+  var fill = document.getElementById("progressFill");
+  var label = document.getElementById("progressLabel");
+  if (fill) fill.style.width = pct + "%";
+  if (label) label.textContent = done + " of " + stepsInfo.length + " steps complete";
+
+  // Checklist overview
+  var html = "";
+  for (var j = 0; j < stepsInfo.length; j++) {
+    var s2 = stepsInfo[j];
+    var isDone2 = !!data["step" + s2.n];
+    html += '<div style="display:flex;align-items:center;gap:8px">';
+    html += '<span style="font-size:14px;color:' + (isDone2 ? "#27ae60" : "#ccc") + '">' + (isDone2 ? "&#10003;" : "&#9711;") + '</span>';
+    html += '<span style="color:' + (isDone2 ? "#27ae60" : "#555") + ';font-weight:' + (isDone2 ? "600" : "400") + '">' + s2.label + '</span>';
+    html += '</div>';
+  }
+  document.getElementById("checklistOverview").innerHTML = html;
+}
+
+/* ============================================================
+   STEP TOGGLE
+   ============================================================ */
+function toggleStep(bodyId) {
+  var el = document.getElementById(bodyId);
+  if (!el) return;
+  el.style.display = el.style.display === "none" ? "block" : "none";
+}
+
+/* ============================================================
+   COORDINATOR SETUP (Step 3)
+   ============================================================ */
+function loadCoordSetup() {
+  var raw = localStorage.getItem("esl_gas_sync");
+  if (!raw) return;
+  try {
+    var s = JSON.parse(raw);
+    if (s.gasUrl) document.getElementById("coordGasUrl").value = s.gasUrl;
+    if (s.coordinatorId) document.getElementById("coordId").value = s.coordinatorId;
+    if (s.coordinatorName) document.getElementById("coordName").value = s.coordinatorName;
+  } catch (e) {}
+}
+
+function saveCoordSetup() {
+  var gasUrl = document.getElementById("coordGasUrl").value.trim();
+  var coordId = document.getElementById("coordId").value.trim();
+  var coordName = document.getElementById("coordName").value.trim();
+
+  if (!coordId) { showToast("Please enter a Coordinator ID."); return; }
+  if (!coordName) { showToast("Please enter your display name."); return; }
+
+  var existing = {};
+  try { existing = JSON.parse(localStorage.getItem("esl_gas_sync") || "{}"); } catch (e) {}
+  existing.gasUrl = gasUrl || existing.gasUrl || "";
+  existing.coordinatorId = coordId;
+  existing.coordinatorName = coordName;
+  localStorage.setItem("esl_gas_sync", JSON.stringify(existing));
+
+  var confirm = document.getElementById("saveConfirm");
+  if (confirm) confirm.style.display = "block";
+  markCheck(3);
+}
+
+/* ============================================================
+   URL PARAM: ?gasUrl=...
+   Pre-populate Script URL from manager's distributed link
+   ============================================================ */
+function applyUrlParams() {
+  var params = new URLSearchParams(window.location.search);
+  var gasUrl = params.get("gasUrl");
+  if (gasUrl) {
+    document.getElementById("coordGasUrl").value = gasUrl;
+    // Also pre-save to esl_gas_sync if not already set
+    var raw = localStorage.getItem("esl_gas_sync");
+    var s = {};
+    try { s = raw ? JSON.parse(raw) : {}; } catch (e) {}
+    if (!s.gasUrl) {
+      s.gasUrl = gasUrl;
+      localStorage.setItem("esl_gas_sync", JSON.stringify(s));
+    }
+  }
+}
+
+/* ============================================================
+   SUITE URL
+   ============================================================ */
+function setSuiteUrl() {
+  var el = document.getElementById("suiteUrl");
+  if (el) {
+    // Show base URL up to the last directory
+    var href = window.location.href.replace(/\/Onboarding\.html.*$/, "/index.html");
+    el.textContent = href;
+  }
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+setSuiteUrl();
+applyUrlParams();
+loadCoordSetup();
+updateChecklistProgress();
+// Open Step 1 body by default
+(function() {
+  var b = document.getElementById("step1-body");
+  if (b) b.style.display = "block";
+})();
+if ("serviceWorker" in navigator) { navigator.serviceWorker.register("./service-worker.js").catch(function() {}); }
+</script>
+</body>
+</html>

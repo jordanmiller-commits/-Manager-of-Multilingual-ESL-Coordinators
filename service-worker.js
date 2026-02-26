@@ -1,7 +1,9 @@
-var CACHE_NAME = "esl-suite-v2";
+var CACHE_NAME = "esl-suite-v3";
 var ASSETS = [
   "./index.html",
   "./Data_Backup_Hub.html",
+  "./Team_Overview.html",
+  "./Onboarding.html",
   "./manifest.json",
   "./Academic_Monitoring_Leader_Facing/Academic_Monitoring_Planning_Template.html",
   "./Academic_Monitoring_Leader_Facing/Walkthrough_Dashboard.html",

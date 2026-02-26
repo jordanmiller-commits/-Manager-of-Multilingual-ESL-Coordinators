@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Team Overview — ESL Manager Suite</title>
+<link rel="manifest" href="./manifest.json"/>
+<meta name="theme-color" content="#2c3e6e"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh;padding:20px}
+.wrap{max-width:1140px;margin:0 auto}
+
+.header{background:linear-gradient(135deg,#2c3e6e,#4a90d9);color:#fff;padding:28px 32px 20px;border-radius:14px 14px 0 0}
+.header h1{font-size:24px;font-weight:800;margin-bottom:4px}
+.header p{font-size:12px;opacity:.85;margin-bottom:14px}
+.header-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tool-btn{background:rgba(255,255,255,.13);color:#fff;border:2px solid rgba(255,255,255,.35);padding:6px 13px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;text-decoration:none;display:inline-block}
+.tool-btn:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.55)}
+
+.card{background:#fff;border-radius:10px;box-shadow:0 1px 5px rgba(0,0,0,.07);padding:20px 24px;margin-bottom:16px}
+.first-card{border-radius:0 0 10px 10px;margin-top:0;margin-bottom:16px}
+.section-title{font-size:14px;font-weight:700;color:#2c3e6e;margin-bottom:12px}
+
+/* Stats row */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.stat-card{text-align:center;padding:14px;background:#fff;border-radius:10px;box-shadow:0 1px 5px rgba(0,0,0,.07);border:1px solid #eee}
+.stat-val{font-size:26px;font-weight:800;color:#2c3e6e}
+.stat-label{font-size:9px;font-weight:600;color:#888;text-transform:uppercase;margin-top:2px}
+
+/* Settings card */
+.settings-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.settings-row input{flex:1;min-width:260px;padding:8px 12px;border:1px solid #ddd;border-radius:7px;font-size:12px;font-family:inherit}
+.settings-row input:focus{outline:none;border-color:#4a90d9}
+
+/* Coordinator grid */
+.coord-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:16px}
+.coord-card{background:#fff;border-radius:10px;box-shadow:0 1px 5px rgba(0,0,0,.07);padding:16px 18px;border-left:4px solid #ccc}
+.coord-card.fresh{border-left-color:#27ae60}
+.coord-card.recent{border-left-color:#f39c12}
+.coord-card.stale{border-left-color:#e74c3c}
+.coord-name{font-size:15px;font-weight:700;color:#2c3e6e;margin-bottom:2px}
+.coord-id{font-size:10px;color:#aaa;margin-bottom:8px}
+.coord-meta{font-size:11px;color:#666;margin-bottom:8px}
+.coord-stats{display:flex;gap:8px;flex-wrap:wrap}
+.coord-stat{background:#f0f4fb;border-radius:6px;padding:4px 10px;font-size:11px;color:#2c3e6e;font-weight:600}
+
+/* Pipeline */
+.pipeline-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.pipe-badge{background:#e3f2fd;color:#1565c0;border-radius:10px;padding:5px 14px;font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px}
+.pipe-badge .pipe-num{font-size:18px;font-weight:800}
+
+/* Chart */
+.chart-wrap{position:relative;height:260px}
+
+/* Status messages */
+.status-msg{text-align:center;padding:24px;color:#aaa;font-size:13px;font-style:italic}
+.error-msg{text-align:center;padding:24px;color:#e74c3c;font-size:13px}
+
+/* Dark Mode */
+body.dark-mode{background:#1a1a2e;color:#e0e0e0}
+body.dark-mode .header{background:linear-gradient(135deg,#1a1a2e,#2d3a6e)}
+body.dark-mode .card,.dark-mode .stat-card{background:#16213e;box-shadow:0 1px 5px rgba(0,0,0,.3)}
+body.dark-mode .coord-card{background:#16213e}
+body.dark-mode .coord-name,.dark-mode .stat-val{color:#7eb8f7}
+body.dark-mode .section-title{color:#7eb8f7}
+body.dark-mode .coord-stat{background:#1a2744;color:#7eb8f7}
+body.dark-mode .pipe-badge{background:#0d2847;color:#64b5f6}
+body.dark-mode .settings-row input{background:#16213e;color:#e0e0e0;border-color:#2d3a6e}
+body.dark-mode .status-msg{color:#555}
+
+/* Print */
+@media print{
+  .header .tool-btn,.settings-row button,.card:first-child{display:none!important}
+  body{background:#fff!important;padding:0}
+}
+@media(max-width:768px){
+  .stats-row{grid-template-columns:1fr 1fr}
+  .coord-grid{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+  body{padding:8px}
+  .header{padding:18px 16px}
+  .tool-btn,input{min-height:44px}
+}
+.toast{position:fixed;bottom:24px;right:24px;background:#2c3e6e;color:#fff;padding:12px 20px;border-radius:8px;font-size:13px;font-weight:600;box-shadow:0 4px 15px rgba(0,0,0,.2);z-index:2000;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+body.dark-mode .toast{background:#7eb8f7;color:#1a1a2e}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <h1>&#128202; Team Overview</h1>
+    <p>Manager dashboard — aggregate view across all coordinators via Google Drive Sync</p>
+    <div class="header-row">
+      <button class="tool-btn" onclick="fetchAll()" id="refreshBtn">&#8635; Refresh</button>
+      <button class="tool-btn" onclick="sendReminders()" style="border-color:rgba(155,89,182,.5)">&#128140; Send Reminders</button>
+      <button class="tool-btn" onclick="toggleDarkMode()" id="darkModeToggle">&#9789; Dark</button>
+      <a class="tool-btn" href="index.html" style="margin-left:auto">&#127968; Home</a>
+    </div>
+  </div>
+
+  <!-- Settings -->
+  <div class="card first-card">
+    <div class="section-title">&#9881; Drive Sync Settings</div>
+    <div class="settings-row">
+      <input type="url" id="gasUrl" placeholder="Google Apps Script Web App URL (https://script.google.com/macros/s/...)" oninput="saveGasUrl()"/>
+      <button class="tool-btn" onclick="fetchAll()" style="background:rgba(39,174,96,.2);border-color:rgba(39,174,96,.6);color:#27ae60;font-size:12px;padding:8px 16px">Load Data</button>
+    </div>
+    <div style="font-size:10px;color:#aaa;margin-top:6px">URL is saved automatically. Find it in <a href="Data_Backup_Hub.html" style="color:#4a90d9">Data Backup Hub</a> → Drive Sync Settings.</div>
+  </div>
+
+  <!-- Stats row -->
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-val" id="statCoords">—</div><div class="stat-label">Coordinators</div></div>
+    <div class="stat-card"><div class="stat-val" id="statWalkthroughs">—</div><div class="stat-label">Total Walkthroughs</div></div>
+    <div class="stat-card"><div class="stat-val" id="statCycles">—</div><div class="stat-label">Active Coaching Cycles</div></div>
+    <div class="stat-card"><div class="stat-val" id="statLastSync">—</div><div class="stat-label">Last Sync</div></div>
+  </div>
+
+  <!-- Coordinator cards -->
+  <div class="section-title">Coordinators</div>
+  <div class="coord-grid" id="coordGrid">
+    <div class="status-msg">Enter a Script URL above and click Load Data.</div>
+  </div>
+
+  <!-- Aggregated pipeline -->
+  <div class="card">
+    <div class="section-title">&#128172; Aggregated Coaching Pipeline</div>
+    <div class="pipeline-row" id="pipelineRow">
+      <div class="status-msg" style="width:100%;padding:10px">No data loaded.</div>
+    </div>
+  </div>
+
+  <!-- Chart -->
+  <div class="card">
+    <div class="section-title">&#128202; Walkthrough Activity by Coordinator</div>
+    <div class="chart-wrap">
+      <canvas id="activityChart"></canvas>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+/* ============================================================
+   DARK MODE
+   ============================================================ */
+function toggleDarkMode() {
+  var isDark = document.body.classList.toggle("dark-mode");
+  localStorage.setItem("esl_app_theme", isDark ? "dark" : "light");
+  var btn = document.getElementById("darkModeToggle");
+  if (btn) btn.innerHTML = isDark ? "&#9788; Light" : "&#9789; Dark";
+}
+(function() {
+  if (localStorage.getItem("esl_app_theme") === "dark") {
+    document.body.classList.add("dark-mode");
+    var btn = document.getElementById("darkModeToggle");
+    if (btn) btn.innerHTML = "&#9788; Light";
+  }
+})();
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+function showToast(msg) {
+  var t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(function() { t.classList.remove("show"); }, 3500);
+}
+
+/* ============================================================
+   SETTINGS
+   ============================================================ */
+function loadSettings() {
+  var raw = localStorage.getItem("esl_gas_sync");
+  if (!raw) return;
+  try {
+    var s = JSON.parse(raw);
+    if (s.gasUrl) document.getElementById("gasUrl").value = s.gasUrl;
+  } catch (e) {}
+}
+
+function saveGasUrl() {
+  var url = document.getElementById("gasUrl").value.trim();
+  var raw = localStorage.getItem("esl_gas_sync");
+  var s = {};
+  try { s = raw ? JSON.parse(raw) : {}; } catch (e) {}
+  s.gasUrl = url;
+  localStorage.setItem("esl_gas_sync", JSON.stringify(s));
+}
+
+function getGasUrl() {
+  var el = document.getElementById("gasUrl");
+  return el ? el.value.trim() : "";
+}
+
+/* ============================================================
+   DATA FETCHING
+   ============================================================ */
+var allCoordData = [];
+var activityChartInst = null;
+
+function fetchAll() {
+  var gasUrl = getGasUrl();
+  if (!gasUrl) {
+    showToast("Please enter your Script URL first.");
+    return;
+  }
+
+  var btn = document.getElementById("refreshBtn");
+  if (btn) btn.textContent = "Loading...";
+
+  var url = gasUrl + "?action=readAll";
+  fetch(url)
+    .then(function(r) { return r.json(); })
+    .then(function(resp) {
+      if (btn) btn.innerHTML = "&#8635; Refresh";
+      if (!resp.success) {
+        showError("Drive returned error: " + (resp.error || "Unknown"));
+        return;
+      }
+      allCoordData = resp.data || [];
+      renderAll(allCoordData);
+      showToast("Loaded " + allCoordData.length + " coordinator" + (allCoordData.length !== 1 ? "s" : ""));
+    })
+    .catch(function(err) {
+      if (btn) btn.innerHTML = "&#8635; Refresh";
+      showError("Network error: " + err.message);
+    });
+}
+
+function showError(msg) {
+  document.getElementById("coordGrid").innerHTML = '<div class="error-msg">&#9888; ' + escHtml(msg) + '</div>';
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+function renderAll(data) {
+  if (!data || data.length === 0) {
+    document.getElementById("coordGrid").innerHTML = '<div class="status-msg">No coordinator data found in Drive.</div>';
+    return;
+  }
+
+  // Aggregate stats
+  var totalWalk = 0;
+  var totalActiveCycles = 0;
+  var latestSync = "";
+  var stageCounts = [0, 0, 0, 0, 0];
+  var stageLabels = ["Observation", "Feedback", "Action Step", "Follow-Up", "Growth"];
+  var chartNames = [];
+  var chartWalk = [];
+
+  var html = "";
+  for (var i = 0; i < data.length; i++) {
+    var env = data[i];
+    var coordData = env.data || {};
+    var name = env.coordinatorName || env.coordinatorId || "Coordinator " + (i + 1);
+    var coordId = env.coordinatorId || "?";
+    var lastSync = env.lastSync || "";
+
+    // Parse walkthrough history
+    var wh = [];
+    try {
+      var whRaw = coordData["walkthrough_history"];
+      wh = whRaw ? (typeof whRaw === "string" ? JSON.parse(whRaw) : whRaw) : [];
+    } catch (e) { wh = []; }
+
+    // Parse audit history
+    var ah = [];
+    try {
+      var ahRaw = coordData["esl_audit_history"];
+      ah = ahRaw ? (typeof ahRaw === "string" ? JSON.parse(ahRaw) : ahRaw) : [];
+    } catch (e) { ah = []; }
+
+    // Parse coaching cycles
+    var cycles = [];
+    try {
+      var cdRaw = coordData["coaching_cycles_data"];
+      var cd = cdRaw ? (typeof cdRaw === "string" ? JSON.parse(cdRaw) : cdRaw) : null;
+      cycles = (cd && cd.cycles) ? cd.cycles : [];
+    } catch (e) { cycles = []; }
+
+    // Active cycles + pipeline
+    var activeCycles = 0;
+    for (var c = 0; c < cycles.length; c++) {
+      var allDone = true;
+      var stagesArr = cycles[c].stages || [];
+      for (var s = 0; s < stagesArr.length; s++) {
+        if (stagesArr[s].status !== "complete") { allDone = false; break; }
+      }
+      if (!allDone) {
+        activeCycles++;
+        for (var s2 = 0; s2 < stagesArr.length; s2++) {
+          if (stagesArr[s2].status !== "complete") {
+            stageCounts[s2]++;
+            break;
+          }
+        }
+      }
+    }
+
+    totalWalk += wh.length;
+    totalActiveCycles += activeCycles;
+    if (!latestSync || lastSync > latestSync) latestSync = lastSync;
+
+    // Card freshness
+    var freshClass = "stale";
+    if (lastSync) {
+      var ageDays = (Date.now() - new Date(lastSync).getTime()) / 86400000;
+      if (ageDays < 1) freshClass = "fresh";
+      else if (ageDays < 7) freshClass = "recent";
+    }
+
+    var syncAgo = lastSync ? relativeTime(lastSync) : "Never";
+
+    html += '<div class="coord-card ' + freshClass + '">';
+    html += '<div class="coord-name">' + escHtml(name) + '</div>';
+    html += '<div class="coord-id">ID: ' + escHtml(coordId) + '</div>';
+    html += '<div class="coord-meta">Last sync: ' + escHtml(syncAgo) + '</div>';
+    html += '<div class="coord-stats">';
+    html += '<span class="coord-stat">&#128221; ' + wh.length + ' walkthroughs</span>';
+    html += '<span class="coord-stat">&#128270; ' + ah.length + ' audits</span>';
+    html += '<span class="coord-stat">&#128172; ' + activeCycles + ' active cycles</span>';
+    html += '</div></div>';
+
+    chartNames.push(name);
+    chartWalk.push(wh.length);
+  }
+
+  document.getElementById("coordGrid").innerHTML = html;
+
+  // Stats row
+  document.getElementById("statCoords").textContent = data.length;
+  document.getElementById("statWalkthroughs").textContent = totalWalk;
+  document.getElementById("statCycles").textContent = totalActiveCycles;
+  document.getElementById("statLastSync").textContent = latestSync ? relativeTime(latestSync) : "—";
+
+  // Pipeline badges
+  var pipeHtml = "";
+  for (var p = 0; p < stageLabels.length; p++) {
+    pipeHtml += '<div class="pipe-badge"><span class="pipe-num">' + stageCounts[p] + '</span>' + escHtml(stageLabels[p]) + '</div>';
+  }
+  document.getElementById("pipelineRow").innerHTML = pipeHtml;
+
+  // Chart
+  renderChart(chartNames, chartWalk);
+}
+
+function renderChart(labels, values) {
+  var ctx = document.getElementById("activityChart").getContext("2d");
+  if (activityChartInst) activityChartInst.destroy();
+  var isDark = document.body.classList.contains("dark-mode");
+  activityChartInst = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: labels,
+      datasets: [{
+        label: "Walkthroughs",
+        data: values,
+        backgroundColor: "rgba(74,144,217,0.7)",
+        borderColor: "#4a90d9",
+        borderWidth: 1,
+        borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: function(ctx) { return ctx.parsed.y + " walkthroughs"; } } }
+      },
+      scales: {
+        x: {
+          ticks: { color: isDark ? "#aaa" : "#555" },
+          grid: { color: isDark ? "rgba(255,255,255,.05)" : "rgba(0,0,0,.05)" }
+        },
+        y: {
+          beginAtZero: true,
+          ticks: { stepSize: 1, color: isDark ? "#aaa" : "#555" },
+          grid: { color: isDark ? "rgba(255,255,255,.05)" : "rgba(0,0,0,.05)" }
+        }
+      }
+    }
+  });
+}
+
+/* ============================================================
+   SEND REMINDERS
+   ============================================================ */
+function sendReminders() {
+  var gasUrl = getGasUrl();
+  if (!gasUrl) { showToast("Please enter your Script URL first."); return; }
+
+  // Build coordinator list with emails from loaded data (no emails stored on client side)
+  var coords = [];
+  for (var i = 0; i < allCoordData.length; i++) {
+    coords.push({
+      coordinatorId: allCoordData[i].coordinatorId,
+      coordinatorName: allCoordData[i].coordinatorName
+    });
+  }
+
+  showToast("Sending reminders...");
+  fetch(gasUrl, {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({action: "sendReminders", coordinators: coords})
+  })
+    .then(function(r) { return r.json(); })
+    .then(function(resp) {
+      if (resp.success && resp.result) {
+        var r = resp.result;
+        showToast("Reminders sent to " + (r.sent ? r.sent.length : 0) + " coordinator(s). " + (r.skipped ? r.skipped.length : 0) + " skipped (no email configured).");
+      } else {
+        showToast("Error: " + (resp.error || "Unknown error"));
+      }
+    })
+    .catch(function(err) {
+      showToast("Network error: " + err.message);
+    });
+}
+
+/* ============================================================
+   UTILITIES
+   ============================================================ */
+function escHtml(str) {
+  if (!str) return "";
+  var d = document.createElement("div");
+  d.appendChild(document.createTextNode(String(str)));
+  return d.innerHTML;
+}
+
+function relativeTime(isoStr) {
+  if (!isoStr) return "Unknown";
+  var ms = Date.now() - new Date(isoStr).getTime();
+  var mins = Math.floor(ms / 60000);
+  if (mins < 2) return "just now";
+  if (mins < 60) return mins + "m ago";
+  var hrs = Math.floor(mins / 60);
+  if (hrs < 24) return hrs + "h ago";
+  var days = Math.floor(hrs / 24);
+  if (days < 30) return days + "d ago";
+  return new Date(isoStr).toLocaleDateString();
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+loadSettings();
+if ("serviceWorker" in navigator) { navigator.serviceWorker.register("./service-worker.js").catch(function() {}); }
+</script>
+</body>
+</html>

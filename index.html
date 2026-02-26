@@ -135,6 +135,7 @@ body.dark-mode .teacher-link:hover{color:#a8d4ff}
     <p>Manager of Multilingual / ESL Coordinators &mdash; Tool Suite</p>
     <div class="header-row">
       <a class="tool-btn" href="Data_Backup_Hub.html">&#128190; Data Backup Hub</a>
+      <a class="tool-btn" href="Onboarding.html">&#9881; Setup Guide</a>
       <button class="tool-btn" onclick="toggleDarkMode()" id="darkModeToggle" aria-label="Toggle dark mode">&#9789; Dark</button>
     </div>
   </div>
@@ -215,6 +216,12 @@ body.dark-mode .teacher-link:hover{color:#a8d4ff}
       <div class="tc-name">Coordinator Workload</div>
       <div class="tc-desc">Monitor team capacity, workload balance, and campus coverage across all 4 coordinators.</div>
       <div class="tc-meta" id="metaWorkload"></div>
+    </a>
+    <a class="tool-card" href="Team_Overview.html">
+      <div class="tc-icon">&#128202;</div>
+      <div class="tc-name">Team Overview</div>
+      <div class="tc-desc">Manager dashboard — aggregate walkthroughs, audits, and coaching cycles across all coordinators via Drive Sync.</div>
+      <div class="tc-meta" id="metaTeamOverview"></div>
     </a>
   </div>
 
@@ -653,6 +660,13 @@ function loadExtraMeta() {
     metaT360.innerHTML = roster.length > 0
       ? '<span class="tc-badge blue">' + roster.length + ' teachers</span>'
       : '<span class="tc-badge gray">No roster data</span>';
+  }
+  var metaTeamOverview = document.getElementById("metaTeamOverview");
+  if (metaTeamOverview) {
+    var gasSync = safeGet("esl_gas_sync");
+    metaTeamOverview.innerHTML = (gasSync && gasSync.gasUrl)
+      ? '<span class="tc-badge green">Drive sync configured</span>'
+      : '<span class="tc-badge gray">Drive sync not configured</span>';
   }
 }
 

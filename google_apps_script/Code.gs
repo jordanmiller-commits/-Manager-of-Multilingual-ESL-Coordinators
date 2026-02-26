@@ -5,6 +5,15 @@
 
 var FOLDER_ID = '1FvxiBn6-SmLa2RKXWXdE7DMufwm0tOVo';
 
+// Email reminder configuration — add coordinator emails here
+var COORDINATOR_EMAIL_MAP = {
+  // 'jsmith': 'jsmith@school.org',
+  // 'mrodriguez': 'mrodriguez@school.org',
+};
+var OVERDUE_DAYS = 7;   // coaching stage considered overdue after N days
+var STALLED_DAYS = 14;  // cycle considered stalled if no update in N days
+var APP_URL = "https://jordanmiller-commits.github.io/-Manager-of-Multilingual-ESL-Coordinators/";
+
 // localStorage keys to sync (excludes device-specific settings)
 var SYNC_KEYS = [
   'esl_audit_data',
@@ -114,6 +123,12 @@ function doPost(e) {
       if (!coordId3) return jsonResponse({ error: 'Missing coordinatorId' });
       var deleted = deleteCoordinatorData(coordId3);
       return jsonResponse({ success: deleted, message: deleted ? 'Deleted' : 'Not found' });
+    }
+
+    if (action === 'sendReminders') {
+      var coordsParam = body.coordinators || [];
+      var reminderResult = sendReminderEmails(coordsParam);
+      return jsonResponse({ success: true, result: reminderResult });
     }
 
     return jsonResponse({ error: 'Unknown action: ' + action });
@@ -269,6 +284,185 @@ function jsonResponse(obj) {
   var output = ContentService.createTextOutput(JSON.stringify(obj));
   output.setMimeType(ContentService.MimeType.JSON);
   return output;
+}
+
+// ---- Email Reminder Functions ----
+
+/**
+ * Main dispatcher — sends overdue/stalled coaching reminders to coordinators.
+ * @param {Array} coordsOverride - optional array of {coordinatorId, email} objects from frontend
+ */
+function sendReminderEmails(coordsOverride) {
+  var coords = (coordsOverride && coordsOverride.length > 0)
+    ? coordsOverride
+    : buildCoordsFromMap();
+
+  var sent = [];
+  var skipped = [];
+
+  for (var i = 0; i < coords.length; i++) {
+    var coord = coords[i];
+    if (!coord.email) { skipped.push(coord.coordinatorId || coord.id); continue; }
+
+    var envelope = readCoordinatorData(coord.coordinatorId || coord.id);
+    if (!envelope || !envelope.data) { skipped.push(coord.coordinatorId || coord.id); continue; }
+
+    var cyclesRaw = envelope.data['coaching_cycles_data'];
+    var cycles = [];
+    try {
+      var cd = typeof cyclesRaw === 'string' ? JSON.parse(cyclesRaw) : cyclesRaw;
+      cycles = (cd && cd.cycles) ? cd.cycles : [];
+    } catch (e) { cycles = []; }
+
+    var overdue = findOverdueCycles(cycles);
+    var stalled = findStalledCycles(cycles);
+
+    if (overdue.length === 0 && stalled.length === 0) {
+      skipped.push(coord.coordinatorId || coord.id);
+      continue;
+    }
+
+    var body = buildReminderEmail(coord, overdue, stalled);
+    MailApp.sendEmail({
+      to: coord.email,
+      subject: '[ESL Manager] Coaching Cycle Reminder — ' + new Date().toLocaleDateString(),
+      body: body
+    });
+    sent.push(coord.email);
+  }
+
+  return { sent: sent, skipped: skipped };
+}
+
+/** Converts COORDINATOR_EMAIL_MAP to array of {coordinatorId, email} */
+function buildCoordsFromMap() {
+  var result = [];
+  for (var id in COORDINATOR_EMAIL_MAP) {
+    if (COORDINATOR_EMAIL_MAP.hasOwnProperty(id)) {
+      result.push({ coordinatorId: id, email: COORDINATOR_EMAIL_MAP[id] });
+    }
+  }
+  return result;
+}
+
+/** Returns cycles where the latest-dated stage is more than OVERDUE_DAYS old and cycle is not complete. */
+function findOverdueCycles(cycles) {
+  var cutoff = new Date(Date.now() - OVERDUE_DAYS * 86400000).toISOString().slice(0, 10);
+  var result = [];
+  for (var i = 0; i < cycles.length; i++) {
+    if (isCycleCompleteGAS(cycles[i])) continue;
+    var latest = latestStageDate(cycles[i]);
+    if (latest && latest < cutoff) result.push(cycles[i]);
+  }
+  return result;
+}
+
+/** Returns cycles where no stage has been updated in more than STALLED_DAYS and cycle is not complete. */
+function findStalledCycles(cycles) {
+  var cutoff = new Date(Date.now() - STALLED_DAYS * 86400000).toISOString().slice(0, 10);
+  var result = [];
+  for (var i = 0; i < cycles.length; i++) {
+    if (isCycleCompleteGAS(cycles[i])) continue;
+    var latest = latestStageDate(cycles[i]);
+    if (!latest || latest < cutoff) result.push(cycles[i]);
+  }
+  return result;
+}
+
+/** Returns true if all 5 stages are status === 'complete'. */
+function isCycleCompleteGAS(cycle) {
+  var stages = cycle.stages || [];
+  for (var i = 0; i < stages.length; i++) {
+    if (stages[i].status !== 'complete') return false;
+  }
+  return stages.length > 0;
+}
+
+/** Returns the most recent date string across all stages, or null. */
+function latestStageDate(cycle) {
+  var stages = cycle.stages || [];
+  var latest = null;
+  for (var i = 0; i < stages.length; i++) {
+    if (stages[i].date && (!latest || stages[i].date > latest)) {
+      latest = stages[i].date;
+    }
+  }
+  return latest;
+}
+
+/** Returns label of the first non-complete stage. */
+function currentStageLabel(cycle) {
+  var stageLabels = ['Observation', 'Feedback', 'Action Step', 'Follow-Up', 'Growth'];
+  var stages = cycle.stages || [];
+  for (var i = 0; i < stages.length; i++) {
+    if (stages[i].status !== 'complete') {
+      return stageLabels[i] || ('Stage ' + (i + 1));
+    }
+  }
+  return 'Complete';
+}
+
+/** Builds plain-text email body for a coordinator's overdue/stalled cycles. */
+function buildReminderEmail(coord, overdue, stalled) {
+  var name = coord.coordinatorName || coord.name || (coord.coordinatorId || coord.id);
+  var lines = [];
+  lines.push('Hi ' + name + ',');
+  lines.push('');
+  lines.push('This is your weekly ESL Manager coaching cycle reminder.');
+  lines.push('');
+
+  if (overdue.length > 0) {
+    lines.push('--- OVERDUE CYCLES (last update > ' + OVERDUE_DAYS + ' days ago) ---');
+    for (var i = 0; i < overdue.length; i++) {
+      var c = overdue[i];
+      lines.push('  • ' + (c.teacher || 'Unknown teacher') +
+        ' (' + (c.campus || 'N/A') + ') — current stage: ' + currentStageLabel(c) +
+        ', last update: ' + (latestStageDate(c) || 'none'));
+    }
+    lines.push('');
+  }
+
+  if (stalled.length > 0) {
+    lines.push('--- STALLED CYCLES (no update in ' + STALLED_DAYS + '+ days) ---');
+    for (var j = 0; j < stalled.length; j++) {
+      var s = stalled[j];
+      lines.push('  • ' + (s.teacher || 'Unknown teacher') +
+        ' (' + (s.campus || 'N/A') + ') — current stage: ' + currentStageLabel(s));
+    }
+    lines.push('');
+  }
+
+  lines.push('Open your Coaching Cycle Tracker to update these cycles:');
+  lines.push(APP_URL + 'Academic_Monitoring_Leader_Facing/Coaching_Cycle_Tracker.html');
+  lines.push('');
+  lines.push('— ESL Manager Suite (automated reminder)');
+  return lines.join('\n');
+}
+
+/**
+ * Installs a weekly Monday 7AM time-based trigger.
+ * Run this once manually from the Apps Script editor.
+ */
+function createWeeklyTrigger() {
+  // Remove any existing weeklyReminderJob triggers first
+  var triggers = ScriptApp.getProjectTriggers();
+  for (var i = 0; i < triggers.length; i++) {
+    if (triggers[i].getHandlerFunction() === 'weeklyReminderJob') {
+      ScriptApp.deleteTrigger(triggers[i]);
+    }
+  }
+  ScriptApp.newTrigger('weeklyReminderJob')
+    .timeBased()
+    .onWeekDay(ScriptApp.WeekDay.MONDAY)
+    .atHour(7)
+    .create();
+  Logger.log('Weekly reminder trigger created (Monday 7AM).');
+}
+
+/** Handler called by the weekly trigger. */
+function weeklyReminderJob() {
+  var result = sendReminderEmails([]);
+  Logger.log('Weekly reminder job complete. Sent: ' + result.sent.join(', ') + ' | Skipped: ' + result.skipped.join(', '));
 }
 
 // ---- Test function (run manually in script editor) ----

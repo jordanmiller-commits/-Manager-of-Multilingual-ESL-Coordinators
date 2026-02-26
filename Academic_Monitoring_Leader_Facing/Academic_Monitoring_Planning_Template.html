@@ -385,6 +385,7 @@ body.dark-mode .ac-item:hover{background:#1a2744}
       <button class="tool-btn" onclick="saveToWalkthroughHistory()" style="border-color:rgba(39,174,96,.5)">&#128190; Save to History</button>
       <button class="tool-btn" onclick="showModal('historyModal')">&#128218; History</button>
       <button class="tool-btn" onclick="openDashboard()">&#128202; Dashboard</button>
+      <button class="tool-btn" onclick="exportCalendar()" style="border-color:rgba(155,89,182,.5)">&#128197; Calendar</button>
       <button class="tool-btn" id="qcToggle" onclick="toggleQuickCode()" style="border-color:rgba(39,174,96,.5)">&#9889; Quick Code</button>
       <button class="tool-btn" onclick="toggleDarkMode()" id="darkModeToggle" aria-label="Toggle dark mode">&#9789; Dark</button>
       <a class="tool-btn" href="../index.html" style="margin-left:auto" aria-label="Back to Home">&#127968; Home</a>
@@ -1677,6 +1678,140 @@ function launchAuditFollowUp(snapshot) {
 
 function openDashboard() {
   window.open("Walkthrough_Dashboard.html", "_blank");
+}
+
+/* ======================================================
+   CALENDAR EXPORT (ICS)
+   ====================================================== */
+
+function icsEscape(str) {
+  if (!str) return "";
+  return String(str)
+    .replace(/\\/g, "\\\\")
+    .replace(/;/g, "\\;")
+    .replace(/,/g, "\\,")
+    .replace(/\n/g, "\\n");
+}
+
+function icsFold(line) {
+  // RFC 5545: fold lines at 75 octets
+  var result = "";
+  while (line.length > 75) {
+    result += line.slice(0, 75) + "\r\n ";
+    line = line.slice(75);
+  }
+  result += line;
+  return result;
+}
+
+function parseTimeFromText(text) {
+  if (!text) return null;
+  // Match HH:MM or H:MM (12 or 24 hour)
+  var m = String(text).match(/(\d{1,2}):(\d{2})\s*(am|pm)?/i);
+  if (!m) return null;
+  var h = parseInt(m[1], 10);
+  var min = parseInt(m[2], 10);
+  var ampm = m[3] ? m[3].toLowerCase() : null;
+  if (ampm === "pm" && h < 12) h += 12;
+  if (ampm === "am" && h === 12) h = 0;
+  return {hours: h, minutes: min};
+}
+
+function parseEndTimeFromText(text, startH, startM) {
+  if (!text) return null;
+  // Find a second time occurrence in range patterns like "9:15 - 10:00"
+  var matches = [];
+  var re = /(\d{1,2}):(\d{2})\s*(am|pm)?/gi;
+  var m;
+  while ((m = re.exec(String(text))) !== null) {
+    var h = parseInt(m[1], 10);
+    var min = parseInt(m[2], 10);
+    var ampm = m[3] ? m[3].toLowerCase() : null;
+    if (ampm === "pm" && h < 12) h += 12;
+    if (ampm === "am" && h === 12) h = 0;
+    matches.push({hours: h, minutes: min});
+  }
+  if (matches.length >= 2) return matches[1];
+  // Default: start + 50 minutes
+  var total = startH * 60 + startM + 50;
+  return {hours: Math.floor(total / 60) % 24, minutes: total % 60};
+}
+
+function formatIcsDate(dateStr, hours, minutes) {
+  // dateStr: YYYY-MM-DD, returns YYYYMMDDTHHMMSS
+  if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    // Use today as fallback
+    dateStr = new Date().toISOString().slice(0, 10);
+  }
+  var d = dateStr.replace(/-/g, "");
+  var hh = ("0" + (hours || 8)).slice(-2);
+  var mm = ("0" + (minutes || 0)).slice(-2);
+  return d + "T" + hh + mm + "00";
+}
+
+function exportCalendar() {
+  syncFromDOM();
+  var state = collectState();
+  var meta = state.meta || {};
+  var campus = meta.campus || "Campus";
+  var leader = meta.leader || "";
+  var focusLabel = meta.focusLabel || "";
+  var roundsArr = state.rounds || [];
+
+  if (roundsArr.length === 0) {
+    alert("No rounds to export. Add at least one round first.");
+    return;
+  }
+
+  var uid_base = "esl-walkthrough-" + Date.now();
+  var lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//ESL Manager Suite//Walkthrough Calendar//EN", "CALSCALE:GREGORIAN", "METHOD:PUBLISH"];
+
+  for (var i = 0; i < roundsArr.length; i++) {
+    var round = roundsArr[i];
+    var rt = getRoundType(round.type);
+    var roundNum = i + 1;
+    var dateTimeText = round.dateTime || "";
+
+    // Try to extract a date from dateTime cell (YYYY-MM-DD) or fallback to meta date
+    var dateMatch = dateTimeText.match(/\b(\d{4}-\d{2}-\d{2})\b/);
+    var dateStr = dateMatch ? dateMatch[1] : (meta.date || new Date().toISOString().slice(0, 10));
+
+    var startTime = parseTimeFromText(dateTimeText) || {hours: 8, minutes: 0};
+    var endTime = parseEndTimeFromText(dateTimeText, startTime.hours, startTime.minutes);
+
+    var dtStart = formatIcsDate(dateStr, startTime.hours, startTime.minutes);
+    var dtEnd = formatIcsDate(dateStr, endTime.hours, endTime.minutes);
+
+    var summary = "[" + rt.label + "] Round " + roundNum + " - " + campus + (focusLabel ? " (" + focusLabel + ")" : "");
+    var descParts = [];
+    if (leader) descParts.push("Leader: " + leader);
+    if (round.targetTeachers) descParts.push("Teachers: " + round.targetTeachers.replace(/\n/g, ", "));
+    if (round.lookFor) descParts.push("Look-For: " + round.lookFor.replace(/\n/g, " "));
+    var description = descParts.join("\\n");
+
+    lines.push("BEGIN:VEVENT");
+    lines.push(icsFold("UID:" + uid_base + "-r" + roundNum + "@eslmanager"));
+    lines.push("DTSTART:" + dtStart);
+    lines.push("DTEND:" + dtEnd);
+    lines.push(icsFold("SUMMARY:" + icsEscape(summary)));
+    lines.push(icsFold("DESCRIPTION:" + icsEscape(description)));
+    lines.push(icsFold("LOCATION:" + icsEscape(campus)));
+    lines.push("END:VEVENT");
+  }
+
+  lines.push("END:VCALENDAR");
+  var icsContent = lines.join("\r\n") + "\r\n";
+
+  var blob = new Blob([icsContent], {type: "text/calendar;charset=utf-8"});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url;
+  a.download = "Walkthrough_" + (meta.date || new Date().toISOString().slice(0, 10)) + ".ics";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast("Calendar exported — " + roundsArr.length + " round" + (roundsArr.length !== 1 ? "s" : ""));
 }
 
 /* ======================================================
