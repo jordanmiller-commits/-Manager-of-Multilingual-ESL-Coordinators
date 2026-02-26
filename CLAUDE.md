@@ -7,10 +7,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```
 Manager_of_Multilingual_ESL_Coordinators/
 ├── index.html                              # Unified Home Page — tool launcher, search, activity hub
+├── Team_Overview.html                      # Manager dashboard — aggregate all coordinator data via Drive Sync
+├── Onboarding.html                         # 5-step setup wizard for new coordinators; ?gasUrl= param support
 ├── Teacher_360_Profile.html                # Aggregate teacher data across all tools (read-only)
 ├── Data_Backup_Hub.html                    # Centralized backup/restore + GitHub Gist + Google Drive sync
 ├── manifest.json                           # PWA manifest (app name: "ESL Manager Suite")
-├── service-worker.js                       # PWA service worker — offline caching for all tools
+├── service-worker.js                       # PWA service worker v3 — offline caching for all tools
+├── TODO.md                                 # Project to-do list (security, features, expansions)
 ├── ESL_Classroom_Audit/                    # ESL classroom environment audit
 │   ├── ESL_Classroom_Audit.html
 │   ├── Audit_Dashboard.html                # Chart.js audit trends dashboard
@@ -49,7 +52,7 @@ Manager_of_Multilingual_ESL_Coordinators/
 │   ├── ELP 201 Teacher Toolkit Secondary.pdf
 │   └── ELPS Summaries for Learning Objectives.pdf
 ├── google_apps_script/                     # Google Apps Script backend
-│   └── Code.gs                             # GAS web app: per-coordinator Google Drive sync
+│   └── Code.gs                             # GAS web app: Drive sync + email reminders + weekly trigger
 ├── Newcomer_Resources/                     # Newcomer ESL home resources
 │   ├── ESL at Home English Weeks 5-8.pdf
 │   └── ESL at Home English Weeks 9-12.pdf
@@ -60,6 +63,16 @@ Manager_of_Multilingual_ESL_Coordinators/
 ## Project Overview
 
 A suite of single-file web applications for managing multilingual/ESL coordinators. All tools share the same conventions and localStorage-based data sharing. Hosted on GitHub Pages.
+
+**Live URL**: `https://jordanmiller-commits.github.io/-Manager-of-Multilingual-ESL-Coordinators/`
+
+**Coordinators** (as of 2026-02-26):
+| ID | Name | Email |
+|---|---|---|
+| `jmiller` | J. Miller | jmiller@uplifteducation.org |
+| `kpatterson` | K. Patterson | kpatterson@uplifteducation.org |
+| `pokolo` | P. Okolo | Pokolo@uplifteducation.org |
+| `vpalencia` | V. Palencia | vpalencia@uplifteducation.org |
 
 ## Development
 
@@ -73,8 +86,9 @@ Open any `.html` file directly in a browser. Changes take effect on reload. Ther
 - Event handlers via inline `onclick` or closure-wrapped `addEventListener`.
 - Persistence via browser `localStorage` with debounced auto-save.
 - Dark mode: `body.dark-mode` class, persisted via `esl_app_theme` localStorage key, toggle button in every tool's header.
-- PWA: Root `manifest.json` + `service-worker.js`, registered from all HTML files.
+- PWA: Root `manifest.json` + `service-worker.js` (v3), registered from all HTML files.
 - Print: `@media print` CSS in every tool hides toolbars and formats for paper.
+- When bumping the service worker cache, increment `CACHE_NAME` (currently `"esl-suite-v3"`) and add any new HTML files to the `ASSETS` array.
 
 ## Cross-Tool Data Sharing
 
@@ -98,7 +112,8 @@ All tools share localStorage when served from the same origin (same directory on
 | `elps_agent_history` | ELPS Agent | ELPS Agent | Recent query history |
 | `esl_app_theme` | All tools | All tools | Dark mode preference (`"dark"` / `"light"`) |
 | `esl_gist_sync` | Backup Hub | Backup Hub | GitHub Gist PAT and Gist ID for cloud sync |
-| `esl_gas_sync` | Backup Hub | Backup Hub | Google Drive sync URL, coordinator ID/name |
+| `esl_gas_sync` | Backup Hub, Onboarding | Backup Hub, Team Overview, Onboarding | Drive sync URL, coordinator ID/name |
+| `esl_onboarding_complete` | Onboarding | Onboarding | Checklist state `{step1:true, ...}` |
 
 ---
 
@@ -108,25 +123,34 @@ All tools share localStorage when served from the same origin (same directory on
 
 - **Global Search**: Search bar that searches across all localStorage data — teachers, campuses, observations, coaching actions
 - **Stats bar**: Audits saved, walkthroughs, teachers in roster, coaching cycles
-- **Tool grid**: Cards linking to each tool (9 total) with live status badges
+- **Tool grid**: Cards linking to each tool (11 total) with live status badges. Team Overview card shows Drive sync status.
 - **Alerts**: Overdue coaching actions, stalled coaching cycles, high-score celebrations, onboarding nudges
 - **Recent Activity**: Merged timeline from `esl_audit_history` and `walkthrough_history`, sorted by date
-- **Dark mode toggle** and **Data Backup Hub** link in header
+- **Header**: Data Backup Hub link + Setup Guide link + dark mode toggle
 
 ---
 
-## Teacher 360 Profile
+## Team Overview
 
-`Teacher_360_Profile.html` — Read-only aggregate view of a single teacher across all tools. Supports `?teacher=NAME` URL parameter for direct deep-linking from other tools.
+`Team_Overview.html` — Manager dashboard aggregating all coordinator data via GAS `readAll` endpoint.
 
-- **Teacher Selector**: Dropdown + search populated from roster and all data sources
-- **Summary Stats**: Total observations, avg fidelity %, latest audit score, coaching stage, total sessions
-- **Walkthrough Observations**: Code distribution bar, fidelity trend chart (Chart.js), observation table
-- **Audit History**: Score progression with trend arrows, audit table
-- **Coaching Cycles**: 5-stage pipeline visual cards
-- **Coaching Actions**: Follow-up actions table with overdue highlighting
-- **Timeline**: Merged chronological timeline of all events
-- **Breadcrumb**: Shown when loaded via `?teacher=` URL param, linking back to Home
+- **Settings card**: GAS Script URL input (reads/writes `esl_gas_sync`)
+- **Stats row**: Total coordinators, total walkthroughs, active coaching cycles, last sync time
+- **Coordinator cards**: One per coordinator with freshness color border (green <24h, yellow <7d, red >7d/never), walkthrough count, audit count, active cycle count
+- **Aggregated Coaching Pipeline**: Badge row showing total cycles at each of 5 stages across all coordinators
+- **Walkthrough Activity chart**: Chart.js bar chart — coordinator names on X, walkthrough count on Y
+- **Send Reminders button**: POSTs `{action:"sendReminders", coordinators:[...]}` to GAS
+
+---
+
+## Onboarding Guide
+
+`Onboarding.html` — 5-step setup wizard for new coordinators.
+
+- **URL param**: `?gasUrl=URL` pre-fills Script URL — manager distributes the link with this baked in
+- **Steps**: (1) Suite overview + URL display, (2) PWA install instructions, (3) Coordinator ID/name form → writes `esl_gas_sync`, (4) Drive sync instructions, (5) Calendar export instructions
+- **Checklist**: Progress bar + per-step checkboxes persisted in `esl_onboarding_complete`
+- **Coordinator setup form** (`saveCoordSetup()`): validates ID/name, writes `esl_gas_sync`, marks step 3 complete
 
 ---
 
@@ -230,6 +254,7 @@ The **Score Trends** view also renders an **Audit Entries table** below the char
 - **Roster**: `getRoster()`, `saveRoster()`, `addToRoster()`, `harvestTeachers()`, `showAutocomplete()`, `pickAutocomplete()`.
 - **Quick-Code**: `toggleQuickCode()`, `selectQCCode()`, `submitQuickCode()`, `updateQCRounds()`.
 - **Pipeline**: `launchAuditFollowUp()` — writes `walkthrough_audit_handoff` and opens audit tool. `startCycleFromAction(idx)` — writes `coaching_cycle_handoff` and opens Coaching Cycle Tracker.
+- **Calendar Export**: `exportCalendar()` — generates RFC 5545 `.ics` file with one VEVENT per round. Helpers: `icsEscape()`, `icsFold()`, `parseTimeFromText()`, `parseEndTimeFromText()`, `formatIcsDate()`. Time parsed from dateTime cell; defaults to 8AM if unparseable.
 - **Print/Export**: `printFilled()`, `printBlank()`, `exportData()`, `confirmImport()`, `confirmReset()`.
 
 ---
@@ -310,9 +335,14 @@ Manages all keys listed in the Cross-Tool Data Sharing table above.
 
 - **Folder**: hardcoded `FOLDER_ID = '1FvxiBn6-SmLa2RKXWXdE7DMufwm0tOVo'`
 - **File naming**: `{coordinatorId}_data.json` per coordinator
+- **Coordinator emails**: `COORDINATOR_EMAIL_MAP` — keyed by coordinatorId, values are email addresses
+- **Reminder thresholds**: `OVERDUE_DAYS = 7`, `STALLED_DAYS = 14`
+- **App URL**: `APP_URL` — used in reminder email body links
 - **Endpoints (GET)**: `action=status`, `action=read&coordinatorId=X`, `action=readAll`, `action=list`, `action=readKey&coordinatorId=X&key=K`
-- **Endpoints (POST body)**: `action=sync` (full push), `action=syncKey` (single key), `action=delete`
-- **Frontend**: Integrated in Data Backup Hub under "Drive Sync" section
+- **Endpoints (POST body)**: `action=sync`, `action=syncKey`, `action=delete`, `action=sendReminders`
+- **Email reminder functions**: `sendReminderEmails()`, `findOverdueCycles()`, `findStalledCycles()`, `buildReminderEmail()`, `currentStageLabel()`, `latestStageDate()`, `isCycleCompleteGAS()`
+- **Trigger**: `createWeeklyTrigger()` installs Monday 7AM `weeklyReminderJob()` — run once manually from script editor
+- **Frontend**: Integrated in Data Backup Hub (Drive Sync section) and Team Overview
 
 ---
 
@@ -333,9 +363,10 @@ Manages all keys listed in the Cross-Tool Data Sharing table above.
 
 ## PWA & Offline Support
 
-Root-level `manifest.json` and `service-worker.js` enable install-to-home-screen and offline access.
+Root-level `manifest.json` and `service-worker.js` (v3) enable install-to-home-screen and offline access.
 
 - **App name**: ESL Manager Suite
+- **Cache version**: `esl-suite-v3` — bump to v4 when adding new HTML files
 - **Cache strategy**: Cache-first with network fallback. All HTML files and Chart.js CDN pre-cached on install.
 - **Registration**: Every HTML file registers the root service worker via `navigator.serviceWorker.register()`.
 - **Manifest link**: Every HTML file includes `<link rel="manifest">` pointing to root manifest.
