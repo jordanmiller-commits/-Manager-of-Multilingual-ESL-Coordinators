@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="manifest" href="../manifest.json"/>
+<meta name="theme-color" content="#2c3e6e"/>
 <title>Academic Monitoring Planning Template &mdash; Leader-Facing</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -271,29 +273,85 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh
   .qc-code-btn{width:48px;height:48px;font-size:18px}
 }
 
+/* Dark Mode */
+body.dark-mode{background:#1a1a2e;color:#e0e0e0}
+body.dark-mode .header{background:linear-gradient(135deg,#1a1a2e,#2d3a6e)}
+body.dark-mode .card,body.dark-mode .first-card{background:#16213e;box-shadow:0 1px 5px rgba(0,0,0,.3)}
+body.dark-mode .section-head{background:#16213e;color:#7eb8f7;border-color:#2d3a6e}
+body.dark-mode .section-head:hover{background:#1a2744}
+body.dark-mode .section-body{background:#16213e;box-shadow:0 1px 5px rgba(0,0,0,.3)}
+body.dark-mode .ctrl-bar-left{color:#7eb8f7}
+body.dark-mode .meta-grid label{color:#aaa}
+body.dark-mode .meta-grid input,body.dark-mode .meta-grid select{background:#1a2744;color:#e0e0e0;border-color:#2d3a6e}
+body.dark-mode input,body.dark-mode select,body.dark-mode textarea{background:#1a2744;color:#e0e0e0;border-color:#2d3a6e}
+body.dark-mode .planning-grid{background:#16213e}
+body.dark-mode .planning-grid th{background:#1a2744;color:#7eb8f7;border-color:#2d3a6e}
+body.dark-mode .planning-grid thead th.label-col{background:#2a2714;color:#c4b470}
+body.dark-mode .planning-grid td{border-color:#2d3a6e}
+body.dark-mode .row-label{background:#2a2714!important;color:#c4b470}
+body.dark-mode .row-label .row-hint{color:#8a7a4a}
+body.dark-mode .grid-cell textarea{color:#e0e0e0}
+body.dark-mode .grid-cell textarea:focus{background:rgba(74,144,217,.08)}
+body.dark-mode .example-cell{background:#1a2744!important;color:#ccc}
+body.dark-mode .obs-table th{background:#1a3a1a;color:#66bb6a;border-color:#2a5a2a}
+body.dark-mode .obs-table td{border-color:#2d3a6e;color:#e0e0e0}
+body.dark-mode .obs-table input,body.dark-mode .obs-table select{background:#1a2744;color:#e0e0e0;border-color:#2d3a6e}
+body.dark-mode .coaching-table th{background:#2a1a3a;color:#bb86fc;border-color:#3a2a5a}
+body.dark-mode .coaching-table td{border-color:#2d3a6e;color:#e0e0e0}
+body.dark-mode .cb{background:#1a2744;color:#e0e0e0;border-color:#2d3a6e}
+body.dark-mode .cb:hover{background:#2d3a6e}
+body.dark-mode .cb.active{background:#0d2847;color:#64b5f6;border-color:#4a90d9}
+body.dark-mode .mini-dash-section{background:#16213e}
+body.dark-mode .mini-dash-bar{background:#2d3a6e}
+body.dark-mode .pipeline-badge{background:#1a2744;color:#e0e0e0;border-color:#2d3a6e}
+body.dark-mode .hist-item{background:#1a2744;border-color:#2d3a6e}
+body.dark-mode .hist-item:hover{background:#2d3a6e}
+body.dark-mode .modal{background:#16213e}
+body.dark-mode .modal h3,body.dark-mode .modal h2{color:#7eb8f7}
+body.dark-mode .modal p{color:#ccc}
+body.dark-mode .suggest-modal .cat-btn{background:#1a2744;color:#e0e0e0;border-color:#2d3a6e}
+body.dark-mode .suggest-modal .cat-btn:hover,body.dark-mode .suggest-modal .cat-btn.active{background:#2d3a6e;color:#7eb8f7}
+body.dark-mode .suggest-item{color:#ccc;border-color:#2d3a6e}
+body.dark-mode .suggest-item:hover{background:#1a2744}
+body.dark-mode .qc-bar{background:#16213e;box-shadow:0 -2px 10px rgba(0,0,0,.4);border-color:#2d3a6e}
+body.dark-mode .qc-code-btn{background:#1a2744;color:#e0e0e0;border-color:#2d3a6e}
+body.dark-mode .toast{background:#7eb8f7;color:#1a1a2e}
+body.dark-mode .ac-list{background:#16213e;border-color:#2d3a6e}
+body.dark-mode .ac-item{color:#e0e0e0}
+body.dark-mode .ac-item:hover{background:#1a2744}
+
 /* ============================
    PRINT STYLES
    ============================ */
 @media print{
-  body{background:#fff;padding:0;font-size:10px}
-  .toolbar,.tool-btn,.ctrl-bar,.cb,.modal-overlay,.obs-add-btn,.coach-add-btn,.obs-del-btn,.suggest-btn,.col-remove-btn,.preview-btns,.no-print,.mini-dash-section{display:none!important}
+  body{background:#fff!important;padding:0;font-size:10px;color:#333!important}
+  .header .toolbar,.qc-bar,.tool-btn,.mini-dash-section{display:none!important}
+  .toolbar,.ctrl-bar,.cb,.modal-overlay,.obs-add-btn,.coach-add-btn,.obs-del-btn,.suggest-btn,.col-remove-btn,.preview-btns,.no-print{display:none!important}
+  .section-head{break-after:avoid}
+  .card,.first-card,.section-body{box-shadow:none!important;border:1px solid #ddd}
   .wrap{max-width:100%}
   .header{-webkit-print-color-adjust:exact;print-color-adjust:exact;border-radius:0;padding:12px 16px}
   .header h1{font-size:16px}
   .header p{font-size:10px}
   .save-indicator{display:none!important}
-  .card{box-shadow:none;border:1px solid #ddd;border-radius:4px}
+  .card{border-radius:4px}
   .grid-scroll{box-shadow:none;border-radius:0;overflow:visible}
-  .planning-grid{min-width:0}
+  .planning-grid{min-width:auto!important}
   .planning-grid th,.planning-grid td{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   .section-head{box-shadow:none;page-break-after:avoid}
   .section-body{box-shadow:none}
   .obs-table th,.coach-table th{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   .signoff-box{page-break-inside:avoid}
+  .modal-overlay,.toast{display:none!important}
 
   /* Hide interactive grid, show print preview */
   .grid-scroll{display:none!important}
   .print-container{display:block!important;box-shadow:none;padding:0}
+
+  /* Dark mode print overrides */
+  body.dark-mode,body.dark-mode .card,body.dark-mode .planning-grid{background:#fff!important;color:#333!important}
+  body.dark-mode .planning-grid th{background:#d6e8f7!important;color:#2c3e6e!important}
+  body.dark-mode .obs-table th{background:#e8f5e9!important;color:#2e7d32!important}
 
   /* Blank print mode */
   body.print-blank .print-container .pv-grid td:not(.pv-label){color:transparent!important}
@@ -322,6 +380,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh
       <button class="tool-btn" onclick="showModal('historyModal')">&#128218; History</button>
       <button class="tool-btn" onclick="openDashboard()">&#128202; Dashboard</button>
       <button class="tool-btn" id="qcToggle" onclick="toggleQuickCode()" style="border-color:rgba(39,174,96,.5)">&#9889; Quick Code</button>
+      <button class="tool-btn" onclick="toggleDarkMode()" id="darkModeToggle" aria-label="Toggle dark mode">&#9789; Dark</button>
       <span class="save-indicator" id="saveStatus">Auto-save: ready</span>
     </div>
   </div>
@@ -559,6 +618,9 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh
 </div>
 
 <script>
+function toggleDarkMode(){var d=document.body.classList.toggle("dark-mode");localStorage.setItem("esl_app_theme",d?"dark":"light");var b=document.getElementById("darkModeToggle");if(b)b.innerHTML=d?"&#9788; Light":"&#9789; Dark";}
+(function(){if(localStorage.getItem("esl_app_theme")==="dark"){document.body.classList.add("dark-mode");var b=document.getElementById("darkModeToggle");if(b)b.innerHTML="&#9788; Light";}})();
+
 /* ======================================================
    CONSTANTS & DATA
    ====================================================== */
@@ -1828,6 +1890,7 @@ window.addEventListener("beforeprint", function() {
     document.getElementById("printContainer").className = "print-container visible";
   }
 });
+if("serviceWorker" in navigator){navigator.serviceWorker.register("../service-worker.js").catch(function(){});}
 </script>
 </body>
 </html>

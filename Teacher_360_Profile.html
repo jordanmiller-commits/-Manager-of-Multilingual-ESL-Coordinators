@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Teacher 360 Profile &mdash; ESL Coordinator Hub</title>
+<link rel="manifest" href="./manifest.json"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh;padding:20px}
+.wrap{max-width:1140px;margin:0 auto}
+
+/* ============================
+   HEADER
+   ============================ */
+.header{background:linear-gradient(135deg,#2c3e6e,#4a90d9);color:#fff;padding:24px 28px 16px;border-radius:14px 14px 0 0}
+.header h1{font-size:21px;font-weight:800;margin-bottom:2px}
+.header p{font-size:12px;opacity:.85;margin-bottom:12px}
+.toolbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.tool-btn{background:rgba(255,255,255,.13);color:#fff;border:2px solid rgba(255,255,255,.35);padding:6px 13px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;text-decoration:none;display:inline-block}
+.tool-btn:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.55)}
+
+/* ============================
+   CARDS
+   ============================ */
+.card{background:#fff;border-radius:10px;box-shadow:0 1px 5px rgba(0,0,0,.07);padding:16px 20px;margin-bottom:12px}
+.first-card{border-radius:0 0 10px 10px;margin-top:0}
+.card h2{font-size:15px;font-weight:700;color:#2c3e6e;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card h2 .icon{font-size:18px}
+
+/* ============================
+   TEACHER SELECTOR
+   ============================ */
+.selector-row{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}
+.selector-group{display:flex;flex-direction:column;gap:4px;flex:1;min-width:200px}
+.selector-group label{font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.4px}
+.selector-group input,.selector-group select{padding:8px 12px;border:1px solid #ddd;border-radius:6px;font-size:13px;font-family:inherit}
+.selector-group input:focus,.selector-group select:focus{border-color:#4a90d9;outline:none;box-shadow:0 0 0 2px rgba(74,144,217,.15)}
+.btn-print{padding:8px 16px;border-radius:7px;border:1.5px solid #ddd;background:#fff;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;color:#555;align-self:flex-end}
+.btn-print:hover{background:#eaf3fb;border-color:#4a90d9;color:#2c3e6e}
+
+/* ============================
+   SUMMARY STATS ROW
+   ============================ */
+.stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:12px}
+.summary-stat{background:#fff;border-radius:10px;box-shadow:0 1px 5px rgba(0,0,0,.07);padding:16px 20px;text-align:center}
+.stat-value{font-size:26px;font-weight:800;color:#2c3e6e;line-height:1.1}
+.stat-label{font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.4px;margin-top:4px}
+.stat-value.green{color:#27ae60}
+.stat-value.blue{color:#4a90d9}
+.stat-value.orange{color:#f39c12}
+.stat-value.red{color:#e74c3c}
+
+/* ============================
+   CODE DISTRIBUTION BAR
+   ============================ */
+.code-bar-wrap{margin:10px 0}
+.code-bar{display:flex;height:20px;border-radius:4px;overflow:hidden;background:#eee}
+.code-bar-seg{height:100%;transition:width .3s}
+.code-bar-seg.check{background:#27ae60}
+.code-bar-seg.circle{background:#4a90d9}
+.code-bar-seg.partial{background:#f39c12}
+.code-bar-seg.na{background:#bbb}
+.code-legend{display:flex;gap:14px;margin-top:6px;font-size:10px;color:#666}
+.code-legend span{display:flex;align-items:center;gap:4px}
+.code-legend .dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+
+/* ============================
+   TABLES
+   ============================ */
+.data-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
+.data-table th{background:#f0f2f7;color:#2c3e6e;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;padding:8px 10px;text-align:left;border-bottom:2px solid #ddd}
+.data-table td{padding:8px 10px;border-bottom:1px solid #f0f0f0;color:#555;vertical-align:top}
+.data-table tr:hover td{background:#f8fafd}
+.data-table .overdue{color:#e74c3c;font-weight:600}
+.data-table .status-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:600}
+.status-badge.completed,.status-badge.complete{background:#e8f5e9;color:#2e7d32}
+.status-badge.in-progress,.status-badge.in_progress{background:#e3f2fd;color:#1565c0}
+.status-badge.not-started,.status-badge.not_started{background:#f5f5f5;color:#888}
+.status-badge.pending{background:#fff3e0;color:#e65100}
+.no-data{text-align:center;padding:24px;color:#aaa;font-size:12px;font-style:italic}
+
+/* ============================
+   PIPELINE VISUAL
+   ============================ */
+.pipeline{display:flex;align-items:center;gap:0;margin:8px 0;flex-wrap:wrap}
+.pipe-stage-wrap{display:flex;flex-direction:column;align-items:center}
+.pipe-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;border:2.5px solid #ddd;background:#fff;color:#aaa;position:relative;z-index:1;transition:all .2s}
+.pipe-dot.not-started{border-color:#ddd;background:#fff;color:#aaa}
+.pipe-dot.in-progress,.pipe-dot.in_progress{border-color:#4a90d9;background:#e3f2fd;color:#4a90d9}
+.pipe-dot.complete{border-color:#27ae60;background:#27ae60;color:#fff}
+.pipe-line{width:28px;height:3px;background:#ddd;flex-shrink:0}
+.pipe-line.done{background:#27ae60}
+.pipe-line.active{background:#4a90d9}
+.pipe-label{font-size:8px;color:#888;text-align:center;margin-top:2px;max-width:60px;line-height:1.2}
+
+/* ============================
+   COACHING CYCLE CARD
+   ============================ */
+.cycle-item{border:1px solid #eee;border-radius:8px;padding:14px;margin-bottom:10px;background:#fafbfd}
+.cycle-item-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:6px}
+.cycle-item-campus{font-size:13px;font-weight:700;color:#2c3e6e}
+.cycle-item-date{font-size:11px;color:#888}
+.cycle-notes{font-size:11px;color:#666;margin-top:6px;line-height:1.5}
+
+/* ============================
+   TIMELINE
+   ============================ */
+.timeline{position:relative;padding-left:24px}
+.timeline::before{content:'';position:absolute;left:8px;top:0;bottom:0;width:2px;background:#ddd}
+.tl-item{position:relative;margin-bottom:14px;padding-left:16px}
+.tl-item::before{content:'';position:absolute;left:-20px;top:4px;width:12px;height:12px;border-radius:50%;border:2px solid #ddd;background:#fff;z-index:1}
+.tl-item.type-observation::before{border-color:#4a90d9;background:#e3f2fd}
+.tl-item.type-audit::before{border-color:#27ae60;background:#e8f5e9}
+.tl-item.type-coaching::before{border-color:#f39c12;background:#fff3e0}
+.tl-date{font-size:10px;font-weight:700;color:#888;margin-bottom:2px}
+.tl-badge{display:inline-block;padding:1px 7px;border-radius:8px;font-size:9px;font-weight:600;margin-right:6px}
+.tl-badge.obs{background:#e3f2fd;color:#1565c0}
+.tl-badge.audit{background:#e8f5e9;color:#2e7d32}
+.tl-badge.coaching{background:#fff3e0;color:#e65100}
+.tl-summary{font-size:11px;color:#555;line-height:1.5}
+
+/* ============================
+   CHART
+   ============================ */
+.chart-wrap{position:relative;width:100%;max-width:600px;margin:12px auto}
+.chart-wrap canvas{width:100%!important;max-height:250px}
+
+/* ============================
+   EMPTY STATE
+   ============================ */
+.empty-state{text-align:center;padding:40px 20px;color:#aaa}
+.empty-state .empty-icon{font-size:40px;margin-bottom:8px}
+.empty-state p{font-size:12px}
+
+/* ============================
+   DARK MODE
+   ============================ */
+body.dark-mode{background:#1a1a2e;color:#e0e0e0}
+body.dark-mode .header{background:linear-gradient(135deg,#1a1a2e,#2d3a6e)}
+body.dark-mode .card,.summary-stat{background:#16213e;box-shadow:0 1px 5px rgba(0,0,0,.3)}
+body.dark-mode h2{color:#7eb8f7}
+body.dark-mode input,body.dark-mode select,body.dark-mode textarea{background:#1a2744;color:#e0e0e0;border-color:#2d3a6e}
+body.dark-mode table th{background:#1a2744;color:#e0e0e0}
+body.dark-mode table td{color:#e0e0e0;border-color:#2d3a6e}
+body.dark-mode .modal{background:#16213e}
+body.dark-mode .summary-stat{background:#16213e;box-shadow:0 1px 5px rgba(0,0,0,.3)}
+body.dark-mode .data-table th{background:#1a2744;border-color:#2d3a6e}
+body.dark-mode .data-table td{border-color:#2d3a6e}
+body.dark-mode .data-table tr:hover td{background:#1a2744}
+body.dark-mode .code-bar{background:#2d3a6e}
+body.dark-mode .cycle-item{background:#1a2744;border-color:#2d3a6e}
+body.dark-mode .timeline::before{background:#2d3a6e}
+body.dark-mode .tl-item::before{background:#1a2744;border-color:#2d3a6e}
+body.dark-mode .selector-group label{color:#7eb8f7}
+body.dark-mode .stat-label{color:#7eb8f7}
+body.dark-mode .stat-value{color:#7eb8f7}
+body.dark-mode .stat-value.green{color:#27ae60}
+body.dark-mode .stat-value.blue{color:#4a90d9}
+body.dark-mode .stat-value.orange{color:#f39c12}
+body.dark-mode .no-data{color:#667}
+body.dark-mode .first-card{background:#16213e}
+body.dark-mode .code-legend{color:#aaa}
+body.dark-mode .tl-date{color:#7eb8f7}
+body.dark-mode .tl-summary{color:#bbb}
+body.dark-mode .cycle-item-campus{color:#7eb8f7}
+body.dark-mode .cycle-item-date{color:#7eb8f7}
+body.dark-mode .cycle-notes{color:#bbb}
+body.dark-mode .btn-print{background:#1a2744;color:#e0e0e0;border-color:#2d3a6e}
+body.dark-mode .pipe-dot.not-started{background:#1a2744;border-color:#2d3a6e;color:#667}
+body.dark-mode .pipe-line{background:#2d3a6e}
+
+/* ============================
+   PRINT STYLES
+   ============================ */
+@media print{
+  body{background:#fff!important;padding:10px;color:#000!important}
+  .header{background:#2c3e6e!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;border-radius:0}
+  .toolbar,.btn-print,#darkToggle{display:none!important}
+  .wrap{max-width:100%}
+  .card{box-shadow:none;border:1px solid #ddd;page-break-inside:avoid}
+  .summary-stat{box-shadow:none;border:1px solid #ddd}
+  .stats-row{grid-template-columns:repeat(5,1fr)}
+  .chart-wrap{page-break-inside:avoid}
+  .data-table{font-size:10px}
+  .timeline{page-break-inside:avoid}
+  .selector-row{display:none}
+  #selectorCard .card-title-row{display:block}
+  #selectedTeacherPrint{display:block!important;font-size:16px;font-weight:700;color:#2c3e6e;margin-bottom:8px}
+}
+
+/* ============================
+   FOCUS INDICATORS
+   ============================ */
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #4a90d9;outline-offset:2px}
+
+/* ============================
+   RESPONSIVE
+   ============================ */
+@media(max-width:768px){
+  .stats-row{grid-template-columns:repeat(3,1fr)}
+  .selector-row{flex-direction:column}
+  .pipeline{justify-content:center}
+}
+@media(max-width:600px){
+  body{padding:8px}
+  .header{padding:16px 14px}
+  .header h1{font-size:17px}
+  .toolbar{gap:4px}
+  .tool-btn{padding:5px 9px;font-size:10px}
+  .card{padding:12px}
+  .stats-row{grid-template-columns:1fr 1fr}
+  .stat-value{font-size:20px}
+  .data-table{font-size:11px}
+  .data-table th,.data-table td{padding:6px 6px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <!-- HEADER -->
+  <div class="header">
+    <h1>&#128100; Teacher 360 Profile</h1>
+    <p>Aggregated view of walkthrough observations, audits, coaching cycles, and actions for a single teacher.</p>
+    <div class="toolbar">
+      <a class="tool-btn" href="index.html" aria-label="Back to ESL Coordinator Hub">&#8592; Hub</a>
+      <button class="tool-btn" id="darkToggle" onclick="toggleDarkMode()" aria-label="Toggle dark mode">&#9790; Dark Mode</button>
+      <button class="tool-btn" onclick="window.print()" aria-label="Print this profile">&#128424; Print</button>
+    </div>
+  </div>
+
+  <!-- TEACHER SELECTOR -->
+  <div class="card first-card" id="selectorCard">
+    <div id="selectedTeacherPrint" style="display:none"></div>
+    <div class="selector-row">
+      <div class="selector-group">
+        <label for="teacherSearch">Search Teacher</label>
+        <input type="text" id="teacherSearch" placeholder="Type to filter teachers..." oninput="filterTeacherList()" aria-label="Search teacher name"/>
+      </div>
+      <div class="selector-group">
+        <label for="teacherSelect">Select Teacher</label>
+        <select id="teacherSelect" onchange="onTeacherSelected()" aria-label="Select teacher from list">
+          <option value="">-- Choose a teacher --</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUMMARY STATS -->
+  <div class="stats-row" id="statsRow" style="display:none">
+    <div class="summary-stat">
+      <div class="stat-value" id="statObservations">0</div>
+      <div class="stat-label">Observations</div>
+    </div>
+    <div class="summary-stat">
+      <div class="stat-value blue" id="statFidelity">&mdash;</div>
+      <div class="stat-label">Avg Fidelity %</div>
+    </div>
+    <div class="summary-stat">
+      <div class="stat-value green" id="statAuditScore">&mdash;</div>
+      <div class="stat-label">Latest Audit Score</div>
+    </div>
+    <div class="summary-stat">
+      <div class="stat-value orange" id="statCoachingStage">&mdash;</div>
+      <div class="stat-label">Coaching Stage</div>
+    </div>
+    <div class="summary-stat">
+      <div class="stat-value" id="statSessions">0</div>
+      <div class="stat-label">Total Sessions</div>
+    </div>
+  </div>
+
+  <!-- WALKTHROUGH OBSERVATIONS -->
+  <div class="card" id="walkthroughCard" style="display:none">
+    <h2><span class="icon">&#128221;</span> Walkthrough Observations</h2>
+    <div id="codeDistribution"></div>
+    <div class="chart-wrap" id="fidelityChartWrap" style="display:none">
+      <canvas id="fidelityChart"></canvas>
+    </div>
+    <div id="walkthroughTableWrap"></div>
+  </div>
+
+  <!-- AUDIT HISTORY -->
+  <div class="card" id="auditCard" style="display:none">
+    <h2><span class="icon">&#128270;</span> Audit History</h2>
+    <div id="auditTrend"></div>
+    <div id="auditTableWrap"></div>
+  </div>
+
+  <!-- COACHING CYCLES -->
+  <div class="card" id="coachingCyclesCard" style="display:none">
+    <h2><span class="icon">&#128172;</span> Coaching Cycles</h2>
+    <div id="coachingCyclesList"></div>
+  </div>
+
+  <!-- COACHING ACTIONS -->
+  <div class="card" id="coachingActionsCard" style="display:none">
+    <h2><span class="icon">&#9745;</span> Coaching Actions (from Walkthroughs)</h2>
+    <div id="coachingActionsTableWrap"></div>
+  </div>
+
+  <!-- TIMELINE -->
+  <div class="card" id="timelineCard" style="display:none">
+    <h2><span class="icon">&#128339;</span> Timeline</h2>
+    <div id="timelineWrap"></div>
+  </div>
+
+  <!-- EMPTY STATE (shown when no teacher selected) -->
+  <div class="card" id="emptyState">
+    <div class="empty-state">
+      <div class="empty-icon">&#128100;</div>
+      <p>Select a teacher above to view their 360 profile.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ======================================================
+   UTILITY FUNCTIONS
+   ====================================================== */
+
+var fidelityChartInstance = null;
+
+function safeGet(key) {
+  try {
+    var raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) { return null; }
+}
+
+function escHtml(str) {
+  if (!str) return "";
+  var d = document.createElement("div");
+  d.appendChild(document.createTextNode(str));
+  return d.innerHTML;
+}
+
+function nameMatch(a, b) {
+  if (!a || !b) return false;
+  return a.trim().toLowerCase() === b.trim().toLowerCase();
+}
+
+function nameContains(name, query) {
+  if (!name || !query) return false;
+  return name.toLowerCase().indexOf(query.toLowerCase()) >= 0;
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return "N/A";
+  var parts = dateStr.split("-");
+  if (parts.length === 3) {
+    return parts[1] + "/" + parts[2] + "/" + parts[0];
+  }
+  return dateStr;
+}
+
+function codeLabel(code) {
+  if (!code) return "N/A";
+  var c = code.toLowerCase().replace(/[^a-z]/g, "");
+  if (c === "check" || code === "\u2713" || code === "check") return "&#10003; Check";
+  if (c === "circle" || c === "o" || code === "circle") return "&#9675; Circle";
+  if (c === "partial" || c === "p" || code === "partial") return "&#9671; Partial";
+  if (c === "na" || code === "na") return "N/A";
+  return escHtml(code);
+}
+
+function codeClass(code) {
+  if (!code) return "";
+  var c = code.toLowerCase().replace(/[^a-z]/g, "");
+  if (c === "check" || code === "check") return "check";
+  if (c === "circle" || code === "circle") return "circle";
+  if (c === "partial" || code === "partial") return "partial";
+  if (c === "na" || code === "na") return "na";
+  return "";
+}
+
+/* ======================================================
+   DATA LOADING
+   ====================================================== */
+
+function getAllTeacherNames() {
+  var nameSet = {};
+  var roster = safeGet("shared_teacher_roster") || [];
+  var i, j, k;
+
+  for (i = 0; i < roster.length; i++) {
+    if (roster[i] && roster[i].trim()) {
+      nameSet[roster[i].trim().toLowerCase()] = roster[i].trim();
+    }
+  }
+
+  var wtHistory = safeGet("walkthrough_history") || [];
+  for (i = 0; i < wtHistory.length; i++) {
+    var wt = wtHistory[i];
+    var obs = wt.observations || [];
+    for (j = 0; j < obs.length; j++) {
+      if (obs[j].teacher && obs[j].teacher.trim()) {
+        var tn = obs[j].teacher.trim();
+        if (!nameSet[tn.toLowerCase()]) {
+          nameSet[tn.toLowerCase()] = tn;
+        }
+      }
+    }
+    var ca = wt.coachingActions || [];
+    for (j = 0; j < ca.length; j++) {
+      if (ca[j].teacher && ca[j].teacher.trim()) {
+        var cn = ca[j].teacher.trim();
+        if (!nameSet[cn.toLowerCase()]) {
+          nameSet[cn.toLowerCase()] = cn;
+        }
+      }
+    }
+    var tc = (wt.metrics && wt.metrics.teacherCodes) || [];
+    for (j = 0; j < tc.length; j++) {
+      if (tc[j].teacher && tc[j].teacher.trim()) {
+        var tcn = tc[j].teacher.trim();
+        if (!nameSet[tcn.toLowerCase()]) {
+          nameSet[tcn.toLowerCase()] = tcn;
+        }
+      }
+    }
+  }
+
+  var auditHistory = safeGet("esl_audit_history") || [];
+  for (i = 0; i < auditHistory.length; i++) {
+    if (auditHistory[i].meta && auditHistory[i].meta.teacher && auditHistory[i].meta.teacher.trim()) {
+      var at = auditHistory[i].meta.teacher.trim();
+      if (!nameSet[at.toLowerCase()]) {
+        nameSet[at.toLowerCase()] = at;
+      }
+    }
+  }
+
+  var cyclesData = safeGet("coaching_cycles_data");
+  var cycles = (cyclesData && cyclesData.cycles) ? cyclesData.cycles : [];
+  for (i = 0; i < cycles.length; i++) {
+    if (cycles[i].teacher && cycles[i].teacher.trim()) {
+      var ct = cycles[i].teacher.trim();
+      if (!nameSet[ct.toLowerCase()]) {
+        nameSet[ct.toLowerCase()] = ct;
+      }
+    }
+  }
+
+  var names = [];
+  for (var key in nameSet) {
+    if (nameSet.hasOwnProperty(key)) {
+      names.push(nameSet[key]);
+    }
+  }
+  names.sort(function(a, b) {
+    return a.toLowerCase().localeCompare(b.toLowerCase());
+  });
+  return names;
+}
+
+var allTeacherNames = [];
+var fullOptionsList = [];
+
+function populateTeacherDropdown() {
+  allTeacherNames = getAllTeacherNames();
+  var select = document.getElementById("teacherSelect");
+  select.innerHTML = '<option value="">-- Choose a teacher (' + allTeacherNames.length + ' found) --</option>';
+  fullOptionsList = [];
+  for (var i = 0; i < allTeacherNames.length; i++) {
+    var opt = document.createElement("option");
+    opt.value = allTeacherNames[i];
+    opt.textContent = allTeacherNames[i];
+    select.appendChild(opt);
+    fullOptionsList.push(allTeacherNames[i]);
+  }
+}
+
+function filterTeacherList() {
+  var query = document.getElementById("teacherSearch").value.trim();
+  var select = document.getElementById("teacherSelect");
+  var currentVal = select.value;
+  select.innerHTML = "";
+
+  var placeholder = document.createElement("option");
+  placeholder.value = "";
+  placeholder.textContent = "-- Choose a teacher --";
+  select.appendChild(placeholder);
+
+  var matched = 0;
+  for (var i = 0; i < fullOptionsList.length; i++) {
+    if (!query || nameContains(fullOptionsList[i], query)) {
+      var opt = document.createElement("option");
+      opt.value = fullOptionsList[i];
+      opt.textContent = fullOptionsList[i];
+      if (fullOptionsList[i] === currentVal) {
+        opt.selected = true;
+      }
+      select.appendChild(opt);
+      matched++;
+    }
+  }
+
+  placeholder.textContent = "-- " + matched + " teacher" + (matched !== 1 ? "s" : "") + " found --";
+}
+
+function onTeacherSelected() {
+  var select = document.getElementById("teacherSelect");
+  var teacher = select.value;
+  if (!teacher) {
+    hideAllSections();
+    document.getElementById("emptyState").style.display = "";
+    return;
+  }
+  document.getElementById("selectedTeacherPrint").textContent = "Teacher: " + teacher;
+  renderProfile(teacher);
+}
+
+/* ======================================================
+   PROFILE RENDERING
+   ====================================================== */
+
+function hideAllSections() {
+  document.getElementById("statsRow").style.display = "none";
+  document.getElementById("walkthroughCard").style.display = "none";
+  document.getElementById("auditCard").style.display = "none";
+  document.getElementById("coachingCyclesCard").style.display = "none";
+  document.getElementById("coachingActionsCard").style.display = "none";
+  document.getElementById("timelineCard").style.display = "none";
+}
+
+function renderProfile(teacher) {
+  document.getElementById("emptyState").style.display = "none";
+
+  var wtHistory = safeGet("walkthrough_history") || [];
+  var auditHistory = safeGet("esl_audit_history") || [];
+  var cyclesData = safeGet("coaching_cycles_data");
+  var cycles = (cyclesData && cyclesData.cycles) ? cyclesData.cycles : [];
+
+  // Gather teacher's observations across all walkthroughs
+  var teacherObs = [];
+  var teacherSessions = {};
+  var teacherCoachingActions = [];
+  var codeCounts = {check: 0, circle: 0, partial: 0, na: 0};
+  var sessionFidelities = [];
+
+  for (var wi = 0; wi < wtHistory.length; wi++) {
+    var wt = wtHistory[wi];
+    var meta = wt.meta || {};
+    var obs = wt.observations || [];
+    var sessionHasTeacher = false;
+
+    for (var oi = 0; oi < obs.length; oi++) {
+      if (nameMatch(obs[oi].teacher, teacher)) {
+        sessionHasTeacher = true;
+        teacherObs.push({
+          date: meta.date || "",
+          campus: meta.campus || "",
+          leader: meta.leader || "",
+          focus: meta.focusLabel || meta.focus || "",
+          round: obs[oi].round || "",
+          code: obs[oi].code || "",
+          notes: obs[oi].notes || "",
+          time: obs[oi].time || ""
+        });
+        var cc = codeClass(obs[oi].code);
+        if (cc && codeCounts.hasOwnProperty(cc)) {
+          codeCounts[cc]++;
+        }
+      }
+    }
+
+    // Also check teacherCodes from metrics
+    var tc = (wt.metrics && wt.metrics.teacherCodes) || [];
+    for (var ti = 0; ti < tc.length; ti++) {
+      if (nameMatch(tc[ti].teacher, teacher)) {
+        sessionHasTeacher = true;
+      }
+    }
+
+    if (sessionHasTeacher) {
+      var sessionKey = meta.date + "|" + (meta.campus || "");
+      if (!teacherSessions[sessionKey]) {
+        teacherSessions[sessionKey] = true;
+      }
+    }
+
+    // Coaching actions
+    var ca = wt.coachingActions || [];
+    for (var ci = 0; ci < ca.length; ci++) {
+      if (nameMatch(ca[ci].teacher, teacher)) {
+        teacherCoachingActions.push({
+          date: meta.date || "",
+          campus: meta.campus || "",
+          observation: ca[ci].observation || "",
+          feedback: ca[ci].feedback || "",
+          nextStep: ca[ci].nextStep || "",
+          deadline: ca[ci].deadline || "",
+          status: ca[ci].status || ""
+        });
+      }
+    }
+
+    // Session fidelity — compute per-teacher fidelity from their codes
+    if (sessionHasTeacher) {
+      var tChecks = 0;
+      var tTotal = 0;
+      for (var fi = 0; fi < obs.length; fi++) {
+        if (nameMatch(obs[fi].teacher, teacher)) {
+          tTotal++;
+          var fc = (obs[fi].code || "").toLowerCase();
+          if (fc === "check") tChecks++;
+        }
+      }
+      if (tTotal > 0) {
+        sessionFidelities.push({
+          date: meta.date || "",
+          pct: Math.round((tChecks / tTotal) * 100)
+        });
+      }
+    }
+  }
+
+  // Sort observations by date desc
+  teacherObs.sort(function(a, b) {
+    return (b.date || "").localeCompare(a.date || "");
+  });
+
+  // Gather teacher's audits
+  var teacherAudits = [];
+  for (var ai = 0; ai < auditHistory.length; ai++) {
+    var aud = auditHistory[ai];
+    if (aud.meta && nameMatch(aud.meta.teacher, teacher)) {
+      teacherAudits.push({
+        date: aud.meta.date || "",
+        campus: aud.meta.campus || "",
+        observer: aud.meta.observer || "",
+        scorePct: aud.scorePct != null ? aud.scorePct : null
+      });
+    }
+  }
+  teacherAudits.sort(function(a, b) {
+    return (b.date || "").localeCompare(a.date || "");
+  });
+
+  // Gather teacher's coaching cycles
+  var teacherCycles = [];
+  for (var cci = 0; cci < cycles.length; cci++) {
+    if (nameMatch(cycles[cci].teacher, teacher)) {
+      teacherCycles.push(cycles[cci]);
+    }
+  }
+
+  // Sort session fidelities by date asc for chart
+  sessionFidelities.sort(function(a, b) {
+    return (a.date || "").localeCompare(b.date || "");
+  });
+
+  // ---- SUMMARY STATS ----
+  var totalObservations = teacherObs.length;
+  var totalSessions = Object.keys(teacherSessions).length;
+  var avgFidelity = null;
+  if (sessionFidelities.length > 0) {
+    var fSum = 0;
+    for (var si = 0; si < sessionFidelities.length; si++) {
+      fSum += sessionFidelities[si].pct;
+    }
+    avgFidelity = Math.round(fSum / sessionFidelities.length);
+  }
+  var latestAuditScore = teacherAudits.length > 0 && teacherAudits[0].scorePct != null ? teacherAudits[0].scorePct : null;
+
+  // Current coaching stage
+  var currentCoachingStage = null;
+  for (var csi = 0; csi < teacherCycles.length; csi++) {
+    var stgs = teacherCycles[csi].stages || [];
+    var allComplete = true;
+    for (var ssi = 0; ssi < stgs.length; ssi++) {
+      if (stgs[ssi].status !== "complete") {
+        allComplete = false;
+        currentCoachingStage = stgs[ssi].label || ("Stage " + (ssi + 1));
+        break;
+      }
+    }
+    if (!allComplete) break;
+    if (allComplete && csi === teacherCycles.length - 1) {
+      currentCoachingStage = "Complete";
+    }
+  }
+
+  document.getElementById("statObservations").textContent = totalObservations;
+  document.getElementById("statFidelity").innerHTML = avgFidelity != null ? avgFidelity + "%" : "&mdash;";
+  document.getElementById("statAuditScore").innerHTML = latestAuditScore != null ? latestAuditScore + "%" : "&mdash;";
+  document.getElementById("statCoachingStage").innerHTML = currentCoachingStage ? escHtml(currentCoachingStage) : "&mdash;";
+  document.getElementById("statSessions").textContent = totalSessions;
+  document.getElementById("statsRow").style.display = "";
+
+  // ---- WALKTHROUGH OBSERVATIONS ----
+  renderWalkthroughSection(teacherObs, codeCounts, sessionFidelities);
+
+  // ---- AUDIT HISTORY ----
+  renderAuditSection(teacherAudits);
+
+  // ---- COACHING CYCLES ----
+  renderCoachingCyclesSection(teacherCycles);
+
+  // ---- COACHING ACTIONS ----
+  renderCoachingActionsSection(teacherCoachingActions);
+
+  // ---- TIMELINE ----
+  renderTimeline(teacherObs, teacherAudits, teacherCycles, teacherCoachingActions);
+}
+
+/* ======================================================
+   WALKTHROUGH SECTION
+   ====================================================== */
+
+function renderWalkthroughSection(observations, codeCounts, fidelities) {
+  var card = document.getElementById("walkthroughCard");
+  var distWrap = document.getElementById("codeDistribution");
+  var tableWrap = document.getElementById("walkthroughTableWrap");
+  var chartWrap = document.getElementById("fidelityChartWrap");
+
+  if (observations.length === 0) {
+    card.style.display = "";
+    distWrap.innerHTML = "";
+    tableWrap.innerHTML = '<div class="no-data">No walkthrough observations found for this teacher.</div>';
+    chartWrap.style.display = "none";
+    destroyFidelityChart();
+    return;
+  }
+
+  card.style.display = "";
+
+  // Code distribution bar
+  var total = codeCounts.check + codeCounts.circle + codeCounts.partial + codeCounts.na;
+  var html = '<div class="code-bar-wrap">';
+  html += '<div class="code-bar">';
+  if (total > 0) {
+    if (codeCounts.check > 0) html += '<div class="code-bar-seg check" style="width:' + ((codeCounts.check / total) * 100) + '%"></div>';
+    if (codeCounts.circle > 0) html += '<div class="code-bar-seg circle" style="width:' + ((codeCounts.circle / total) * 100) + '%"></div>';
+    if (codeCounts.partial > 0) html += '<div class="code-bar-seg partial" style="width:' + ((codeCounts.partial / total) * 100) + '%"></div>';
+    if (codeCounts.na > 0) html += '<div class="code-bar-seg na" style="width:' + ((codeCounts.na / total) * 100) + '%"></div>';
+  }
+  html += '</div>';
+  html += '<div class="code-legend">';
+  html += '<span><span class="dot" style="background:#27ae60"></span> Check: ' + codeCounts.check + '</span>';
+  html += '<span><span class="dot" style="background:#4a90d9"></span> Circle: ' + codeCounts.circle + '</span>';
+  html += '<span><span class="dot" style="background:#f39c12"></span> Partial: ' + codeCounts.partial + '</span>';
+  html += '<span><span class="dot" style="background:#bbb"></span> N/A: ' + codeCounts.na + '</span>';
+  html += '</div></div>';
+  distWrap.innerHTML = html;
+
+  // Fidelity trend chart
+  if (fidelities.length > 1 && typeof Chart !== "undefined") {
+    chartWrap.style.display = "";
+    renderFidelityChart(fidelities);
+  } else if (fidelities.length > 0) {
+    chartWrap.style.display = "none";
+    destroyFidelityChart();
+    // Textual fidelity display if Chart.js not available or only one point
+    var fidHtml = '<div style="margin:8px 0;font-size:12px;color:#555"><strong>Fidelity by Session:</strong><br/>';
+    for (var fi = 0; fi < fidelities.length; fi++) {
+      fidHtml += formatDate(fidelities[fi].date) + ': ' + fidelities[fi].pct + '%';
+      if (fi < fidelities.length - 1) fidHtml += ', ';
+    }
+    fidHtml += '</div>';
+    distWrap.innerHTML += fidHtml;
+  } else {
+    chartWrap.style.display = "none";
+    destroyFidelityChart();
+  }
+
+  // Observations table
+  var tHtml = '<table class="data-table">';
+  tHtml += '<thead><tr>';
+  tHtml += '<th scope="col">Date</th>';
+  tHtml += '<th scope="col">Campus</th>';
+  tHtml += '<th scope="col">Round</th>';
+  tHtml += '<th scope="col">Code</th>';
+  tHtml += '<th scope="col">Notes</th>';
+  tHtml += '</tr></thead><tbody>';
+  for (var i = 0; i < observations.length; i++) {
+    var ob = observations[i];
+    tHtml += '<tr>';
+    tHtml += '<td>' + formatDate(ob.date) + '</td>';
+    tHtml += '<td>' + escHtml(ob.campus) + '</td>';
+    tHtml += '<td>' + escHtml(ob.round) + '</td>';
+    tHtml += '<td>' + codeLabel(ob.code) + '</td>';
+    tHtml += '<td>' + escHtml(ob.notes) + '</td>';
+    tHtml += '</tr>';
+  }
+  tHtml += '</tbody></table>';
+  tableWrap.innerHTML = tHtml;
+}
+
+function destroyFidelityChart() {
+  if (fidelityChartInstance) {
+    fidelityChartInstance.destroy();
+    fidelityChartInstance = null;
+  }
+}
+
+function renderFidelityChart(fidelities) {
+  destroyFidelityChart();
+  var canvas = document.getElementById("fidelityChart");
+  var ctx = canvas.getContext("2d");
+
+  var labels = [];
+  var data = [];
+  for (var i = 0; i < fidelities.length; i++) {
+    labels.push(formatDate(fidelities[i].date));
+    data.push(fidelities[i].pct);
+  }
+
+  fidelityChartInstance = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: labels,
+      datasets: [{
+        label: "Fidelity %",
+        data: data,
+        borderColor: "#4a90d9",
+        backgroundColor: "rgba(74, 144, 217, 0.1)",
+        fill: true,
+        tension: 0.3,
+        pointBackgroundColor: "#4a90d9",
+        pointRadius: 5,
+        pointHoverRadius: 7
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        title: {
+          display: true,
+          text: "Fidelity % Over Time",
+          font: { size: 13, weight: "bold" },
+          color: "#2c3e6e"
+        }
+      },
+      scales: {
+        y: {
+          min: 0,
+          max: 100,
+          ticks: { callback: function(v) { return v + "%"; } }
+        }
+      }
+    }
+  });
+}
+
+/* ======================================================
+   AUDIT SECTION
+   ====================================================== */
+
+function renderAuditSection(audits) {
+  var card = document.getElementById("auditCard");
+  var trendWrap = document.getElementById("auditTrend");
+  var tableWrap = document.getElementById("auditTableWrap");
+
+  if (audits.length === 0) {
+    card.style.display = "";
+    trendWrap.innerHTML = "";
+    tableWrap.innerHTML = '<div class="no-data">No audits found for this teacher.</div>';
+    return;
+  }
+
+  card.style.display = "";
+
+  // Score trend (text-based, chronological)
+  var sortedAsc = audits.slice().sort(function(a, b) {
+    return (a.date || "").localeCompare(b.date || "");
+  });
+
+  var trendHtml = '<div style="margin-bottom:10px;font-size:12px;color:#555"><strong>Score Progression:</strong> ';
+  for (var i = 0; i < sortedAsc.length; i++) {
+    var scoreVal = sortedAsc[i].scorePct != null ? sortedAsc[i].scorePct + "%" : "N/A";
+    trendHtml += formatDate(sortedAsc[i].date) + ': <strong>' + scoreVal + '</strong>';
+    if (i < sortedAsc.length - 1) {
+      var diff = (sortedAsc[i + 1].scorePct || 0) - (sortedAsc[i].scorePct || 0);
+      if (diff > 0) {
+        trendHtml += ' &#9650; ';
+      } else if (diff < 0) {
+        trendHtml += ' &#9660; ';
+      } else {
+        trendHtml += ' &#9654; ';
+      }
+    }
+  }
+  trendHtml += '</div>';
+  trendWrap.innerHTML = trendHtml;
+
+  // Audit table
+  var tHtml = '<table class="data-table">';
+  tHtml += '<thead><tr>';
+  tHtml += '<th scope="col">Date</th>';
+  tHtml += '<th scope="col">Campus</th>';
+  tHtml += '<th scope="col">Score %</th>';
+  tHtml += '<th scope="col">Observer</th>';
+  tHtml += '</tr></thead><tbody>';
+  for (var j = 0; j < audits.length; j++) {
+    var a = audits[j];
+    tHtml += '<tr>';
+    tHtml += '<td>' + formatDate(a.date) + '</td>';
+    tHtml += '<td>' + escHtml(a.campus) + '</td>';
+    tHtml += '<td>' + (a.scorePct != null ? a.scorePct + '%' : 'N/A') + '</td>';
+    tHtml += '<td>' + escHtml(a.observer) + '</td>';
+    tHtml += '</tr>';
+  }
+  tHtml += '</tbody></table>';
+  tableWrap.innerHTML = tHtml;
+}
+
+/* ======================================================
+   COACHING CYCLES SECTION
+   ====================================================== */
+
+function renderCoachingCyclesSection(cycles) {
+  var card = document.getElementById("coachingCyclesCard");
+  var listWrap = document.getElementById("coachingCyclesList");
+
+  if (cycles.length === 0) {
+    card.style.display = "";
+    listWrap.innerHTML = '<div class="no-data">No coaching cycles found for this teacher.</div>';
+    return;
+  }
+
+  card.style.display = "";
+  var stageLabels = ["Observation", "Feedback", "Action Step", "Follow-Up", "Growth"];
+  var html = "";
+
+  for (var i = 0; i < cycles.length; i++) {
+    var c = cycles[i];
+    var stages = c.stages || [];
+    html += '<div class="cycle-item">';
+    html += '<div class="cycle-item-header">';
+    html += '<span class="cycle-item-campus">' + escHtml(c.campus || "No campus") + '</span>';
+    html += '<span class="cycle-item-date">Created: ' + formatDate(c.createdAt || "") + '</span>';
+    html += '</div>';
+
+    // Pipeline visual
+    html += '<div class="pipeline">';
+    for (var s = 0; s < 5; s++) {
+      var stage = stages[s] || {};
+      var stStatus = stage.status || "not_started";
+      var label = stage.label || stageLabels[s] || ("Stage " + (s + 1));
+      var dotClass = "pipe-dot " + stStatus;
+      var dotContent = "";
+      if (stStatus === "complete") {
+        dotContent = "&#10003;";
+      } else if (stStatus === "in_progress" || stStatus === "in-progress") {
+        dotContent = (s + 1);
+      } else {
+        dotContent = (s + 1);
+      }
+
+      html += '<div class="pipe-stage-wrap">';
+      html += '<div class="' + dotClass + '">' + dotContent + '</div>';
+      html += '<div class="pipe-label">' + escHtml(label) + '</div>';
+      html += '</div>';
+
+      if (s < 4) {
+        var lineClass = "pipe-line";
+        if (stStatus === "complete") {
+          lineClass += " done";
+        } else if (stStatus === "in_progress" || stStatus === "in-progress") {
+          lineClass += " active";
+        }
+        html += '<div class="' + lineClass + '"></div>';
+      }
+    }
+    html += '</div>';
+
+    // Stage notes
+    var hasNotes = false;
+    for (var ns = 0; ns < stages.length; ns++) {
+      if (stages[ns].notes && stages[ns].notes.trim()) {
+        hasNotes = true;
+        break;
+      }
+    }
+    if (hasNotes) {
+      html += '<div class="cycle-notes">';
+      for (var ns2 = 0; ns2 < stages.length; ns2++) {
+        if (stages[ns2].notes && stages[ns2].notes.trim()) {
+          html += '<strong>' + escHtml(stages[ns2].label || stageLabels[ns2] || "") + ':</strong> ' + escHtml(stages[ns2].notes) + '<br/>';
+        }
+      }
+      html += '</div>';
+    }
+
+    html += '</div>';
+  }
+
+  listWrap.innerHTML = html;
+}
+
+/* ======================================================
+   COACHING ACTIONS SECTION
+   ====================================================== */
+
+function renderCoachingActionsSection(actions) {
+  var card = document.getElementById("coachingActionsCard");
+  var tableWrap = document.getElementById("coachingActionsTableWrap");
+
+  if (actions.length === 0) {
+    card.style.display = "";
+    tableWrap.innerHTML = '<div class="no-data">No coaching actions found for this teacher.</div>';
+    return;
+  }
+
+  card.style.display = "";
+  var today = new Date().toISOString().slice(0, 10);
+
+  var tHtml = '<table class="data-table">';
+  tHtml += '<thead><tr>';
+  tHtml += '<th scope="col">Date</th>';
+  tHtml += '<th scope="col">Observation</th>';
+  tHtml += '<th scope="col">Feedback</th>';
+  tHtml += '<th scope="col">Next Step</th>';
+  tHtml += '<th scope="col">Deadline</th>';
+  tHtml += '<th scope="col">Status</th>';
+  tHtml += '</tr></thead><tbody>';
+
+  for (var i = 0; i < actions.length; i++) {
+    var act = actions[i];
+    var isOverdue = act.deadline && act.deadline < today && act.status !== "completed";
+    var rowClass = isOverdue ? ' class="overdue"' : '';
+
+    tHtml += '<tr' + rowClass + '>';
+    tHtml += '<td>' + formatDate(act.date) + '</td>';
+    tHtml += '<td>' + escHtml(act.observation) + '</td>';
+    tHtml += '<td>' + escHtml(act.feedback) + '</td>';
+    tHtml += '<td>' + escHtml(act.nextStep) + '</td>';
+    tHtml += '<td' + (isOverdue ? ' class="overdue"' : '') + '>' + formatDate(act.deadline) + (isOverdue ? ' &#9888; OVERDUE' : '') + '</td>';
+    tHtml += '<td>';
+    if (act.status) {
+      var statusCls = act.status.toLowerCase().replace(/\s+/g, "-");
+      tHtml += '<span class="status-badge ' + statusCls + '">' + escHtml(act.status) + '</span>';
+    } else {
+      tHtml += '<span class="status-badge pending">Pending</span>';
+    }
+    tHtml += '</td>';
+    tHtml += '</tr>';
+  }
+
+  tHtml += '</tbody></table>';
+  tableWrap.innerHTML = tHtml;
+}
+
+/* ======================================================
+   TIMELINE SECTION
+   ====================================================== */
+
+function renderTimeline(observations, audits, cycles, coachingActions) {
+  var card = document.getElementById("timelineCard");
+  var wrap = document.getElementById("timelineWrap");
+  var events = [];
+
+  // Observations
+  for (var i = 0; i < observations.length; i++) {
+    var ob = observations[i];
+    events.push({
+      date: ob.date || "",
+      type: "observation",
+      summary: "Walkthrough observation at " + (ob.campus || "campus") + " &mdash; Code: " + codeLabel(ob.code) + (ob.notes ? " &mdash; " + escHtml(ob.notes) : "")
+    });
+  }
+
+  // Audits
+  for (var a = 0; a < audits.length; a++) {
+    var au = audits[a];
+    events.push({
+      date: au.date || "",
+      type: "audit",
+      summary: "Classroom audit at " + escHtml(au.campus || "campus") + " &mdash; Score: " + (au.scorePct != null ? au.scorePct + "%" : "N/A") + " &mdash; Observer: " + escHtml(au.observer || "N/A")
+    });
+  }
+
+  // Coaching cycle stages
+  var stageLabels = ["Observation", "Feedback", "Action Step", "Follow-Up", "Growth"];
+  for (var c = 0; c < cycles.length; c++) {
+    var stgs = cycles[c].stages || [];
+    for (var s = 0; s < stgs.length; s++) {
+      if (stgs[s].date) {
+        events.push({
+          date: stgs[s].date,
+          type: "coaching",
+          summary: "Coaching: " + escHtml(stgs[s].label || stageLabels[s] || "Stage") + " (" + escHtml(stgs[s].status || "unknown") + ")" + (stgs[s].notes ? " &mdash; " + escHtml(stgs[s].notes) : "") + " at " + escHtml(cycles[c].campus || "campus")
+        });
+      }
+    }
+  }
+
+  // Coaching actions with deadlines
+  for (var d = 0; d < coachingActions.length; d++) {
+    var ca = coachingActions[d];
+    if (ca.deadline) {
+      events.push({
+        date: ca.deadline,
+        type: "coaching",
+        summary: "Coaching action deadline: " + escHtml(ca.nextStep || "N/A") + " &mdash; Status: " + escHtml(ca.status || "pending")
+      });
+    }
+  }
+
+  if (events.length === 0) {
+    card.style.display = "";
+    wrap.innerHTML = '<div class="no-data">No timeline events found for this teacher.</div>';
+    return;
+  }
+
+  // Sort by date descending
+  events.sort(function(a, b) {
+    return (b.date || "").localeCompare(a.date || "");
+  });
+
+  card.style.display = "";
+  var html = '<div class="timeline">';
+  for (var e = 0; e < events.length; e++) {
+    var ev = events[e];
+    var typeClass = "tl-item type-" + ev.type;
+    var badgeClass = "";
+    var badgeText = "";
+    if (ev.type === "observation") {
+      badgeClass = "tl-badge obs";
+      badgeText = "Observation";
+    } else if (ev.type === "audit") {
+      badgeClass = "tl-badge audit";
+      badgeText = "Audit";
+    } else if (ev.type === "coaching") {
+      badgeClass = "tl-badge coaching";
+      badgeText = "Coaching";
+    }
+
+    html += '<div class="' + typeClass + '">';
+    html += '<div class="tl-date">' + formatDate(ev.date) + '</div>';
+    html += '<span class="' + badgeClass + '">' + badgeText + '</span>';
+    html += '<span class="tl-summary">' + ev.summary + '</span>';
+    html += '</div>';
+  }
+  html += '</div>';
+  wrap.innerHTML = html;
+}
+
+/* ======================================================
+   DARK MODE
+   ====================================================== */
+
+function toggleDarkMode() {
+  var body = document.body;
+  var isDark = body.classList.toggle("dark-mode");
+  try {
+    localStorage.setItem("esl_app_theme", isDark ? "dark" : "light");
+  } catch (e) {}
+  updateDarkModeButton(isDark);
+}
+
+function updateDarkModeButton(isDark) {
+  var btn = document.getElementById("darkToggle");
+  if (isDark) {
+    btn.innerHTML = "&#9788; Light Mode";
+  } else {
+    btn.innerHTML = "&#9790; Dark Mode";
+  }
+}
+
+function loadTheme() {
+  try {
+    var theme = localStorage.getItem("esl_app_theme");
+    if (theme === "dark") {
+      document.body.classList.add("dark-mode");
+      updateDarkModeButton(true);
+    }
+  } catch (e) {}
+}
+
+/* ======================================================
+   INITIALIZATION
+   ====================================================== */
+
+function init() {
+  loadTheme();
+  populateTeacherDropdown();
+}
+
+init();
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("./service-worker.js").catch(function() {});
+}
+</script>
+</body>
+</html>

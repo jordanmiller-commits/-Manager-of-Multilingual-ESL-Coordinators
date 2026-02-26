@@ -4,6 +4,8 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>ESL Audit Dashboard &mdash; Trend Analysis</title>
+<link rel="manifest" href="../manifest.json"/>
+<meta name="theme-color" content="#2c3e6e"/>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -68,10 +70,24 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh
 @media(max-width:480px){
   .stats-bar{grid-template-columns:1fr}
 }
+/* Dark Mode */
+body.dark-mode{background:#1a1a2e;color:#e0e0e0}
+body.dark-mode .header{background:linear-gradient(135deg,#1a1a2e,#2d3a6e)}
+body.dark-mode .card,body.dark-mode .stat-card{background:#16213e;box-shadow:0 1px 5px rgba(0,0,0,.3)}
+body.dark-mode .stat-val{color:#7eb8f7}
+body.dark-mode .stat-label{color:#aaa}
+body.dark-mode .view-bar label{color:#aaa}
+body.dark-mode .view-bar select,body.dark-mode .view-bar input{background:#1a2744;color:#e0e0e0;border-color:#2d3a6e}
+body.dark-mode .filter-sep{background:#2d3a6e}
+body.dark-mode .chart-wrap{color:#e0e0e0}
+body.dark-mode .legend-item{color:#ccc}
+body.dark-mode .empty-state,.dark-mode .empty-title{color:#666}
+
 @media print{
   body{background:#fff;padding:10px}
   .header{border-radius:0;padding:14px}
   .tool-btn,.view-bar{display:none!important}
+  body.dark-mode{background:#fff!important;color:#333!important}
 }
 </style>
 </head>
@@ -85,6 +101,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh
     <div class="toolbar">
       <a class="tool-btn" href="ESL_Classroom_Audit.html">&larr; Back to Audit</a>
       <button class="tool-btn" onclick="refreshDashboard()" title="Reload data from localStorage">&#x21bb; Refresh</button>
+      <button class="tool-btn" onclick="toggleDarkMode()" id="darkModeToggle" aria-label="Toggle dark mode">&#9789; Dark</button>
       <span id="lastUpdated" style="font-size:10px;color:rgba(255,255,255,.6);margin-left:auto"></span>
     </div>
   </div>
@@ -935,9 +952,15 @@ function refreshDashboard() {
 /* ======================================================
    Initialization
    ====================================================== */
+/* Dark Mode */
+function toggleDarkMode(){var d=document.body.classList.toggle("dark-mode");localStorage.setItem("esl_app_theme",d?"dark":"light");var b=document.getElementById("darkModeToggle");if(b)b.innerHTML=d?"&#9788; Light":"&#9789; Dark";}
+(function(){if(localStorage.getItem("esl_app_theme")==="dark"){document.body.classList.add("dark-mode");var b=document.getElementById("darkModeToggle");if(b)b.innerHTML="&#9788; Light";}})();
+
 (function init() {
   refreshDashboard();
 })();
+
+if("serviceWorker" in navigator){navigator.serviceWorker.register("../service-worker.js").catch(function(){});}
 </script>
 </body>
 </html>

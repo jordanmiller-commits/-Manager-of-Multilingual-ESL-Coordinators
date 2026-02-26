@@ -4,6 +4,8 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>ESL Coordinator Hub</title>
+<link rel="manifest" href="./manifest.json"/>
+<meta name="theme-color" content="#2c3e6e"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh;padding:20px}
@@ -55,6 +57,56 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh
 .stat-val{font-size:22px;font-weight:800;color:#2c3e6e}
 .stat-label{font-size:9px;font-weight:600;color:#888;text-transform:uppercase}
 
+/* Search */
+.search-wrap{position:relative;margin-bottom:16px}
+.search-input{width:100%;padding:12px 16px 12px 40px;border-radius:10px;border:1px solid #ddd;font-size:13px;font-family:inherit;background:#fff;box-shadow:0 1px 5px rgba(0,0,0,.07);transition:border-color .2s}
+.search-input:focus{outline:none;border-color:#4a90d9;box-shadow:0 1px 8px rgba(74,144,217,.15)}
+.search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:16px;color:#aaa;pointer-events:none}
+.search-results{background:#fff;border-radius:10px;box-shadow:0 4px 15px rgba(0,0,0,.12);padding:14px 18px;margin-bottom:16px;display:none;max-height:400px;overflow-y:auto}
+.search-results.open{display:block}
+.sr-group{margin-bottom:12px}
+.sr-group-title{font-size:11px;font-weight:700;color:#4a90d9;text-transform:uppercase;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid #eee}
+.sr-item{padding:6px 8px;font-size:12px;color:#555;border-radius:4px;cursor:pointer;transition:background .1s}
+.sr-item:hover{background:#f0f4fb}
+.sr-item .sr-match{color:#2c3e6e;font-weight:700}
+.sr-item .sr-context{color:#aaa;font-size:10px;margin-left:8px}
+.sr-none{text-align:center;padding:16px;color:#aaa;font-size:12px;font-style:italic}
+
+/* Dark Mode */
+body.dark-mode{background:#1a1a2e;color:#e0e0e0}
+body.dark-mode .header{background:linear-gradient(135deg,#1a1a2e,#2d3a6e)}
+body.dark-mode .card,body.dark-mode .stat-card{background:#16213e;box-shadow:0 1px 5px rgba(0,0,0,.3);border-color:#2d3a6e}
+body.dark-mode .tool-card{background:#16213e;box-shadow:0 1px 5px rgba(0,0,0,.3);color:#e0e0e0}
+body.dark-mode .tool-card:hover{border-color:#4a90d9;box-shadow:0 4px 12px rgba(74,144,217,.25)}
+body.dark-mode .tc-name{color:#7eb8f7}
+body.dark-mode .tc-desc{color:#aaa}
+body.dark-mode .section-title{color:#7eb8f7}
+body.dark-mode .stat-val{color:#7eb8f7}
+body.dark-mode .stat-label{color:#aaa}
+body.dark-mode .alert-warn{background:#3e2a10;color:#f5c842;border-color:#5a3e15}
+body.dark-mode .alert-info{background:#0d2847;color:#64b5f6;border-color:#1a3a5c}
+body.dark-mode .alert-good{background:#1a3a1a;color:#66bb6a;border-color:#2a5a2a}
+body.dark-mode .activity-item{color:#ccc;border-color:#2d3a6e}
+body.dark-mode .no-alerts{color:#666}
+body.dark-mode .search-input{background:#16213e;color:#e0e0e0;border-color:#2d3a6e}
+body.dark-mode .search-results{background:#16213e;box-shadow:0 4px 15px rgba(0,0,0,.3)}
+body.dark-mode .sr-group-title{color:#7eb8f7;border-color:#2d3a6e}
+body.dark-mode .sr-item{color:#ccc}
+body.dark-mode .sr-item:hover{background:#1a2744}
+body.dark-mode .sr-item .sr-match{color:#7eb8f7}
+body.dark-mode .tc-badge.green{background:#1a3a1a;color:#66bb6a}
+body.dark-mode .tc-badge.blue{background:#0d2847;color:#64b5f6}
+body.dark-mode .tc-badge.orange{background:#3e2a10;color:#f5c842}
+body.dark-mode .tc-badge.gray{background:#2d3a6e;color:#888}
+
+/* Print */
+@media print{
+  body{background:#fff!important;padding:0}
+  .header,.search-wrap,.search-results,.tool-btn{display:none!important}
+  .tool-card{break-inside:avoid;box-shadow:none;border:1px solid #ddd}
+  .stat-card{box-shadow:none;border:1px solid #ddd}
+}
+
 @media(max-width:600px){
   body{padding:8px}
   .header{padding:18px 16px}
@@ -70,6 +122,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh
     <p>Manager of Multilingual / ESL Coordinators &mdash; Tool Suite</p>
     <div class="header-row">
       <a class="tool-btn" href="Data_Backup_Hub.html">&#128190; Data Backup Hub</a>
+      <button class="tool-btn" onclick="toggleDarkMode()" id="darkModeToggle" aria-label="Toggle dark mode">&#9789; Dark</button>
     </div>
   </div>
 
@@ -85,6 +138,13 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh
     <div class="stat-card"><div class="stat-val" id="statTeachers">0</div><div class="stat-label">Teachers in Roster</div></div>
     <div class="stat-card"><div class="stat-val" id="statCoaching">0</div><div class="stat-label">Coaching Cycles</div></div>
   </div>
+
+  <!-- Search -->
+  <div class="search-wrap">
+    <span class="search-icon">&#128269;</span>
+    <input type="text" class="search-input" id="globalSearch" placeholder="Search teachers, campuses, observations, coaching actions..." oninput="handleSearch(this.value)" aria-label="Search across all tools"/>
+  </div>
+  <div class="search-results" id="searchResults"></div>
 
   <!-- Tools -->
   <div class="section-title">Tools</div>
@@ -125,6 +185,18 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh
       <div class="tc-desc">Track 4 ESL coordinators across the 2026-2027 school year with monthly action checkboxes.</div>
       <div class="tc-meta" id="metaScope"></div>
     </a>
+    <a class="tool-card" href="ELPS_Agent/ELPS_Agent.html">
+      <div class="tc-icon">&#128218;</div>
+      <div class="tc-name">ELPS Knowledge Base</div>
+      <div class="tc-desc">PDF search and AI-powered Q&amp;A for ELPS documents with full-text search and code detection.</div>
+      <div class="tc-meta" id="metaElps"></div>
+    </a>
+    <a class="tool-card" href="Teacher_360_Profile.html">
+      <div class="tc-icon">&#128100;</div>
+      <div class="tc-name">Teacher 360 Profile</div>
+      <div class="tc-desc">Aggregate view of a teacher across audits, walkthroughs, coaching cycles, and observations.</div>
+      <div class="tc-meta" id="metaTeacher360"></div>
+    </a>
   </div>
 
   <!-- Recent Activity -->
@@ -137,6 +209,23 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh
 </div>
 
 <script>
+/* ======================================================
+   DARK MODE
+   ====================================================== */
+function toggleDarkMode(){
+  var isDark = document.body.classList.toggle("dark-mode");
+  localStorage.setItem("esl_app_theme", isDark ? "dark" : "light");
+  var btn = document.getElementById("darkModeToggle");
+  if(btn) btn.innerHTML = isDark ? "&#9788; Light" : "&#9789; Dark";
+}
+(function(){
+  if(localStorage.getItem("esl_app_theme") === "dark"){
+    document.body.classList.add("dark-mode");
+    var btn = document.getElementById("darkModeToggle");
+    if(btn) btn.innerHTML = "&#9788; Light";
+  }
+})();
+
 /* ======================================================
    DATA ACCESS
    ====================================================== */
@@ -349,11 +438,150 @@ function loadActivity() {
 }
 
 /* ======================================================
+   GLOBAL SEARCH
+   ====================================================== */
+var searchTimeout = null;
+function handleSearch(query) {
+  clearTimeout(searchTimeout);
+  var box = document.getElementById("searchResults");
+  if (!query || query.length < 2) { box.className = "search-results"; box.innerHTML = ""; return; }
+  searchTimeout = setTimeout(function(){ runSearch(query); }, 250);
+}
+
+function runSearch(query) {
+  var q = query.toLowerCase();
+  var groups = [];
+
+  // Search roster
+  var roster = safeGet("shared_teacher_roster") || [];
+  var teacherHits = [];
+  for (var ti = 0; ti < roster.length; ti++) {
+    if (roster[ti].toLowerCase().indexOf(q) !== -1) {
+      teacherHits.push({text: roster[ti], context: "Teacher Roster"});
+    }
+  }
+  if (teacherHits.length) groups.push({title: "Teachers", items: teacherHits, link: "Teacher_360_Profile.html"});
+
+  // Search walkthrough history
+  var wh = safeGet("walkthrough_history") || [];
+  var walkHits = [];
+  for (var wi = 0; wi < wh.length; wi++) {
+    var w = wh[wi];
+    var wmeta = w.meta || {};
+    var matched = false;
+    var mText = "";
+    if ((wmeta.leader || "").toLowerCase().indexOf(q) !== -1) { matched = true; mText = wmeta.leader; }
+    else if ((wmeta.campus || "").toLowerCase().indexOf(q) !== -1) { matched = true; mText = wmeta.campus; }
+    else if ((wmeta.focusLabel || "").toLowerCase().indexOf(q) !== -1) { matched = true; mText = wmeta.focusLabel; }
+    if (!matched) {
+      var obs = w.observations || [];
+      for (var oi = 0; oi < obs.length; oi++) {
+        if ((obs[oi].teacher || "").toLowerCase().indexOf(q) !== -1 || (obs[oi].notes || "").toLowerCase().indexOf(q) !== -1) {
+          matched = true; mText = obs[oi].teacher || obs[oi].notes; break;
+        }
+      }
+    }
+    if (!matched) {
+      var ca = w.coachingActions || [];
+      for (var ci = 0; ci < ca.length; ci++) {
+        if ((ca[ci].teacher || "").toLowerCase().indexOf(q) !== -1 || (ca[ci].nextStep || "").toLowerCase().indexOf(q) !== -1) {
+          matched = true; mText = ca[ci].teacher || ca[ci].nextStep; break;
+        }
+      }
+    }
+    if (matched) {
+      walkHits.push({text: "Walkthrough " + (wmeta.date || "N/A") + " — " + (wmeta.campus || ""), context: mText});
+    }
+  }
+  if (walkHits.length) groups.push({title: "Walkthroughs", items: walkHits.slice(0, 8), link: "Academic_Monitoring_Leader_Facing/Walkthrough_Dashboard.html"});
+
+  // Search audit history
+  var ah = safeGet("esl_audit_history") || [];
+  var auditHits = [];
+  for (var ai = 0; ai < ah.length; ai++) {
+    var am = ah[ai].meta || {};
+    if ((am.teacher || "").toLowerCase().indexOf(q) !== -1 || (am.campus || "").toLowerCase().indexOf(q) !== -1 || (am.observer || "").toLowerCase().indexOf(q) !== -1) {
+      auditHits.push({text: "Audit " + (am.date || "N/A") + " — " + (am.campus || ""), context: (am.teacher || "") + " " + (ah[ai].scorePct || 0) + "%"});
+    }
+  }
+  if (auditHits.length) groups.push({title: "Audits", items: auditHits.slice(0, 8), link: "ESL_Classroom_Audit/Audit_Dashboard.html"});
+
+  // Search coaching cycles
+  var cd = safeGet("coaching_cycles_data");
+  var cycles = cd && cd.cycles ? cd.cycles : [];
+  var coachHits = [];
+  for (var cci = 0; cci < cycles.length; cci++) {
+    if ((cycles[cci].teacher || "").toLowerCase().indexOf(q) !== -1 || (cycles[cci].campus || "").toLowerCase().indexOf(q) !== -1) {
+      coachHits.push({text: cycles[cci].teacher + " (" + (cycles[cci].campus || "N/A") + ")", context: "Coaching Cycle"});
+    }
+  }
+  if (coachHits.length) groups.push({title: "Coaching Cycles", items: coachHits.slice(0, 8), link: "Academic_Monitoring_Leader_Facing/Coaching_Cycle_Tracker.html"});
+
+  var box = document.getElementById("searchResults");
+  if (groups.length === 0) {
+    box.innerHTML = '<div class="sr-none">No results for "' + escHtml(query) + '"</div>';
+    box.className = "search-results open";
+    return;
+  }
+
+  var html = "";
+  for (var gi = 0; gi < groups.length; gi++) {
+    var g = groups[gi];
+    html += '<div class="sr-group">';
+    html += '<div class="sr-group-title">' + g.title + '</div>';
+    for (var ii = 0; ii < g.items.length; ii++) {
+      html += '<div class="sr-item" onclick="window.location.href=\'' + g.link + '\'">';
+      html += '<span class="sr-match">' + escHtml(g.items[ii].text) + '</span>';
+      if (g.items[ii].context) html += '<span class="sr-context">' + escHtml(g.items[ii].context) + '</span>';
+      html += '</div>';
+    }
+    html += '</div>';
+  }
+  box.innerHTML = html;
+  box.className = "search-results open";
+}
+
+// Close search on click outside
+document.addEventListener("click", function(e) {
+  var box = document.getElementById("searchResults");
+  var input = document.getElementById("globalSearch");
+  if (box && !box.contains(e.target) && e.target !== input) {
+    box.className = "search-results";
+  }
+});
+
+/* ======================================================
+   EXTRA META BADGES
+   ====================================================== */
+function loadExtraMeta() {
+  var elpsData = safeGet("elps_agent_docs");
+  var metaElps = document.getElementById("metaElps");
+  if (metaElps) {
+    if (elpsData && Array.isArray(elpsData) && elpsData.length > 0) {
+      metaElps.innerHTML = '<span class="tc-badge green">' + elpsData.length + ' docs loaded</span>';
+    } else {
+      metaElps.innerHTML = '<span class="tc-badge gray">No docs loaded</span>';
+    }
+  }
+  var roster = safeGet("shared_teacher_roster") || [];
+  var metaT360 = document.getElementById("metaTeacher360");
+  if (metaT360) {
+    metaT360.innerHTML = roster.length > 0
+      ? '<span class="tc-badge blue">' + roster.length + ' teachers</span>'
+      : '<span class="tc-badge gray">No roster data</span>';
+  }
+}
+
+/* ======================================================
    INIT
    ====================================================== */
 loadStats();
 loadAlerts();
 loadActivity();
+loadExtraMeta();
+
+// PWA
+if("serviceWorker" in navigator){navigator.serviceWorker.register("./service-worker.js").catch(function(){});}
 </script>
 </body>
 </html>

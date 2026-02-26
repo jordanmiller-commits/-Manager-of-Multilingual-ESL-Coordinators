@@ -4,6 +4,8 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>ESL Tools - Data Backup Hub</title>
+<link rel="manifest" href="./manifest.json"/>
+<meta name="theme-color" content="#2c3e6e"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh;padding:20px;color:#333}
@@ -77,6 +79,54 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh
 .toast.show{opacity:1;transform:translateY(0)}
 .select-all-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:8px 12px;background:#f8f9fb;border-radius:8px}
 .select-all-row label{font-size:12px;font-weight:600;color:#555;cursor:pointer;display:flex;align-items:center;gap:5px}
+/* Gist Sync */
+.gist-section{margin-top:14px;padding:18px;background:#f8f9fb;border-radius:10px;border:1px solid #eee}
+.gist-section h3{font-size:14px;font-weight:700;color:#2c3e6e;margin-bottom:10px}
+.gist-row{display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
+.gist-input{padding:8px 12px;border-radius:6px;border:1px solid #ddd;font-size:12px;font-family:'Courier New',monospace;flex:1;min-width:200px}
+.gist-input:focus{outline:none;border-color:#4a90d9}
+.gist-status{font-size:11px;padding:6px 10px;border-radius:6px;margin-top:6px}
+.gist-status.ok{background:#e8f5e9;color:#2e7d32}
+.gist-status.err{background:#fdecea;color:#e74c3c}
+.gist-status.info{background:#e3f2fd;color:#1565c0}
+
+/* Dark Mode */
+body.dark-mode{background:#1a1a2e;color:#e0e0e0}
+body.dark-mode .header{background:linear-gradient(135deg,#1a1a2e,#2d3a6e)}
+body.dark-mode .card,body.dark-mode .summary-stat,body.dark-mode .key-card{background:#16213e;box-shadow:0 1px 5px rgba(0,0,0,.3)}
+body.dark-mode .key-card.has-data{border-left-color:#27ae60}
+body.dark-mode .key-card.empty{border-left-color:#e74c3c}
+body.dark-mode h2,body.dark-mode .tool-name{color:#7eb8f7}
+body.dark-mode .summary-stat .num{color:#7eb8f7}
+body.dark-mode .summary-stat .lbl{color:#aaa}
+body.dark-mode input,body.dark-mode select,body.dark-mode textarea{background:#1a2744;color:#e0e0e0;border-color:#2d3a6e}
+body.dark-mode .btn-sm{background:#1a2744;color:#e0e0e0;border-color:#2d3a6e}
+body.dark-mode .btn-sm:hover{background:#2d3a6e}
+body.dark-mode .modal{background:#16213e}
+body.dark-mode .modal h3{color:#7eb8f7}
+body.dark-mode .modal p{color:#ccc}
+body.dark-mode .modal-actions .cancel-btn{background:#1a2744;color:#e0e0e0;border-color:#2d3a6e}
+body.dark-mode .toast{background:#7eb8f7;color:#1a1a2e}
+body.dark-mode .preview-box{background:#1a2744}
+body.dark-mode .preview-box h3{color:#7eb8f7}
+body.dark-mode .preview-item{border-color:#2d3a6e;color:#ccc}
+body.dark-mode .drop-zone{background:#1a2744;border-color:#2d3a6e;color:#aaa}
+body.dark-mode .select-all-row{background:#1a2744}
+body.dark-mode .select-all-row label{color:#ccc}
+body.dark-mode .key-meta{color:#aaa}
+body.dark-mode .key-name{color:#aaa}
+body.dark-mode .gist-section{background:#1a2744;border-color:#2d3a6e}
+body.dark-mode .gist-section h3{color:#7eb8f7}
+body.dark-mode .gist-input{background:#16213e;color:#e0e0e0;border-color:#2d3a6e}
+
+/* Print */
+@media print{
+  body{background:#fff!important;padding:0}
+  .header .toolbar,.tool-btn,.gist-section,.import-area{display:none!important}
+  .card{box-shadow:none;border:1px solid #ddd}
+  .key-card{box-shadow:none;border:1px solid #ddd}
+}
+
 @media(max-width:600px){
 .key-grid{grid-template-columns:1fr}
 .summary-bar{flex-direction:column}
@@ -97,6 +147,8 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh
 <button class="tool-btn success" onclick="exportAll()">&#128230; Export All</button>
 <button class="tool-btn import-btn" onclick="showImportArea()">&#128228; Import Backup</button>
 <button class="tool-btn" onclick="refreshDashboard()">&#128260; Refresh</button>
+<button class="tool-btn" onclick="toggleGistSection()" aria-label="Cloud sync settings">&#9729; Cloud Sync</button>
+<button class="tool-btn" onclick="toggleDarkMode()" id="darkModeToggle" aria-label="Toggle dark mode">&#9789; Dark</button>
 </div>
 </div>
 
@@ -136,6 +188,34 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh
 </div>
 </div>
 
+</div>
+
+<!-- Gist Cloud Sync -->
+<div class="card" id="gistCard" style="display:none">
+<h2>&#9729; GitHub Gist Cloud Sync</h2>
+<p style="font-size:12px;color:#888;margin-bottom:12px">Sync your data across devices using a private GitHub Gist. You'll need a <a href="https://github.com/settings/tokens/new?scopes=gist&description=ESL+Manager+Suite" target="_blank" style="color:#4a90d9">Personal Access Token</a> with <strong>gist</strong> scope.</p>
+<div class="gist-section">
+<h3>Settings</h3>
+<div class="gist-row">
+<label style="font-size:12px;font-weight:600;color:#555;min-width:60px" for="gistPat">PAT:</label>
+<input type="password" class="gist-input" id="gistPat" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" aria-label="GitHub Personal Access Token"/>
+<button class="btn-sm" onclick="togglePatVisibility()" aria-label="Show or hide token">Show</button>
+</div>
+<div class="gist-row">
+<label style="font-size:12px;font-weight:600;color:#555;min-width:60px" for="gistId">Gist ID:</label>
+<input type="text" class="gist-input" id="gistId" placeholder="Auto-created on first sync (or paste existing ID)" aria-label="Gist ID"/>
+</div>
+<div class="gist-row">
+<button class="btn-confirm" onclick="saveGistSettings()" style="margin-top:0">Save Settings</button>
+<button class="btn-sm" onclick="clearGistSettings()">Clear</button>
+</div>
+<div id="gistStatus"></div>
+</div>
+<div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+<button class="btn-confirm" onclick="pushToGist()">&#11014; Push to Gist</button>
+<button class="btn-confirm" onclick="pullFromGist()" style="background:linear-gradient(135deg,#1a6b3f,#27ae60)">&#11015; Pull from Gist</button>
+</div>
+<div id="gistSyncStatus" style="margin-top:8px"></div>
 </div>
 
 <div class="modal-overlay" id="confirmModal">
@@ -678,7 +758,205 @@ document.addEventListener('keydown', function(e) {
   }
 });
 
+/* ======================================================
+   DARK MODE
+   ====================================================== */
+function toggleDarkMode(){
+  var isDark = document.body.classList.toggle("dark-mode");
+  localStorage.setItem("esl_app_theme", isDark ? "dark" : "light");
+  var btn = document.getElementById("darkModeToggle");
+  if(btn) btn.innerHTML = isDark ? "&#9788; Light" : "&#9789; Dark";
+}
+(function(){
+  if(localStorage.getItem("esl_app_theme") === "dark"){
+    document.body.classList.add("dark-mode");
+    var btn = document.getElementById("darkModeToggle");
+    if(btn) btn.innerHTML = "&#9788; Light";
+  }
+})();
+
+/* ======================================================
+   GIST CLOUD SYNC
+   ====================================================== */
+var GIST_SETTINGS_KEY = "esl_gist_sync";
+
+function toggleGistSection() {
+  var card = document.getElementById("gistCard");
+  if (card.style.display === "none") {
+    card.style.display = "block";
+    loadGistSettings();
+    card.scrollIntoView({behavior: "smooth"});
+  } else {
+    card.style.display = "none";
+  }
+}
+
+function togglePatVisibility() {
+  var input = document.getElementById("gistPat");
+  input.type = input.type === "password" ? "text" : "password";
+}
+
+function loadGistSettings() {
+  var settings = safeGetGist();
+  if (settings) {
+    document.getElementById("gistPat").value = settings.pat || "";
+    document.getElementById("gistId").value = settings.gistId || "";
+  }
+}
+
+function safeGetGist() {
+  try {
+    var raw = localStorage.getItem(GIST_SETTINGS_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch(e) { return null; }
+}
+
+function saveGistSettings() {
+  var pat = document.getElementById("gistPat").value.trim();
+  var gistId = document.getElementById("gistId").value.trim();
+  if (!pat) {
+    showGistStatus("Please enter a Personal Access Token.", "err");
+    return;
+  }
+  localStorage.setItem(GIST_SETTINGS_KEY, JSON.stringify({pat: pat, gistId: gistId}));
+  showGistStatus("Settings saved.", "ok");
+}
+
+function clearGistSettings() {
+  localStorage.removeItem(GIST_SETTINGS_KEY);
+  document.getElementById("gistPat").value = "";
+  document.getElementById("gistId").value = "";
+  showGistStatus("Settings cleared.", "info");
+}
+
+function showGistStatus(msg, type) {
+  var el = document.getElementById("gistStatus");
+  el.innerHTML = '<div class="gist-status ' + type + '">' + msg + '</div>';
+}
+
+function showSyncStatus(msg, type) {
+  var el = document.getElementById("gistSyncStatus");
+  el.innerHTML = '<div class="gist-status ' + type + '">' + msg + '</div>';
+}
+
+function getGistPayload() {
+  var allKeys = [];
+  for (var i = 0; i < KEY_CONFIG.length; i++) {
+    allKeys.push(KEY_CONFIG[i].key);
+  }
+  var data = collectExportData(allKeys);
+  return JSON.stringify(data, null, 2);
+}
+
+function pushToGist() {
+  var settings = safeGetGist();
+  if (!settings || !settings.pat) {
+    showSyncStatus("Configure your PAT first.", "err");
+    return;
+  }
+  showSyncStatus("Pushing to Gist...", "info");
+  var payload = getGistPayload();
+  var body = {
+    description: "ESL Manager Suite - Data Backup (" + new Date().toISOString() + ")",
+    public: false,
+    files: { "esl_backup.json": { content: payload } }
+  };
+
+  var method = "POST";
+  var url = "https://api.github.com/gists";
+  if (settings.gistId) {
+    method = "PATCH";
+    url = "https://api.github.com/gists/" + settings.gistId;
+  }
+
+  var xhr = new XMLHttpRequest();
+  xhr.open(method, url, true);
+  xhr.setRequestHeader("Authorization", "Bearer " + settings.pat);
+  xhr.setRequestHeader("Content-Type", "application/json");
+  xhr.setRequestHeader("Accept", "application/vnd.github.v3+json");
+  xhr.onload = function() {
+    if (xhr.status === 200 || xhr.status === 201) {
+      try {
+        var resp = JSON.parse(xhr.responseText);
+        if (!settings.gistId && resp.id) {
+          settings.gistId = resp.id;
+          localStorage.setItem(GIST_SETTINGS_KEY, JSON.stringify(settings));
+          document.getElementById("gistId").value = resp.id;
+        }
+        showSyncStatus("Pushed successfully! Gist ID: " + resp.id, "ok");
+      } catch(e) {
+        showSyncStatus("Push succeeded but response parse failed.", "ok");
+      }
+    } else {
+      showSyncStatus("Push failed: HTTP " + xhr.status + " — " + xhr.statusText, "err");
+    }
+  };
+  xhr.onerror = function() {
+    showSyncStatus("Network error. Check your connection.", "err");
+  };
+  xhr.send(JSON.stringify(body));
+}
+
+function pullFromGist() {
+  var settings = safeGetGist();
+  if (!settings || !settings.pat) {
+    showSyncStatus("Configure your PAT first.", "err");
+    return;
+  }
+  if (!settings.gistId) {
+    showSyncStatus("No Gist ID set. Push data first to create one, or paste an existing ID.", "err");
+    return;
+  }
+  showSyncStatus("Pulling from Gist...", "info");
+
+  var xhr = new XMLHttpRequest();
+  xhr.open("GET", "https://api.github.com/gists/" + settings.gistId, true);
+  xhr.setRequestHeader("Authorization", "Bearer " + settings.pat);
+  xhr.setRequestHeader("Accept", "application/vnd.github.v3+json");
+  xhr.onload = function() {
+    if (xhr.status === 200) {
+      try {
+        var resp = JSON.parse(xhr.responseText);
+        var file = resp.files && resp.files["esl_backup.json"];
+        if (!file || !file.content) {
+          showSyncStatus("Gist found but no esl_backup.json file in it.", "err");
+          return;
+        }
+        var data = JSON.parse(file.content);
+        if (!data.keys) {
+          showSyncStatus("Invalid backup format in Gist.", "err");
+          return;
+        }
+        var keys = Object.keys(data.keys);
+        var imported = 0;
+        for (var i = 0; i < keys.length; i++) {
+          var val = data.keys[keys[i]];
+          if (typeof val === "string") {
+            localStorage.setItem(keys[i], val);
+          } else {
+            localStorage.setItem(keys[i], JSON.stringify(val));
+          }
+          imported++;
+        }
+        refreshDashboard();
+        showSyncStatus("Pulled " + imported + " key(s) from Gist. Last synced: " + (data.exportedAt || "unknown"), "ok");
+      } catch(e) {
+        showSyncStatus("Error parsing Gist data: " + e.message, "err");
+      }
+    } else {
+      showSyncStatus("Pull failed: HTTP " + xhr.status + " — " + xhr.statusText, "err");
+    }
+  };
+  xhr.onerror = function() {
+    showSyncStatus("Network error. Check your connection.", "err");
+  };
+  xhr.send();
+}
+
 init();
+
+// PWA
+if("serviceWorker" in navigator){navigator.serviceWorker.register("./service-worker.js").catch(function(){});}
 </script>
 </body>
 </html>

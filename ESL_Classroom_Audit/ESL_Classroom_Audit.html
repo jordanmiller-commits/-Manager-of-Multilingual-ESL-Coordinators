@@ -4,7 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <meta name="theme-color" content="#2c3e6e"/>
-<link rel="manifest" href="manifest.json"/>
+<link rel="manifest" href="../manifest.json"/>
 <title>ESL Classroom Environment Audit</title>
 <style>
 :root{--bg:#f0f2f7;--card-bg:#fff;--card-border:#e0e0e0;--card-shadow:rgba(0,0,0,.07);--text:#333;--text-secondary:#555;--text-muted:#888;--text-faint:#aaa;--input-bg:#fff;--input-border:#ddd;--input-text:#333;--section-bg-light:#f8f9fb;--bar-track:#eee;--item-border:#f0f0f0;--item-hover:#f0f4ff;--tag-border:#ddd;--tag-text:#999;--modal-bg:#fff;--modal-overlay:rgba(0,0,0,.45);--header-gradient-1:#2c3e6e;--header-gradient-2:#4a90d9;--perm-color:#d4a017;--rot-color:#8e44ad;--pr-color:#27ae60}
@@ -3059,6 +3059,7 @@ var DARK_MODE_KEY = "esl_audit_dark_mode";
 function toggleDarkMode() {
   var isDark = document.body.classList.toggle("dark-mode");
   localStorage.setItem(DARK_MODE_KEY, isDark ? "true" : "false");
+  localStorage.setItem("esl_app_theme", isDark ? "dark" : "light");
   updateDarkModeUI(isDark);
 }
 
@@ -3073,8 +3074,9 @@ function updateDarkModeUI(isDark) {
 
 function initDarkMode() {
   var stored = localStorage.getItem(DARK_MODE_KEY);
+  var sharedTheme = localStorage.getItem("esl_app_theme");
   var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-  var isDark = stored === "true" || (stored === null && prefersDark);
+  var isDark = stored === "true" || (stored === null && sharedTheme === "dark") || (stored === null && sharedTheme === null && prefersDark);
   if (isDark) {
     document.body.classList.add("dark-mode");
   }
@@ -3125,7 +3127,7 @@ document.querySelectorAll(".modal-overlay").forEach(function(o){
 
 // PWA Service Worker registration
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("service-worker.js").catch(function() {});
+  navigator.serviceWorker.register("../service-worker.js").catch(function() {});
 }
 
 // Walkthrough → Audit handoff

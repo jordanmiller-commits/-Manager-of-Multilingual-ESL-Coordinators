@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="manifest" href="../manifest.json"/>
+<meta name="theme-color" content="#2c3e6e"/>
 <title>Coaching Cycle Tracker &mdash; Observation to Growth</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -201,16 +203,60 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh
    PRINT STYLES
    ============================ */
 @media print{
-  body{background:#fff;padding:0;font-size:10px}
-  .toolbar,.tool-btn,.filter-bar,.nav-links,.del-btn,.modal-overlay,.btn,.save-indicator{display:none!important}
+  body{background:#fff!important;padding:0;color:#333!important}
+  .header .toolbar,.header .nav-links,.tool-btn,.filter-bar,.btn{display:none!important}
+  .card,.stat-card,.cycle-card{box-shadow:none!important;border:1px solid #ddd}
+  .cycle-body{display:block!important}
+  .modal-overlay,.toast{display:none!important}
+  body.dark-mode,body.dark-mode .card,body.dark-mode .cycle-card{background:#fff!important;color:#333!important}
   .wrap{max-width:100%}
   .header{-webkit-print-color-adjust:exact;print-color-adjust:exact;border-radius:0;padding:12px 16px}
   .header h1{font-size:16px}
-  .card,.stat-card,.cycle-card{box-shadow:none;border:1px solid #ddd}
   .stat-card,.pipeline .pipe-dot,.pipeline .pipe-line,.progress-bar-fill,.cycle-avatar,.stage-num,.cycle-status-badge,.badge-active,.badge-completed{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  .cycle-body{display:block!important}
   .cycle-card{page-break-inside:avoid}
 }
+
+/* ============================
+   TOAST
+   ============================ */
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#4a90d9;color:#fff;padding:10px 22px;border-radius:8px;font-size:13px;font-weight:600;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none}
+.toast.show{opacity:1}
+
+/* ============================
+   DARK MODE
+   ============================ */
+body.dark-mode{background:#1a1a2e;color:#e0e0e0}
+body.dark-mode .header{background:linear-gradient(135deg,#1a1a2e,#2d3a6e)}
+body.dark-mode .card,body.dark-mode .stat-card,body.dark-mode .cycle-card{background:#16213e;box-shadow:0 1px 5px rgba(0,0,0,.3)}
+body.dark-mode .first-card{background:#16213e}
+body.dark-mode h2,body.dark-mode .section-title,body.dark-mode .cycle-teacher{color:#7eb8f7}
+body.dark-mode .stat-value{color:#7eb8f7}
+body.dark-mode .stat-value.green{color:#66bb6a}
+body.dark-mode .stat-value.blue{color:#64b5f6}
+body.dark-mode .stat-value.orange{color:#f5c842}
+body.dark-mode .stat-label{color:#aaa}
+body.dark-mode .cycle-meta{color:#aaa}
+body.dark-mode .cycle-header:hover{background:#1a2744}
+body.dark-mode input,body.dark-mode select,body.dark-mode textarea{background:#1a2744;color:#e0e0e0;border-color:#2d3a6e}
+body.dark-mode .filter-bar label{color:#aaa}
+body.dark-mode .btn{background:#1a2744;color:#e0e0e0;border-color:#2d3a6e}
+body.dark-mode .btn:hover{background:#2d3a6e}
+body.dark-mode .cycle-body{border-color:#2d3a6e;background:#16213e}
+body.dark-mode .stage-card{background:#1a2744;border-color:#2d3a6e}
+body.dark-mode .stage-card h4{color:#7eb8f7}
+body.dark-mode .modal{background:#16213e}
+body.dark-mode .modal h3{color:#7eb8f7}
+body.dark-mode .modal p,.dark-mode .modal label{color:#ccc}
+body.dark-mode .modal-overlay .cancel-btn{background:#1a2744;color:#e0e0e0;border-color:#2d3a6e}
+body.dark-mode .toast{background:#7eb8f7;color:#1a1a2e}
+body.dark-mode .nav-link{color:#aaa;border-color:#2d3a6e}
+body.dark-mode .nav-link:hover{color:#7eb8f7;border-color:#7eb8f7}
+body.dark-mode .pipe-dot.not-started{border-color:#2d3a6e;background:#16213e;color:#666}
+body.dark-mode .pipe-line{background:#2d3a6e}
+body.dark-mode .progress-bar-track{background:#2d3a6e}
+body.dark-mode .badge-active{background:#0d2847;color:#64b5f6;border-color:#1a3a5c}
+body.dark-mode .badge-completed{background:#1a3a1a;color:#66bb6a;border-color:#2a5a2a}
+body.dark-mode .empty-state{color:#666}
 </style>
 </head>
 <body>
@@ -226,6 +272,8 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh
       <button class="tool-btn" onclick="exportData()">&#128190; Export</button>
       <button class="tool-btn" onclick="showModal('importDataModal')">&#128194; Import</button>
       <button class="tool-btn danger" onclick="showModal('resetModal')">&#128260; Reset</button>
+      <button class="tool-btn" onclick="toggleDarkMode()" id="darkModeToggle" aria-label="Toggle dark mode">&#9789; Dark</button>
+      <button class="tool-btn" onclick="exportCalendar()" aria-label="Export coaching deadlines to calendar">&#128197; Export Calendar</button>
       <span class="save-indicator" id="saveStatus">Auto-save: ready</span>
     </div>
     <div class="nav-links">
@@ -363,7 +411,28 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh
   </div>
 </div>
 
+<div class="toast" id="toastEl"></div>
+
 <script>
+/* ======================================================
+   DARK MODE
+   ====================================================== */
+
+function toggleDarkMode(){var d=document.body.classList.toggle("dark-mode");localStorage.setItem("esl_app_theme",d?"dark":"light");var b=document.getElementById("darkModeToggle");if(b)b.innerHTML=d?"&#9788; Light":"&#9789; Dark";}
+(function(){if(localStorage.getItem("esl_app_theme")==="dark"){document.body.classList.add("dark-mode");var b=document.getElementById("darkModeToggle");if(b)b.innerHTML="&#9788; Light";}})();
+
+/* ======================================================
+   TOAST
+   ====================================================== */
+
+function showToast(msg){
+  var el=document.getElementById("toastEl");
+  if(!el)return;
+  el.textContent=msg;
+  el.classList.add("show");
+  setTimeout(function(){el.classList.remove("show");},2500);
+}
+
 /* ======================================================
    CONSTANTS
    ====================================================== */
@@ -1183,6 +1252,51 @@ function init() {
 }
 
 init();
+
+/* ======================================================
+   CALENDAR EXPORT (.ics)
+   ====================================================== */
+
+function exportCalendar(){
+  var raw=localStorage.getItem(STORAGE_KEY);
+  var data=null;
+  try{data=raw?JSON.parse(raw):null;}catch(e){}
+  if(!data||!data.cycles||data.cycles.length===0){showToast("No coaching cycles to export.");return;}
+  var lines=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//ESL Manager Suite//Coaching//EN","CALSCALE:GREGORIAN"];
+  var now=new Date();
+  var stamp=now.toISOString().replace(/[-:]/g,"").replace(/\.\d{3}/,"");
+  for(var i=0;i<data.cycles.length;i++){
+    var c=data.cycles[i];
+    if(!c.stages)continue;
+    for(var s=0;s<c.stages.length;s++){
+      var stage=c.stages[s];
+      if(stage.date&&stage.status!=="complete"){
+        var dateStr=stage.date.replace(/-/g,"");
+        lines.push("BEGIN:VEVENT");
+        lines.push("UID:coaching-"+c.id+"-"+s+"@eslsuite");
+        lines.push("DTSTAMP:"+stamp);
+        lines.push("DTSTART;VALUE=DATE:"+dateStr);
+        lines.push("SUMMARY:Coaching: "+c.teacher+" - "+(stage.label||("Stage "+(s+1))));
+        lines.push("DESCRIPTION:"+(stage.notes||"").replace(/\n/g,"\\n").replace(/,/g,"\\,"));
+        lines.push("END:VEVENT");
+      }
+    }
+  }
+  lines.push("END:VCALENDAR");
+  var blob=new Blob([lines.join("\r\n")],{type:"text/calendar"});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement("a");
+  a.href=url;a.download="coaching_deadlines.ics";
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast("Calendar file downloaded.");
+}
+
+/* ======================================================
+   SERVICE WORKER REGISTRATION
+   ====================================================== */
+
+if("serviceWorker" in navigator){navigator.serviceWorker.register("../service-worker.js").catch(function(){});}
 </script>
 </body>
 </html>

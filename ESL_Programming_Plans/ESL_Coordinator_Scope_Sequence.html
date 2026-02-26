@@ -4,6 +4,8 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>ESL Coordinator Scope &amp; Sequence 2026-2027</title>
+<link rel="manifest" href="../manifest.json"/>
+<meta name="theme-color" content="#2c3e6e"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh;padding:20px}
@@ -133,9 +135,41 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh
 .btn-import{background:#4a90d9;color:#fff}
 .import-area{width:100%;min-height:100px;border:2px dashed #ddd;border-radius:8px;padding:10px;font-size:12px;font-family:monospace;resize:vertical;margin-bottom:12px}
 
+/* Dark Mode */
+body.dark-mode{background:#1a1a2e;color:#e0e0e0}
+body.dark-mode .header{background:linear-gradient(135deg,#1a1a2e,#2d3a6e)}
+body.dark-mode .card{background:#16213e;box-shadow:0 1px 5px rgba(0,0,0,.3)}
+body.dark-mode .card h3{color:#7eb8f7}
+body.dark-mode input,body.dark-mode select,body.dark-mode textarea{background:#1a2744;color:#e0e0e0;border-color:#2d3a6e}
+body.dark-mode .view-btn{background:#16213e;color:#7eb8f7;border-color:#2d3a6e}
+body.dark-mode .view-btn.active{background:#2c3e6e;color:#fff}
+body.dark-mode .dash-pct{color:#7eb8f7}
+body.dark-mode .dash-label{color:#aaa}
+body.dark-mode .dash-row-label{color:#ccc}
+body.dark-mode .dash-row-bar{background:#2d3a6e}
+body.dark-mode .coord-card{background:#1a2744;border-color:#2d3a6e}
+body.dark-mode .coord-card label{color:#aaa}
+body.dark-mode .month-chip{background:#16213e;color:#ccc;border-color:#2d3a6e}
+body.dark-mode .month-chip:hover{border-color:#7eb8f7;background:#1a2744}
+body.dark-mode .month-chip.active{background:#2c3e6e;color:#fff;border-color:#2c3e6e}
+body.dark-mode .filter-bar label{color:#aaa}
+body.dark-mode .filter-bar select{background:#1a2744;color:#e0e0e0;border-color:#2d3a6e}
+body.dark-mode .action-card{background:#16213e;border-color:#2d3a6e}
+body.dark-mode .action-card:hover{border-color:#4a90d9}
+body.dark-mode .action-text{color:#e0e0e0}
+body.dark-mode .action-scope{color:#aaa}
+body.dark-mode .action-note-toggle{color:#7eb8f7}
+body.dark-mode .action-note-area textarea{background:#1a2744;color:#e0e0e0;border-color:#2d3a6e}
+body.dark-mode .freq-group h4{color:#aaa;border-color:#2d3a6e}
+body.dark-mode .ss-container table{background:#16213e}
+body.dark-mode .ss-container th{background:#1a2744;color:#7eb8f7;border-color:#2d3a6e}
+body.dark-mode .ss-container td{color:#e0e0e0;border-color:#2d3a6e}
+body.dark-mode .modal-overlay .modal{background:#16213e}
+body.dark-mode .modal-overlay .modal h3{color:#7eb8f7}
+
 /* Print */
 @media print{
-  body{background:#fff;padding:0}
+  body{background:#fff!important;padding:0;color:#333!important}
   .toolbar,.view-toggle,.filter-bar,.mode-toggle,.month-strip,.tool-btn,.action-note-toggle,.modal-overlay{display:none!important}
   .card,.action-card{box-shadow:none;border:1px solid #ddd}
   .wrap{max-width:100%}
@@ -173,6 +207,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh
     <button class="tool-btn" onclick="showImportModal()" title="Import saved state">&#128194; Import</button>
     <button class="tool-btn danger" onclick="showResetModal()" title="Clear all data">&#128260; Reset</button>
     <button class="tool-btn" onclick="window.print()" title="Print current view">&#128424; Print</button>
+    <button class="tool-btn" onclick="toggleDarkMode()" id="darkModeToggle" aria-label="Toggle dark mode">&#9789; Dark</button>
     <span class="save-indicator" id="saveStatus">Auto-save: ready</span>
   </div>
 </div>
@@ -1117,7 +1152,13 @@ function init(){
   rebuildAll();
 }
 
+/* Dark Mode */
+function toggleDarkMode(){var d=document.body.classList.toggle("dark-mode");localStorage.setItem("esl_app_theme",d?"dark":"light");var b=document.getElementById("darkModeToggle");if(b)b.innerHTML=d?"&#9788; Light":"&#9789; Dark";}
+(function(){if(localStorage.getItem("esl_app_theme")==="dark"){document.body.classList.add("dark-mode");var b=document.getElementById("darkModeToggle");if(b)b.innerHTML="&#9788; Light";}})();
+
 init();
+
+if("serviceWorker" in navigator){navigator.serviceWorker.register("../service-worker.js").catch(function(){});}
 </script>
 </body>
 </html>

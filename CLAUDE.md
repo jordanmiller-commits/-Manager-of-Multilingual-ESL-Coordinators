@@ -6,11 +6,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```
 Manager_of_Multilingual_ESL_Coordinators/
-├── index.html                              # Unified Home Page — tool launcher & activity hub
-├── Data_Backup_Hub.html                    # Centralized backup/restore for all localStorage
+├── index.html                              # Unified Home Page — tool launcher, search, activity hub
+├── Teacher_360_Profile.html                # Aggregate teacher data across all tools (read-only)
+├── Data_Backup_Hub.html                    # Centralized backup/restore + GitHub Gist cloud sync
+├── manifest.json                           # PWA manifest (app name: "ESL Manager Suite")
+├── service-worker.js                       # PWA service worker — offline caching for all tools
 ├── ESL_Classroom_Audit/                    # ESL classroom environment audit
 │   ├── ESL_Classroom_Audit.html
 │   ├── Audit_Dashboard.html                # Chart.js audit trends dashboard
+│   ├── manifest.json                       # Legacy audit-only PWA manifest
+│   ├── service-worker.js                   # Legacy audit-only service worker
 │   └── MLP Observation and Walkthrough Tool.docx
 ├── ESL_Programming_Plans/                  # ESL programming plans
 │   ├── ESL_Coordinator_Scope_Sequence.html
@@ -47,11 +52,11 @@ Manager_of_Multilingual_ESL_Coordinators/
 
 ## Project Overview
 
-A suite of single-file web applications for managing multilingual/ESL coordinators. All tools share the same conventions and localStorage-based data sharing.
+A suite of single-file web applications for managing multilingual/ESL coordinators. All tools share the same conventions and localStorage-based data sharing. Hosted on GitHub Pages.
 
 ## Development
 
-Open any `.html` file directly in a browser. Changes take effect on reload. There are no build, lint, or test commands. No external dependencies except Chart.js CDN for dashboard files.
+Open any `.html` file directly in a browser. Changes take effect on reload. There are no build, lint, or test commands. No external dependencies except Chart.js CDN for dashboard files and PDF.js CDN for ELPS Agent.
 
 ## Key Conventions
 
@@ -60,26 +65,31 @@ Open any `.html` file directly in a browser. Changes take effect on reload. Ther
 - Visual style: blue gradient header (`linear-gradient(135deg, #2c3e6e, #4a90d9)`), Segoe UI font, white cards with `border-radius:10px`, `#f0f2f7` background.
 - Event handlers via inline `onclick` or closure-wrapped `addEventListener`.
 - Persistence via browser `localStorage` with debounced auto-save.
+- Dark mode: `body.dark-mode` class, persisted via `esl_app_theme` localStorage key, toggle button in every tool's header.
+- PWA: Root `manifest.json` + `service-worker.js`, registered from all HTML files.
+- Print: `@media print` CSS in every tool hides toolbars and formats for paper.
 
 ## Cross-Tool Data Sharing
 
-All tools share localStorage when served from the same origin (same directory on `file://`).
+All tools share localStorage when served from the same origin (same directory on `file://` or same GitHub Pages domain).
 
 | Key | Written By | Read By | Purpose |
 |---|---|---|---|
 | `esl_audit_data` | Audit | Audit, Backup Hub, Home | Current working audit |
-| `esl_audit_history` | Audit | Audit, Audit Dashboard, Backup Hub, Home | Saved audit archive |
+| `esl_audit_history` | Audit | Audit, Audit Dashboard, Backup Hub, Home, Teacher 360 | Saved audit archive |
 | `esl_audit_campuses` | Audit | Audit, Backup Hub | Campus name list |
 | `walkthrough_plan_data_v2` | Planner | Planner, Backup Hub, Home | Current walkthrough session |
-| `walkthrough_history` | Planner | Planner, Walk Dashboard, Coaching Tracker, Backup Hub, Home | Saved walkthrough archive |
+| `walkthrough_history` | Planner | Planner, Walk Dashboard, Coaching Tracker, Backup Hub, Home, Teacher 360 | Saved walkthrough archive |
 | `esl_scope_data` | Scope & Seq | Scope & Seq, Backup Hub, Home | Coordinator tracking state |
-| `shared_teacher_roster` | Planner (auto-harvest) | Planner, Coaching Tracker, Backup Hub | Teacher name autocomplete list |
-| `coaching_cycles_data` | Coaching Tracker | Coaching Tracker, Backup Hub, Home | Coaching cycle state |
+| `shared_teacher_roster` | Planner (auto-harvest) | Planner, Coaching Tracker, Backup Hub, Teacher 360, Home | Teacher name autocomplete list |
+| `coaching_cycles_data` | Coaching Tracker | Coaching Tracker, Backup Hub, Home, Teacher 360 | Coaching cycle state |
 | `walkthrough_audit_handoff` | Planner (temp) | Audit (consumed on load) | Walkthrough → Audit pipeline context |
 | `elps_agent_docs` | ELPS Agent | ELPS Agent, Backup Hub | ELPS document chunks |
 | `elps_agent_index` | ELPS Agent | ELPS Agent | Inverted search index |
 | `elps_agent_settings` | ELPS Agent | ELPS Agent | API key, model preference |
 | `elps_agent_history` | ELPS Agent | ELPS Agent | Recent query history |
+| `esl_app_theme` | All tools | All tools | Dark mode preference (`"dark"` / `"light"`) |
+| `esl_gist_sync` | Backup Hub | Backup Hub | GitHub Gist PAT and Gist ID for cloud sync |
 
 ---
 
@@ -87,11 +97,26 @@ All tools share localStorage when served from the same origin (same directory on
 
 `index.html` — Landing page that links all tools and shows cross-tool activity.
 
+- **Global Search**: Search bar that searches across all localStorage data — teachers, campuses, observations, coaching actions
 - **Stats bar**: Audits saved, walkthroughs, teachers in roster, coaching cycles
-- **Tool grid**: Cards linking to each tool with live status badges (e.g., "3 active coaching cycles")
+- **Tool grid**: Cards linking to each tool (9 total) with live status badges
 - **Alerts**: Overdue coaching actions, stalled coaching cycles, high-score celebrations, onboarding nudges
 - **Recent Activity**: Merged timeline from `esl_audit_history` and `walkthrough_history`, sorted by date
-- **Link to Data Backup Hub** in header
+- **Dark mode toggle** and **Data Backup Hub** link in header
+
+---
+
+## Teacher 360 Profile
+
+`Teacher_360_Profile.html` — Read-only aggregate view of a single teacher across all tools.
+
+- **Teacher Selector**: Dropdown + search populated from roster and all data sources
+- **Summary Stats**: Total observations, avg fidelity %, latest audit score, coaching stage, total sessions
+- **Walkthrough Observations**: Code distribution bar, fidelity trend chart (Chart.js), observation table
+- **Audit History**: Score progression with trend arrows, audit table
+- **Coaching Cycles**: 5-stage pipeline visual cards
+- **Coaching Actions**: Follow-up actions table with overdue highlighting
+- **Timeline**: Merged chronological timeline of all events
 
 ---
 
@@ -169,7 +194,7 @@ After saving a walkthrough to history, the planner offers to open the audit tool
 5. **Post-Walkthrough Reflection** (collapsible): Patterns, actions, signature.
 6. **Look-For Suggestion Bank** (modal): 7 categories including ELPS-aligned look-fors.
 7. **History Modal**: Filterable saved walkthrough list with load/delete.
-8. **Quick-Code Floating Bar**: Fixed bottom bar for fast mobile observation entry — round selector, teacher autocomplete, code buttons (✓/O/P/NA), notes, auto-timestamped. Toggle via toolbar button.
+8. **Quick-Code Floating Bar**: Fixed bottom bar for fast mobile observation entry — round selector, teacher autocomplete, code buttons, notes, auto-timestamped. Toggle via toolbar button.
 
 ### Key Function Groups
 
@@ -230,6 +255,7 @@ Each cycle: `{id, teacher, campus, createdAt, stages (5 objects with status/date
 - **Filter bar**: Teacher text search, campus dropdown, status (All/Active/Completed)
 - **Stats row**: Active cycles, completed, avg days, teachers in coaching
 - **Shared roster**: Reads `shared_teacher_roster` for teacher autocomplete
+- **Calendar Export**: Downloads `.ics` file with coaching deadlines for Outlook/Google Calendar
 
 ---
 
@@ -244,6 +270,7 @@ Each cycle: `{id, teacher, campus, createdAt, stages (5 objects with status/date
 - **Import All**: File picker + paste, preview with per-key sizes and overwrite warnings
 - **Selective export/import**: Per-key checkboxes
 - **Clear individual keys**: Danger button with confirmation
+- **GitHub Gist Cloud Sync**: Push/pull all data to a private GitHub Gist for cross-device sync. Requires a GitHub Personal Access Token with `gist` scope. Settings stored in `esl_gist_sync` localStorage key.
 
 Manages all keys listed in the Cross-Tool Data Sharing table above.
 
@@ -261,3 +288,26 @@ Manages all keys listed in the Cross-Tool Data Sharing table above.
 | `elps_agent_index` | Inverted search index |
 | `elps_agent_settings` | API key, model preference |
 | `elps_agent_history` | Recent query history |
+
+---
+
+## PWA & Offline Support
+
+Root-level `manifest.json` and `service-worker.js` enable install-to-home-screen and offline access.
+
+- **App name**: ESL Manager Suite
+- **Cache strategy**: Cache-first with network fallback. All HTML files and Chart.js CDN pre-cached on install.
+- **Registration**: Every HTML file registers the root service worker via `navigator.serviceWorker.register()`.
+- **Manifest link**: Every HTML file includes `<link rel="manifest">` pointing to root manifest.
+
+---
+
+## Dark Mode
+
+All tools support dark mode via a shared system:
+
+- **CSS class**: `body.dark-mode` with override styles per tool
+- **Persistence**: `esl_app_theme` localStorage key (`"dark"` / `"light"`)
+- **Toggle**: Button in every tool's header toolbar
+- **ESL Classroom Audit**: Uses CSS custom properties (`body.dark`) with its own `esl_audit_dark_mode` key, but also syncs with `esl_app_theme`
+- **ELPS Agent**: Uses CSS custom properties (`body.dark`) with its own dark mode system

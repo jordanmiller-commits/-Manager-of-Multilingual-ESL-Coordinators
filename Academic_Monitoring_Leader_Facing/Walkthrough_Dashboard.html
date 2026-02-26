@@ -4,6 +4,8 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Walkthrough Data Dashboard</title>
+<link rel="manifest" href="../manifest.json"/>
+<meta name="theme-color" content="#2c3e6e"/>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -81,6 +83,26 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh
 .rpt-btn.outline{background:#fff;color:#4a90d9;border:2px solid #4a90d9}
 .rpt-btn.outline:hover{background:#eaf3fb}
 
+/* Dark Mode */
+body.dark-mode{background:#1a1a2e;color:#e0e0e0}
+body.dark-mode .header{background:linear-gradient(135deg,#1a1a2e,#2d3a6e)}
+body.dark-mode .card,body.dark-mode .stat-card,body.dark-mode .chart-area,body.dark-mode .first-card{background:#16213e;box-shadow:0 1px 5px rgba(0,0,0,.3)}
+body.dark-mode .stat-val,.dark-mode .chart-title{color:#7eb8f7}
+body.dark-mode .stat-label{color:#aaa}
+body.dark-mode .controls label{color:#aaa}
+body.dark-mode .controls select,body.dark-mode .controls input{background:#1a2744;color:#e0e0e0;border-color:#2d3a6e}
+body.dark-mode .empty-state{color:#666}
+body.dark-mode .empty-state h3{color:#888}
+body.dark-mode .action-item{background:#1a2744;border-color:#2d3a6e;color:#ccc}
+body.dark-mode .report-page{background:#16213e;color:#e0e0e0}
+body.dark-mode .report-page h2{color:#7eb8f7}
+body.dark-mode .rpt-stat{background:#1a2744;border-color:#2d3a6e}
+body.dark-mode .rpt-stat .val{color:#7eb8f7}
+body.dark-mode .rpt-stat .lbl{color:#aaa}
+body.dark-mode .rpt-table th{background:#1a2744;color:#ccc;border-color:#2d3a6e}
+body.dark-mode .rpt-table td{border-color:#2d3a6e;color:#ccc}
+body.dark-mode .rpt-section h3{color:#7eb8f7;border-color:#4a90d9}
+
 /* Responsive */
 @media(max-width:768px){
   .stats-row{grid-template-columns:1fr 1fr}
@@ -112,6 +134,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh
       <a class="tool-btn" href="Academic_Monitoring_Planning_Template.html">&#8592; Back to Planner</a>
       <button class="tool-btn" onclick="refreshCurrentView()">&#128260; Refresh</button>
       <button class="tool-btn" onclick="generateReport()">&#128196; Generate Report</button>
+      <button class="tool-btn" onclick="toggleDarkMode()" id="darkModeToggle" aria-label="Toggle dark mode">&#9789; Dark</button>
     </div>
   </div>
 
@@ -1089,8 +1112,14 @@ function closeReport() {
 /* ======================================================
    INITIALIZATION
    ====================================================== */
+/* Dark Mode */
+function toggleDarkMode(){var d=document.body.classList.toggle("dark-mode");localStorage.setItem("esl_app_theme",d?"dark":"light");var b=document.getElementById("darkModeToggle");if(b)b.innerHTML=d?"&#9788; Light":"&#9789; Dark";}
+(function(){if(localStorage.getItem("esl_app_theme")==="dark"){document.body.classList.add("dark-mode");var b=document.getElementById("darkModeToggle");if(b)b.innerHTML="&#9788; Light";}})();
+
 buildFilterBar("codeDistribution");
 refreshCurrentView();
+
+if("serviceWorker" in navigator){navigator.serviceWorker.register("../service-worker.js").catch(function(){});}
 </script>
 </body>
 </html>
