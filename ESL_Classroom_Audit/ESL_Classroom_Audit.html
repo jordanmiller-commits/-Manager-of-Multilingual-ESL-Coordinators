@@ -242,6 +242,12 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 .item-row.search-hidden{display:none}
 .sec-block.search-hidden{display:none}
 mark{background:#fef08a;color:#333;padding:0 2px;border-radius:2px}
+.start-cycle-btn{padding:10px 18px;background:#27ae60;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;margin-top:10px}
+.start-cycle-btn:hover{background:#219a52}
+.calibration-section{margin-top:14px;padding:14px;border:2px solid #e74c3c;border-radius:8px;background:var(--section-bg-light)}
+.calibration-item{padding:10px;margin-bottom:8px;border-radius:6px;background:var(--card-bg);border:1px solid var(--card-border)}
+.calibration-item.calibration-resolved{border-color:#27ae60;background:#eafaf1}
+.calibration-history{margin-top:14px;padding:12px;border-radius:8px;background:var(--section-bg-light);border:1px solid var(--card-border)}
 @media print{
   body{background:#fff;padding:0}
   .tabs,.sum-btn,.print-btn,.copy-btn,.save-history-btn,.toolbar,.section-controls,.timer-display,.kb-hint,.compare-section,.sec-quickrate,.tag-row,.item-comment-toggle{display:none!important}
@@ -295,6 +301,7 @@ mark{background:#fef08a;color:#333;padding:0 2px;border-radius:2px}
     <button class="tool-btn" onclick="enableMultiObserver()" id="multiObsBtn" title="Enable multi-observer mode for calibration" style="border-color:rgba(52,152,219,.5);background:rgba(52,152,219,.15)">&#128101; Multi-Observer</button>
     <button class="tool-btn danger" onclick="showResetModal()" title="Clear all data and start fresh">&#128260; Reset</button>
     <button class="tool-btn" onclick="showSettingsModal()" title="Settings: export, import, appearance">&#9881; Settings</button>
+    <a class="tool-btn" href="../index.html" style="margin-left:auto" aria-label="Back to Home">&#127968; Home</a>
     <span class="save-indicator" id="saveStatus">Auto-save: ready</span>
   </div>
 </div>
@@ -603,6 +610,77 @@ var PRINCIPLES = [
 ];
 
 var EVIDENCE_TAGS = ["Photo Taken","Scholar-Generated","Needs Replacement","Bilingual","Recently Updated","Teacher-Created"];
+
+var COACHING_STRATEGIES = {
+  s01: {title:"Language Production", strategies:[
+    {name:"Model-Practice-Apply", move:"Model sentence frame usage during whole-group instruction, then have scholars practice with partners using the frames, then apply independently in writing.", lookFor:"Scholars use frames independently during partner and independent work", successCriteria:"80% of scholars attempt frame usage without prompting"},
+    {name:"Frame Rotation Protocol", move:"Introduce one new sentence frame per week, post it prominently, and require scholars to use it in at least 2 activities daily.", lookFor:"New frames appear weekly; scholars reference the wall during discussions", successCriteria:"Scholars can identify and use 3+ frames from memory"}
+  ]},
+  s02: {title:"Vocabulary Systems", strategies:[
+    {name:"Word Wall Interactive Routine", move:"Daily 3-minute word wall review: teacher points to word, scholars say definition chorally, use in sentence with partner.", lookFor:"Daily routine observed; scholars engage actively with word wall", successCriteria:"Scholars can define and use 5+ word wall terms in context"},
+    {name:"Vocabulary Journal Protocol", move:"Establish consistent journal format. Model entries weekly. Scholars complete entries for 3-5 words per unit with visual, definition, sentence, home language.", lookFor:"Journals present on desks; entries follow consistent format", successCriteria:"90% of scholars have current, complete journal entries"}
+  ]},
+  s03: {title:"Writing Supports", strategies:[
+    {name:"Mentor Text Analysis", move:"Select mentor text at target proficiency level. Guide scholars through annotating language features. Use as model for own writing.", lookFor:"Annotated mentor texts visible; scholars reference during writing", successCriteria:"Scholar writing shows evidence of mentor text language features"},
+    {name:"Scaffolded Writing Frames", move:"Provide tiered writing frames (beginner/intermediate/advanced). Release scaffolds gradually as scholars demonstrate mastery.", lookFor:"Multiple frame levels available; scholars self-select appropriate level", successCriteria:"Scholars transition to less scaffolded frames over time"}
+  ]},
+  s04: {title:"Data and Goal Tracking", strategies:[
+    {name:"Weekly Goal Conference", move:"Hold 2-minute individual conferences weekly. Scholar states current goal, evidence of progress, and next step.", lookFor:"Goal trackers updated; scholars can articulate their goals", successCriteria:"80% of scholars can state their language goal and current progress"},
+    {name:"Visual Progress Display", move:"Create class-level progress display that scholars update themselves. Celebrate milestones publicly.", lookFor:"Display is current and scholar-maintained", successCriteria:"Scholars independently update their progress markers"}
+  ]},
+  s05: {title:"Culture and Identity", strategies:[
+    {name:"Heritage Spotlight Rotation", move:"Weekly spotlight on a different home language/culture. Scholar or family presents. Display updated to feature that culture.", lookFor:"Rotating displays reflect current spotlight; scholar presentations scheduled", successCriteria:"Every scholar's heritage is featured at least once per semester"},
+    {name:"Multilingual Asset Mapping", move:"Create classroom map connecting scholars to their languages. Use during instruction to validate home language as asset.", lookFor:"Map visible and referenced; teacher uses home language connections in lessons", successCriteria:"Scholars voluntarily share home language connections during instruction"}
+  ]},
+  s06: {title:"Structures and Routines", strategies:[
+    {name:"Routine Installation Cycle", move:"Introduce one new routine per week. Model explicitly, practice 3 days, assess on day 5. Post visual reminder.", lookFor:"Posted routines match observed classroom practice", successCriteria:"Scholars follow routines with minimal teacher prompting"},
+    {name:"Discussion Norm Co-Creation", move:"Facilitate scholar-led creation of discussion norms. Post prominently. Reference before every discussion. Self-assess weekly.", lookFor:"Norms are scholar-generated; referenced before discussions", successCriteria:"Scholars self-correct using posted norms"}
+  ]},
+  s07: {title:"Technology and Reference", strategies:[
+    {name:"Tech Station Rotation", move:"Set up labeled tech stations with QR codes. Train scholars on each tool. Rotate access so all scholars use each station weekly.", lookFor:"Stations labeled and accessible; scholars navigate independently", successCriteria:"Scholars independently choose appropriate tech tool for task"},
+    {name:"Bilingual Dictionary Protocol", move:"Teach explicit dictionary skills lesson. Post step-by-step lookup guide. Require dictionary use during vocabulary activities.", lookFor:"Dictionaries accessible; scholars use without prompting during vocabulary work", successCriteria:"Scholars look up 2+ words independently per class period"}
+  ]},
+  s08: {title:"Unit-Specific Vocabulary", strategies:[
+    {name:"Frayer Model Workshop", move:"Model Frayer completion for 2 words. Scholars complete for 3 words in pairs. Display and reference during unit.", lookFor:"Completed Frayer models posted for current unit words", successCriteria:"Scholars can explain vocabulary using all four Frayer quadrants"},
+    {name:"Vocabulary Preview Protocol", move:"Before unit launch, preview 5-8 key terms with visuals and cognates. Post on unit word wall. Reference daily.", lookFor:"Unit word wall is prepared before unit begins; daily references observed", successCriteria:"Scholars use unit vocabulary in speech and writing by week 2"}
+  ]},
+  s09: {title:"Content Comprehension", strategies:[
+    {name:"Graphic Organizer Modeling", move:"Select organizer matching text structure. Model completion with think-aloud. Scholars complete with partner, then independently.", lookFor:"Organizers match current text structure; scholars complete with increasing independence", successCriteria:"Scholars can select appropriate organizer for text structure"},
+    {name:"Background Knowledge Activation", move:"Begin each unit with KWL or anticipation guide. Build collaboratively. Return to update throughout unit.", lookFor:"KWL/activation display visible and updated; scholars add to it", successCriteria:"Scholars connect new content to prior knowledge unprompted"}
+  ]},
+  s10: {title:"Unit Writing Supports", strategies:[
+    {name:"Genre Study Immersion", move:"Immerse scholars in genre examples before writing. Annotate features collaboratively. Create class anchor chart of genre characteristics.", lookFor:"Genre anchor chart posted; multiple examples available for reference", successCriteria:"Scholar writing demonstrates genre-specific features"},
+    {name:"Revision Focus Protocol", move:"Name 1-2 specific revision skills per unit. Model revision process. Scholars peer-revise using focus checklist.", lookFor:"Revision focus posted; peer revision observed with checklist", successCriteria:"Final drafts show evidence of focused revision"}
+  ]},
+  s11: {title:"Discussion Supports", strategies:[
+    {name:"Protocol Gradual Release", move:"Teach discussion protocol explicitly. Practice with structured prompts. Release to scholar-led discussions with accountability roles.", lookFor:"Protocol steps posted; scholars follow without teacher directing every step", successCriteria:"Scholars lead discussions with minimal teacher intervention"},
+    {name:"Stance-Based Discussion", move:"Provide stance cards with position stems. Scholars prepare positions before discussion. Require evidence from text.", lookFor:"Stance cards visible; scholars reference stems during debate/discussion", successCriteria:"All scholars state position with text evidence"}
+  ]},
+  s12: {title:"Assessment and Monitoring", strategies:[
+    {name:"Scholar Self-Assessment Routine", move:"Create unit learning target tracker. Model self-assessment weekly. Scholars rate themselves and write evidence.", lookFor:"Trackers visible on desks; scholars complete without prompting", successCriteria:"Scholar self-assessments align with teacher assessments within 1 level"},
+    {name:"Exit Ticket Analysis Protocol", move:"Daily exit ticket aligned to language objective. Teacher sorts next morning. Reteach or extend based on data.", lookFor:"Exit tickets posted daily; evidence of teacher response to data", successCriteria:"Exit ticket data drives next-day instruction adjustments"}
+  ]},
+  s13: {title:"Culture-Content Connections", strategies:[
+    {name:"Cultural Connection Mapping", move:"At unit start, facilitate brainstorm connecting content to scholars' cultures and countries. Display connections. Reference during instruction.", lookFor:"Cultural connection display updated per unit; teacher references during lessons", successCriteria:"Scholars volunteer cultural connections during instruction"},
+    {name:"Scholar Work Celebration Cycle", move:"Display current unit work at multiple proficiency levels. Update weekly. Celebrate growth, not just high performance.", lookFor:"Work display shows range of proficiency levels; updated regularly", successCriteria:"All proficiency levels represented; scholars take pride in displayed work"}
+  ]}
+};
+
+var SECTION_ELPS_MAP = {
+  s01: {codes:["3E","3F","3G"], domains:["speaking","writing"], query:"sentence frames language production ELPS speaking"},
+  s02: {codes:["1C","2C","2D"], domains:["reading","vocabulary"], query:"vocabulary instruction word walls ELPS"},
+  s03: {codes:["5B","5F","5G"], domains:["writing"], query:"writing supports scaffolded frames ELPS writing"},
+  s04: {codes:["1A","2I"], domains:["monitoring"], query:"language goal tracking data monitoring ELPS"},
+  s05: {codes:["1C","2C"], domains:["culture","cross-linguistic"], query:"home language heritage culture ELPS cross-linguistic"},
+  s06: {codes:["1A","3E"], domains:["speaking","routines"], query:"classroom routines discussion norms ELPS"},
+  s07: {codes:["2C","2D"], domains:["reading","technology"], query:"bilingual dictionaries technology reference tools ELPS"},
+  s08: {codes:["1C","2C","2D"], domains:["reading","vocabulary"], query:"unit vocabulary Frayer model cognates ELPS"},
+  s09: {codes:["4F","4G"], domains:["reading","comprehension"], query:"graphic organizers content comprehension ELPS reading"},
+  s10: {codes:["5B","5F","5G"], domains:["writing"], query:"writing frames genre study revision ELPS writing"},
+  s11: {codes:["3E","3F","3G"], domains:["speaking","listening"], query:"discussion protocols Socratic seminar ELPS speaking"},
+  s12: {codes:["1A","2I"], domains:["assessment"], query:"formative assessment exit tickets progress monitoring ELPS"},
+  s13: {codes:["1C","2C"], domains:["culture","content"], query:"cultural connections scholar work display ELPS"}
+};
 
 var STORAGE_KEY = "esl_audit_data";
 var HISTORY_KEY = "esl_audit_history";
@@ -2843,7 +2921,7 @@ function generateCoachingPlan() {
         weakItems.push({ text: s.items[j].split(" — ")[0], level: R[ratings[k]].label });
       }
     }
-    sectionData.push({ title: s.title, type: s.type, pct: pct, weakItems: weakItems, color: s.color });
+    sectionData.push({ title: s.title, type: s.type, pct: pct, weakItems: weakItems, color: s.color, sectionId: s.id });
   }
   sectionData.sort(function(a, b) { return a.pct - b.pct; });
 
