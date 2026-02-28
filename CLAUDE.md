@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```
 Manager_of_Multilingual_ESL_Coordinators/
-├── index.html                              # Unified Home Page — tool launcher, search, activity hub (18 tools)
+├── index.html                              # Unified Home Page — role-aware tool launcher (19 tools, 3 role views)
 ├── Team_Overview.html                      # Manager dashboard — aggregate all coordinator data via Drive Sync
 ├── Onboarding.html                         # 5-step setup wizard for new coordinators; ?gasUrl= param support
 ├── Teacher_360_Profile.html                # Aggregate teacher data across all tools (read-only)
@@ -20,7 +20,9 @@ Manager_of_Multilingual_ESL_Coordinators/
 ├── Student_Roster.html                     # FERPA-safe EB student roster (localStorage only, CSV import/export)
 ├── TELPAS_Tracker.html                     # TELPAS score tracker — growth table, decline alerts (localStorage only)
 ├── manifest.json                           # PWA manifest (app name: "ESL Manager Suite")
-├── service-worker.js                       # PWA service worker v4 — offline caching for all tools
+├── service-worker.js                       # PWA service worker v5 — offline caching for all tools
+├── Principal_Checkpoint_Portal/
+│   └── Principal_Checkpoint_Portal.html   # Campus leader view — coaching stage, audit scores, walkthrough codes; notes sync to GAS
 ├── CHANGELOG.md                            # Version history (Keep a Changelog format)
 ├── TODO.md                                 # Project to-do list — security hardening is next priority
 ├── .github/
@@ -142,14 +144,23 @@ Open any `.html` file directly in a browser. Changes take effect on reload. No b
 
 ## Unified Home Page
 
-`index.html` — Landing page linking all 18 tools with live status badges.
+`index.html` — Role-aware landing page with 19 tool cards and 3 view tabs.
 
-- **Header**: Data Backup Hub link + Setup Guide (Onboarding) link + dark mode toggle
-- **Global Search**: searches teachers, campuses, observations, coaching actions across all localStorage keys
-- **Stats bar**: Audits saved, walkthroughs, teachers in roster, coaching cycles
-- **Tool grid**: 18 cards with `metaXxx` badge IDs — all populated by `loadExtraMeta()`
-- **Alerts**: Overdue coaching actions, stalled cycles, high-score celebrations, onboarding nudges
-- **Recent Activity**: Merged timeline from `esl_audit_history` + `walkthrough_history`
+- **Header**: Data Backup Hub link + Setup Guide link + dark mode toggle + **3 role tabs**
+- **Role tabs**: `[Manager] [MLP Coordinator] [Campus Leader]` — persisted in `esl_home_role` localStorage key
+- **Role visibility** (`data-roles` attribute on each `.tool-card`):
+  - `manager` only: Team Overview
+  - `manager,coordinator`: all operational tools + Data Backup Hub
+  - `manager,campus-leader`: Principal Checkpoint Portal
+  - `manager,coordinator,campus-leader`: Audit Dashboard, Teacher 360 Profile
+- **Manager view**: All 19 tools, stats bar, global search, alerts, recent activity
+- **Coordinator view**: 17 tools (no Team Overview or Principal Portal), stats bar, search, alerts, activity
+- **Campus Leader view**: 3 tools (Principal Portal + Audit Dashboard + Teacher 360), welcome card, no stats/search/activity
+- **Global Search**: searches teachers, campuses, observations, coaching actions across localStorage
+- **Stats bar**: Audits saved, walkthroughs, teachers in roster, coaching cycles (hidden in campus-leader view)
+- **Tool grid**: 19 cards with `metaXxx` badge IDs — populated by `loadExtraMeta()`
+- **Alerts**: Overdue coaching actions, stalled cycles, high-score celebrations (campus-leader gets focused portal alert)
+- **Recent Activity**: Merged timeline from `esl_audit_history` + `walkthrough_history` (hidden in campus-leader view)
 
 ---
 

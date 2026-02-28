@@ -11,13 +11,26 @@
 body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh;padding:20px}
 .wrap{max-width:1140px;margin:0 auto}
 
+/* ============================
+   HEADER
+   ============================ */
 .header{background:linear-gradient(135deg,#2c3e6e,#4a90d9);color:#fff;padding:28px 32px 20px;border-radius:14px 14px 0 0}
 .header h1{font-size:24px;font-weight:800;margin-bottom:4px}
 .header p{font-size:12px;opacity:.85;margin-bottom:14px}
-.header-row{display:flex;gap:8px;align-items:center}
+.header-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .tool-btn{background:rgba(255,255,255,.13);color:#fff;border:2px solid rgba(255,255,255,.35);padding:6px 13px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;text-decoration:none;display:inline-block}
 .tool-btn:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.55)}
 
+/* Role tabs — inside header gradient */
+.role-tabs-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.2)}
+.role-tab{padding:7px 18px;border-radius:20px;border:2px solid rgba(255,255,255,.35);background:transparent;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;color:rgba(255,255,255,.75);transition:all .15s;line-height:1}
+.role-tab:hover:not(.active){background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.6);color:#fff}
+.role-tab.active{background:#fff;color:#2c3e6e;border-color:#fff}
+.role-label{font-size:9px;color:rgba(255,255,255,.5);align-self:center;margin-left:4px;font-style:italic}
+
+/* ============================
+   CARDS / SHARED
+   ============================ */
 .card{background:#fff;border-radius:10px;box-shadow:0 1px 5px rgba(0,0,0,.07);padding:16px 20px;margin-bottom:12px}
 .first-card{border-radius:0 0 10px 10px;margin-top:0}
 
@@ -30,8 +43,15 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh
 .alert .icon{font-size:16px;flex-shrink:0}
 .no-alerts{text-align:center;padding:20px;color:#aaa;font-size:12px;font-style:italic}
 
-/* Tool Grid */
+/* ============================
+   SECTION LABELS
+   ============================ */
 .section-title{font-size:14px;font-weight:700;color:#2c3e6e;margin-bottom:10px;padding-left:2px}
+.section-sub{font-size:11px;color:#aaa;font-weight:400;margin-left:6px}
+
+/* ============================
+   TOOL GRID
+   ============================ */
 .tool-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:20px}
 .tool-card{background:#fff;border-radius:10px;box-shadow:0 1px 5px rgba(0,0,0,.07);padding:18px 20px;cursor:pointer;text-decoration:none;color:inherit;transition:all .15s;border:2px solid transparent;display:block}
 .tool-card:hover{border-color:#4a90d9;box-shadow:0 4px 12px rgba(74,144,217,.15);transform:translateY(-2px)}
@@ -44,20 +64,23 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh
 .tc-badge.blue{background:#e3f2fd;color:#1565c0}
 .tc-badge.orange{background:#fff3e0;color:#e65100}
 .tc-badge.gray{background:#f5f5f5;color:#888}
+.tc-badge.purple{background:#f3e5f5;color:#6a1b9a}
 
-/* Recent Activity */
-.activity-list{max-height:250px;overflow-y:auto}
-.activity-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f5f5f5;font-size:11px;color:#555}
-.activity-item:last-child{border-bottom:none}
-.activity-item .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+/* Role accent borders on cards */
+.tool-card.role-campus{border-left:3px solid #27ae60}
+.tool-card.role-manager-only{border-left:3px solid #9b59b6}
 
-/* Stats */
+/* ============================
+   STATS ROW
+   ============================ */
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
 .stat-card{text-align:center;padding:12px;background:#f8f9fb;border-radius:8px;border:1px solid #eee}
 .stat-val{font-size:22px;font-weight:800;color:#2c3e6e}
 .stat-label{font-size:9px;font-weight:600;color:#888;text-transform:uppercase}
 
-/* Search */
+/* ============================
+   SEARCH
+   ============================ */
 .search-wrap{position:relative;margin-bottom:16px}
 .search-input{width:100%;padding:12px 16px 12px 40px;border-radius:10px;border:1px solid #ddd;font-size:13px;font-family:inherit;background:#fff;box-shadow:0 1px 5px rgba(0,0,0,.07);transition:border-color .2s}
 .search-input:focus{outline:none;border-color:#4a90d9;box-shadow:0 1px 8px rgba(74,144,217,.15)}
@@ -72,10 +95,29 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh
 .sr-item .sr-context{color:#aaa;font-size:10px;margin-left:8px}
 .sr-none{text-align:center;padding:16px;color:#aaa;font-size:12px;font-style:italic}
 
-/* Dark Mode */
+/* ============================
+   ACTIVITY
+   ============================ */
+.activity-list{max-height:250px;overflow-y:auto}
+.activity-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f5f5f5;font-size:11px;color:#555}
+.activity-item:last-child{border-bottom:none}
+.activity-item .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+/* Campus leader welcome card */
+.campus-welcome{text-align:center;padding:28px 20px}
+.campus-welcome .big-icon{font-size:48px;margin-bottom:12px}
+.campus-welcome h2{font-size:18px;font-weight:800;color:#2c3e6e;margin-bottom:6px}
+.campus-welcome p{font-size:13px;color:#888;line-height:1.6}
+
+/* ============================
+   DARK MODE
+   ============================ */
 body.dark-mode{background:#1a1a2e;color:#e0e0e0}
 body.dark-mode .header{background:linear-gradient(135deg,#1a1a2e,#2d3a6e)}
-body.dark-mode .card,body.dark-mode .stat-card{background:#16213e;box-shadow:0 1px 5px rgba(0,0,0,.3);border-color:#2d3a6e}
+body.dark-mode .role-tab{color:rgba(255,255,255,.6);border-color:rgba(255,255,255,.25)}
+body.dark-mode .role-tab.active{background:rgba(255,255,255,.9);color:#1a1a2e}
+body.dark-mode .card{background:#16213e;box-shadow:0 1px 5px rgba(0,0,0,.3);border-color:#2d3a6e}
+body.dark-mode .stat-card{background:#16213e;border-color:#2d3a6e}
 body.dark-mode .tool-card{background:#16213e;box-shadow:0 1px 5px rgba(0,0,0,.3);color:#e0e0e0}
 body.dark-mode .tool-card:hover{border-color:#4a90d9;box-shadow:0 4px 12px rgba(74,144,217,.25)}
 body.dark-mode .tc-name{color:#7eb8f7}
@@ -98,19 +140,29 @@ body.dark-mode .tc-badge.green{background:#1a3a1a;color:#66bb6a}
 body.dark-mode .tc-badge.blue{background:#0d2847;color:#64b5f6}
 body.dark-mode .tc-badge.orange{background:#3e2a10;color:#f5c842}
 body.dark-mode .tc-badge.gray{background:#2d3a6e;color:#888}
+body.dark-mode .tc-badge.purple{background:#2d1b3d;color:#ce93d8}
+body.dark-mode .campus-welcome h2{color:#7eb8f7}
+body.dark-mode .campus-welcome p{color:#888}
 
-/* Print */
+/* ============================
+   PRINT
+   ============================ */
 @media print{
   body{background:#fff!important;padding:0}
-  .header,.search-wrap,.search-results,.tool-btn{display:none!important}
+  .header,.search-wrap,.search-results,.tool-btn,.role-tabs-row{display:none!important}
   .tool-card{break-inside:avoid;box-shadow:none;border:1px solid #ddd}
   .stat-card{box-shadow:none;border:1px solid #ddd}
 }
 
+/* ============================
+   MOBILE
+   ============================ */
 @media(max-width:768px){
   .stats-row{grid-template-columns:1fr 1fr}
   .tool-grid{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
   .header-row{flex-wrap:wrap}
+  .role-tabs-row{gap:6px}
+  .role-tab{padding:6px 14px;font-size:10px}
 }
 @media(max-width:600px){
   body{padding:8px}
@@ -118,7 +170,12 @@ body.dark-mode .tc-badge.gray{background:#2d3a6e;color:#888}
   .tool-grid{grid-template-columns:1fr}
   .stats-row{grid-template-columns:1fr 1fr}
   .tool-btn,.search-input{min-height:44px}
+  .role-tab{min-height:38px;padding:6px 12px}
 }
+
+/* ============================
+   TOAST / TEACHER LINK
+   ============================ */
 .toast{position:fixed;bottom:24px;right:24px;background:#2c3e6e;color:#fff;padding:12px 20px;border-radius:8px;font-size:13px;font-weight:600;box-shadow:0 4px 15px rgba(0,0,0,.2);z-index:2000;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none}
 .toast.show{opacity:1;transform:translateY(0)}
 body.dark-mode .toast{background:#7eb8f7;color:#1a1a2e}
@@ -130,19 +187,35 @@ body.dark-mode .teacher-link:hover{color:#a8d4ff}
 </head>
 <body>
 <div class="wrap">
+
+  <!-- ===================== HEADER ===================== -->
   <div class="header">
     <h1>ESL Coordinator Hub</h1>
-    <p>Manager of Multilingual / ESL Coordinators &mdash; Tool Suite</p>
+    <p id="headerSubtitle">Manager of Multilingual / ESL Coordinators &mdash; Tool Suite</p>
     <div class="header-row">
-      <a class="tool-btn" href="Data_Backup_Hub.html">&#128190; Data Backup Hub</a>
+      <a class="tool-btn" href="Data_Backup_Hub.html">&#128190; Data Backup</a>
       <a class="tool-btn" href="Onboarding.html">&#9881; Setup Guide</a>
       <button class="tool-btn" onclick="toggleDarkMode()" id="darkModeToggle" aria-label="Toggle dark mode">&#9789; Dark</button>
+    </div>
+    <!-- Role tabs -->
+    <div class="role-tabs-row">
+      <button class="role-tab active" data-role="manager"       onclick="setRole('manager')">&#128202; Manager</button>
+      <button class="role-tab"        data-role="coordinator"   onclick="setRole('coordinator')">&#128101; MLP Coordinator</button>
+      <button class="role-tab"        data-role="campus-leader" onclick="setRole('campus-leader')">&#127983; Campus Leader</button>
+      <span class="role-label" id="roleLabel">Showing all tools</span>
     </div>
   </div>
 
   <!-- Alerts -->
   <div class="card first-card alerts" id="alertsArea">
-    <div class="no-alerts">Loading activity...</div>
+    <div class="no-alerts">Loading activity&hellip;</div>
+  </div>
+
+  <!-- Campus Leader welcome (hidden unless campus-leader role active) -->
+  <div class="card campus-welcome" id="campusWelcome" style="display:none">
+    <div class="big-icon">&#127983;</div>
+    <h2>Welcome, Campus Leader</h2>
+    <p>Use the <strong>Principal Checkpoint Portal</strong> below to view teacher progress on your campus.<br/>The Audit Dashboard and Teacher 360 Profile are also available for deeper dives.</p>
   </div>
 
   <!-- Quick Stats -->
@@ -154,128 +227,169 @@ body.dark-mode .teacher-link:hover{color:#a8d4ff}
   </div>
 
   <!-- Search -->
-  <div class="search-wrap">
-    <span class="search-icon">&#128269;</span>
-    <input type="text" class="search-input" id="globalSearch" placeholder="Search teachers, campuses, observations, coaching actions..." oninput="handleSearch(this.value)" aria-label="Search across all tools"/>
+  <div id="searchWrap">
+    <div class="search-wrap">
+      <span class="search-icon">&#128269;</span>
+      <input type="text" class="search-input" id="globalSearch" placeholder="Search teachers, campuses, observations, coaching actions..." oninput="handleSearch(this.value)" aria-label="Search across all tools"/>
+    </div>
+    <div class="search-results" id="searchResults"></div>
   </div>
-  <div class="search-results" id="searchResults"></div>
 
   <!-- Tools -->
-  <div class="section-title">Tools</div>
+  <div class="section-title" id="sectionTitle">All Tools <span class="section-sub" id="sectionSub">19 tools available</span></div>
   <div class="tool-grid">
-    <a class="tool-card" href="ESL_Classroom_Audit/ESL_Classroom_Audit.html">
+
+    <!-- ===== MANAGER + COORDINATOR ===== -->
+    <a class="tool-card" href="ESL_Classroom_Audit/ESL_Classroom_Audit.html" data-roles="manager,coordinator">
       <div class="tc-icon">&#128270;</div>
       <div class="tc-name">Classroom Environment Audit</div>
       <div class="tc-desc">Evaluate language-forward classroom environments with 58-item checklist across 13 sections.</div>
       <div class="tc-meta" id="metaAudit"></div>
     </a>
-    <a class="tool-card" href="ESL_Classroom_Audit/Audit_Dashboard.html">
+
+    <a class="tool-card" href="ESL_Classroom_Audit/Audit_Dashboard.html" data-roles="manager,coordinator,campus-leader">
       <div class="tc-icon">&#128200;</div>
       <div class="tc-name">Audit Dashboard</div>
       <div class="tc-desc">Score trends, section breakdowns, campus comparisons, and principles compliance from audit history.</div>
       <div class="tc-meta" id="metaAuditDash"></div>
     </a>
-    <a class="tool-card" href="Academic_Monitoring_Leader_Facing/Academic_Monitoring_Planning_Template.html">
+
+    <a class="tool-card" href="Academic_Monitoring_Leader_Facing/Academic_Monitoring_Planning_Template.html" data-roles="manager,coordinator">
       <div class="tc-icon">&#128221;</div>
       <div class="tc-name">Walkthrough Planning Template</div>
       <div class="tc-desc">Plan walkthrough rounds, record observations, track coaching follow-ups. Quick-code bar for mobile entry.</div>
       <div class="tc-meta" id="metaWalkthrough"></div>
     </a>
-    <a class="tool-card" href="Academic_Monitoring_Leader_Facing/Walkthrough_Dashboard.html">
+
+    <a class="tool-card" href="Academic_Monitoring_Leader_Facing/Walkthrough_Dashboard.html" data-roles="manager,coordinator">
       <div class="tc-icon">&#128202;</div>
       <div class="tc-name">Walkthrough Dashboard</div>
       <div class="tc-desc">Code distribution, teacher trends, focus area comparison, coaching pipeline, and campus trends.</div>
       <div class="tc-meta" id="metaWalkDash"></div>
     </a>
-    <a class="tool-card" href="Academic_Monitoring_Leader_Facing/Coaching_Cycle_Tracker.html">
+
+    <a class="tool-card" href="Academic_Monitoring_Leader_Facing/Coaching_Cycle_Tracker.html" data-roles="manager,coordinator">
       <div class="tc-icon">&#128172;</div>
       <div class="tc-name">Coaching Cycle Tracker</div>
       <div class="tc-desc">Track full coaching cycles: observation, feedback, action step, follow-up, and growth.</div>
       <div class="tc-meta" id="metaCoaching"></div>
     </a>
-    <a class="tool-card" href="ESL_Programming_Plans/ESL_Coordinator_Scope_Sequence.html">
+
+    <a class="tool-card" href="ESL_Programming_Plans/ESL_Coordinator_Scope_Sequence.html" data-roles="manager,coordinator">
       <div class="tc-icon">&#128197;</div>
       <div class="tc-name">Scope &amp; Sequence Tracker</div>
       <div class="tc-desc">Track 4 ESL coordinators across the 2026-2027 school year with monthly action checkboxes.</div>
       <div class="tc-meta" id="metaScope"></div>
     </a>
-    <a class="tool-card" href="ELPS_Agent/ELPS_Agent.html">
+
+    <a class="tool-card" href="ELPS_Agent/ELPS_Agent.html" data-roles="manager,coordinator">
       <div class="tc-icon">&#128218;</div>
       <div class="tc-name">ELPS Knowledge Base</div>
       <div class="tc-desc">PDF search and AI-powered Q&amp;A for ELPS documents with full-text search and code detection.</div>
       <div class="tc-meta" id="metaElps"></div>
     </a>
-    <a class="tool-card" href="Teacher_360_Profile.html">
+
+    <a class="tool-card" href="Teacher_360_Profile.html" data-roles="manager,coordinator,campus-leader">
       <div class="tc-icon">&#128100;</div>
       <div class="tc-name">Teacher 360 Profile</div>
       <div class="tc-desc">Aggregate view of a teacher across audits, walkthroughs, coaching cycles, and observations.</div>
       <div class="tc-meta" id="metaTeacher360"></div>
     </a>
-    <a class="tool-card" href="Coordinator_Workload.html">
+
+    <a class="tool-card" href="Coordinator_Workload.html" data-roles="manager,coordinator">
       <div class="tc-icon">&#128203;</div>
       <div class="tc-name">Coordinator Workload</div>
       <div class="tc-desc">Monitor team capacity, workload balance, and campus coverage across all 4 coordinators.</div>
       <div class="tc-meta" id="metaWorkload"></div>
     </a>
-    <a class="tool-card" href="Team_Overview.html">
-      <div class="tc-icon">&#128202;</div>
-      <div class="tc-name">Team Overview</div>
-      <div class="tc-desc">Manager dashboard — aggregate walkthroughs, audits, and coaching cycles across all coordinators via Drive Sync.</div>
-      <div class="tc-meta" id="metaTeamOverview"></div>
-    </a>
-    <a class="tool-card" href="PD_Tracker.html">
-      <div class="tc-icon">&#128218;</div>
+
+    <a class="tool-card" href="PD_Tracker.html" data-roles="manager,coordinator">
+      <div class="tc-icon">&#127891;</div>
       <div class="tc-name">PD Tracker</div>
       <div class="tc-desc">Log and track professional development sessions across 8 categories. Charts, hour targets, and CSV export.</div>
       <div class="tc-meta" id="metaPD"></div>
     </a>
-    <a class="tool-card" href="Meeting_Notes.html">
+
+    <a class="tool-card" href="Meeting_Notes.html" data-roles="manager,coordinator">
       <div class="tc-icon">&#128221;</div>
       <div class="tc-name">Meeting Notes</div>
       <div class="tc-desc">Agenda builder and searchable archive for team, campus, department, and district meetings. Action items link to Coaching Tracker.</div>
       <div class="tc-meta" id="metaMeetings"></div>
     </a>
-    <a class="tool-card" href="Parent_Communication_Log.html">
+
+    <a class="tool-card" href="Parent_Communication_Log.html" data-roles="manager,coordinator">
       <div class="tc-icon">&#128222;</div>
       <div class="tc-name">Parent Communication Log</div>
       <div class="tc-desc">Log and search parent contacts by teacher, campus, language, and contact type. Configurable dropdowns, CSV export.</div>
       <div class="tc-meta" id="metaParentComm"></div>
     </a>
-    <a class="tool-card" href="Compliance_Checklist.html">
+
+    <a class="tool-card" href="Compliance_Checklist.html" data-roles="manager,coordinator">
       <div class="tc-icon">&#9989;</div>
       <div class="tc-name">Compliance Checklist</div>
       <div class="tc-desc">Custom ESL program compliance checklist tracked per campus per semester. Side-by-side campus comparison report.</div>
       <div class="tc-meta" id="metaCompliance"></div>
     </a>
-    <a class="tool-card" href="Goal_Setting.html">
+
+    <a class="tool-card" href="Goal_Setting.html" data-roles="manager,coordinator">
       <div class="tc-icon">&#127919;</div>
       <div class="tc-name">Goal-Setting &amp; Growth</div>
       <div class="tc-desc">Shared manager + coordinator goal planning with action steps, mid/end-semester check-ins, and evidence linking.</div>
       <div class="tc-meta" id="metaGoals"></div>
     </a>
-    <a class="tool-card" href="Student_Roster.html">
+
+    <a class="tool-card" href="Student_Roster.html" data-roles="manager,coordinator">
       <div class="tc-icon">&#128101;</div>
       <div class="tc-name">EB Student Roster</div>
       <div class="tc-desc">FERPA-safe local roster of English Learners with proficiency levels, program types, and CSV import/export.</div>
       <div class="tc-meta" id="metaStudents"></div>
     </a>
-    <a class="tool-card" href="TELPAS_Tracker.html">
+
+    <a class="tool-card" href="TELPAS_Tracker.html" data-roles="manager,coordinator">
       <div class="tc-icon">&#128200;</div>
       <div class="tc-name">TELPAS Tracker</div>
       <div class="tc-desc">Import TELPAS composite and domain scores, track year-over-year growth, and flag language decline. FERPA-safe local storage.</div>
       <div class="tc-meta" id="metaTELPAS"></div>
     </a>
-  </div>
+
+    <!-- ===== MANAGER ONLY ===== -->
+    <a class="tool-card role-manager-only" href="Team_Overview.html" data-roles="manager">
+      <div class="tc-icon">&#128202;</div>
+      <div class="tc-name">Team Overview</div>
+      <div class="tc-desc">Manager dashboard &mdash; aggregate walkthroughs, audits, and coaching cycles across all coordinators via Drive Sync.</div>
+      <div class="tc-meta" id="metaTeamOverview"></div>
+    </a>
+
+    <!-- ===== MANAGER + COORDINATOR ===== -->
+    <a class="tool-card" href="Data_Backup_Hub.html" data-roles="manager,coordinator">
+      <div class="tc-icon">&#128190;</div>
+      <div class="tc-name">Data Backup Hub</div>
+      <div class="tc-desc">Export and import all tool data. Sync to Google Drive so your manager can see your activity. GitHub Gist backup.</div>
+      <div class="tc-meta" id="metaDataBackup"></div>
+    </a>
+
+    <!-- ===== MANAGER + CAMPUS LEADER ===== -->
+    <a class="tool-card role-campus" href="Principal_Checkpoint_Portal/Principal_Checkpoint_Portal.html" data-roles="manager,campus-leader">
+      <div class="tc-icon">&#127983;</div>
+      <div class="tc-name">Principal Checkpoint Portal</div>
+      <div class="tc-desc">Campus leader view of teacher coaching progress, audit scores, and walkthrough observations &mdash; confidentiality preserved.</div>
+      <div class="tc-meta" id="metaPrincipalPortal"></div>
+    </a>
+
+  </div><!-- /tool-grid -->
 
   <!-- Recent Activity -->
-  <div class="section-title">Recent Activity</div>
-  <div class="card">
-    <div class="activity-list" id="activityList">
-      <div class="no-alerts">No recent activity</div>
+  <div id="activitySection">
+    <div class="section-title">Recent Activity</div>
+    <div class="card">
+      <div class="activity-list" id="activityList">
+        <div class="no-alerts">No recent activity</div>
+      </div>
     </div>
   </div>
+
   <div class="toast" id="toast"></div>
-</div>
+</div><!-- /wrap -->
 
 <script>
 /* ======================================================
@@ -296,9 +410,118 @@ function toggleDarkMode(){
 })();
 
 /* ======================================================
+   ROLE VIEWS
+   ====================================================== */
+var currentRole = "manager";
+
+var ROLE_META = {
+  manager: {
+    subtitle:  "Manager of Multilingual / ESL Coordinators \u2014 Tool Suite",
+    label:     "Showing all tools",
+    section:   "All Tools",
+    showStats: true,
+    showSearch: true,
+    showActivity: true,
+    showWelcome: false
+  },
+  coordinator: {
+    subtitle:  "MLP Coordinator View \u2014 Your daily tools",
+    label:     "Coordinator tools",
+    section:   "Coordinator Tools",
+    showStats: true,
+    showSearch: true,
+    showActivity: true,
+    showWelcome: false
+  },
+  "campus-leader": {
+    subtitle:  "Campus Leader View \u2014 Teacher progress portal",
+    label:     "Campus leader tools",
+    section:   "Campus Leader Tools",
+    showStats: false,
+    showSearch: false,
+    showActivity: false,
+    showWelcome: true
+  }
+};
+
+function setRole(role) {
+  currentRole = role;
+  localStorage.setItem("esl_home_role", role);
+
+  var meta = ROLE_META[role] || ROLE_META.manager;
+
+  // Update tab styles
+  var tabs = document.querySelectorAll(".role-tab");
+  for (var t = 0; t < tabs.length; t++) {
+    if (tabs[t].getAttribute("data-role") === role) {
+      tabs[t].classList.add("active");
+    } else {
+      tabs[t].classList.remove("active");
+    }
+  }
+
+  // Update header text
+  var subtitle = document.getElementById("headerSubtitle");
+  if (subtitle) subtitle.textContent = meta.subtitle;
+
+  var roleLabel = document.getElementById("roleLabel");
+  if (roleLabel) roleLabel.textContent = meta.label;
+
+  // Show / hide sections
+  var statsRow = document.getElementById("statsRow");
+  if (statsRow) statsRow.style.display = meta.showStats ? "grid" : "none";
+
+  var searchWrap = document.getElementById("searchWrap");
+  if (searchWrap) searchWrap.style.display = meta.showSearch ? "block" : "none";
+
+  var activitySection = document.getElementById("activitySection");
+  if (activitySection) activitySection.style.display = meta.showActivity ? "block" : "none";
+
+  var campusWelcome = document.getElementById("campusWelcome");
+  if (campusWelcome) campusWelcome.style.display = meta.showWelcome ? "block" : "none";
+
+  // Update section title
+  var sectionTitle = document.getElementById("sectionTitle");
+  var visibleCount = countVisible(role);
+  if (sectionTitle) {
+    sectionTitle.innerHTML = meta.section + ' <span class="section-sub" id="sectionSub">' + visibleCount + ' tool' + (visibleCount !== 1 ? 's' : '') + '</span>';
+  }
+
+  // Show / hide tool cards
+  var cards = document.querySelectorAll(".tool-card");
+  for (var c = 0; c < cards.length; c++) {
+    var roles = (cards[c].getAttribute("data-roles") || "").split(",");
+    var show = false;
+    for (var r = 0; r < roles.length; r++) {
+      if (roles[r].trim() === role) { show = true; break; }
+    }
+    cards[c].style.display = show ? "block" : "none";
+  }
+
+  // Reload alerts for this role
+  loadAlerts();
+}
+
+function countVisible(role) {
+  var cards = document.querySelectorAll(".tool-card");
+  var count = 0;
+  for (var c = 0; c < cards.length; c++) {
+    var roles = (cards[c].getAttribute("data-roles") || "").split(",");
+    for (var r = 0; r < roles.length; r++) {
+      if (roles[r].trim() === role) { count++; break; }
+    }
+  }
+  return count;
+}
+
+function initRole() {
+  var saved = localStorage.getItem("esl_home_role") || "manager";
+  setRole(saved);
+}
+
+/* ======================================================
    DATA ACCESS
    ====================================================== */
-
 function safeGet(key) {
   try {
     var raw = localStorage.getItem(key);
@@ -319,18 +542,15 @@ function teacherProfileLink(name) {
 }
 
 function showToast(msg) {
-  var toast = document.getElementById('toast');
+  var toast = document.getElementById("toast");
   toast.textContent = msg;
-  toast.classList.add('show');
-  setTimeout(function() {
-    toast.classList.remove('show');
-  }, 3000);
+  toast.classList.add("show");
+  setTimeout(function() { toast.classList.remove("show"); }, 3000);
 }
 
 /* ======================================================
    STATS
    ====================================================== */
-
 function loadStats() {
   var auditHistory = safeGet("esl_audit_history") || [];
   var walkthroughHistory = safeGet("walkthrough_history") || [];
@@ -345,61 +565,73 @@ function loadStats() {
 
   // Tool card meta badges
   var metaAudit = document.getElementById("metaAudit");
-  if (auditHistory.length > 0) {
-    metaAudit.innerHTML = '<span class="tc-badge green">' + auditHistory.length + ' audits saved</span>';
-  } else {
-    metaAudit.innerHTML = '<span class="tc-badge gray">No audits yet</span>';
+  if (metaAudit) {
+    metaAudit.innerHTML = auditHistory.length > 0
+      ? '<span class="tc-badge green">' + auditHistory.length + ' audits saved</span>'
+      : '<span class="tc-badge gray">No audits yet</span>';
   }
 
   var metaAuditDash = document.getElementById("metaAuditDash");
-  metaAuditDash.innerHTML = auditHistory.length > 0
-    ? '<span class="tc-badge blue">' + auditHistory.length + ' audits to analyze</span>'
-    : '<span class="tc-badge gray">No data yet</span>';
+  if (metaAuditDash) {
+    metaAuditDash.innerHTML = auditHistory.length > 0
+      ? '<span class="tc-badge blue">' + auditHistory.length + ' audits to analyze</span>'
+      : '<span class="tc-badge gray">No data yet</span>';
+  }
 
   var metaWalkthrough = document.getElementById("metaWalkthrough");
-  var currentWalk = safeGet("walkthrough_plan_data_v2");
-  if (currentWalk && currentWalk.meta && currentWalk.meta.leader) {
-    metaWalkthrough.innerHTML = '<span class="tc-badge blue">Session in progress</span>';
-  } else {
-    metaWalkthrough.innerHTML = '<span class="tc-badge gray">No active session</span>';
+  if (metaWalkthrough) {
+    var currentWalk = safeGet("walkthrough_plan_data_v2");
+    metaWalkthrough.innerHTML = (currentWalk && currentWalk.meta && currentWalk.meta.leader)
+      ? '<span class="tc-badge blue">Session in progress</span>'
+      : '<span class="tc-badge gray">No active session</span>';
   }
 
   var metaWalkDash = document.getElementById("metaWalkDash");
-  metaWalkDash.innerHTML = walkthroughHistory.length > 0
-    ? '<span class="tc-badge blue">' + walkthroughHistory.length + ' sessions to analyze</span>'
-    : '<span class="tc-badge gray">No data yet</span>';
+  if (metaWalkDash) {
+    metaWalkDash.innerHTML = walkthroughHistory.length > 0
+      ? '<span class="tc-badge blue">' + walkthroughHistory.length + ' sessions to analyze</span>'
+      : '<span class="tc-badge gray">No data yet</span>';
+  }
 
   var metaCoaching = document.getElementById("metaCoaching");
-  var activeCycles = 0;
-  for (var i = 0; i < cycles.length; i++) {
-    var allDone = true;
-    if (cycles[i].stages) {
-      for (var s = 0; s < cycles[i].stages.length; s++) {
-        if (cycles[i].stages[s].status !== "complete") { allDone = false; break; }
+  if (metaCoaching) {
+    var activeCycles = 0;
+    for (var i = 0; i < cycles.length; i++) {
+      var allDone = true;
+      if (cycles[i].stages) {
+        for (var s = 0; s < cycles[i].stages.length; s++) {
+          if (cycles[i].stages[s].status !== "complete") { allDone = false; break; }
+        }
       }
+      if (!allDone) activeCycles++;
     }
-    if (!allDone) activeCycles++;
-  }
-  if (cycles.length > 0) {
-    metaCoaching.innerHTML = '<span class="tc-badge orange">' + activeCycles + ' active</span><span class="tc-badge green">' + (cycles.length - activeCycles) + ' completed</span>';
-  } else {
-    metaCoaching.innerHTML = '<span class="tc-badge gray">No cycles yet</span>';
+    metaCoaching.innerHTML = cycles.length > 0
+      ? '<span class="tc-badge orange">' + activeCycles + ' active</span><span class="tc-badge green">' + (cycles.length - activeCycles) + ' completed</span>'
+      : '<span class="tc-badge gray">No cycles yet</span>';
   }
 
   var metaScope = document.getElementById("metaScope");
-  var scopeData = safeGet("esl_scope_data");
-  if (scopeData) {
-    metaScope.innerHTML = '<span class="tc-badge green">Data loaded</span>';
-  } else {
-    metaScope.innerHTML = '<span class="tc-badge gray">Not started</span>';
+  if (metaScope) {
+    var scopeData = safeGet("esl_scope_data");
+    metaScope.innerHTML = scopeData
+      ? '<span class="tc-badge green">Data loaded</span>'
+      : '<span class="tc-badge gray">Not started</span>';
   }
 }
 
 /* ======================================================
    ALERTS
    ====================================================== */
-
 function loadAlerts() {
+  var container = document.getElementById("alertsArea");
+
+  // Campus leader gets a focused welcome alert
+  if (currentRole === "campus-leader") {
+    container.innerHTML =
+      '<div class="alert alert-info"><span class="icon">&#127983;</span><span>Open the <strong>Principal Checkpoint Portal</strong> below to view your campus\'s teacher coaching progress, audit scores, and walkthrough data.</span></div>';
+    return;
+  }
+
   var alerts = [];
   var today = new Date().toISOString().slice(0, 10);
 
@@ -446,15 +678,14 @@ function loadAlerts() {
     }
   }
   if (recentAudit && recentAudit.scorePct >= 80) {
-    alerts.push({type: "good", icon: "&#127775;", text: "Recent audit at " + (recentAudit.meta.campus || "a campus") + " scored " + recentAudit.scorePct + "% (Strong)!"});
+    alerts.push({type: "good", icon: "&#127775;", text: "Recent audit at " + (recentAudit.meta.campus || "a campus") + " scored " + recentAudit.scorePct + "% \u2014 Strong!"});
   }
 
-  // No data nudge
+  // No data nudge (only relevant for manager/coordinator)
   if (auditHistory.length === 0 && walkthroughHistory.length === 0) {
     alerts.push({type: "info", icon: "&#128161;", text: "Get started by conducting a Classroom Audit or planning a Walkthrough."});
   }
 
-  var container = document.getElementById("alertsArea");
   if (alerts.length === 0) {
     container.innerHTML = '<div class="no-alerts">No alerts &mdash; everything looks good!</div>';
     return;
@@ -472,34 +703,27 @@ function loadAlerts() {
 /* ======================================================
    RECENT ACTIVITY
    ====================================================== */
-
 function loadActivity() {
   var items = [];
-
-  // From audit history
   var auditHistory = safeGet("esl_audit_history") || [];
   for (var ai = 0; ai < auditHistory.length; ai++) {
     var a = auditHistory[ai];
     items.push({
       date: a.meta ? a.meta.date : (a.timestamp ? a.timestamp.slice(0, 10) : ""),
-      text: "Audit: " + (a.meta ? (a.meta.teacher || "Unknown") : "Unknown") + " at " + (a.meta ? (a.meta.campus || "Unknown") : "Unknown") + " — " + (a.scorePct || 0) + "%",
+      text: "Audit: " + (a.meta ? (a.meta.teacher || "Unknown") : "Unknown") + " at " + (a.meta ? (a.meta.campus || "Unknown") : "Unknown") + " \u2014 " + (a.scorePct || 0) + "%",
       color: (a.scorePct || 0) >= 80 ? "#27ae60" : (a.scorePct || 0) >= 55 ? "#f39c12" : "#e74c3c"
     });
   }
-
-  // From walkthrough history
   var walkthroughHistory = safeGet("walkthrough_history") || [];
   for (var wi = 0; wi < walkthroughHistory.length; wi++) {
     var w = walkthroughHistory[wi];
     var fid = w.metrics ? w.metrics.fidelityPct : 0;
     items.push({
       date: w.meta ? w.meta.date : "",
-      text: "Walkthrough: " + (w.meta ? (w.meta.leader || "Unknown") : "Unknown") + " at " + (w.meta ? (w.meta.campus || "Unknown") : "Unknown") + " — " + fid + "% fidelity",
+      text: "Walkthrough: " + (w.meta ? (w.meta.leader || "Unknown") : "Unknown") + " at " + (w.meta ? (w.meta.campus || "Unknown") : "Unknown") + " \u2014 " + fid + "% fidelity",
       color: fid >= 80 ? "#27ae60" : fid >= 50 ? "#f39c12" : "#e74c3c"
     });
   }
-
-  // Sort by date descending
   items.sort(function(a, b) { return (b.date || "").localeCompare(a.date || ""); });
 
   var container = document.getElementById("activityList");
@@ -507,7 +731,6 @@ function loadActivity() {
     container.innerHTML = '<div class="no-alerts">No recent activity. Start by using the tools above.</div>';
     return;
   }
-
   var html = "";
   var limit = Math.min(items.length, 20);
   for (var i = 0; i < limit; i++) {
@@ -535,7 +758,7 @@ function runSearch(query) {
   var q = query.toLowerCase();
   var groups = [];
 
-  // Search roster
+  // Teachers
   var roster = safeGet("shared_teacher_roster") || [];
   var teacherHits = [];
   for (var ti = 0; ti < roster.length; ti++) {
@@ -545,7 +768,7 @@ function runSearch(query) {
   }
   if (teacherHits.length) groups.push({title: "Teachers", items: teacherHits, link: "Teacher_360_Profile.html", isTeacher: true});
 
-  // Search walkthrough history
+  // Walkthrough history
   var wh = safeGet("walkthrough_history") || [];
   var walkHits = [];
   for (var wi = 0; wi < wh.length; wi++) {
@@ -572,24 +795,22 @@ function runSearch(query) {
         }
       }
     }
-    if (matched) {
-      walkHits.push({text: "Walkthrough " + (wmeta.date || "N/A") + " — " + (wmeta.campus || ""), context: mText});
-    }
+    if (matched) walkHits.push({text: "Walkthrough " + (wmeta.date || "N/A") + " \u2014 " + (wmeta.campus || ""), context: mText});
   }
   if (walkHits.length) groups.push({title: "Walkthroughs", items: walkHits.slice(0, 8), link: "Academic_Monitoring_Leader_Facing/Walkthrough_Dashboard.html"});
 
-  // Search audit history
+  // Audit history
   var ah = safeGet("esl_audit_history") || [];
   var auditHits = [];
   for (var ai = 0; ai < ah.length; ai++) {
     var am = ah[ai].meta || {};
     if ((am.teacher || "").toLowerCase().indexOf(q) !== -1 || (am.campus || "").toLowerCase().indexOf(q) !== -1 || (am.observer || "").toLowerCase().indexOf(q) !== -1) {
-      auditHits.push({text: "Audit " + (am.date || "N/A") + " — " + (am.campus || ""), context: (am.teacher || "") + " " + (ah[ai].scorePct || 0) + "%"});
+      auditHits.push({text: "Audit " + (am.date || "N/A") + " \u2014 " + (am.campus || ""), context: (am.teacher || "") + " " + (ah[ai].scorePct || 0) + "%"});
     }
   }
   if (auditHits.length) groups.push({title: "Audits", items: auditHits.slice(0, 8), link: "ESL_Classroom_Audit/Audit_Dashboard.html"});
 
-  // Search coaching cycles (teacher, campus, and stage notes)
+  // Coaching cycles
   var cd = safeGet("coaching_cycles_data");
   var cycles = cd && cd.cycles ? cd.cycles : [];
   var coachHits = [];
@@ -609,13 +830,11 @@ function runSearch(query) {
         }
       }
     }
-    if (ccMatched) {
-      coachHits.push({text: (cycles[cci].teacher || "Unknown") + " (" + (cycles[cci].campus || "N/A") + ")", context: ccContext});
-    }
+    if (ccMatched) coachHits.push({text: (cycles[cci].teacher || "Unknown") + " (" + (cycles[cci].campus || "N/A") + ")", context: ccContext});
   }
   if (coachHits.length) groups.push({title: "Coaching Cycles", items: coachHits.slice(0, 8), link: "Academic_Monitoring_Leader_Facing/Coaching_Cycle_Tracker.html"});
 
-  // Search audit item comments and section notes
+  // Audit notes
   var auditNoteHits = [];
   for (var ani = 0; ani < ah.length; ani++) {
     var anEntry = ah[ani];
@@ -624,24 +843,20 @@ function runSearch(query) {
     if (anEntry.itemComments) {
       for (var ick in anEntry.itemComments) {
         if (anEntry.itemComments.hasOwnProperty(ick) && anEntry.itemComments[ick] && anEntry.itemComments[ick].toLowerCase().indexOf(q) !== -1) {
-          anMatched = true;
-          anContext = anEntry.itemComments[ick].substring(0, 80);
-          break;
+          anMatched = true; anContext = anEntry.itemComments[ick].substring(0, 80); break;
         }
       }
     }
     if (!anMatched && anEntry.notes) {
       for (var nk in anEntry.notes) {
         if (anEntry.notes.hasOwnProperty(nk) && anEntry.notes[nk] && anEntry.notes[nk].toLowerCase().indexOf(q) !== -1) {
-          anMatched = true;
-          anContext = anEntry.notes[nk].substring(0, 80);
-          break;
+          anMatched = true; anContext = anEntry.notes[nk].substring(0, 80); break;
         }
       }
     }
     if (anMatched) {
       var anm = anEntry.meta || {};
-      auditNoteHits.push({text: "Audit " + (anm.date || "N/A") + " — " + (anm.teacher || "Unknown"), context: anContext});
+      auditNoteHits.push({text: "Audit " + (anm.date || "N/A") + " \u2014 " + (anm.teacher || "Unknown"), context: anContext});
     }
   }
   if (auditNoteHits.length) groups.push({title: "Audit Notes", items: auditNoteHits.slice(0, 8), link: "ESL_Classroom_Audit/ESL_Classroom_Audit.html"});
@@ -652,7 +867,6 @@ function runSearch(query) {
     box.className = "search-results open";
     return;
   }
-
   var html = "";
   for (var gi = 0; gi < groups.length; gi++) {
     var g = groups[gi];
@@ -660,9 +874,7 @@ function runSearch(query) {
     html += '<div class="sr-group-title">' + g.title + '</div>';
     for (var ii = 0; ii < g.items.length; ii++) {
       var itemLink = g.link;
-      if (g.isTeacher) {
-        itemLink = 'Teacher_360_Profile.html?teacher=' + encodeURIComponent(g.items[ii].text);
-      }
+      if (g.isTeacher) itemLink = "Teacher_360_Profile.html?teacher=" + encodeURIComponent(g.items[ii].text);
       html += '<div class="sr-item" onclick="window.location.href=\'' + itemLink.replace(/'/g, "\\'") + '\'">';
       html += '<span class="sr-match">' + escHtml(g.items[ii].text) + '</span>';
       if (g.items[ii].context) html += '<span class="sr-context">' + escHtml(g.items[ii].context) + '</span>';
@@ -674,13 +886,10 @@ function runSearch(query) {
   box.className = "search-results open";
 }
 
-// Close search on click outside
 document.addEventListener("click", function(e) {
   var box = document.getElementById("searchResults");
   var input = document.getElementById("globalSearch");
-  if (box && !box.contains(e.target) && e.target !== input) {
-    box.className = "search-results";
-  }
+  if (box && !box.contains(e.target) && e.target !== input) box.className = "search-results";
 });
 
 /* ======================================================
@@ -690,12 +899,11 @@ function loadExtraMeta() {
   var elpsData = safeGet("elps_agent_docs");
   var metaElps = document.getElementById("metaElps");
   if (metaElps) {
-    if (elpsData && Array.isArray(elpsData) && elpsData.length > 0) {
-      metaElps.innerHTML = '<span class="tc-badge green">' + elpsData.length + ' docs loaded</span>';
-    } else {
-      metaElps.innerHTML = '<span class="tc-badge gray">No docs loaded</span>';
-    }
+    metaElps.innerHTML = (elpsData && Array.isArray(elpsData) && elpsData.length > 0)
+      ? '<span class="tc-badge green">' + elpsData.length + ' docs loaded</span>'
+      : '<span class="tc-badge gray">No docs loaded</span>';
   }
+
   var roster = safeGet("shared_teacher_roster") || [];
   var metaT360 = document.getElementById("metaTeacher360");
   if (metaT360) {
@@ -703,6 +911,7 @@ function loadExtraMeta() {
       ? '<span class="tc-badge blue">' + roster.length + ' teachers</span>'
       : '<span class="tc-badge gray">No roster data</span>';
   }
+
   var metaTeamOverview = document.getElementById("metaTeamOverview");
   if (metaTeamOverview) {
     var gasSync = safeGet("esl_gas_sync");
@@ -710,6 +919,7 @@ function loadExtraMeta() {
       ? '<span class="tc-badge green">Drive sync configured</span>'
       : '<span class="tc-badge gray">Drive sync not configured</span>';
   }
+
   var metaPD = document.getElementById("metaPD");
   if (metaPD) {
     var pdData = safeGet("pd_tracker_data");
@@ -718,22 +928,25 @@ function loadExtraMeta() {
       ? '<span class="tc-badge blue">' + pdSessions + ' sessions logged</span>'
       : '<span class="tc-badge gray">No sessions yet</span>';
   }
+
   var metaMeetings = document.getElementById("metaMeetings");
   if (metaMeetings) {
     var mtgData = safeGet("meeting_notes_data");
     var mtgCount = (mtgData && mtgData.meetings) ? mtgData.meetings.length : 0;
     metaMeetings.innerHTML = mtgCount > 0
-      ? '<span class="tc-badge blue">' + mtgCount + ' meeting' + (mtgCount !== 1 ? 's' : '') + '</span>'
+      ? '<span class="tc-badge blue">' + mtgCount + ' meeting' + (mtgCount !== 1 ? "s" : "") + '</span>'
       : '<span class="tc-badge gray">No meetings yet</span>';
   }
+
   var metaParentComm = document.getElementById("metaParentComm");
   if (metaParentComm) {
     var pcData = safeGet("parent_comm_log");
     var pcCount = (pcData && pcData.entries) ? pcData.entries.length : 0;
     metaParentComm.innerHTML = pcCount > 0
-      ? '<span class="tc-badge blue">' + pcCount + ' contact' + (pcCount !== 1 ? 's' : '') + ' logged</span>'
+      ? '<span class="tc-badge blue">' + pcCount + ' contact' + (pcCount !== 1 ? "s" : "") + ' logged</span>'
       : '<span class="tc-badge gray">No contacts yet</span>';
   }
+
   var metaCompliance = document.getElementById("metaCompliance");
   if (metaCompliance) {
     var ccData = safeGet("compliance_checklist_data");
@@ -742,6 +955,7 @@ function loadExtraMeta() {
       ? '<span class="tc-badge green">' + ccItems + ' items configured</span>'
       : '<span class="tc-badge gray">Not configured yet</span>';
   }
+
   var metaGoals = document.getElementById("metaGoals");
   if (metaGoals) {
     var gsData = safeGet("goal_setting_data");
@@ -752,22 +966,25 @@ function loadExtraMeta() {
       ? '<span class="tc-badge orange">' + gsActive + ' active</span><span class="tc-badge green">' + (gsGoals.length - gsActive) + ' achieved</span>'
       : '<span class="tc-badge gray">No goals yet</span>';
   }
+
   var metaStudents = document.getElementById("metaStudents");
   if (metaStudents) {
     var srData = safeGet("student_roster_data");
     var srCount = (srData && srData.students) ? srData.students.length : 0;
     metaStudents.innerHTML = srCount > 0
-      ? '<span class="tc-badge blue">' + srCount + ' student' + (srCount !== 1 ? 's' : '') + '</span>'
+      ? '<span class="tc-badge blue">' + srCount + ' student' + (srCount !== 1 ? "s" : "") + '</span>'
       : '<span class="tc-badge gray">No students yet</span>';
   }
+
   var metaTELPAS = document.getElementById("metaTELPAS");
   if (metaTELPAS) {
     var ttData = safeGet("telpas_tracker_data");
     var ttCount = (ttData && ttData.records) ? ttData.records.length : 0;
     metaTELPAS.innerHTML = ttCount > 0
-      ? '<span class="tc-badge blue">' + ttCount + ' record' + (ttCount !== 1 ? 's' : '') + '</span>'
+      ? '<span class="tc-badge blue">' + ttCount + ' record' + (ttCount !== 1 ? "s" : "") + '</span>'
       : '<span class="tc-badge gray">No records yet</span>';
   }
+
   var metaWorkload = document.getElementById("metaWorkload");
   if (metaWorkload) {
     var wlData = safeGet("esl_workload_campuses");
@@ -775,18 +992,34 @@ function loadExtraMeta() {
       ? '<span class="tc-badge green">Assignments configured</span>'
       : '<span class="tc-badge gray">No assignments set</span>';
   }
+
+  var metaDataBackup = document.getElementById("metaDataBackup");
+  if (metaDataBackup) {
+    var gasSyncBk = safeGet("esl_gas_sync");
+    metaDataBackup.innerHTML = (gasSyncBk && gasSyncBk.gasUrl)
+      ? '<span class="tc-badge green">Drive sync configured</span>'
+      : '<span class="tc-badge orange">Sync not configured</span>';
+  }
+
+  var metaPrincipalPortal = document.getElementById("metaPrincipalPortal");
+  if (metaPrincipalPortal) {
+    var ppConfig = safeGet("principal_checkpoint_config");
+    metaPrincipalPortal.innerHTML = (ppConfig && ppConfig.gasUrl)
+      ? '<span class="tc-badge green">Configured</span><span class="tc-badge purple">' + escHtml(ppConfig.campus || "No campus set") + '</span>'
+      : '<span class="tc-badge gray">Setup required</span>';
+  }
 }
 
 /* ======================================================
    INIT
    ====================================================== */
 loadStats();
-loadAlerts();
 loadActivity();
 loadExtraMeta();
+initRole(); // sets role + triggers loadAlerts internally
 
 // PWA
-if("serviceWorker" in navigator){navigator.serviceWorker.register("./service-worker.js").catch(function(){});}
+if ("serviceWorker" in navigator) { navigator.serviceWorker.register("./service-worker.js").catch(function(){}); }
 </script>
 </body>
 </html>

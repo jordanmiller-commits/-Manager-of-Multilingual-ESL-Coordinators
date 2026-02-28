@@ -1,5 +1,6 @@
-var CACHE_NAME = "esl-suite-v4";
+var CACHE_NAME = "esl-suite-v5";
 var ASSETS = [
+  "./Principal_Checkpoint_Portal/Principal_Checkpoint_Portal.html",
   "./index.html",
   "./Data_Backup_Hub.html",
   "./Team_Overview.html",

@@ -1,0 +1,1435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="manifest" href="../manifest.json"/>
+<meta name="theme-color" content="#2c3e6e"/>
+<title>Principal Checkpoint Portal &mdash; ESL Manager Suite</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh;padding:20px}
+.wrap{max-width:1160px;margin:0 auto}
+
+/* ============================
+   HEADER
+   ============================ */
+.header{background:linear-gradient(135deg,#2c3e6e,#4a90d9);color:#fff;padding:24px 28px 16px;border-radius:14px 14px 0 0}
+.header-top{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.header h1{font-size:22px;font-weight:800;margin-bottom:3px}
+.header-sub{font-size:12px;opacity:.85;margin-bottom:0}
+.header-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;flex-shrink:0}
+.toolbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:10px}
+.tool-btn{background:rgba(255,255,255,.13);color:#fff;border:2px solid rgba(255,255,255,.35);padding:6px 13px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.tool-btn:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.55)}
+.nav-link{color:rgba(255,255,255,.7);font-size:11px;text-decoration:none;padding:3px 10px;border:1px solid rgba(255,255,255,.25);border-radius:5px;transition:all .15s}
+.nav-link:hover{color:#fff;border-color:rgba(255,255,255,.5);background:rgba(255,255,255,.1)}
+.sync-label{font-size:10px;color:rgba(255,255,255,.6);align-self:center}
+
+/* ============================
+   CARDS / SHARED
+   ============================ */
+.card{background:#fff;border-radius:10px;box-shadow:0 1px 5px rgba(0,0,0,.07);padding:16px 20px;margin-bottom:12px}
+.first-card{border-radius:0 0 10px 10px;margin-top:0}
+.btn{padding:6px 14px;border-radius:7px;border:1.5px solid #ddd;background:#fff;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;color:#555}
+.btn:hover{background:#eaf3fb;border-color:#4a90d9;color:#2c3e6e}
+.btn.primary{background:#4a90d9;color:#fff;border-color:#4a90d9}
+.btn.primary:hover{background:#3a7bc8}
+.btn.sm{font-size:11px;padding:5px 12px}
+
+/* ============================
+   SETUP CARD
+   ============================ */
+.setup-card{border-top:4px solid #4a90d9}
+.setup-card h3{font-size:15px;color:#2c3e6e;font-weight:800;margin-bottom:6px}
+.setup-card p{font-size:12px;color:#666;margin-bottom:14px;line-height:1.5}
+.setup-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px}
+.setup-field label{display:block;font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
+.setup-field input{width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;font-family:inherit;color:#333}
+.setup-field input:focus{border-color:#4a90d9;outline:none;box-shadow:0 0 0 2px rgba(74,144,217,.15)}
+.setup-hint{font-size:10px;color:#aaa;margin-top:3px}
+
+/* ============================
+   STATS ROW
+   ============================ */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}
+.stat-card{background:#fff;border-radius:10px;box-shadow:0 1px 5px rgba(0,0,0,.07);padding:16px 20px;text-align:center}
+.stat-value{font-size:28px;font-weight:800;color:#2c3e6e;line-height:1.1}
+.stat-label{font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.4px;margin-top:4px}
+.stat-value.blue{color:#4a90d9}
+.stat-value.green{color:#27ae60}
+.stat-value.orange{color:#f39c12}
+
+/* ============================
+   FILTER / CAMPUS BAR
+   ============================ */
+.filter-card{padding:12px 16px}
+.filter-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.filter-bar label{font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.4px}
+.filter-bar select,.filter-bar input[type=text]{padding:6px 10px;border:1px solid #ddd;border-radius:6px;font-size:12px;font-family:inherit;color:#333}
+.filter-bar select:focus,.filter-bar input:focus{border-color:#4a90d9;outline:none;box-shadow:0 0 0 2px rgba(74,144,217,.15)}
+.filter-sep{flex:1}
+.campus-row{margin-top:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.campus-row-label{font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.4px}
+.campus-pills{display:flex;gap:6px;flex-wrap:wrap}
+.campus-pill{padding:4px 14px;border-radius:16px;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid #ddd;background:#fff;color:#555;transition:all .15s;font-family:inherit}
+.campus-pill:hover{border-color:#4a90d9;color:#2c3e6e;background:#eaf3fb}
+.campus-pill.active{background:#2c3e6e;color:#fff;border-color:#2c3e6e}
+
+/* ============================
+   SECTION HEADER (collapsible)
+   ============================ */
+.section-hdr{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:#fff;border-radius:10px;box-shadow:0 1px 5px rgba(0,0,0,.07);margin-bottom:8px;cursor:pointer;font-weight:700;color:#2c3e6e;font-size:13px;user-select:none}
+.section-hdr:hover{background:#f8f9fa}
+.section-hdr-badge{font-size:10px;font-weight:700;background:#4a90d9;color:#fff;padding:2px 8px;border-radius:10px;margin-left:6px}
+.section-chev{font-size:11px;color:#aaa}
+
+/* ============================
+   COORDINATOR GOALS
+   ============================ */
+.goals-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin-bottom:12px}
+.goal-card{background:#fff;border-radius:10px;box-shadow:0 1px 5px rgba(0,0,0,.07);padding:14px 16px}
+.goal-coord-name{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid currentColor}
+.goal-item{padding:7px 0;border-bottom:1px solid #f0f2f7}
+.goal-item:last-child{border-bottom:none;padding-bottom:0}
+.goal-item-top{display:flex;align-items:flex-start;gap:6px;margin-bottom:4px}
+.goal-title{font-size:12px;font-weight:600;color:#2c3e6e;flex:1;line-height:1.35}
+.status-badge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;text-transform:uppercase;letter-spacing:.3px;flex-shrink:0;margin-top:1px}
+.status-badge.active{background:#e3f2fd;color:#1565c0}
+.status-badge.paused{background:#fff3e0;color:#e65100}
+.status-badge.not-started{background:#f5f5f5;color:#757575}
+.prog-bar-wrap{height:4px;background:#f0f2f7;border-radius:2px;margin:4px 0 2px}
+.prog-bar-fill{height:4px;background:#4a90d9;border-radius:2px}
+.prog-label{font-size:9px;color:#bbb}
+.checkin-pills{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px}
+.checkin-pill{font-size:9px;font-weight:600;padding:2px 8px;border-radius:10px;border:1px solid}
+.goal-sem{font-size:9px;color:#ccc;margin-top:3px}
+
+/* ============================
+   TEACHER CARD
+   ============================ */
+.teacher-card{background:#fff;border-radius:10px;box-shadow:0 1px 5px rgba(0,0,0,.07);margin-bottom:12px;overflow:hidden;transition:box-shadow .15s;border-left:4px solid #e0e4f0}
+.teacher-card:hover{box-shadow:0 2px 10px rgba(0,0,0,.12)}
+.teacher-card.reviewed{border-left-color:#27ae60}
+
+/* TC header */
+.tc-header{display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid #f0f2f7}
+.tc-avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#4a90d9,#2c3e6e);display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;font-weight:800;flex-shrink:0;letter-spacing:-.5px}
+.tc-info{flex:1;min-width:0}
+.tc-name{font-size:15px;font-weight:700;color:#2c3e6e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tc-meta{font-size:11px;color:#999;margin-top:2px}
+.ack-btn{padding:5px 13px;border-radius:16px;border:1.5px solid #ddd;background:#fff;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;color:#aaa;white-space:nowrap;flex-shrink:0}
+.ack-btn:hover{border-color:#27ae60;color:#27ae60;background:#f0faf3}
+.ack-btn.acked{background:#e8f5e9;color:#2e7d32;border-color:#a5d6a7}
+
+/* TC body */
+.tc-body{padding:12px 20px}
+.tc-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:7px 0;border-bottom:1px solid #fafbfc;min-height:34px}
+.tc-row:last-of-type{border-bottom:none}
+.tc-lbl{font-size:10px;font-weight:700;color:#bbb;text-transform:uppercase;letter-spacing:.4px;min-width:110px;flex-shrink:0}
+
+/* Stage pill */
+.stage-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:12px;font-size:11px;font-weight:700}
+.active-dot{width:6px;height:6px;border-radius:50%;background:#27ae60;flex-shrink:0}
+
+/* Audit */
+.audit-score{font-size:18px;font-weight:800;line-height:1}
+.trend-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px}
+.trend-up{background:#e8f5e9;color:#2e7d32}
+.trend-down{background:#fdecea;color:#c62828}
+.trend-flat{background:#f5f5f5;color:#757575}
+.prev-score{font-size:10px;color:#ccc;margin-left:4px}
+.obs-date{font-size:10px;color:#ccc;margin-left:4px}
+
+/* Code pills */
+.code-pills{display:flex;gap:5px;flex-wrap:wrap}
+.code-pill{font-size:10px;font-weight:700;padding:3px 9px;border-radius:10px;border:1px solid;white-space:nowrap}
+
+/* Notes area */
+.tc-notes{padding:10px 0 4px}
+.tc-notes-lbl{font-size:10px;font-weight:700;color:#bbb;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px}
+.tc-notes-hint{font-weight:400;color:#d0d5e0;font-size:9px;margin-left:4px}
+.notes-ta{width:100%;min-height:68px;padding:8px 10px;border:1px solid #e8ebf0;border-radius:6px;font-family:inherit;font-size:12px;resize:vertical;color:#333;transition:border .15s}
+.notes-ta:focus{border-color:#4a90d9;outline:none;box-shadow:0 0 0 2px rgba(74,144,217,.15)}
+.notes-status{font-size:10px;color:#aaa;margin-top:3px;min-height:14px}
+
+/* TC footer */
+.tc-footer{display:flex;gap:8px;flex-wrap:wrap;padding-top:10px;margin-top:6px;border-top:1px solid #f4f6f9}
+
+/* ============================
+   LOADING / EMPTY
+   ============================ */
+.center-card{text-align:center;padding:44px 20px}
+.spinner{width:34px;height:34px;border:3px solid #eee;border-top-color:#4a90d9;border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.center-card p{font-size:13px;color:#aaa}
+.center-card .big-icon{font-size:42px;margin-bottom:10px}
+.center-card h3{font-size:16px;color:#2c3e6e;margin-bottom:6px}
+
+/* ============================
+   TOAST
+   ============================ */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#2c3e6e;color:#fff;padding:10px 22px;border-radius:8px;font-size:13px;font-weight:500;opacity:0;transition:all .3s;pointer-events:none;z-index:9999;max-width:82vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ============================
+   DARK MODE
+   ============================ */
+body.dark-mode{background:#1a1d2e;color:#dce4f0}
+body.dark-mode .card,
+body.dark-mode .stat-card,
+body.dark-mode .teacher-card,
+body.dark-mode .goal-card,
+body.dark-mode .section-hdr,
+body.dark-mode .filter-card{background:#232740;box-shadow:0 1px 5px rgba(0,0,0,.35)}
+body.dark-mode .tc-row{border-bottom-color:#2a2f50}
+body.dark-mode .tc-header{border-bottom-color:#2a2f50}
+body.dark-mode .tc-footer{border-top-color:#2a2f50}
+body.dark-mode .goal-item{border-bottom-color:#2a2f50}
+body.dark-mode .prog-bar-wrap{background:#2a2f50}
+body.dark-mode .teacher-card{border-left-color:#3d4270}
+body.dark-mode .teacher-card.reviewed{border-left-color:#27ae60}
+body.dark-mode .tc-name,
+body.dark-mode .goal-title,
+body.dark-mode .section-hdr{color:#b8cce4}
+body.dark-mode .tc-meta,
+body.dark-mode .obs-date,
+body.dark-mode .prev-score{color:#606888}
+body.dark-mode .filter-bar select,
+body.dark-mode .filter-bar input,
+body.dark-mode .notes-ta,
+body.dark-mode .setup-field input{background:#1a1d2e;border-color:#3d4270;color:#dce4f0}
+body.dark-mode .btn{background:#232740;border-color:#3d4270;color:#b8cce4}
+body.dark-mode .btn:hover{background:#2a2f50}
+body.dark-mode .ack-btn{background:#232740;border-color:#3d4270;color:#606888}
+body.dark-mode .campus-pill{background:#232740;border-color:#3d4270;color:#b8cce4}
+body.dark-mode .campus-pill.active{background:#2c3e6e;border-color:#4a90d9;color:#fff}
+body.dark-mode .stat-value{color:#7aa8d4}
+
+/* ============================
+   MOBILE
+   ============================ */
+@media(max-width:768px){
+  .stats-row{grid-template-columns:1fr 1fr}
+  .setup-grid{grid-template-columns:1fr}
+  .goals-grid{grid-template-columns:1fr}
+  .tc-row{flex-direction:column;align-items:flex-start;gap:4px}
+  .tc-lbl{min-width:auto}
+  .tc-header{flex-wrap:wrap}
+  .ack-btn{margin-top:4px}
+}
+@media(max-width:600px){
+  body{padding:8px}
+  .stats-row{grid-template-columns:1fr 1fr}
+  .filter-bar{gap:6px}
+  .btn,.ack-btn,.tool-btn{min-height:40px}
+  .notes-ta{min-height:80px}
+  .tc-name{font-size:14px}
+}
+
+/* ============================
+   PRINT
+   ============================ */
+@media print{
+  body{background:#fff;padding:0}
+  .header,.toolbar,.filter-card,.tc-footer,.tc-notes,.toast,.section-hdr,.goals-grid{display:none!important}
+  .teacher-card{box-shadow:none;border:1px solid #ccc;break-inside:avoid;margin-bottom:8px;border-left:4px solid #2c3e6e}
+  .teacher-card.reviewed{border-left-color:#27ae60}
+  .stat-card{box-shadow:none;border:1px solid #ccc}
+  .stats-row{display:grid!important}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <!-- ===================== HEADER ===================== -->
+  <div class="header">
+    <div class="header-top">
+      <div>
+        <h1>&#127983; Principal Checkpoint Portal</h1>
+        <p class="header-sub" id="campusBanner">Connect to your campus data to get started.</p>
+      </div>
+      <div class="header-actions">
+        <span class="sync-label" id="syncLabel"></span>
+        <button class="tool-btn" onclick="fetchData()" id="refreshBtn" title="Reload data from Google Drive">&#8635; Refresh</button>
+        <button class="tool-btn" onclick="openSetup()" title="Change settings">&#9881; Setup</button>
+        <button class="tool-btn" onclick="toggleDark()" id="darkBtn">&#9790; Dark</button>
+      </div>
+    </div>
+    <div class="toolbar">
+      <a href="../index.html" class="nav-link">&#8592; Home</a>
+      <a href="../Team_Overview.html" class="nav-link">Team Overview</a>
+      <a href="../Academic_Monitoring_Leader_Facing/Coaching_Cycle_Tracker.html" class="nav-link">Coaching Tracker</a>
+      <a href="../ESL_Classroom_Audit/Audit_Dashboard.html" class="nav-link">Audit Dashboard</a>
+    </div>
+  </div>
+
+  <!-- ===================== SETUP CARD ===================== -->
+  <div class="card first-card setup-card" id="setupCard">
+    <h3>Connect to Campus Data</h3>
+    <p>Enter your Google Apps Script URL to load teacher progress. Your manager can share a pre-configured link that fills this in automatically.</p>
+    <div class="setup-grid">
+      <div class="setup-field">
+        <label>Google Apps Script URL</label>
+        <input type="url" id="gasUrlInput" placeholder="https://script.google.com/macros/s/.../exec"/>
+        <div class="setup-hint">Provided by your ESL manager</div>
+      </div>
+      <div class="setup-field">
+        <label>Your Campus</label>
+        <input type="text" id="campusInput" placeholder="e.g. Highland, Crossroads"/>
+        <div class="setup-hint">Must match exactly as entered in the suite</div>
+      </div>
+      <div class="setup-field">
+        <label>Your Email (optional)</label>
+        <input type="email" id="principalEmailInput" placeholder="principal@school.org"/>
+        <div class="setup-hint">Used to CC you on meeting requests</div>
+      </div>
+    </div>
+    <button class="btn primary" onclick="saveSetup()">Save &amp; Load Data</button>
+  </div>
+
+  <!-- ===================== LOADING ===================== -->
+  <div class="card center-card" id="loadingCard" style="display:none">
+    <div class="spinner"></div>
+    <p>Loading campus data&hellip;</p>
+  </div>
+
+  <!-- ===================== STATS ROW ===================== -->
+  <div class="stats-row" id="statsRow" style="display:none">
+    <div class="stat-card">
+      <div class="stat-value" id="statTeachers">&mdash;</div>
+      <div class="stat-label">Teachers Observed</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value blue" id="statCycles">&mdash;</div>
+      <div class="stat-label">Active Coaching Cycles</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value green" id="statAudit">&mdash;</div>
+      <div class="stat-label">Avg Audit Score</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value orange" id="statGoals">&mdash;</div>
+      <div class="stat-label">Active Coordinator Goals</div>
+    </div>
+  </div>
+
+  <!-- ===================== FILTER / CAMPUS BAR ===================== -->
+  <div class="card filter-card" id="filterCard" style="display:none">
+    <div class="filter-bar">
+      <label>Search</label>
+      <input type="text" id="searchInput" placeholder="Teacher name&hellip;" oninput="applyFilter()" style="width:170px"/>
+      <label>Show</label>
+      <select id="showFilter" onchange="applyFilter()">
+        <option value="all">All Teachers</option>
+        <option value="unreviewed">Unreviewed Only</option>
+        <option value="reviewed">Reviewed</option>
+      </select>
+      <label>Sort</label>
+      <select id="sortFilter" onchange="applyFilter()">
+        <option value="name">Name A&rarr;Z</option>
+        <option value="audit">Audit Score</option>
+        <option value="observed">Last Observed</option>
+        <option value="stage">Coaching Stage</option>
+      </select>
+      <div class="filter-sep"></div>
+      <button class="btn sm" onclick="exportSummary()" title="Download CSV summary">&#8595; Export CSV</button>
+    </div>
+    <div class="campus-row" id="campusRow" style="display:none">
+      <span class="campus-row-label">Campus:</span>
+      <div class="campus-pills" id="campusPills"></div>
+    </div>
+  </div>
+
+  <!-- ===================== COORDINATOR GOALS ===================== -->
+  <div id="goalsSection" style="display:none">
+    <div class="section-hdr" onclick="toggleGoals()">
+      <span>Coordinator Focus Areas &amp; Active Goals<span class="section-hdr-badge" id="goalsBadge">0</span></span>
+      <span class="section-chev" id="goalsChev">&#9660;</span>
+    </div>
+    <div id="goalsContent"></div>
+  </div>
+
+  <!-- ===================== TEACHER GRID ===================== -->
+  <div id="teacherGrid"></div>
+
+  <!-- ===================== EMPTY STATE ===================== -->
+  <div class="card center-card" id="emptyState" style="display:none">
+    <div class="big-icon">&#127983;</div>
+    <h3>No Teacher Data Found</h3>
+    <p>No observations or audits found for <strong id="emptyStateCampus">this campus</strong>.<br/>Make sure your coordinator has synced recently, then click Refresh.</p>
+  </div>
+
+</div><!-- /wrap -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+//  CONSTANTS
+// ============================================================
+var STAGE_NAMES = ['Observation', 'Feedback', 'Action Step', 'Follow-Up', 'Growth'];
+var STAGE_COLORS = ['#3498db', '#9b59b6', '#e67e22', '#27ae60', '#2c3e6e'];
+
+var COORD_COLORS = {
+  jmiller:    '#8e44ad',
+  kpatterson: '#16a085',
+  pokolo:     '#c0392b',
+  vpalencia:  '#2980b9'
+};
+
+// Coordinator email map — update to match Code.gs COORDINATOR_EMAIL_MAP
+var COORD_EMAILS = {
+  jmiller:    'jmiller@uplifteducation.org',
+  kpatterson: 'kpatterson@uplifteducation.org',
+  pokolo:     'Pokolo@uplifteducation.org',
+  vpalencia:  'vpalencia@uplifteducation.org'
+};
+var MANAGER_EMAIL = 'jmiller@uplifteducation.org';
+
+var OBS_STYLE = {
+  '\u2713': {bg:'#e8f5e9', color:'#2e7d32', label:'Observed'},
+  'O':      {bg:'#fff3e0', color:'#e65100', label:'Opportunity'},
+  'P':      {bg:'#e3f2fd', color:'#1565c0', label:'Partial'},
+  'NA':     {bg:'#f5f5f5', color:'#9e9e9e', label:'N/A'}
+};
+
+var RATING_LABELS  = ['', 'Not Yet', 'Developing', 'Proficient', 'Exceeds'];
+var RATING_COLORS  = ['', '#e74c3c',  '#f39c12',    '#3498db',   '#27ae60'];
+
+var STORAGE_CONFIG  = 'principal_checkpoint_config';
+var STORAGE_ACK     = 'principal_checkpoint_ack';
+var STORAGE_NOTES   = 'principal_checkpoint_notes_local';
+
+// ============================================================
+//  STATE
+// ============================================================
+var gasUrl        = '';
+var selCampus     = '';
+var principalEmail = '';
+var allCampuses   = [];
+var teacherIndex  = {};   // name → {audits[], walkthroughs[], cycles[], coordinatorId, coordinatorName}
+var coordGoals    = [];   // active goals for coordinators at this campus
+var principalNotes = {};  // name → {text, savedAt}
+var acknowledged  = {};   // name → ISO timestamp
+var rawCoordData  = [];   // full readAll envelope array for campus-switch rebuilds
+var teacherSlugMap = {};  // slug → real teacher name
+var goalsOpen     = true;
+var isFetching    = false;
+var lastFetched   = null;
+var noteSaveTimers = {};
+
+// ============================================================
+//  INIT
+// ============================================================
+function init() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('../service-worker.js').catch(function() {});
+  }
+
+  // Dark mode
+  if (localStorage.getItem('esl_app_theme') === 'dark') {
+    document.body.classList.add('dark-mode');
+    document.getElementById('darkBtn').textContent = '\u2600 Light';
+  }
+
+  // Load persisted state
+  try { acknowledged   = JSON.parse(localStorage.getItem(STORAGE_ACK)   || '{}'); } catch(e) { acknowledged = {}; }
+  try { principalNotes = JSON.parse(localStorage.getItem(STORAGE_NOTES)  || '{}'); } catch(e) { principalNotes = {}; }
+
+  // Parse URL params
+  var params = parseParams();
+
+  // Load saved config
+  var cfg = {};
+  try { cfg = JSON.parse(localStorage.getItem(STORAGE_CONFIG) || '{}'); } catch(e) {}
+
+  // Priority: URL param > saved config > esl_gas_sync fallback
+  gasUrl         = params.gasUrl  || cfg.gasUrl  || '';
+  selCampus      = params.campus  || cfg.campus  || '';
+  principalEmail = cfg.principalEmail || '';
+
+  if (!gasUrl) {
+    try {
+      var gs = JSON.parse(localStorage.getItem('esl_gas_sync') || '{}');
+      if (gs.gasUrl) gasUrl = gs.gasUrl;
+    } catch(e) {}
+  }
+
+  // Pre-fill setup form
+  document.getElementById('gasUrlInput').value         = gasUrl;
+  document.getElementById('campusInput').value         = selCampus;
+  document.getElementById('principalEmailInput').value = principalEmail;
+
+  if (gasUrl) {
+    document.getElementById('setupCard').style.display = 'none';
+    updateBanner();
+    fetchData();
+  }
+  // else setup card stays visible
+}
+
+function parseParams() {
+  var result = {};
+  var qs = window.location.search.slice(1);
+  if (!qs) return result;
+  qs.split('&').forEach(function(pair) {
+    var parts = pair.split('=');
+    result[decodeURIComponent(parts[0])] = decodeURIComponent((parts[1] || '').replace(/\+/g, ' '));
+  });
+  return result;
+}
+
+function updateBanner() {
+  var el = document.getElementById('campusBanner');
+  if (selCampus) {
+    el.textContent = selCampus + ' Campus — Principal View';
+  } else {
+    el.textContent = 'Showing all campuses — select one below to filter';
+  }
+}
+
+// ============================================================
+//  SETUP
+// ============================================================
+function saveSetup() {
+  var url    = document.getElementById('gasUrlInput').value.trim();
+  var campus = document.getElementById('campusInput').value.trim();
+  var email  = document.getElementById('principalEmailInput').value.trim();
+
+  if (!url) { showToast('Please enter your Google Apps Script URL.'); return; }
+
+  gasUrl         = url;
+  selCampus      = campus;
+  principalEmail = email;
+
+  localStorage.setItem(STORAGE_CONFIG, JSON.stringify({gasUrl: url, campus: campus, principalEmail: email}));
+
+  document.getElementById('setupCard').style.display = 'none';
+  updateBanner();
+  fetchData();
+}
+
+function openSetup() {
+  document.getElementById('gasUrlInput').value         = gasUrl;
+  document.getElementById('campusInput').value         = selCampus;
+  document.getElementById('principalEmailInput').value = principalEmail;
+  document.getElementById('setupCard').style.display   = 'block';
+  document.getElementById('setupCard').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+// ============================================================
+//  DATA FETCHING
+// ============================================================
+function fetchData() {
+  if (isFetching || !gasUrl) return;
+  isFetching = true;
+
+  document.getElementById('loadingCard').style.display  = 'block';
+  document.getElementById('teacherGrid').innerHTML      = '';
+  document.getElementById('goalsSection').style.display = 'none';
+  document.getElementById('statsRow').style.display     = 'none';
+  document.getElementById('filterCard').style.display   = 'none';
+  document.getElementById('emptyState').style.display   = 'none';
+  document.getElementById('syncLabel').textContent      = '';
+  document.getElementById('refreshBtn').disabled        = true;
+
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', gasUrl + '?action=readAll&t=' + Date.now(), true);
+  xhr.onload = function() {
+    if (xhr.status === 200) {
+      try {
+        var res = JSON.parse(xhr.responseText);
+        if (res.success && res.data) {
+          onReadAll(res.data);
+        } else {
+          failLoad('GAS error: ' + (res.error || 'Unknown response'));
+        }
+      } catch(e) {
+        failLoad('Could not parse response. Verify your GAS URL.');
+      }
+    } else {
+      failLoad('HTTP ' + xhr.status + '. Verify your GAS URL and deployment.');
+    }
+  };
+  xhr.onerror = function() {
+    failLoad('Network error. Make sure GAS is deployed with "Anyone" access.');
+  };
+  xhr.send();
+}
+
+function failLoad(msg) {
+  isFetching = false;
+  document.getElementById('loadingCard').style.display  = 'none';
+  document.getElementById('refreshBtn').disabled        = false;
+  document.getElementById('setupCard').style.display    = 'block';
+  showToast('Error: ' + msg);
+}
+
+function onReadAll(data) {
+  // Separate coordinator envelopes from principal note files
+  var coordEnvelopes = [];
+  for (var i = 0; i < data.length; i++) {
+    if (data[i].coordinatorId && data[i].coordinatorId.indexOf('principal_') !== 0) {
+      coordEnvelopes.push(data[i]);
+    }
+  }
+
+  rawCoordData = coordEnvelopes;
+  allCampuses  = buildCampusList(coordEnvelopes);
+
+  // Build teacher index and goals for current campus
+  rebuildForCampus(selCampus);
+
+  // Fetch principal notes from GAS then finish
+  if (selCampus) {
+    loadPrincipalNotes();
+  } else {
+    finishLoad();
+  }
+}
+
+function loadPrincipalNotes() {
+  var campusKey = safeCampusKey(selCampus);
+  var url = gasUrl + '?action=readKey&coordinatorId=principal_' + encodeURIComponent(campusKey) + '&key=principal_notes&t=' + Date.now();
+
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', url, true);
+  xhr.onload = function() {
+    if (xhr.status === 200) {
+      try {
+        var res = JSON.parse(xhr.responseText);
+        if (res.success && res.data) {
+          var parsed = typeof res.data === 'string' ? JSON.parse(res.data) : res.data;
+          if (parsed && typeof parsed === 'object') {
+            // Merge remote notes over local cache (remote wins)
+            for (var k in parsed) {
+              if (parsed.hasOwnProperty(k)) principalNotes[k] = parsed[k];
+            }
+            localStorage.setItem(STORAGE_NOTES, JSON.stringify(principalNotes));
+          }
+        }
+      } catch(e) { /* use local cache */ }
+    }
+    finishLoad();
+  };
+  xhr.onerror = function() { finishLoad(); };
+  xhr.send();
+}
+
+function finishLoad() {
+  isFetching = false;
+  lastFetched = new Date();
+  document.getElementById('loadingCard').style.display  = 'none';
+  document.getElementById('refreshBtn').disabled        = false;
+  document.getElementById('syncLabel').textContent      = 'Synced ' + fmtAgo(lastFetched);
+
+  var names = Object.keys(teacherIndex);
+
+  if (names.length === 0 && selCampus) {
+    document.getElementById('emptyState').style.display  = 'block';
+    document.getElementById('emptyStateCampus').textContent = selCampus;
+    showToast('No data found for "' + selCampus + '". Check the campus name in Setup.');
+    return;
+  }
+
+  document.getElementById('statsRow').style.display   = 'grid';
+  document.getElementById('filterCard').style.display = 'block';
+
+  renderCampusPills();
+  renderStats();
+  renderGoals();
+  applyFilter();
+
+  showToast('Loaded ' + names.length + ' teacher' + (names.length !== 1 ? 's' : '') + (selCampus ? ' — ' + selCampus : ''));
+}
+
+// ============================================================
+//  CAMPUS SWITCHING (no re-fetch needed)
+// ============================================================
+function switchCampus(campus) {
+  selCampus = campus;
+  updateBanner();
+
+  // Persist
+  try {
+    var cfg = JSON.parse(localStorage.getItem(STORAGE_CONFIG) || '{}');
+    cfg.campus = campus;
+    localStorage.setItem(STORAGE_CONFIG, JSON.stringify(cfg));
+  } catch(e) {}
+
+  rebuildForCampus(campus);
+  renderCampusPills();
+  renderStats();
+  renderGoals();
+  applyFilter();
+
+  if (Object.keys(teacherIndex).length === 0 && campus) {
+    document.getElementById('emptyState').style.display = 'block';
+    document.getElementById('emptyStateCampus').textContent = campus;
+  } else {
+    document.getElementById('emptyState').style.display = 'none';
+  }
+}
+
+function rebuildForCampus(campus) {
+  teacherIndex  = buildTeacherIndex(rawCoordData, campus);
+  coordGoals    = buildCoordGoals(rawCoordData, campus);
+  teacherSlugMap = {};
+  for (var n in teacherIndex) {
+    if (teacherIndex.hasOwnProperty(n)) teacherSlugMap[slugify(n)] = n;
+  }
+}
+
+// ============================================================
+//  DATA PROCESSING
+// ============================================================
+function parseKey(env, key) {
+  if (!env || !env.data) return null;
+  var raw = env.data[key];
+  if (raw === undefined || raw === null) return null;
+  try { return typeof raw === 'string' ? JSON.parse(raw) : raw; } catch(e) { return null; }
+}
+
+function buildCampusList(envs) {
+  var seen = {}, list = [];
+  for (var i = 0; i < envs.length; i++) {
+    var wh = parseKey(envs[i], 'walkthrough_history') || [];
+    for (var w = 0; w < wh.length; w++) {
+      var c = wh[w].meta && wh[w].meta.campus;
+      if (c && !seen[c]) { seen[c] = true; list.push(c); }
+    }
+    var ah = parseKey(envs[i], 'esl_audit_history') || [];
+    for (var a = 0; a < ah.length; a++) {
+      var c2 = ah[a].meta && ah[a].meta.campus;
+      if (c2 && !seen[c2]) { seen[c2] = true; list.push(c2); }
+    }
+    var cd = parseKey(envs[i], 'coaching_cycles_data');
+    var cycles = cd ? (cd.cycles || (Array.isArray(cd) ? cd : [])) : [];
+    for (var cy = 0; cy < cycles.length; cy++) {
+      var c3 = cycles[cy].campus;
+      if (c3 && !seen[c3]) { seen[c3] = true; list.push(c3); }
+    }
+  }
+  list.sort();
+  return list;
+}
+
+function buildTeacherIndex(envs, campus) {
+  var index = {};
+
+  function ensureTeacher(name, coordId, coordName) {
+    var key = (name || '').trim();
+    if (!key) return null;
+    if (!index[key]) {
+      index[key] = {
+        name:          key,
+        coordinatorId:   coordId,
+        coordinatorName: coordName,
+        audits:       [],  // [{date, scorePct, rawScore}]
+        walkthroughs: [],  // [{date, observations:[{code,evidenceCode}]}]
+        cycles:       []   // [{stage, stageName, isComplete, createdAt}]
+      };
+    }
+    return index[key];
+  }
+
+  for (var i = 0; i < envs.length; i++) {
+    var env     = envs[i];
+    var coordId = env.coordinatorId;
+    var coordNm = env.coordinatorName;
+
+    // ---- Walkthrough history ----
+    var wh = parseKey(env, 'walkthrough_history') || [];
+    for (var w = 0; w < wh.length; w++) {
+      var entry = wh[w];
+      if (!entry.meta) continue;
+      if (campus && entry.meta.campus !== campus) continue;
+
+      var date = entry.meta.date || (entry.savedAt ? entry.savedAt.slice(0, 10) : null);
+      var rounds = entry.rounds || [];
+      var obs    = entry.observations || [];
+
+      // Map observation index → evidenceCode from its round
+      var teacherObsMap = {};
+      for (var o = 0; o < obs.length; o++) {
+        var ob = obs[o];
+        var tName = (ob.teacher || '').trim();
+        if (!tName) continue;
+        var round = rounds[ob.roundIdx] || {};
+        if (!teacherObsMap[tName]) teacherObsMap[tName] = [];
+        teacherObsMap[tName].push({
+          code:         ob.code || '',
+          evidenceCode: round.evidenceCode || round.lookFor || '',
+          time:         ob.time || ''
+        });
+      }
+
+      // Also include teachers mentioned in round targetTeachers who have no individual obs
+      for (var r = 0; r < rounds.length; r++) {
+        var rnd = rounds[r];
+        if (!rnd.targetTeachers) continue;
+        var targets = rnd.targetTeachers.split(/[,;]+/);
+        for (var t = 0; t < targets.length; t++) {
+          var tgt = targets[t].trim();
+          if (!tgt) continue;
+          if (!teacherObsMap[tgt]) teacherObsMap[tgt] = [];
+          // Only add round-level if not already covered by obs
+        }
+      }
+
+      for (var tKey in teacherObsMap) {
+        if (!teacherObsMap.hasOwnProperty(tKey)) continue;
+        var teacher = ensureTeacher(tKey, coordId, coordNm);
+        if (!teacher) continue;
+        teacher.walkthroughs.push({date: date, observations: teacherObsMap[tKey]});
+      }
+    }
+
+    // ---- Audit history ----
+    var ah = parseKey(env, 'esl_audit_history') || [];
+    for (var a = 0; a < ah.length; a++) {
+      var audit = ah[a];
+      if (!audit.meta || !audit.meta.teacher) continue;
+      if (campus && audit.meta.campus !== campus) continue;
+
+      var rawScore = 0;
+      if (audit.ratings) {
+        for (var rk in audit.ratings) {
+          if (audit.ratings.hasOwnProperty(rk)) rawScore += (audit.ratings[rk] || 0);
+        }
+      }
+      var pct = audit.scorePct !== undefined ? audit.scorePct : Math.round(rawScore / 174 * 100);
+
+      var t2 = ensureTeacher(audit.meta.teacher, coordId, coordNm);
+      if (!t2) continue;
+      t2.audits.push({
+        date:     audit.meta.date || (audit.timestamp ? audit.timestamp.slice(0, 10) : null),
+        scorePct: pct,
+        rawScore: rawScore
+      });
+    }
+
+    // ---- Coaching cycles ----
+    var cd     = parseKey(env, 'coaching_cycles_data');
+    var cycles = cd ? (cd.cycles || (Array.isArray(cd) ? cd : [])) : [];
+    for (var cy = 0; cy < cycles.length; cy++) {
+      var cycle = cycles[cy];
+      if (campus && cycle.campus !== campus) continue;
+      if (!cycle.teacher) continue;
+
+      var stages     = cycle.stages || [];
+      var curStage   = 0;
+      var isComplete = true;
+      for (var s = 0; s < stages.length; s++) {
+        if (stages[s].status !== 'complete') {
+          curStage   = s;
+          isComplete = false;
+          break;
+        }
+      }
+      if (isComplete && stages.length > 0) curStage = stages.length - 1;
+
+      var t3 = ensureTeacher(cycle.teacher, coordId, coordNm);
+      if (!t3) continue;
+      t3.cycles.push({
+        stage:      curStage,
+        stageName:  STAGE_NAMES[curStage] || ('Stage ' + (curStage + 1)),
+        isComplete: isComplete,
+        createdAt:  cycle.createdAt || null
+      });
+    }
+  }
+
+  // Sort by date descending
+  for (var tk in index) {
+    if (!index.hasOwnProperty(tk)) continue;
+    index[tk].audits.sort(function(a, b) {
+      return (b.date || '') > (a.date || '') ? 1 : -1;
+    });
+    index[tk].walkthroughs.sort(function(a, b) {
+      return (b.date || '') > (a.date || '') ? 1 : -1;
+    });
+  }
+
+  return index;
+}
+
+function buildCoordGoals(envs, campus) {
+  // Find which coordinators are active at this campus
+  var activeCoordsAtCampus = {};
+  for (var tk in teacherIndex) {
+    if (!teacherIndex.hasOwnProperty(tk)) continue;
+    var t = teacherIndex[tk];
+    if (t.coordinatorId) activeCoordsAtCampus[t.coordinatorId] = true;
+  }
+
+  var goals = [];
+  for (var i = 0; i < envs.length; i++) {
+    var env = envs[i];
+    if (campus && !activeCoordsAtCampus[env.coordinatorId]) continue;
+
+    var gd = parseKey(env, 'goal_setting_data');
+    if (!gd) continue;
+
+    var goalList = gd.goals    || [];
+    var checkins = gd.checkins || [];
+
+    for (var g = 0; g < goalList.length; g++) {
+      var goal = goalList[g];
+      if (goal.status === 'completed') continue;
+
+      // Collect check-ins (show type + rating only — no evidence or private notes)
+      var goalCheckins = [];
+      for (var ch = 0; ch < checkins.length; ch++) {
+        if (checkins[ch].goalId === goal.id) {
+          goalCheckins.push({type: checkins[ch].type, rating: checkins[ch].rating, date: checkins[ch].date});
+        }
+      }
+
+      var steps     = goal.actionSteps || [];
+      var stepsDone = 0;
+      for (var st = 0; st < steps.length; st++) {
+        if (steps[st].done) stepsDone++;
+      }
+
+      goals.push({
+        id:            goal.id,
+        coordinatorId: env.coordinatorId,
+        coordName:     env.coordinatorName,
+        semester:      goal.semester || '',
+        title:         goal.title   || '(Untitled Goal)',
+        status:        goal.status  || 'active',
+        stepCount:     steps.length,
+        stepsDone:     stepsDone,
+        checkins:      goalCheckins
+      });
+    }
+  }
+  return goals;
+}
+
+// ============================================================
+//  RENDERING — CAMPUS PILLS
+// ============================================================
+function renderCampusPills() {
+  if (allCampuses.length <= 1) {
+    document.getElementById('campusRow').style.display = 'none';
+    return;
+  }
+  document.getElementById('campusRow').style.display = 'flex';
+
+  var html = '<button class="campus-pill' + (!selCampus ? ' active' : '') + '" onclick="switchCampus(\'\')">All</button>';
+  for (var i = 0; i < allCampuses.length; i++) {
+    var c = allCampuses[i];
+    var active = selCampus === c ? ' active' : '';
+    html += '<button class="campus-pill' + active + '" onclick="switchCampus(' + JSON.stringify(c) + ')">' + escHtml(c) + '</button>';
+  }
+  document.getElementById('campusPills').innerHTML = html;
+}
+
+// ============================================================
+//  RENDERING — STATS
+// ============================================================
+function renderStats() {
+  var names   = Object.keys(teacherIndex);
+  var active  = 0;
+  var audSum  = 0;
+  var audCnt  = 0;
+
+  for (var i = 0; i < names.length; i++) {
+    var t = teacherIndex[names[i]];
+    for (var c = 0; c < t.cycles.length; c++) {
+      if (!t.cycles[c].isComplete) { active++; break; }
+    }
+    if (t.audits.length > 0) { audSum += t.audits[0].scorePct; audCnt++; }
+  }
+
+  document.getElementById('statTeachers').textContent = names.length;
+  document.getElementById('statCycles').textContent   = active;
+  document.getElementById('statAudit').textContent    = audCnt > 0 ? Math.round(audSum / audCnt) + '%' : '\u2014';
+  document.getElementById('statGoals').textContent    = coordGoals.length;
+}
+
+// ============================================================
+//  RENDERING — COORDINATOR GOALS
+// ============================================================
+function renderGoals() {
+  if (coordGoals.length === 0) {
+    document.getElementById('goalsSection').style.display = 'none';
+    return;
+  }
+  document.getElementById('goalsSection').style.display = 'block';
+  document.getElementById('goalsBadge').textContent = coordGoals.length;
+
+  // Group by coordinator
+  var byCoord = {};
+  var coordOrder = [];
+  for (var i = 0; i < coordGoals.length; i++) {
+    var g = coordGoals[i];
+    var cid = g.coordinatorId;
+    if (!byCoord[cid]) { byCoord[cid] = {name: g.coordName, goals: []}; coordOrder.push(cid); }
+    byCoord[cid].goals.push(g);
+  }
+
+  var html = '<div class="goals-grid">';
+  for (var ci = 0; ci < coordOrder.length; ci++) {
+    var cid2  = coordOrder[ci];
+    var coord = byCoord[cid2];
+    var col   = COORD_COLORS[cid2] || '#2c3e6e';
+
+    html += '<div class="goal-card">';
+    html += '<div class="goal-coord-name" style="color:' + col + '">' + escHtml(coord.name) + '</div>';
+
+    for (var g2 = 0; g2 < coord.goals.length; g2++) {
+      var goal = coord.goals[g2];
+      var pct  = goal.stepCount > 0 ? Math.round(goal.stepsDone / goal.stepCount * 100) : 0;
+      var stBadge = '<span class="status-badge ' + (goal.status || 'active') + '">' + escHtml(goal.status || 'active') + '</span>';
+
+      html += '<div class="goal-item">';
+      html += '<div class="goal-item-top"><span class="goal-title">' + escHtml(goal.title) + '</span>' + stBadge + '</div>';
+
+      if (goal.stepCount > 0) {
+        html += '<div class="prog-bar-wrap"><div class="prog-bar-fill" style="width:' + pct + '%"></div></div>';
+        html += '<div class="prog-label">' + goal.stepsDone + ' / ' + goal.stepCount + ' action steps complete</div>';
+      }
+
+      if (goal.checkins.length > 0) {
+        html += '<div class="checkin-pills">';
+        for (var ch = 0; ch < goal.checkins.length; ch++) {
+          var ci2 = goal.checkins[ch];
+          var rc  = RATING_COLORS[ci2.rating] || '#888';
+          var rl  = RATING_LABELS[ci2.rating] || ci2.rating;
+          html += '<span class="checkin-pill" style="background:' + rc + '18;color:' + rc + ';border-color:' + rc + '55">';
+          html += (ci2.type === 'mid' ? 'Mid' : 'End') + ': ' + escHtml(rl);
+          html += '</span>';
+        }
+        html += '</div>';
+      }
+
+      if (goal.semester) html += '<div class="goal-sem">' + escHtml(goal.semester) + '</div>';
+      html += '</div>'; // .goal-item
+    }
+    html += '</div>'; // .goal-card
+  }
+  html += '</div>'; // .goals-grid
+
+  document.getElementById('goalsContent').innerHTML = html;
+  document.getElementById('goalsContent').style.display = goalsOpen ? 'block' : 'none';
+  document.getElementById('goalsChev').textContent = goalsOpen ? '\u25bc' : '\u25b6';
+}
+
+function toggleGoals() {
+  goalsOpen = !goalsOpen;
+  document.getElementById('goalsContent').style.display = goalsOpen ? 'block' : 'none';
+  document.getElementById('goalsChev').textContent = goalsOpen ? '\u25bc' : '\u25b6';
+}
+
+// ============================================================
+//  RENDERING — TEACHER FILTER + GRID
+// ============================================================
+function applyFilter() {
+  var search  = (document.getElementById('searchInput').value || '').toLowerCase();
+  var show    = document.getElementById('showFilter').value;
+  var sort    = document.getElementById('sortFilter').value;
+
+  var names = Object.keys(teacherIndex);
+
+  names = names.filter(function(n) {
+    if (search && n.toLowerCase().indexOf(search) === -1) return false;
+    if (show === 'reviewed'   && !acknowledged[n]) return false;
+    if (show === 'unreviewed' &&  acknowledged[n]) return false;
+    return true;
+  });
+
+  names.sort(function(a, b) {
+    if (sort === 'name') return a < b ? -1 : 1;
+    if (sort === 'audit') {
+      var as = teacherIndex[a].audits.length ? teacherIndex[a].audits[0].scorePct : -1;
+      var bs = teacherIndex[b].audits.length ? teacherIndex[b].audits[0].scorePct : -1;
+      return bs - as;
+    }
+    if (sort === 'observed') {
+      var ad = teacherIndex[a].walkthroughs.length ? (teacherIndex[a].walkthroughs[0].date || '') : '';
+      var bd = teacherIndex[b].walkthroughs.length ? (teacherIndex[b].walkthroughs[0].date || '') : '';
+      return bd > ad ? 1 : -1;
+    }
+    if (sort === 'stage') {
+      var as2 = getActiveStageNum(teacherIndex[a]);
+      var bs2 = getActiveStageNum(teacherIndex[b]);
+      if (as2 === null && bs2 === null) return a < b ? -1 : 1;
+      if (as2 === null) return 1;
+      if (bs2 === null) return -1;
+      return as2 - bs2;
+    }
+    return a < b ? -1 : 1;
+  });
+
+  if (names.length === 0) {
+    document.getElementById('teacherGrid').innerHTML =
+      '<div class="card center-card"><p>No teachers match your search.</p></div>';
+    return;
+  }
+
+  var html = '';
+  for (var i = 0; i < names.length; i++) {
+    html += buildTeacherCard(names[i], teacherIndex[names[i]]);
+  }
+  document.getElementById('teacherGrid').innerHTML = html;
+
+  // Restore saved note text into textareas
+  for (var n in principalNotes) {
+    if (!principalNotes.hasOwnProperty(n)) continue;
+    var ta = document.getElementById('note-' + slugify(n));
+    if (ta) ta.value = principalNotes[n].text || '';
+    var st = document.getElementById('nstatus-' + slugify(n));
+    if (st && principalNotes[n].savedAt) {
+      st.textContent = 'Last saved ' + fmtAgo(new Date(principalNotes[n].savedAt));
+    }
+  }
+}
+
+function getActiveStageNum(teacher) {
+  for (var i = 0; i < teacher.cycles.length; i++) {
+    if (!teacher.cycles[i].isComplete) return teacher.cycles[i].stage;
+  }
+  return null;
+}
+
+// ============================================================
+//  RENDERING — TEACHER CARD
+// ============================================================
+function buildTeacherCard(name, teacher) {
+  var slug     = slugify(name);
+  var initials = getInitials(name);
+  var isReviewed = !!acknowledged[name];
+  var cardClass  = 'teacher-card' + (isReviewed ? ' reviewed' : '');
+
+  var html = '<div class="' + cardClass + '" id="tc-' + escHtml(slug) + '">';
+
+  // --- Header ---
+  html += '<div class="tc-header">';
+  html += '<div class="tc-avatar">' + escHtml(initials) + '</div>';
+  html += '<div class="tc-info">';
+  html += '<div class="tc-name">' + escHtml(name) + '</div>';
+  html += '<div class="tc-meta">Coordinator: ' + escHtml(teacher.coordinatorName || teacher.coordinatorId || 'Unknown');
+  if (teacher.walkthroughs.length > 0 && teacher.walkthroughs[0].date) {
+    html += ' &nbsp;&middot;&nbsp; Last observed: ' + fmtDate(teacher.walkthroughs[0].date);
+  }
+  html += '</div>';
+  html += '</div>'; // .tc-info
+
+  var ackLabel = isReviewed ? '&#10003; Reviewed' : '&#9675; Mark Reviewed';
+  var ackClass = 'ack-btn' + (isReviewed ? ' acked' : '');
+  html += '<button class="' + ackClass + '" id="ackbtn-' + escHtml(slug) + '" onclick="tcToggleAck(\'' + slug + '\')">' + ackLabel + '</button>';
+  html += '</div>'; // .tc-header
+
+  // --- Body ---
+  html += '<div class="tc-body">';
+
+  // COACHING STAGE
+  var activeCycle = null;
+  for (var c = 0; c < teacher.cycles.length; c++) {
+    if (!teacher.cycles[c].isComplete) { activeCycle = teacher.cycles[c]; break; }
+  }
+
+  html += '<div class="tc-row">';
+  html += '<span class="tc-lbl">Coaching Cycle</span>';
+  if (activeCycle) {
+    var sColor = STAGE_COLORS[activeCycle.stage] || '#4a90d9';
+    html += '<span class="stage-pill" style="background:' + sColor + '18;color:' + sColor + ';border:1px solid ' + sColor + '44">';
+    html += '<span class="active-dot"></span> Stage ' + (activeCycle.stage + 1) + ' \u2014 ' + escHtml(activeCycle.stageName);
+    html += '</span>';
+  } else if (teacher.cycles.length > 0) {
+    html += '<span class="stage-pill" style="background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7">&#10003; Cycle Complete</span>';
+  } else {
+    html += '<span style="font-size:11px;color:#ccc">No active coaching cycle</span>';
+  }
+  html += '</div>';
+
+  // AUDIT
+  html += '<div class="tc-row">';
+  html += '<span class="tc-lbl">Classroom Audit</span>';
+  if (teacher.audits.length > 0) {
+    var latest  = teacher.audits[0];
+    var sColor2 = latest.scorePct >= 80 ? '#27ae60' : latest.scorePct >= 60 ? '#f39c12' : '#e74c3c';
+    html += '<span class="audit-score" style="color:' + sColor2 + '">' + latest.scorePct + '%</span>';
+
+    if (teacher.audits.length > 1) {
+      var diff = latest.scorePct - teacher.audits[1].scorePct;
+      if (diff > 0) {
+        html += ' <span class="trend-badge trend-up">&#8679; +' + diff + '%</span>';
+      } else if (diff < 0) {
+        html += ' <span class="trend-badge trend-down">&#8681; ' + diff + '%</span>';
+      } else {
+        html += ' <span class="trend-badge trend-flat">&#8594; No change</span>';
+      }
+      html += '<span class="prev-score">prev: ' + teacher.audits[1].scorePct + '%</span>';
+    }
+    html += '<span class="obs-date">' + fmtDate(latest.date) + '</span>';
+  } else {
+    html += '<span style="font-size:11px;color:#ccc">No audits recorded</span>';
+  }
+  html += '</div>';
+
+  // WALKTHROUGHS / EVIDENCE CODES
+  html += '<div class="tc-row">';
+  html += '<span class="tc-lbl">Observations</span>';
+  if (teacher.walkthroughs.length > 0) {
+    var latestWt = teacher.walkthroughs[0];
+    var obsItems = latestWt.observations.slice(0, 6);
+    if (obsItems.length > 0) {
+      html += '<div class="code-pills">';
+      for (var o = 0; o < obsItems.length; o++) {
+        var ob    = obsItems[o];
+        var style = OBS_STYLE[ob.code] || {bg:'#f5f5f5', color:'#9e9e9e', label: ob.code || '?'};
+        var lbl   = ob.evidenceCode ? (escHtml(ob.evidenceCode) + ': ' + escHtml(ob.code)) : escHtml(ob.code || '?');
+        html += '<span class="code-pill" title="' + escHtml(style.label) + '" style="background:' + style.bg + ';color:' + style.color + ';border-color:' + style.color + '55">' + lbl + '</span>';
+      }
+      if (latestWt.observations.length > 6) {
+        html += '<span style="font-size:10px;color:#bbb">+' + (latestWt.observations.length - 6) + ' more</span>';
+      }
+      html += '</div>';
+    } else {
+      html += '<span style="font-size:11px;color:#ccc">Walkthrough logged (no individual observations)</span>';
+    }
+    if (teacher.walkthroughs.length > 1) {
+      html += '<span style="font-size:10px;color:#ccc;margin-left:6px">' + teacher.walkthroughs.length + ' walkthroughs total</span>';
+    }
+  } else {
+    html += '<span style="font-size:11px;color:#ccc">No walkthroughs recorded</span>';
+  }
+  html += '</div>';
+
+  // PRINCIPAL NOTES
+  var noteId   = 'note-'    + slug;
+  var statusId = 'nstatus-' + slug;
+  var savedTxt = (principalNotes[name] && principalNotes[name].text) ? principalNotes[name].text : '';
+  var savedAt  = (principalNotes[name] && principalNotes[name].savedAt) ? 'Last saved ' + fmtAgo(new Date(principalNotes[name].savedAt)) : '';
+
+  html += '<div class="tc-notes">';
+  html += '<div class="tc-notes-lbl">Your Notes <span class="tc-notes-hint">(synced to Drive &mdash; visible to coordinator &amp; manager)</span></div>';
+  html += '<textarea id="' + escHtml(noteId) + '" class="notes-ta" placeholder="Add observations, concerns, or commendations\u2026" onblur="tcSaveNote(\'' + slug + '\')">' + escHtml(savedTxt) + '</textarea>';
+  html += '<div class="notes-status" id="' + escHtml(statusId) + '">' + savedAt + '</div>';
+  html += '</div>';
+
+  // FOOTER
+  html += '<div class="tc-footer">';
+  html += '<button class="btn sm" onclick="tcRequestMeeting(\'' + slug + '\')" title="Draft a meeting request email">&#128197; Request Meeting with Coordinator</button>';
+  html += '</div>';
+
+  html += '</div>'; // .tc-body
+  html += '</div>'; // .teacher-card
+
+  return html;
+}
+
+// ============================================================
+//  INTERACTIONS
+// ============================================================
+function tcToggleAck(slug) {
+  var name = teacherSlugMap[slug];
+  if (!name) return;
+
+  if (acknowledged[name]) {
+    delete acknowledged[name];
+  } else {
+    acknowledged[name] = new Date().toISOString();
+  }
+  localStorage.setItem(STORAGE_ACK, JSON.stringify(acknowledged));
+
+  var card = document.getElementById('tc-' + slug);
+  var btn  = document.getElementById('ackbtn-' + slug);
+  if (card) {
+    if (acknowledged[name]) {
+      card.classList.add('reviewed');
+      if (btn) { btn.classList.add('acked'); btn.innerHTML = '&#10003; Reviewed'; }
+    } else {
+      card.classList.remove('reviewed');
+      if (btn) { btn.classList.remove('acked'); btn.innerHTML = '&#9675; Mark Reviewed'; }
+    }
+  }
+  showToast(acknowledged[name] ? name + ' marked as reviewed.' : 'Review mark removed.');
+}
+
+function tcSaveNote(slug) {
+  var name = teacherSlugMap[slug];
+  if (!name) return;
+
+  var ta   = document.getElementById('note-' + slug);
+  var stEl = document.getElementById('nstatus-' + slug);
+  if (!ta) return;
+
+  var text = ta.value;
+  principalNotes[name] = {text: text, savedAt: new Date().toISOString()};
+  localStorage.setItem(STORAGE_NOTES, JSON.stringify(principalNotes));
+
+  if (stEl) stEl.textContent = 'Saving\u2026';
+
+  if (!gasUrl || !selCampus) {
+    if (stEl) stEl.textContent = 'Saved locally (no campus selected for Drive sync)';
+    return;
+  }
+
+  clearTimeout(noteSaveTimers[slug]);
+  noteSaveTimers[slug] = setTimeout(function() {
+    pushNotesToGAS(slug, stEl);
+  }, 1500);
+}
+
+function pushNotesToGAS(slug, stEl) {
+  var campusKey = safeCampusKey(selCampus);
+  var payload = {
+    action:          'syncKey',
+    coordinatorId:   'principal_' + campusKey,
+    coordinatorName: 'Principal \u2014 ' + selCampus,
+    key:             'principal_notes',
+    value:           principalNotes
+  };
+
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', gasUrl, true);
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  xhr.onload = function() {
+    if (!stEl) return;
+    if (xhr.status === 200) {
+      stEl.style.color  = '#27ae60';
+      stEl.textContent  = 'Saved to Drive ' + fmtAgo(new Date());
+    } else {
+      stEl.style.color  = '#e74c3c';
+      stEl.textContent  = 'Drive sync failed \u2014 saved locally';
+    }
+  };
+  xhr.onerror = function() {
+    if (stEl) { stEl.style.color = '#f39c12'; stEl.textContent = 'Offline \u2014 saved locally'; }
+  };
+  xhr.send(JSON.stringify(payload));
+}
+
+function tcRequestMeeting(slug) {
+  var name    = teacherSlugMap[slug];
+  if (!name) return;
+  var teacher = teacherIndex[name];
+  if (!teacher) return;
+
+  var coordId   = teacher.coordinatorId   || '';
+  var coordName = teacher.coordinatorName || 'Coordinator';
+  var toEmail   = COORD_EMAILS[coordId]   || '';
+  var ccParts   = [MANAGER_EMAIL];
+  if (principalEmail && principalEmail !== toEmail) ccParts.push(principalEmail);
+
+  var subject = 'Meeting Request \u2014 ' + name + ' (' + (selCampus || 'Campus') + ')';
+  var body =
+    'Hello ' + coordName + ',\n\n' +
+    'I would like to schedule a check-in regarding teacher progress for:\n\n' +
+    '  Teacher: ' + name + '\n' +
+    '  Campus:  ' + (selCampus || 'N/A') + '\n\n' +
+    'Please let me know your availability at your earliest convenience.\n\n' +
+    'Thank you,\n' + (principalEmail ? principalEmail.split('@')[0] : 'Principal');
+
+  var mailto = 'mailto:' + encodeURIComponent(toEmail) +
+    '?cc='      + encodeURIComponent(ccParts.join(',')) +
+    '&subject=' + encodeURIComponent(subject) +
+    '&body='    + encodeURIComponent(body);
+
+  window.open(mailto, '_blank');
+}
+
+// ============================================================
+//  EXPORT
+// ============================================================
+function exportSummary() {
+  var names = Object.keys(teacherIndex);
+  if (names.length === 0) { showToast('No data to export.'); return; }
+
+  var rows = ['"Teacher","Coordinator","Campus","Active Coaching Stage","Latest Audit %","Walkthrough Count","Reviewed"'];
+  for (var i = 0; i < names.length; i++) {
+    var n = names[i];
+    var t = teacherIndex[n];
+    var stage = '';
+    for (var c = 0; c < t.cycles.length; c++) {
+      if (!t.cycles[c].isComplete) {
+        stage = 'Stage ' + (t.cycles[c].stage + 1) + ' \u2014 ' + t.cycles[c].stageName;
+        break;
+      }
+    }
+    var auditPct = t.audits.length ? t.audits[0].scorePct + '%' : '';
+    var reviewed = acknowledged[n] ? 'Yes' : 'No';
+    var campus   = t.walkthroughs.length && t.walkthroughs[0] ? (selCampus || '') : (selCampus || '');
+    rows.push([n, t.coordinatorName || '', campus, stage, auditPct, t.walkthroughs.length, reviewed].map(function(v) {
+      return '"' + String(v).replace(/"/g, '""') + '"';
+    }).join(','));
+  }
+
+  var blob = new Blob([rows.join('\n')], {type:'text/csv'});
+  var url  = URL.createObjectURL(blob);
+  var a    = document.createElement('a');
+  a.href   = url;
+  a.download = 'principal_checkpoint_' + (selCampus || 'all').toLowerCase().replace(/\s+/g, '_') + '_' + new Date().toISOString().slice(0, 10) + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Summary exported.');
+}
+
+// ============================================================
+//  UTILITIES
+// ============================================================
+function escHtml(s) {
+  var d = document.createElement('div');
+  d.appendChild(document.createTextNode(String(s || '')));
+  return d.innerHTML;
+}
+
+function showToast(msg) {
+  var el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(function() { el.classList.remove('show'); }, 3200);
+}
+
+function toggleDark() {
+  var dark = document.body.classList.toggle('dark-mode');
+  localStorage.setItem('esl_app_theme', dark ? 'dark' : 'light');
+  document.getElementById('darkBtn').textContent = dark ? '\u2600 Light' : '\u263D Dark';
+}
+
+function slugify(str) {
+  return String(str).toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
+}
+
+function safeCampusKey(campus) {
+  return String(campus).toLowerCase().replace(/[^a-z0-9]/g, '_');
+}
+
+function getInitials(name) {
+  var parts = String(name).trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+function fmtDate(ds) {
+  if (!ds) return '\u2014';
+  try {
+    var d = new Date(ds + 'T00:00:00');
+    return d.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+  } catch(e) { return ds; }
+}
+
+function fmtAgo(date) {
+  if (!date) return '';
+  var diff = Math.floor((new Date() - date) / 1000);
+  if (diff < 60)   return 'just now';
+  if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+  if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+  return Math.floor(diff / 86400) + 'd ago';
+}
+
+// ============================================================
+//  BOOT
+// ============================================================
+init();
+</script>
+</body>
+</html>
