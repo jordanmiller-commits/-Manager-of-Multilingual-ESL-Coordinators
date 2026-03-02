@@ -1536,7 +1536,7 @@ function exportCalendar(){
   var data=null;
   try{data=raw?JSON.parse(raw):null;}catch(e){}
   if(!data||!data.cycles||data.cycles.length===0){showToast("No coaching cycles to export.");return;}
-  var lines=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//ESL Manager Suite//Coaching//EN","CALSCALE:GREGORIAN"];
+  var lines=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//MLP Coordinator Hub//Coaching//EN","CALSCALE:GREGORIAN"];
   var now=new Date();
   var stamp=now.toISOString().replace(/[-:]/g,"").replace(/\.\d{3}/,"");
   for(var i=0;i<data.cycles.length;i++){

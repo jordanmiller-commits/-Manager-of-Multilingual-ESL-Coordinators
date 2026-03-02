@@ -1,18 +1,25 @@
 // ============================================================
-// ESL Coordinator Data Sync — Google Apps Script Web App
+// MLP Coordinator Data Sync — Google Apps Script Web App
 // Deploy this as a web app from script.google.com
 // ============================================================
 
-var FOLDER_ID = '1FvxiBn6-SmLa2RKXWXdE7DMufwm0tOVo';
+var FOLDER_ID = '1HpYZoIgwbr0iZL6pnntBZw648--us9BG';
 
-// Email reminder configuration — add coordinator emails here
+// Email reminder configuration — coordinator IDs must match what each person enters in Onboarding Step 3
 var COORDINATOR_EMAIL_MAP = {
-  // 'jsmith': 'jsmith@school.org',
-  // 'mrodriguez': 'mrodriguez@school.org',
+  'jmiller':    'jmiller@uplifteducation.org',
+  'kpatterson': 'kpatterson@uplifteducation.org',
+  'pokolo':     'Pokolo@uplifteducation.org',
+  'vpalencia':  'vpalencia@uplifteducation.org',
 };
 var OVERDUE_DAYS = 7;   // coaching stage considered overdue after N days
 var STALLED_DAYS = 14;  // cycle considered stalled if no update in N days
 var APP_URL = "https://jordanmiller-commits.github.io/-Manager-of-Multilingual-ESL-Coordinators/";
+
+// API secret — every request from the app must include this value.
+// Update this string to any strong random value before deploying.
+// Distribute to coordinators via the ?secret= URL parameter in their onboarding link.
+var SHARED_SECRET = 'fe50135497f480b9dfa7e3f4cc79c6e6e5383236';
 
 // localStorage keys to sync (excludes device-specific settings)
 var SYNC_KEYS = [
@@ -33,6 +40,9 @@ var SYNC_KEYS = [
 // ---- GET handler (reads) ----
 function doGet(e) {
   var params = e.parameter;
+  if (SHARED_SECRET && params.secret !== SHARED_SECRET) {
+    return jsonResponse({ error: 'Unauthorized' });
+  }
   var action = params.action || 'status';
 
   try {
@@ -46,7 +56,7 @@ function doGet(e) {
     }
 
     if (action === 'read') {
-      var coordId = params.coordinatorId;
+      var coordId = sanitizeCoordId(params.coordinatorId);
       if (!coordId) return jsonResponse({ error: 'Missing coordinatorId' });
       var data = readCoordinatorData(coordId);
       if (!data) return jsonResponse({ success: true, data: null, message: 'No data found for ' + coordId });
@@ -64,7 +74,7 @@ function doGet(e) {
     }
 
     if (action === 'readKey') {
-      var coordId2 = params.coordinatorId;
+      var coordId2 = sanitizeCoordId(params.coordinatorId);
       var key = params.key;
       if (!coordId2 || !key) return jsonResponse({ error: 'Missing coordinatorId or key' });
       var keyData = readCoordinatorKey(coordId2, key);
@@ -81,10 +91,13 @@ function doGet(e) {
 function doPost(e) {
   try {
     var body = JSON.parse(e.postData.contents);
+    if (SHARED_SECRET && body.secret !== SHARED_SECRET) {
+      return jsonResponse({ error: 'Unauthorized' });
+    }
     var action = body.action || 'sync';
 
     if (action === 'sync') {
-      var coordId = body.coordinatorId;
+      var coordId = sanitizeCoordId(body.coordinatorId);
       var coordName = body.coordinatorName || coordId;
       var data = body.data;
 
@@ -103,7 +116,7 @@ function doPost(e) {
     }
 
     if (action === 'syncKey') {
-      var coordId2 = body.coordinatorId;
+      var coordId2 = sanitizeCoordId(body.coordinatorId);
       var coordName2 = body.coordinatorName || coordId2;
       var key = body.key;
       var value = body.value;
@@ -119,7 +132,7 @@ function doPost(e) {
     }
 
     if (action === 'delete') {
-      var coordId3 = body.coordinatorId;
+      var coordId3 = sanitizeCoordId(body.coordinatorId);
       if (!coordId3) return jsonResponse({ error: 'Missing coordinatorId' });
       var deleted = deleteCoordinatorData(coordId3);
       return jsonResponse({ success: deleted, message: deleted ? 'Deleted' : 'Not found' });
@@ -135,6 +148,13 @@ function doPost(e) {
   } catch (err) {
     return jsonResponse({ error: err.message, stack: err.stack });
   }
+}
+
+// ---- Input validation ----
+
+function sanitizeCoordId(id) {
+  if (!id) return '';
+  return String(id).replace(/[^a-zA-Z0-9_-]/g, '').substring(0, 50);
 }
 
 // ---- Drive operations ----
@@ -325,7 +345,7 @@ function sendReminderEmails(coordsOverride) {
     var body = buildReminderEmail(coord, overdue, stalled);
     MailApp.sendEmail({
       to: coord.email,
-      subject: '[ESL Manager] Coaching Cycle Reminder — ' + new Date().toLocaleDateString(),
+      subject: '[MLP Coordinator Hub] Coaching Cycle Reminder — ' + new Date().toLocaleDateString(),
       body: body
     });
     sent.push(coord.email);
@@ -408,7 +428,7 @@ function buildReminderEmail(coord, overdue, stalled) {
   var lines = [];
   lines.push('Hi ' + name + ',');
   lines.push('');
-  lines.push('This is your weekly ESL Manager coaching cycle reminder.');
+  lines.push('This is your weekly MLP Coordinator Hub coaching cycle reminder.');
   lines.push('');
 
   if (overdue.length > 0) {
@@ -435,7 +455,7 @@ function buildReminderEmail(coord, overdue, stalled) {
   lines.push('Open your Coaching Cycle Tracker to update these cycles:');
   lines.push(APP_URL + 'Academic_Monitoring_Leader_Facing/Coaching_Cycle_Tracker.html');
   lines.push('');
-  lines.push('— ESL Manager Suite (automated reminder)');
+  lines.push('— MLP Coordinator Hub (automated reminder)');
   return lines.join('\n');
 }
 

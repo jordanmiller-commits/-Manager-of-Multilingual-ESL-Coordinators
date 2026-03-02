@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Team Overview — ESL Manager Suite</title>
+<title>Team Overview — MLP Coordinator Hub</title>
 <link rel="manifest" href="./manifest.json"/>
 <meta name="theme-color" content="#2c3e6e"/>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
@@ -200,6 +200,13 @@ function getGasUrl() {
   return el ? el.value.trim() : "";
 }
 
+function getGasSecret() {
+  try {
+    var s = JSON.parse(localStorage.getItem("esl_gas_sync") || "{}");
+    return s.secret || '';
+  } catch(e) { return ''; }
+}
+
 /* ============================================================
    DATA FETCHING
    ============================================================ */
@@ -216,7 +223,7 @@ function fetchAll() {
   var btn = document.getElementById("refreshBtn");
   if (btn) btn.textContent = "Loading...";
 
-  var url = gasUrl + "?action=readAll";
+  var url = gasUrl + "?action=readAll&secret=" + encodeURIComponent(getGasSecret());
   fetch(url)
     .then(function(r) { return r.json(); })
     .then(function(resp) {
@@ -412,7 +419,7 @@ function sendReminders() {
   fetch(gasUrl, {
     method: "POST",
     headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({action: "sendReminders", coordinators: coords})
+    body: JSON.stringify({action: "sendReminders", secret: getGasSecret(), coordinators: coords})
   })
     .then(function(r) { return r.json(); })
     .then(function(resp) {

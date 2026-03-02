@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Setup Guide — ESL Manager Suite</title>
+<title>Setup Guide — MLP Coordinator Hub</title>
 <link rel="manifest" href="./manifest.json"/>
 <meta name="theme-color" content="#2c3e6e"/>
 <style>
@@ -91,7 +91,7 @@ body.dark-mode .toast{background:#7eb8f7;color:#1a1a2e}
 <body>
 <div class="wrap">
   <div class="header">
-    <h1>&#9881; Welcome to ESL Manager Suite</h1>
+    <h1>&#9881; Welcome to MLP Coordinator Hub</h1>
     <p>Get set up in 5 steps &mdash; takes about 5 minutes</p>
     <div class="header-row">
       <button class="tool-btn" onclick="window.print()">&#128424; Print</button>
@@ -114,11 +114,11 @@ body.dark-mode .toast{background:#7eb8f7;color:#1a1a2e}
   <div class="step-card" id="step1">
     <div class="step-header" onclick="toggleStep('step1-body')">
       <div class="step-num">1</div>
-      <div class="step-title">What is the ESL Manager Suite?</div>
+      <div class="step-title">What is the MLP Coordinator Hub?</div>
       <span class="step-check" id="check1" style="display:none">&#10003;</span>
     </div>
     <div id="step1-body" class="step-body">
-      <p>The ESL Manager Suite is a set of web tools for managing multilingual/ESL coordinator teams. Everything runs in your browser — no installation, no login required.</p>
+      <p>The MLP Coordinator Hub is a set of web tools for managing multilingual/MLP coordinator teams. Everything runs in your browser — no installation, no login required.</p>
       <p><strong>Tools included:</strong></p>
       <ul>
         <li><strong>Classroom Environment Audit</strong> — 58-item observation checklist</li>
@@ -406,17 +406,32 @@ function saveCoordSetup() {
    ============================================================ */
 function applyUrlParams() {
   var params = new URLSearchParams(window.location.search);
-  var gasUrl = params.get("gasUrl");
+  var gasUrl    = params.get("gasUrl");
+  var coordId   = params.get("coordId");
+  var coordName = params.get("coordName");
+  var secret    = params.get("secret");
+
+  var raw = localStorage.getItem("esl_gas_sync");
+  var s = {};
+  try { s = raw ? JSON.parse(raw) : {}; } catch (e) {}
+
   if (gasUrl) {
     document.getElementById("coordGasUrl").value = gasUrl;
-    // Also pre-save to esl_gas_sync if not already set
-    var raw = localStorage.getItem("esl_gas_sync");
-    var s = {};
-    try { s = raw ? JSON.parse(raw) : {}; } catch (e) {}
-    if (!s.gasUrl) {
-      s.gasUrl = gasUrl;
-      localStorage.setItem("esl_gas_sync", JSON.stringify(s));
-    }
+    if (!s.gasUrl) s.gasUrl = gasUrl;
+  }
+  if (coordId) {
+    document.getElementById("coordId").value = coordId;
+    if (!s.coordinatorId) s.coordinatorId = coordId;
+  }
+  if (coordName) {
+    document.getElementById("coordName").value = coordName;
+    if (!s.coordinatorName) s.coordinatorName = coordName;
+  }
+  if (secret) {
+    if (!s.secret) s.secret = secret;
+  }
+  if (gasUrl || coordId || coordName || secret) {
+    localStorage.setItem("esl_gas_sync", JSON.stringify(s));
   }
 }
 

@@ -417,7 +417,7 @@ body.dark-mode .ac-item:hover{background:#1a2744}
           <option value="scaffolding">Scaffolding Strategies</option>
           <option value="engagement">Student Engagement</option>
           <option value="rigor">Rigor / DOK Alignment</option>
-          <option value="esl">ESL Strategy Implementation</option>
+          <option value="esl">MLP Strategy Implementation</option>
           <option value="custom">Custom (specify in round)</option>
         </select>
       </div>
@@ -702,7 +702,7 @@ var SUGGESTION_BANK = [
     "Student work products demonstrate depth of thinking, not just correct answers \u2014 students explain their process.",
     "Exit tickets and assessments align to the full rigor of the standard being taught, not just the lower-DOK portion."
   ]},
-  {category: "ESL Strategy Implementation", icon: "\ud83c\udf0d", suggestions: [
+  {category: "MLP Strategy Implementation", icon: "\ud83c\udf0d", suggestions: [
     "Language objectives are posted alongside content objectives and explicitly referenced during the lesson.",
     "Teacher uses visuals, gestures, realia, or other comprehensible input strategies to support understanding.",
     "Students have access to bilingual resources, glossaries, or home language supports during work time.",
@@ -1764,7 +1764,7 @@ function exportCalendar() {
   }
 
   var uid_base = "esl-walkthrough-" + Date.now();
-  var lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//ESL Manager Suite//Walkthrough Calendar//EN", "CALSCALE:GREGORIAN", "METHOD:PUBLISH"];
+  var lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//MLP Coordinator Hub//Walkthrough Calendar//EN", "CALSCALE:GREGORIAN", "METHOD:PUBLISH"];
   var missingDateRounds = [];
 
   for (var i = 0; i < roundsArr.length; i++) {

@@ -1,8 +1,28 @@
 # Changelog
 
-All notable changes to the ESL Coordinator Management Suite are documented in this file.
+All notable changes to the MLP Coordinator Hub are documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+
+---
+
+## [5.0.0] — 2026-03-02
+
+### Changed
+
+- **Full rebrand: ESL → MLP** — All visible UI text, page titles, headings, labels, manifest app names, and email strings updated from "ESL" to "MLP". ELPS standard references and `esl_` localStorage key names preserved unchanged. File/folder paths unchanged.
+- **App name**: "ESL Manager Suite" → "MLP Coordinator Hub" across all 19 HTML tools, both `manifest.json` files, and `Code.gs` email templates
+- **PWA cache name**: `esl-suite-v5` → `mlp-suite-v1` — forces a clean cache refresh for all users
+- **PWA short_name**: "ESL Suite" → "MLP Hub"
+
+### Added
+
+- **API secret (`SHARED_SECRET`)** — `Code.gs` now validates a shared secret on every GET and POST request. Requests missing the correct secret return `{"error":"Unauthorized"}`. The secret is distributed via the `?secret=` URL parameter in each coordinator's onboarding link and stored in `esl_gas_sync.secret` in the browser
+- **Secret in all GAS callers** — `Data_Backup_Hub.html`, `Team_Overview.html`, and `Principal_Checkpoint_Portal.html` all read `esl_gas_sync.secret` and include it in every request to the GAS endpoint
+- **`sanitizeCoordId()`** — GAS now strips all non-alphanumeric/hyphen/underscore characters from every incoming `coordinatorId` and enforces a 50-character maximum before using it as a filename
+- **Onboarding URL params `coordId`, `coordName`, `secret`** — `Onboarding.html` now reads and pre-fills all three fields from URL parameters in addition to `gasUrl`. Enables fully personalized one-click onboarding links
+- **`getGasSecret()` helper** in `Team_Overview.html` — reads `esl_gas_sync.secret` for use in fetch calls
+- **Google Drive sync live** — `FOLDER_ID` set to `1HpYZoIgwbr0iZL6pnntBZw648--us9BG`; `COORDINATOR_EMAIL_MAP` populated with all four coordinator Uplift email addresses; GAS deployed and web app URL active
 
 ---
 

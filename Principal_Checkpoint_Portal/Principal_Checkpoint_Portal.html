@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <link rel="manifest" href="../manifest.json"/>
 <meta name="theme-color" content="#2c3e6e"/>
-<title>Principal Checkpoint Portal &mdash; ESL Manager Suite</title>
+<title>Principal Checkpoint Portal &mdash; MLP Coordinator Hub</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh;padding:20px}
@@ -274,7 +274,7 @@ body.dark-mode .stat-value{color:#7aa8d4}
       <div class="setup-field">
         <label>Google Apps Script URL</label>
         <input type="url" id="gasUrlInput" placeholder="https://script.google.com/macros/s/.../exec"/>
-        <div class="setup-hint">Provided by your ESL manager</div>
+        <div class="setup-hint">Provided by your MLP manager</div>
       </div>
       <div class="setup-field">
         <label>Your Campus</label>
@@ -407,6 +407,7 @@ var STORAGE_NOTES   = 'principal_checkpoint_notes_local';
 //  STATE
 // ============================================================
 var gasUrl        = '';
+var gasSecret     = '';
 var selCampus     = '';
 var principalEmail = '';
 var allCampuses   = [];
@@ -448,13 +449,15 @@ function init() {
 
   // Priority: URL param > saved config > esl_gas_sync fallback
   gasUrl         = params.gasUrl  || cfg.gasUrl  || '';
+  gasSecret      = cfg.secret     || '';
   selCampus      = params.campus  || cfg.campus  || '';
   principalEmail = cfg.principalEmail || '';
 
-  if (!gasUrl) {
+  if (!gasUrl || !gasSecret) {
     try {
       var gs = JSON.parse(localStorage.getItem('esl_gas_sync') || '{}');
-      if (gs.gasUrl) gasUrl = gs.gasUrl;
+      if (!gasUrl    && gs.gasUrl)  gasUrl    = gs.gasUrl;
+      if (!gasSecret && gs.secret)  gasSecret = gs.secret;
     } catch(e) {}
   }
 
@@ -504,8 +507,12 @@ function saveSetup() {
   gasUrl         = url;
   selCampus      = campus;
   principalEmail = email;
+  try {
+    var gs = JSON.parse(localStorage.getItem('esl_gas_sync') || '{}');
+    if (gs.secret) gasSecret = gs.secret;
+  } catch(e) {}
 
-  localStorage.setItem(STORAGE_CONFIG, JSON.stringify({gasUrl: url, campus: campus, principalEmail: email}));
+  localStorage.setItem(STORAGE_CONFIG, JSON.stringify({gasUrl: url, campus: campus, principalEmail: email, secret: gasSecret}));
 
   document.getElementById('setupCard').style.display = 'none';
   updateBanner();
@@ -537,7 +544,7 @@ function fetchData() {
   document.getElementById('refreshBtn').disabled        = true;
 
   var xhr = new XMLHttpRequest();
-  xhr.open('GET', gasUrl + '?action=readAll&t=' + Date.now(), true);
+  xhr.open('GET', gasUrl + '?action=readAll&t=' + Date.now() + '&secret=' + encodeURIComponent(gasSecret), true);
   xhr.onload = function() {
     if (xhr.status === 200) {
       try {
@@ -593,7 +600,7 @@ function onReadAll(data) {
 
 function loadPrincipalNotes() {
   var campusKey = safeCampusKey(selCampus);
-  var url = gasUrl + '?action=readKey&coordinatorId=principal_' + encodeURIComponent(campusKey) + '&key=principal_notes&t=' + Date.now();
+  var url = gasUrl + '?action=readKey&coordinatorId=principal_' + encodeURIComponent(campusKey) + '&key=principal_notes&t=' + Date.now() + '&secret=' + encodeURIComponent(gasSecret);
 
   var xhr = new XMLHttpRequest();
   xhr.open('GET', url, true);
@@ -1286,7 +1293,8 @@ function pushNotesToGAS(slug, stEl) {
     coordinatorId:   'principal_' + campusKey,
     coordinatorName: 'Principal \u2014 ' + selCampus,
     key:             'principal_notes',
-    value:           principalNotes
+    value:           principalNotes,
+    secret:          gasSecret
   };
 
   var xhr = new XMLHttpRequest();

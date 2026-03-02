@@ -1,7 +1,7 @@
 {
-  "name": "ESL Classroom Environment Audit",
-  "short_name": "ESL Audit",
-  "description": "Interactive ESL classroom environment audit tool for evaluating language-forward classrooms",
+  "name": "MLP Classroom Environment Audit",
+  "short_name": "MLP Audit",
+  "description": "Interactive MLP classroom environment audit tool for evaluating language-forward classrooms",
   "start_url": "./ESL_Classroom_Audit.html",
   "display": "standalone",
   "background_color": "#f0f2f7",

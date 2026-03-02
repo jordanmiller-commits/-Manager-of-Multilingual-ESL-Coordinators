@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>ESL Tools - Data Backup Hub</title>
+<title>MLP Tools - Data Backup Hub</title>
 <link rel="manifest" href="./manifest.json"/>
 <meta name="theme-color" content="#2c3e6e"/>
 <style>
@@ -146,7 +146,7 @@ body.dark-mode .gist-input{background:#16213e;color:#e0e0e0;border-color:#2d3a6e
 
 <div class="header">
 <h1>&#128451; Data Backup Hub</h1>
-<p>Export, import, and manage localStorage data across all ESL coordinator tools in one place.</p>
+<p>Export, import, and manage localStorage data across all MLP coordinator tools in one place.</p>
 <div class="toolbar">
 <button class="tool-btn success" onclick="exportSelected()">&#128229; Export Selected</button>
 <button class="tool-btn success" onclick="exportAll()">&#128230; Export All</button>
@@ -200,7 +200,7 @@ body.dark-mode .gist-input{background:#16213e;color:#e0e0e0;border-color:#2d3a6e
 <!-- Gist Cloud Sync -->
 <div class="card" id="gistCard" style="display:none">
 <h2>&#9729; GitHub Gist Cloud Sync</h2>
-<p style="font-size:12px;color:#888;margin-bottom:12px">Sync your data across devices using a private GitHub Gist. You'll need a <a href="https://github.com/settings/tokens/new?scopes=gist&description=ESL+Manager+Suite" target="_blank" style="color:#4a90d9">Personal Access Token</a> with <strong>gist</strong> scope.</p>
+<p style="font-size:12px;color:#888;margin-bottom:12px">Sync your data across devices using a private GitHub Gist. You'll need a <a href="https://github.com/settings/tokens/new?scopes=gist&description=MLP+Coordinator+Hub" target="_blank" style="color:#4a90d9">Personal Access Token</a> with <strong>gist</strong> scope.</p>
 <div class="gist-section">
 <h3>Settings</h3>
 <div class="gist-row">
@@ -228,7 +228,7 @@ body.dark-mode .gist-input{background:#16213e;color:#e0e0e0;border-color:#2d3a6e
 <!-- Google Drive Sync -->
 <div class="card" id="gasCard" style="display:none">
 <h2>&#128190; Google Drive Sync</h2>
-<p style="font-size:12px;color:#888;margin-bottom:12px">Sync your data to Google Drive using the ESL Coordinator Data Sync Apps Script web app. Each coordinator stores their own backup file in the shared Drive folder.</p>
+<p style="font-size:12px;color:#888;margin-bottom:12px">Sync your data to Google Drive using the MLP Coordinator Data Sync Apps Script web app. Each coordinator stores their own backup file in the shared Drive folder.</p>
 <div class="gist-section">
 <h3>Settings</h3>
 <div class="gist-row">
@@ -473,7 +473,7 @@ function collectExportData(keys) {
   var data = {
     exportedAt: new Date().toISOString(),
     version: 1,
-    toolName: 'ESL Tools Data Backup Hub',
+    toolName: 'MLP Tools Data Backup Hub',
     keys: {}
   };
   var i, raw, parsed;
@@ -930,7 +930,7 @@ function pushToGist() {
   showSyncStatus("Pushing to Gist...", "info");
   var payload = getGistPayload();
   var body = {
-    description: "ESL Manager Suite - Data Backup (" + new Date().toISOString() + ")",
+    description: "MLP Coordinator Hub - Data Backup (" + new Date().toISOString() + ")",
     public: false,
     files: { "esl_backup.json": { content: payload } }
   };
@@ -1108,6 +1108,7 @@ function pushToDrive() {
     action: "sync",
     coordinatorId: settings.coordinatorId,
     coordinatorName: settings.coordinatorName || settings.coordinatorId,
+    secret: settings.secret || '',
     data: getGasPayload()
   });
   var xhr = new XMLHttpRequest();
@@ -1138,7 +1139,7 @@ function pullFromDrive() {
   if (!settings || !settings.gasUrl) { showDriveSyncStatus("Configure Script URL first.", "err"); return; }
   if (!settings.coordinatorId) { showDriveSyncStatus("Configure Coordinator ID first.", "err"); return; }
   showDriveSyncStatus("Pulling from Drive...", "info");
-  var url = settings.gasUrl + "?action=read&coordinatorId=" + encodeURIComponent(settings.coordinatorId);
+  var url = settings.gasUrl + "?action=read&coordinatorId=" + encodeURIComponent(settings.coordinatorId) + "&secret=" + encodeURIComponent(settings.secret || '');
   var xhr = new XMLHttpRequest();
   xhr.open("GET", url, true);
   xhr.onload = function() {

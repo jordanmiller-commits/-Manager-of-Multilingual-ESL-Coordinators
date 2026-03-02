@@ -239,7 +239,7 @@ body.dark-mode .empty-state{color:#555}
         <label>Program Type</label>
         <select id="filterProg" onchange="renderAll()">
           <option value="">All Programs</option>
-          <option value="ESL">ESL</option>
+          <option value="MLP">MLP</option>
           <option value="Bilingual">Bilingual</option>
           <option value="SLIFE">SLIFE</option>
           <option value="Newcomer">Newcomer</option>
@@ -346,7 +346,7 @@ body.dark-mode .empty-state{color:#555}
           <label>Program Type *</label>
           <select id="fProgramType">
             <option value="">-- Select --</option>
-            <option value="ESL">ESL</option>
+            <option value="MLP">MLP</option>
             <option value="Bilingual">Bilingual</option>
             <option value="SLIFE">SLIFE</option>
             <option value="Newcomer">Newcomer</option>
@@ -527,10 +527,10 @@ function renderStats() {
   profHtml += "<span class='pill pill-ah'>AH: " + profCounts["Advanced High"] + "</span>";
   document.getElementById("profPills").innerHTML = profHtml;
 
-  var progCounts = {ESL:0, Bilingual:0, SLIFE:0, Newcomer:0};
+  var progCounts = {MLP:0, Bilingual:0, SLIFE:0, Newcomer:0};
   sts.forEach(function(s) { if(progCounts[s.programType] !== undefined) progCounts[s.programType]++; });
   var progHtml = "";
-  progHtml += "<span class='pill pill-esl'>ESL: " + progCounts["ESL"] + "</span>";
+  progHtml += "<span class='pill pill-esl'>MLP: " + progCounts["MLP"] + "</span>";
   progHtml += "<span class='pill pill-bil'>Bil: " + progCounts["Bilingual"] + "</span>";
   progHtml += "<span class='pill pill-slife'>SLIFE: " + progCounts["SLIFE"] + "</span>";
   progHtml += "<span class='pill pill-new'>New: " + progCounts["Newcomer"] + "</span>";
@@ -550,7 +550,7 @@ function profPillHtml(level) {
 }
 
 function progPillHtml(prog) {
-  var classes = {ESL:"pill-esl",Bilingual:"pill-bil",SLIFE:"pill-slife",Newcomer:"pill-new"};
+  var classes = {MLP:"pill-esl",Bilingual:"pill-bil",SLIFE:"pill-slife",Newcomer:"pill-new"};
   var cls = classes[prog] || "pill-esl";
   return "<span class='pill " + cls + "'>" + escHtml(prog) + "</span>";
 }
