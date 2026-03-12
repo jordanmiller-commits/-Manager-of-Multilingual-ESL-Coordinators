@@ -203,6 +203,7 @@ body.dark-mode .teacher-link{color:#7eb8f7}
     <div class="toolbar">
       <button class="tool-btn" onclick="openLogModal()">&#43; Log Contact</button>
       <button class="tool-btn" onclick="exportCsv()">&#128190; Export CSV</button>
+      <button class="tool-btn" onclick="triggerImport()">&#8679; Import CSV</button>
       <button class="tool-btn" onclick="toggleSettings()" id="settingsToggleBtn">&#9881; Settings</button>
       <button class="tool-btn" onclick="toggleDarkMode()" id="darkModeToggle">&#9789; Dark</button>
       <a class="tool-btn" href="index.html" style="margin-left:auto">&#127968; Home</a>
@@ -377,8 +378,26 @@ body.dark-mode .teacher-link{color:#7eb8f7}
   </div>
 </div>
 
+<!-- Import Modal -->
+<div class="modal-overlay" id="importModal">
+  <div class="modal">
+    <h3>&#8679; Import Parent Contacts CSV</h3>
+    <div style="padding:0 20px 20px">
+      <div id="importPreviewInfo" style="background:#f0f4fb;border-radius:6px;padding:10px 12px;font-size:12px;color:#2c3e6e;margin-bottom:12px"></div>
+      <p style="font-size:12px;color:#555;margin-bottom:8px">Expected columns (header row): <code>Date, Teacher, Campus, Coordinator, Contact Type, Language, Outcome, Materials Shared, Notes</code></p>
+      <p style="font-size:12px;color:#555;margin-bottom:14px">All imported rows are added as new contact entries.</p>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn cancel" onclick="closeImportModal()">Cancel</button>
+        <button class="btn primary" onclick="confirmImport()">Import</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Toast -->
 <div class="toast" id="toast"></div>
+
+<input type="file" id="csvFileInput" accept=".csv" style="display:none" onchange="handleCsvFile(event)"/>
 
 <script>
 /* ======================================================
@@ -664,6 +683,10 @@ document.getElementById("logModal").addEventListener("click", function(e){
   if(e.target === this) closeLogModal();
 });
 
+document.getElementById("importModal").addEventListener("click", function(e){
+  if(e.target === this) closeImportModal();
+});
+
 function saveEntry(){
   var teacher = document.getElementById("mTeacher").value.trim();
   var campus = document.getElementById("mCampus").value.trim();
@@ -849,6 +872,102 @@ function exportCsv(){
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
   showToast("Exported " + filtered.length + " entr" + (filtered.length === 1 ? "y" : "ies") + " to CSV.");
+}
+
+/* ======================================================
+   CSV IMPORT
+   ====================================================== */
+var pendingImportRows = [];
+
+function triggerImport() {
+  document.getElementById('csvFileInput').value = '';
+  document.getElementById('csvFileInput').click();
+}
+
+function handleCsvFile(evt) {
+  var file = evt.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var text = e.target.result;
+    var rows = parseCsv(text);
+    if (rows.length < 2) {
+      showToast('CSV appears empty or has no data rows.');
+      return;
+    }
+    var header = rows[0].map(function(h) { return h.trim().toLowerCase().replace(/\s+/g, ''); });
+    var dataRows = rows.slice(1).filter(function(r) { return r.join('').trim() !== ''; });
+    pendingImportRows = dataRows.map(function(row) {
+      var obj = {};
+      header.forEach(function(h, i) { obj[h] = (row[i] || '').trim(); });
+      return obj;
+    }).filter(function(r) { return r.teacher || r.date || r.campus; });
+
+    document.getElementById('importPreviewInfo').textContent =
+      'Found ' + pendingImportRows.length + ' contact' + (pendingImportRows.length !== 1 ? 's' : '') + ' in the CSV file.';
+    document.getElementById('importModal').classList.add('active');
+  };
+  reader.readAsText(file);
+}
+
+function parseCsv(text) {
+  var rows = [];
+  var lines = text.split(/\r?\n/);
+  for (var i = 0; i < lines.length; i++) {
+    rows.push(parseCsvLine(lines[i]));
+  }
+  return rows;
+}
+
+function parseCsvLine(line) {
+  var fields = [];
+  var cur = '';
+  var inQ = false;
+  for (var i = 0; i < line.length; i++) {
+    var ch = line[i];
+    if (ch === '"') {
+      if (inQ && line[i + 1] === '"') { cur += '"'; i++; }
+      else { inQ = !inQ; }
+    } else if (ch === ',' && !inQ) {
+      fields.push(cur);
+      cur = '';
+    } else {
+      cur += ch;
+    }
+  }
+  fields.push(cur);
+  return fields;
+}
+
+function confirmImport() {
+  var added = 0;
+  for (var i = 0; i < pendingImportRows.length; i++) {
+    var row = pendingImportRows[i];
+    _data.entries.push({
+      id: 'pc-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
+      date: row.date || todayStr(),
+      teacher: row.teacher || row.teachername || '',
+      campus: row.campus || '',
+      coordinator: row.coordinator || '',
+      contactType: row.contacttype || row.type || '',
+      language: row.language || '',
+      outcome: row.outcome || '',
+      materialsShared: row.materialsshared || row.materials || '',
+      notes: row.notes || '',
+      createdAt: new Date().toISOString()
+    });
+    added++;
+  }
+
+  saveData();
+  renderAll();
+  closeImportModal();
+  showToast('Imported ' + added + ' contact' + (added !== 1 ? 's' : '') + '.');
+}
+
+function closeImportModal() {
+  document.getElementById('importModal').classList.remove('active');
+  pendingImportRows = [];
 }
 
 /* ======================================================

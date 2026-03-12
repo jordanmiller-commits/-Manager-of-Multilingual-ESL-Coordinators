@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scoring Calibration Tool - MLP Coordinator Hub</title>
+<link rel="manifest" href="./manifest.json">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:#f0f2f7;color:#23272f;min-height:100vh}
+a{color:#2c3e6e;text-decoration:none}
+.header{background:linear-gradient(135deg,#2c3e6e,#4a90d9);color:#fff;padding:24px 28px 18px;position:relative}
+.header h1{font-size:1.55rem;font-weight:700;margin-bottom:2px}
+.header .subtitle{opacity:.88;font-size:.92rem;margin-bottom:12px}
+.header-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.header-nav{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.header-nav a,.header-nav button{background:rgba(255,255,255,.18);color:#fff;border:none;padding:7px 16px;border-radius:6px;cursor:pointer;font-size:.85rem;font-family:inherit;transition:background .2s}
+.header-nav a:hover,.header-nav button:hover{background:rgba(255,255,255,.32)}
+.badge{background:rgba(255,255,255,.25);padding:2px 10px;border-radius:12px;font-size:.8rem;margin-left:8px}
+.container{max-width:1100px;margin:0 auto;padding:20px 16px 40px}
+.tabs{display:flex;gap:6px;margin-bottom:18px}
+.tab-btn{padding:10px 22px;border:none;border-radius:8px 8px 0 0;cursor:pointer;font-size:.95rem;font-family:inherit;background:#dde1ea;color:#555;font-weight:600;transition:background .2s}
+.tab-btn.active{background:#fff;color:#2c3e6e;box-shadow:0 -2px 6px rgba(0,0,0,.06)}
+.card{background:#fff;border-radius:10px;padding:22px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.card h2{font-size:1.15rem;color:#2c3e6e;margin-bottom:10px}
+.card h3{font-size:1rem;color:#444;margin-bottom:8px}
+.session-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.session-card{background:#fff;border-radius:10px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,.07);cursor:pointer;transition:transform .15s,box-shadow .15s;border-left:4px solid #4a90d9}
+.session-card:hover{transform:translateY(-2px);box-shadow:0 4px 14px rgba(0,0,0,.12)}
+.session-card .sc-title{font-weight:700;font-size:1.05rem;color:#2c3e6e}
+.session-card .sc-date{font-size:.82rem;color:#888;margin:4px 0 8px}
+.session-card .sc-meta{font-size:.85rem;color:#555}
+.coord-status{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.coord-dot{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;color:#fff;font-weight:700}
+.revealed-badge{display:inline-block;background:#27ae60;color:#fff;font-size:.72rem;padding:2px 8px;border-radius:10px;margin-top:6px}
+.btn{padding:10px 20px;border:none;border-radius:7px;font-size:.92rem;font-family:inherit;cursor:pointer;font-weight:600;transition:background .2s,transform .1s}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:#2c3e6e;color:#fff}
+.btn-primary:hover{background:#3a5290}
+.btn-success{background:#27ae60;color:#fff}
+.btn-success:hover{background:#219a52}
+.btn-danger{background:#e74c3c;color:#fff}
+.btn-danger:hover{background:#c0392b}
+.btn-outline{background:transparent;border:2px solid #2c3e6e;color:#2c3e6e}
+.btn-outline:hover{background:#2c3e6e;color:#fff}
+.btn-sm{padding:6px 14px;font-size:.82rem}
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-weight:600;margin-bottom:4px;font-size:.9rem;color:#444}
+.form-group input,.form-group textarea,.form-group select{width:100%;padding:9px 12px;border:1.5px solid #d0d4de;border-radius:7px;font-size:.92rem;font-family:inherit}
+.form-group textarea{resize:vertical;min-height:70px}
+.section-group{margin-bottom:10px;border:1px solid #e0e3ea;border-radius:8px;overflow:hidden}
+.section-group-header{padding:10px 14px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;font-weight:600;font-size:.92rem;color:#fff;user-select:none}
+.section-group-header .arrow{transition:transform .2s;font-size:.8rem}
+.section-group-header .arrow.open{transform:rotate(90deg)}
+.section-group-body{padding:8px 14px 10px;background:#fafbfd;display:none}
+.section-group-body.open{display:block}
+.item-check{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:.9rem}
+.item-check input[type="checkbox"]{width:18px;height:18px;accent-color:#2c3e6e}
+.quick-btns{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.score-item{border:1px solid #e0e3ea;border-radius:10px;padding:16px;margin-bottom:12px}
+.score-item .si-section{font-size:.78rem;font-weight:700;padding:3px 10px;border-radius:4px;color:#fff;display:inline-block;margin-bottom:6px}
+.score-item .si-text{font-size:.95rem;margin-bottom:10px;line-height:1.4}
+.score-pills{display:flex;gap:8px;flex-wrap:wrap}
+.score-pill{padding:10px 16px;border-radius:8px;border:2px solid #d0d4de;cursor:pointer;font-size:.88rem;font-weight:600;text-align:center;min-width:80px;transition:all .15s;user-select:none;background:#fff}
+.score-pill:hover{border-color:#4a90d9;background:#eef4fc}
+.score-pill.selected{color:#fff;border-color:transparent}
+.progress-bar-wrap{background:#e0e3ea;border-radius:6px;height:10px;margin:8px 0;overflow:hidden}
+.progress-bar-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,#4a90d9,#27ae60);transition:width .3s}
+.compare-table-wrap{overflow-x:auto;margin:12px 0}
+.compare-table{width:100%;border-collapse:collapse;font-size:.88rem;min-width:600px}
+.compare-table th{background:#2c3e6e;color:#fff;padding:10px 8px;text-align:center;font-weight:600;position:sticky;top:0}
+.compare-table th:first-child{text-align:left;min-width:200px}
+.compare-table td{padding:9px 8px;text-align:center;border-bottom:1px solid #e8eaef}
+.compare-table td:first-child{text-align:left;font-size:.85rem}
+.compare-table tr.agree-all{background:#eafaf1}
+.compare-table tr.agree-close{background:#fef9e7}
+.compare-table tr.agree-far{background:#fdedec}
+.discussion-box{border:2px solid #e74c3c;border-radius:10px;padding:18px;margin:14px 0;background:#fff5f5}
+.discussion-box h3{color:#c0392b;margin-bottom:10px}
+.discussion-item{padding:10px 0;border-bottom:1px solid #f0d0d0}
+.discussion-item:last-child{border-bottom:none}
+.coord-avg{display:flex;gap:14px;flex-wrap:wrap;margin:12px 0}
+.coord-avg-card{flex:1;min-width:130px;background:#f7f8fc;border-radius:8px;padding:14px;text-align:center}
+.coord-avg-card .avg-name{font-weight:700;font-size:.9rem;margin-bottom:4px}
+.coord-avg-card .avg-val{font-size:1.6rem;font-weight:700}
+.coord-avg-card .avg-bar{height:6px;border-radius:3px;margin-top:6px;background:#e0e3ea}
+.coord-avg-card .avg-bar-fill{height:100%;border-radius:3px;transition:width .4s}
+.history-row{padding:14px 0;border-bottom:1px solid #e8eaef;cursor:pointer}
+.history-row:hover{background:#f7f8fc}
+.history-row .hr-title{font-weight:700;color:#2c3e6e}
+.history-row .hr-meta{font-size:.84rem;color:#888;margin-top:2px}
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(80px);background:#2c3e6e;color:#fff;padding:12px 28px;border-radius:8px;font-size:.92rem;opacity:0;transition:transform .35s,opacity .35s;z-index:9999;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.empty-state{text-align:center;padding:50px 20px;color:#999}
+.empty-state .es-icon{font-size:2.5rem;margin-bottom:10px}
+.coord-selector{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.coord-chip{padding:8px 16px;border-radius:20px;border:2px solid #d0d4de;cursor:pointer;font-weight:600;font-size:.88rem;transition:all .15s}
+.coord-chip.active{color:#fff;border-color:transparent}
+.coord-chip.submitted{opacity:.7;position:relative}
+.coord-chip.submitted::after{content:" \2713";font-weight:700}
+.back-link{display:inline-flex;align-items:center;gap:6px;font-size:.9rem;margin-bottom:14px;cursor:pointer;color:#2c3e6e;font-weight:600}
+.back-link:hover{text-decoration:underline}
+body.dark-mode{background:#1a1d23;color:#d4d6dc}
+body.dark-mode .card{background:#23272f;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+body.dark-mode .session-card{background:#23272f;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+body.dark-mode .tab-btn{background:#2a2e38;color:#aaa}
+body.dark-mode .tab-btn.active{background:#23272f;color:#7ab3f0}
+body.dark-mode .form-group input,body.dark-mode .form-group textarea,body.dark-mode .form-group select{background:#2a2e38;border-color:#3a3e48;color:#d4d6dc}
+body.dark-mode .section-group{border-color:#3a3e48}
+body.dark-mode .section-group-body{background:#1e2128}
+body.dark-mode .score-item{border-color:#3a3e48}
+body.dark-mode .score-pill{background:#2a2e38;border-color:#3a3e48;color:#d4d6dc}
+body.dark-mode .score-pill:hover{background:#333a48;border-color:#4a90d9}
+body.dark-mode .compare-table td{border-color:#3a3e48}
+body.dark-mode .compare-table tr.agree-all{background:#1a2e1a}
+body.dark-mode .compare-table tr.agree-close{background:#2e2a1a}
+body.dark-mode .compare-table tr.agree-far{background:#2e1a1a}
+body.dark-mode .discussion-box{background:#2e1a1a;border-color:#c0392b}
+body.dark-mode .coord-avg-card{background:#2a2e38}
+body.dark-mode .history-row:hover{background:#2a2e38}
+body.dark-mode .progress-bar-wrap{background:#3a3e48}
+body.dark-mode .coord-chip{border-color:#3a3e48;color:#d4d6dc}
+@media print{.header,.tabs,.quick-btns,.btn,.coord-selector,.back-link,.toast,.header-nav{display:none !important}.card{box-shadow:none;break-inside:avoid}body{background:#fff !important;color:#000 !important}}
+@media(max-width:768px){.header h1{font-size:1.25rem}.session-grid{grid-template-columns:1fr}.container{padding:14px 10px 30px}.coord-avg{flex-direction:column}}
+@media(max-width:600px){.btn,.tab-btn,.coord-chip,.score-pill{min-height:44px}.score-pills{flex-direction:column}.score-pill{width:100%}.header-row{flex-direction:column;align-items:flex-start}}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-row">
+    <div>
+      <h1>Scoring Calibration Tool <span class="badge" id="sessionCount">0 sessions</span></h1>
+      <div class="subtitle">Build inter-rater reliability across the MLP coordinator team</div>
+    </div>
+    <div class="header-nav">
+      <a href="./index.html">Home</a>
+      <a href="./ESL_Classroom_Audit/index.html">Audit</a>
+      <button onclick="startNewSession()">+ New Session</button>
+      <button onclick="toggleDarkMode()">Dark Mode</button>
+    </div>
+  </div>
+</div>
+<div class="container">
+  <div class="tabs">
+    <button class="tab-btn active" id="tabSessions" onclick="switchTab('sessions')">Sessions</button>
+    <button class="tab-btn" id="tabHistory" onclick="switchTab('history')">History</button>
+  </div>
+  <div id="viewSessions"></div>
+  <div id="viewHistory" style="display:none"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function() {
+  var STORAGE_KEY = "calibration_sessions";
+  var THEME_KEY = "esl_app_theme";
+
+  var AUDIT_SECTIONS = [
+    {id:"s01",type:"permanent",color:"#d4a017",title:"Language Production Supports",items:["Sentence Frames and Stems Wall","Discourse Stems Anchor Chart","Language Function Cards","Question Stems by DOK","Transitional Words and Phrases Chart"]},
+    {id:"s02",type:"permanent",color:"#d4a017",title:"Vocabulary Systems",items:["Permanent Word Wall","Personal Vocabulary Journals","Cognate Wall or Corner","Parts of Speech Reference","Root Words, Prefixes and Suffixes Chart"]},
+    {id:"s03",type:"permanent",color:"#d4a017",title:"Writing Supports",items:["Writing Process Anchor Chart","Laminated Paragraph and Essay Frames","Writer's Checklist","Editing Symbols Chart","Mentor Text Binder or Display"]},
+    {id:"s04",type:"permanent",color:"#d4a017",title:"Classroom Data and Goal Tracking",items:["Scholar Language Goal Tracker","Class Participation Tracker","I Can Statements Display"]},
+    {id:"s05",type:"permanent",color:"#d4a017",title:"Culture and Identity",items:["Home Language Wall and Heritage Map","Multilingual Welcome Display","Bilingual Classroom Library","Ask Me About My Language Cards"]},
+    {id:"s06",type:"permanent",color:"#d4a017",title:"Classroom Structures and Routines",items:["Daily Agenda Display","Discussion Norms Anchor Chart","Group Roles Cards","Signal System Display","Academic Behavior Anchor Chart"]},
+    {id:"s07",type:"permanent",color:"#d4a017",title:"Technology and Reference Tools",items:["QR Code Station","Bilingual Dictionary Station","Headphone Station"]},
+    {id:"s08",type:"rotating",color:"#8e44ad",title:"Unit-Specific Vocabulary",items:["Unit Word Wall Section","Frayer Model Displays","Visual Vocabulary Cards","Word Association Web","Cognate Spotlight"]},
+    {id:"s09",type:"rotating",color:"#8e44ad",title:"Content Comprehension Supports",items:["Unit-Specific Graphic Organizers","Anchor Text Display","Text Features Anchor Chart","Background Knowledge Activation Display","Content-Specific Visual Support","Vocabulary in Context Display"]},
+    {id:"s10",type:"rotating",color:"#8e44ad",title:"Unit-Specific Writing Supports",items:["Current Unit Paragraph or Essay Frame","Unit Writing Mentor Text","Current Unit Sentence Stems","RAFT Display","Writing Exemplars for Current Genre","Current Revision Focus Chart"]},
+    {id:"s11",type:"rotating",color:"#8e44ad",title:"Discussion and Interaction Supports",items:["Unit Essential Questions Display","Current Discussion Protocol Reminder","Debate or Discussion Stance Cards","Current Collaborative Task Directions"]},
+    {id:"s12",type:"rotating",color:"#8e44ad",title:"Assessment and Progress Monitoring",items:["Unit Learning Targets Tracker","Current Writing Rubric Display","Data Wall and Progress Snapshot","Exit Ticket Display"]},
+    {id:"s13",type:"rotating",color:"#8e44ad",title:"Culture and Content Connections",items:["Unit Cultural Connection Display","Current Read-Aloud or Independent Reading Text Display","Scholar Work Display"]}
+  ];
+
+  var COORDINATORS = [
+    {id:"jmiller", name:"J. Miller", color:"#8e44ad"},
+    {id:"kpatterson", name:"K. Patterson", color:"#16a085"},
+    {id:"pokolo", name:"P. Okolo", color:"#c0392b"},
+    {id:"vpalencia", name:"V. Palencia", color:"#2980b9"}
+  ];
+
+  var RATING_LABELS = ["Not Present", "Partial", "Adequate", "Exemplary"];
+  var RATING_COLORS = ["#e74c3c", "#f39c12", "#3498db", "#27ae60"];
+
+  var state = {
+    currentTab: "sessions",
+    openSessionId: null,
+    activeCoordinator: null,
+    saveTimer: null
+  };
+
+  function escHtml(str) {
+    var node = document.createTextNode(str);
+    var p = document.createElement("p");
+    p.appendChild(node);
+    return p.innerHTML;
+  }
+
+  function showToast(msg) {
+    var t = document.getElementById("toast");
+    t.textContent = msg;
+    t.className = "toast show";
+    setTimeout(function() { t.className = "toast"; }, 2400);
+  }
+
+  function loadData() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    return { version: 1, sessions: [] };
+  }
+
+  function saveData(data) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    updateSessionCount(data);
+  }
+
+  function updateSessionCount(data) {
+    var el = document.getElementById("sessionCount");
+    var n = data.sessions.length;
+    el.textContent = n + (n === 1 ? " session" : " sessions");
+  }
+
+  function generateId() {
+    return "cal-" + Date.now() + "-" + Math.floor(Math.random() * 10000);
+  }
+
+  function todayStr() {
+    var d = new Date();
+    var mm = ("0" + (d.getMonth() + 1)).slice(-2);
+    var dd = ("0" + d.getDate()).slice(-2);
+    return d.getFullYear() + "-" + mm + "-" + dd;
+  }
+
+  function getSession(id) {
+    var data = loadData();
+    for (var i = 0; i < data.sessions.length; i++) {
+      if (data.sessions[i].id === id) return data.sessions[i];
+    }
+    return null;
+  }
+
+  function updateSession(session) {
+    var data = loadData();
+    for (var i = 0; i < data.sessions.length; i++) {
+      if (data.sessions[i].id === session.id) {
+        data.sessions[i] = session;
+        saveData(data);
+        return;
+      }
+    }
+  }
+
+  function getCoordById(id) {
+    for (var i = 0; i < COORDINATORS.length; i++) {
+      if (COORDINATORS[i].id === id) return COORDINATORS[i];
+    }
+    return null;
+  }
+
+  function submittedCoords(session) {
+    var out = [];
+    if (!session.scores) return out;
+    for (var key in session.scores) {
+      if (session.scores.hasOwnProperty(key)) {
+        var count = 0;
+        for (var k in session.scores[key]) {
+          if (session.scores[key].hasOwnProperty(k)) count++;
+        }
+        if (count === session.items.length) out.push(key);
+      }
+    }
+    return out;
+  }
+
+  // --- Rendering ---
+
+  function switchTab(tab) {
+    state.currentTab = tab;
+    state.openSessionId = null;
+    document.getElementById("tabSessions").className = tab === "sessions" ? "tab-btn active" : "tab-btn";
+    document.getElementById("tabHistory").className = tab === "history" ? "tab-btn active" : "tab-btn";
+    document.getElementById("viewSessions").style.display = tab === "sessions" ? "" : "none";
+    document.getElementById("viewHistory").style.display = tab === "history" ? "" : "none";
+    if (tab === "sessions") renderSessionsList();
+    else renderHistory();
+  }
+  window.switchTab = switchTab;
+
+  function renderSessionsList() {
+    var data = loadData();
+    var el = document.getElementById("viewSessions");
+    if (data.sessions.length === 0) {
+      el.innerHTML = '<div class="empty-state"><div class="es-icon">&#128203;</div><p>No calibration sessions yet.</p><p style="margin-top:10px"><button class="btn btn-primary" onclick="startNewSession()">Create Your First Session</button></p></div>';
+      return;
+    }
+    var html = '<div class="session-grid">';
+    for (var i = data.sessions.length - 1; i >= 0; i--) {
+      var s = data.sessions[i];
+      var submitted = submittedCoords(s);
+      html += '<div class="session-card" onclick="openSession(\'' + escHtml(s.id) + '\')">';
+      html += '<div class="sc-title">' + escHtml(s.title) + '</div>';
+      html += '<div class="sc-date">' + escHtml(s.date) + '</div>';
+      html += '<div class="sc-meta">' + s.items.length + ' items</div>';
+      html += '<div class="coord-status">';
+      for (var c = 0; c < COORDINATORS.length; c++) {
+        var coord = COORDINATORS[c];
+        var done = submitted.indexOf(coord.id) !== -1;
+        var bg = done ? coord.color : "#ccc";
+        html += '<div class="coord-dot" style="background:' + bg + '" title="' + escHtml(coord.name) + '">';
+        html += done ? "&#10003;" : "&#8226;";
+        html += '</div>';
+      }
+      html += '</div>';
+      if (s.revealed) html += '<div class="revealed-badge">Revealed</div>';
+      html += '</div>';
+    }
+    html += '</div>';
+    el.innerHTML = html;
+  }
+
+  function startNewSession() {
+    var data = loadData();
+    var session = {
+      id: generateId(),
+      title: "Calibration Session " + (data.sessions.length + 1),
+      date: todayStr(),
+      items: [],
+      scores: {},
+      revealed: false,
+      notes: "",
+      createdAt: new Date().toISOString()
+    };
+    data.sessions.push(session);
+    saveData(data);
+    state.openSessionId = session.id;
+    state.activeCoordinator = null;
+    renderSessionDetail(session);
+    showToast("New session created");
+  }
+  window.startNewSession = startNewSession;
+
+  function openSession(id) {
+    state.openSessionId = id;
+    state.activeCoordinator = null;
+    var session = getSession(id);
+    if (session) renderSessionDetail(session);
+  }
+  window.openSession = openSession;
+
+  function renderSessionDetail(session) {
+    var el = document.getElementById("viewSessions");
+    var html = '<div class="back-link" onclick="backToList()">&#8592; Back to Sessions</div>';
+    html += '<div class="card">';
+    if (session.revealed) {
+      html += renderRevealView(session);
+    } else if (session.items.length === 0) {
+      html += renderSetupPhase(session);
+    } else {
+      html += renderScoringPhase(session);
+    }
+    html += '</div>';
+    el.innerHTML = html;
+  }
+
+  function backToList() {
+    state.openSessionId = null;
+    state.activeCoordinator = null;
+    renderSessionsList();
+  }
+  window.backToList = backToList;
+
+  // --- Setup Phase ---
+
+  function renderSetupPhase(session) {
+    var html = '<h2>Session Setup</h2>';
+    html += '<div class="form-group"><label>Title</label><input type="text" id="setupTitle" value="' + escHtml(session.title) + '"></div>';
+    html += '<div class="form-group"><label>Date</label><input type="date" id="setupDate" value="' + escHtml(session.date) + '"></div>';
+    html += '<h3 style="margin:16px 0 8px">Select Audit Items</h3>';
+    html += '<div class="quick-btns">';
+    html += '<button class="btn btn-sm btn-outline" onclick="quickSelect(\'permanent\')">All Permanent Sections</button>';
+    html += '<button class="btn btn-sm btn-outline" onclick="quickSelect(\'rotating\')">All Rotating Sections</button>';
+    html += '<button class="btn btn-sm btn-outline" onclick="quickSelect(\'random10\')">Random 10</button>';
+    html += '<button class="btn btn-sm btn-outline" onclick="quickSelect(\'none\')">Clear All</button>';
+    html += '</div>';
+    for (var s = 0; s < AUDIT_SECTIONS.length; s++) {
+      var sec = AUDIT_SECTIONS[s];
+      html += '<div class="section-group">';
+      html += '<div class="section-group-header" style="background:' + sec.color + '" onclick="toggleSectionGroup(this)">';
+      html += '<span>' + escHtml(sec.title) + ' (' + sec.items.length + ')</span>';
+      html += '<span class="arrow">&#9654;</span></div>';
+      html += '<div class="section-group-body">';
+      for (var j = 0; j < sec.items.length; j++) {
+        var cbId = "cb_" + sec.id + "_" + j;
+        html += '<div class="item-check"><input type="checkbox" id="' + cbId + '" data-section="' + s + '" data-item="' + j + '"><label for="' + cbId + '">' + escHtml(sec.items[j]) + '</label></div>';
+      }
+      html += '</div></div>';
+    }
+    html += '<div style="margin-top:18px;display:flex;gap:10px">';
+    html += '<button class="btn btn-primary" onclick="lockItems()">Start Session</button>';
+    html += '<button class="btn btn-danger btn-sm" onclick="deleteSession(\'' + escHtml(session.id) + '\')">Delete Session</button>';
+    html += '</div>';
+    return html;
+  }
+
+  function toggleSectionGroup(header) {
+    var body = header.nextElementSibling;
+    var arrow = header.querySelector(".arrow");
+    if (body.classList.contains("open")) {
+      body.classList.remove("open");
+      arrow.classList.remove("open");
+    } else {
+      body.classList.add("open");
+      arrow.classList.add("open");
+    }
+  }
+  window.toggleSectionGroup = toggleSectionGroup;
+
+  function quickSelect(mode) {
+    var checkboxes = document.querySelectorAll(".section-group-body input[type=checkbox]");
+    if (mode === "none") {
+      for (var i = 0; i < checkboxes.length; i++) checkboxes[i].checked = false;
+      return;
+    }
+    if (mode === "permanent" || mode === "rotating") {
+      for (var i = 0; i < checkboxes.length; i++) {
+        var sIdx = parseInt(checkboxes[i].getAttribute("data-section"), 10);
+        var sec = AUDIT_SECTIONS[sIdx];
+        checkboxes[i].checked = (sec.type === mode);
+      }
+      return;
+    }
+    if (mode === "random10") {
+      var all = [];
+      for (var i = 0; i < checkboxes.length; i++) {
+        checkboxes[i].checked = false;
+        all.push(i);
+      }
+      for (var n = all.length - 1; n > 0; n--) {
+        var r = Math.floor(Math.random() * (n + 1));
+        var tmp = all[n]; all[n] = all[r]; all[r] = tmp;
+      }
+      var count = Math.min(10, all.length);
+      for (var i = 0; i < count; i++) {
+        checkboxes[all[i]].checked = true;
+      }
+    }
+  }
+  window.quickSelect = quickSelect;
+
+  function lockItems() {
+    var session = getSession(state.openSessionId);
+    if (!session) return;
+    var titleEl = document.getElementById("setupTitle");
+    var dateEl = document.getElementById("setupDate");
+    if (titleEl) session.title = titleEl.value || session.title;
+    if (dateEl) session.date = dateEl.value || session.date;
+    var checkboxes = document.querySelectorAll(".section-group-body input[type=checkbox]:checked");
+    var items = [];
+    for (var i = 0; i < checkboxes.length; i++) {
+      var sIdx = parseInt(checkboxes[i].getAttribute("data-section"), 10);
+      var iIdx = parseInt(checkboxes[i].getAttribute("data-item"), 10);
+      var sec = AUDIT_SECTIONS[sIdx];
+      items.push({
+        sectionId: sec.id,
+        sectionTitle: sec.title,
+        sectionColor: sec.color,
+        sectionType: sec.type,
+        itemText: sec.items[iIdx]
+      });
+    }
+    if (items.length === 0) {
+      showToast("Select at least one item");
+      return;
+    }
+    session.items = items;
+    updateSession(session);
+    renderSessionDetail(session);
+    showToast(items.length + " items locked in");
+  }
+  window.lockItems = lockItems;
+
+  // --- Scoring Phase ---
+
+  function renderScoringPhase(session) {
+    var submitted = submittedCoords(session);
+    var html = '<h2>' + escHtml(session.title) + '</h2>';
+    html += '<p style="color:#888;font-size:.85rem;margin-bottom:14px">' + escHtml(session.date) + ' &middot; ' + session.items.length + ' items</p>';
+
+    // Coordinator selector
+    html += '<h3>Select Coordinator</h3>';
+    html += '<div class="coord-selector">';
+    for (var c = 0; c < COORDINATORS.length; c++) {
+      var coord = COORDINATORS[c];
+      var isSubmitted = submitted.indexOf(coord.id) !== -1;
+      var isActive = state.activeCoordinator === coord.id;
+      var cls = "coord-chip";
+      if (isActive) cls += " active";
+      if (isSubmitted) cls += " submitted";
+      var style = isActive ? "background:" + coord.color + ";color:#fff;border-color:" + coord.color : "";
+      html += '<div class="' + cls + '" style="' + style + '" onclick="selectCoordinator(\'' + coord.id + '\')">' + escHtml(coord.name) + '</div>';
+    }
+    html += '</div>';
+
+    if (state.activeCoordinator) {
+      var coordId = state.activeCoordinator;
+      var isSubmitted = submitted.indexOf(coordId) !== -1;
+      if (isSubmitted) {
+        html += '<div class="card" style="background:#eafaf1;margin-top:10px"><p style="color:#27ae60;font-weight:600">&#10003; ' + escHtml(getCoordById(coordId).name) + ' has submitted scores.</p>';
+        html += '<button class="btn btn-sm btn-outline" style="margin-top:8px" onclick="unlockCoordinator(\'' + coordId + '\')">Unlock for Re-scoring</button></div>';
+      } else {
+        var scores = (session.scores && session.scores[coordId]) ? session.scores[coordId] : {};
+        var scored = 0;
+        for (var k in scores) { if (scores.hasOwnProperty(k)) scored++; }
+        html += '<div style="margin:10px 0"><strong>Progress: ' + scored + ' of ' + session.items.length + ' items scored</strong>';
+        html += '<div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:' + (session.items.length > 0 ? Math.round(scored / session.items.length * 100) : 0) + '%"></div></div></div>';
+
+        for (var i = 0; i < session.items.length; i++) {
+          var item = session.items[i];
+          var currentScore = (scores[String(i)] !== undefined) ? scores[String(i)] : -1;
+          html += '<div class="score-item">';
+          html += '<div class="si-section" style="background:' + item.sectionColor + '">' + escHtml(item.sectionTitle) + '</div>';
+          html += '<div class="si-text">' + escHtml(item.itemText) + '</div>';
+          html += '<div class="score-pills">';
+          for (var r = 0; r < 4; r++) {
+            var sel = (currentScore === r);
+            var pillStyle = sel ? "background:" + RATING_COLORS[r] + ";color:#fff;border-color:" + RATING_COLORS[r] : "";
+            html += '<div class="score-pill' + (sel ? " selected" : "") + '" style="' + pillStyle + '" onclick="setScore(' + i + ',' + r + ')">';
+            html += '<div style="font-size:1.1rem;font-weight:700">' + r + '</div>';
+            html += '<div style="font-size:.75rem">' + escHtml(RATING_LABELS[r]) + '</div>';
+            html += '</div>';
+          }
+          html += '</div></div>';
+        }
+        html += '<div style="margin-top:16px"><button class="btn btn-success" onclick="submitScores()">Submit Scores</button></div>';
+      }
+    }
+
+    // Reveal button
+    if (submitted.length >= 2) {
+      html += '<div style="margin-top:20px;padding-top:16px;border-top:2px solid #e0e3ea">';
+      html += '<button class="btn btn-primary" onclick="revealResults()" style="font-size:1rem;padding:12px 28px">Reveal &amp; Compare</button>';
+      html += '<span style="color:#888;font-size:.85rem;margin-left:10px">' + submitted.length + ' of ' + COORDINATORS.length + ' coordinators submitted</span>';
+      html += '</div>';
+    }
+
+    html += '<div style="margin-top:14px"><button class="btn btn-danger btn-sm" onclick="deleteSession(\'' + escHtml(session.id) + '\')">Delete Session</button></div>';
+    return html;
+  }
+
+  function selectCoordinator(id) {
+    state.activeCoordinator = id;
+    var session = getSession(state.openSessionId);
+    if (session) renderSessionDetail(session);
+  }
+  window.selectCoordinator = selectCoordinator;
+
+  function setScore(itemIndex, rating) {
+    var session = getSession(state.openSessionId);
+    if (!session || !state.activeCoordinator) return;
+    if (!session.scores) session.scores = {};
+    if (!session.scores[state.activeCoordinator]) session.scores[state.activeCoordinator] = {};
+    session.scores[state.activeCoordinator][String(itemIndex)] = rating;
+    updateSession(session);
+    // Debounced re-render
+    if (state.saveTimer) clearTimeout(state.saveTimer);
+    state.saveTimer = setTimeout(function() {
+      var s = getSession(state.openSessionId);
+      if (s) renderSessionDetail(s);
+    }, 300);
+  }
+  window.setScore = setScore;
+
+  function submitScores() {
+    var session = getSession(state.openSessionId);
+    if (!session || !state.activeCoordinator) return;
+    var scores = session.scores[state.activeCoordinator] || {};
+    var count = 0;
+    for (var k in scores) { if (scores.hasOwnProperty(k)) count++; }
+    if (count < session.items.length) {
+      showToast("Please score all " + session.items.length + " items before submitting");
+      return;
+    }
+    showToast(getCoordById(state.activeCoordinator).name + "'s scores submitted");
+    renderSessionDetail(session);
+  }
+  window.submitScores = submitScores;
+
+  function unlockCoordinator(coordId) {
+    var session = getSession(state.openSessionId);
+    if (!session) return;
+    if (session.scores && session.scores[coordId]) {
+      // Remove one score to "un-submit" so they can re-edit
+      var keys = Object.keys(session.scores[coordId]);
+      if (keys.length > 0) {
+        delete session.scores[coordId][keys[keys.length - 1]];
+      }
+    }
+    updateSession(session);
+    renderSessionDetail(session);
+    showToast("Unlocked for re-scoring");
+  }
+  window.unlockCoordinator = unlockCoordinator;
+
+  // --- Reveal Phase ---
+
+  function revealResults() {
+    var session = getSession(state.openSessionId);
+    if (!session) return;
+    session.revealed = true;
+    updateSession(session);
+    renderSessionDetail(session);
+    showToast("Results revealed!");
+  }
+  window.revealResults = revealResults;
+
+  function renderRevealView(session) {
+    var submitted = submittedCoords(session);
+    var html = '<h2>' + escHtml(session.title) + ' &mdash; Results</h2>';
+    html += '<p style="color:#888;font-size:.85rem;margin-bottom:14px">' + escHtml(session.date) + ' &middot; ' + session.items.length + ' items &middot; ' + submitted.length + ' coordinators</p>';
+
+    // Agreement Summary
+    var exactAgree = 0;
+    var within1 = 0;
+    var total = session.items.length;
+    var discussionItems = [];
+
+    for (var i = 0; i < session.items.length; i++) {
+      var scores = [];
+      for (var c = 0; c < submitted.length; c++) {
+        var coordScores = session.scores[submitted[c]];
+        if (coordScores && coordScores[String(i)] !== undefined) {
+          scores.push(coordScores[String(i)]);
+        }
+      }
+      if (scores.length < 2) continue;
+      var mn = scores[0], mx = scores[0];
+      for (var j = 1; j < scores.length; j++) {
+        if (scores[j] < mn) mn = scores[j];
+        if (scores[j] > mx) mx = scores[j];
+      }
+      var spread = mx - mn;
+      if (spread === 0) exactAgree++;
+      if (spread <= 1) within1++;
+      if (spread >= 2) {
+        discussionItems.push({ index: i, item: session.items[i], scores: scores, spread: spread });
+      }
+    }
+
+    var exactPct = total > 0 ? Math.round(exactAgree / total * 100) : 0;
+    var within1Pct = total > 0 ? Math.round(within1 / total * 100) : 0;
+
+    html += '<div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:18px">';
+    html += '<div class="card" style="flex:1;min-width:160px;text-align:center"><div style="font-size:2rem;font-weight:700;color:#27ae60">' + exactPct + '%</div><div style="font-size:.85rem;color:#666">Exact Agreement</div></div>';
+    html += '<div class="card" style="flex:1;min-width:160px;text-align:center"><div style="font-size:2rem;font-weight:700;color:#3498db">' + within1Pct + '%</div><div style="font-size:.85rem;color:#666">Within-1 Agreement</div></div>';
+    html += '<div class="card" style="flex:1;min-width:160px;text-align:center"><div style="font-size:2rem;font-weight:700;color:#e74c3c">' + discussionItems.length + '</div><div style="font-size:.85rem;color:#666">Discussion Items</div></div>';
+    html += '</div>';
+
+    // Item-by-item comparison table
+    html += '<h3>Item-by-Item Comparison</h3>';
+    html += '<div class="compare-table-wrap"><table class="compare-table"><thead><tr><th>Item</th>';
+    for (var c = 0; c < submitted.length; c++) {
+      var coord = getCoordById(submitted[c]);
+      html += '<th>' + (coord ? escHtml(coord.name) : escHtml(submitted[c])) + '</th>';
+    }
+    html += '<th>Spread</th></tr></thead><tbody>';
+    for (var i = 0; i < session.items.length; i++) {
+      var item = session.items[i];
+      var scores = [];
+      var cells = '';
+      for (var c = 0; c < submitted.length; c++) {
+        var coordScores = session.scores[submitted[c]];
+        var val = (coordScores && coordScores[String(i)] !== undefined) ? coordScores[String(i)] : "-";
+        if (typeof val === "number") scores.push(val);
+        var cellColor = (typeof val === "number") ? RATING_COLORS[val] : "#999";
+        cells += '<td style="font-weight:700;color:' + cellColor + '">' + val + '</td>';
+      }
+      var mn = scores[0], mx = scores[0];
+      for (var j = 1; j < scores.length; j++) {
+        if (scores[j] < mn) mn = scores[j];
+        if (scores[j] > mx) mx = scores[j];
+      }
+      var spread = mx - mn;
+      var rowCls = spread === 0 ? "agree-all" : (spread <= 1 ? "agree-close" : "agree-far");
+      html += '<tr class="' + rowCls + '">';
+      html += '<td><span style="font-size:.75rem;color:' + item.sectionColor + ';font-weight:600">' + escHtml(item.sectionTitle) + '</span><br>' + escHtml(item.itemText) + '</td>';
+      html += cells;
+      html += '<td style="font-weight:700">' + spread + '</td>';
+      html += '</tr>';
+    }
+    html += '</tbody></table></div>';
+
+    // Discussion Items
+    if (discussionItems.length > 0) {
+      html += '<div class="discussion-box"><h3>&#9888; Discussion Items (Spread &ge; 2)</h3>';
+      html += '<p style="font-size:.85rem;color:#888;margin-bottom:10px">These items need team discussion to align scoring expectations.</p>';
+      for (var d = 0; d < discussionItems.length; d++) {
+        var di = discussionItems[d];
+        html += '<div class="discussion-item">';
+        html += '<div style="font-size:.78rem;font-weight:700;color:' + di.item.sectionColor + ';margin-bottom:4px">' + escHtml(di.item.sectionTitle) + '</div>';
+        html += '<div style="font-weight:600;margin-bottom:6px">' + escHtml(di.item.itemText) + '</div>';
+        html += '<div style="display:flex;gap:10px;flex-wrap:wrap">';
+        for (var c = 0; c < submitted.length; c++) {
+          var coord = getCoordById(submitted[c]);
+          var coordScores = session.scores[submitted[c]];
+          var val = (coordScores && coordScores[String(di.index)] !== undefined) ? coordScores[String(di.index)] : "-";
+          var label = (typeof val === "number") ? RATING_LABELS[val] : "-";
+          var clr = (typeof val === "number") ? RATING_COLORS[val] : "#999";
+          html += '<span style="font-size:.85rem"><strong style="color:' + (coord ? coord.color : "#333") + '">' + (coord ? escHtml(coord.name) : submitted[c]) + ':</strong> <span style="color:' + clr + ';font-weight:600">' + val + ' (' + escHtml(label) + ')</span></span>';
+        }
+        html += '</div><div style="font-size:.82rem;color:#999;margin-top:2px">Spread: ' + di.spread + '</div>';
+        html += '</div>';
+      }
+      html += '</div>';
+    }
+
+    // Coordinator averages
+    html += '<h3 style="margin-top:18px">Coordinator Averages</h3>';
+    html += '<div class="coord-avg">';
+    for (var c = 0; c < submitted.length; c++) {
+      var coordId = submitted[c];
+      var coord = getCoordById(coordId);
+      var sum = 0, cnt = 0;
+      var coordScores = session.scores[coordId];
+      if (coordScores) {
+        for (var k in coordScores) {
+          if (coordScores.hasOwnProperty(k)) {
+            sum += coordScores[k];
+            cnt++;
+          }
+        }
+      }
+      var avg = cnt > 0 ? (sum / cnt) : 0;
+      var pct = (avg / 3 * 100).toFixed(0);
+      var clr = coord ? coord.color : "#666";
+      html += '<div class="coord-avg-card">';
+      html += '<div class="avg-name" style="color:' + clr + '">' + (coord ? escHtml(coord.name) : escHtml(coordId)) + '</div>';
+      html += '<div class="avg-val" style="color:' + clr + '">' + avg.toFixed(2) + '</div>';
+      html += '<div class="avg-bar"><div class="avg-bar-fill" style="width:' + pct + '%;background:' + clr + '"></div></div>';
+      html += '</div>';
+    }
+    html += '</div>';
+
+    // Session notes
+    html += '<div class="form-group" style="margin-top:18px"><label>Session Notes &mdash; Calibration Discussion Outcomes</label>';
+    html += '<textarea id="sessionNotes" oninput="saveNotes()" placeholder="Capture key takeaways, agreed-upon scoring definitions, action items...">' + escHtml(session.notes || "") + '</textarea></div>';
+
+    // Action buttons
+    html += '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">';
+    html += '<button class="btn btn-primary" onclick="logAsPD()">Log as PD Session</button>';
+    html += '<button class="btn btn-outline" onclick="exportSessionCSV()">Export CSV</button>';
+    html += '</div>';
+    return html;
+  }
+
+  function saveNotes() {
+    var session = getSession(state.openSessionId);
+    if (!session) return;
+    var el = document.getElementById("sessionNotes");
+    if (el) {
+      session.notes = el.value;
+      updateSession(session);
+    }
+  }
+  window.saveNotes = saveNotes;
+
+  function logAsPD() {
+    var session = getSession(state.openSessionId);
+    if (!session) return;
+    try {
+      var raw = localStorage.getItem("pd_tracker_data");
+      var pdData = raw ? JSON.parse(raw) : { sessions: [] };
+      var submitted = submittedCoords(session);
+      var exactAgree = 0;
+      for (var i = 0; i < session.items.length; i++) {
+        var scores = [];
+        for (var c = 0; c < submitted.length; c++) {
+          var cs = session.scores[submitted[c]];
+          if (cs && cs[String(i)] !== undefined) scores.push(cs[String(i)]);
+        }
+        if (scores.length < 2) continue;
+        var allSame = true;
+        for (var j = 1; j < scores.length; j++) {
+          if (scores[j] !== scores[0]) { allSame = false; break; }
+        }
+        if (allSame) exactAgree++;
+      }
+      var pct = session.items.length > 0 ? Math.round(exactAgree / session.items.length * 100) : 0;
+      var pdSession = {
+        id: "pd-" + Date.now(),
+        date: session.date,
+        title: "Scoring Calibration: " + session.title,
+        category: "Data Literacy/Assessment",
+        duration: 60,
+        facilitator: "Team",
+        attendees: submitted.map(function(id) { var co = getCoordById(id); return co ? co.name : id; }),
+        notes: "Calibration session with " + session.items.length + " items. Exact agreement: " + pct + "%. " + (session.notes || ""),
+        artifacts: [],
+        createdAt: new Date().toISOString()
+      };
+      if (!pdData.sessions) pdData.sessions = [];
+      pdData.sessions.push(pdSession);
+      localStorage.setItem("pd_tracker_data", JSON.stringify(pdData));
+      showToast("Logged as PD session in Data Literacy/Assessment");
+    } catch (e) {
+      showToast("Error logging PD session");
+    }
+  }
+  window.logAsPD = logAsPD;
+
+  function exportSessionCSV() {
+    var session = getSession(state.openSessionId);
+    if (!session) return;
+    var submitted = submittedCoords(session);
+    var rows = [];
+    var header = ["Section", "Item"];
+    for (var c = 0; c < submitted.length; c++) {
+      var coord = getCoordById(submitted[c]);
+      header.push(coord ? coord.name : submitted[c]);
+    }
+    header.push("Spread");
+    rows.push(header.join(","));
+
+    for (var i = 0; i < session.items.length; i++) {
+      var item = session.items[i];
+      var row = ['"' + item.sectionTitle.replace(/"/g, '""') + '"', '"' + item.itemText.replace(/"/g, '""') + '"'];
+      var scores = [];
+      for (var c = 0; c < submitted.length; c++) {
+        var cs = session.scores[submitted[c]];
+        var val = (cs && cs[String(i)] !== undefined) ? cs[String(i)] : "";
+        row.push(val);
+        if (typeof val === "number") scores.push(val);
+      }
+      var mn = scores[0], mx = scores[0];
+      for (var j = 1; j < scores.length; j++) {
+        if (scores[j] < mn) mn = scores[j];
+        if (scores[j] > mx) mx = scores[j];
+      }
+      row.push(mx - mn);
+      rows.push(row.join(","));
+    }
+
+    var csv = rows.join("\n");
+    var blob = new Blob([csv], { type: "text/csv" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = "calibration_" + session.date + ".csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast("CSV exported");
+  }
+  window.exportSessionCSV = exportSessionCSV;
+
+  function deleteSession(id) {
+    if (!confirm("Delete this session? This cannot be undone.")) return;
+    var data = loadData();
+    data.sessions = data.sessions.filter(function(s) { return s.id !== id; });
+    saveData(data);
+    state.openSessionId = null;
+    renderSessionsList();
+    showToast("Session deleted");
+  }
+  window.deleteSession = deleteSession;
+
+  // --- History Tab ---
+
+  function renderHistory() {
+    var data = loadData();
+    var el = document.getElementById("viewHistory");
+    var revealed = data.sessions.filter(function(s) { return s.revealed; });
+    if (revealed.length === 0) {
+      el.innerHTML = '<div class="empty-state"><div class="es-icon">&#128200;</div><p>No completed calibration sessions yet.</p></div>';
+      return;
+    }
+    var html = '<div class="card"><h2>Calibration History</h2>';
+    html += '<button class="btn btn-sm btn-outline" onclick="exportAllCSV()" style="margin-bottom:14px">Export All CSV</button>';
+    for (var i = revealed.length - 1; i >= 0; i--) {
+      var s = revealed[i];
+      var submitted = submittedCoords(s);
+      var exactAgree = 0;
+      for (var idx = 0; idx < s.items.length; idx++) {
+        var scores = [];
+        for (var c = 0; c < submitted.length; c++) {
+          var cs = s.scores[submitted[c]];
+          if (cs && cs[String(idx)] !== undefined) scores.push(cs[String(idx)]);
+        }
+        if (scores.length < 2) continue;
+        var allSame = true;
+        for (var j = 1; j < scores.length; j++) {
+          if (scores[j] !== scores[0]) { allSame = false; break; }
+        }
+        if (allSame) exactAgree++;
+      }
+      var pct = s.items.length > 0 ? Math.round(exactAgree / s.items.length * 100) : 0;
+      html += '<div class="history-row" onclick="viewHistorySession(\'' + escHtml(s.id) + '\')">';
+      html += '<div class="hr-title">' + escHtml(s.title) + '</div>';
+      html += '<div class="hr-meta">' + escHtml(s.date) + ' &middot; ' + s.items.length + ' items &middot; ' + pct + '% exact agreement &middot; ' + submitted.length + ' coordinators</div>';
+      html += '</div>';
+    }
+    html += '</div>';
+    el.innerHTML = html;
+  }
+
+  function viewHistorySession(id) {
+    state.openSessionId = id;
+    state.currentTab = "sessions";
+    document.getElementById("tabSessions").className = "tab-btn active";
+    document.getElementById("tabHistory").className = "tab-btn";
+    document.getElementById("viewSessions").style.display = "";
+    document.getElementById("viewHistory").style.display = "none";
+    var session = getSession(id);
+    if (session) renderSessionDetail(session);
+  }
+  window.viewHistorySession = viewHistorySession;
+
+  function exportAllCSV() {
+    var data = loadData();
+    var revealed = data.sessions.filter(function(s) { return s.revealed; });
+    var rows = ["Date,Title,Items,Exact Agreement %,Coordinators"];
+    for (var i = 0; i < revealed.length; i++) {
+      var s = revealed[i];
+      var submitted = submittedCoords(s);
+      var exactAgree = 0;
+      for (var idx = 0; idx < s.items.length; idx++) {
+        var scores = [];
+        for (var c = 0; c < submitted.length; c++) {
+          var cs = s.scores[submitted[c]];
+          if (cs && cs[String(idx)] !== undefined) scores.push(cs[String(idx)]);
+        }
+        if (scores.length < 2) continue;
+        var allSame = true;
+        for (var j = 1; j < scores.length; j++) {
+          if (scores[j] !== scores[0]) { allSame = false; break; }
+        }
+        if (allSame) exactAgree++;
+      }
+      var pct = s.items.length > 0 ? Math.round(exactAgree / s.items.length * 100) : 0;
+      rows.push(s.date + ',"' + s.title.replace(/"/g, '""') + '",' + s.items.length + ',' + pct + ',' + submitted.length);
+    }
+    var csv = rows.join("\n");
+    var blob = new Blob([csv], { type: "text/csv" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = "calibration_history.csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast("History CSV exported");
+  }
+  window.exportAllCSV = exportAllCSV;
+
+  // --- Dark Mode ---
+
+  function toggleDarkMode() {
+    var isDark = document.body.classList.toggle("dark-mode");
+    localStorage.setItem(THEME_KEY, isDark ? "dark" : "light");
+    showToast(isDark ? "Dark mode on" : "Dark mode off");
+  }
+  window.toggleDarkMode = toggleDarkMode;
+
+  function applyTheme() {
+    var theme = localStorage.getItem(THEME_KEY);
+    if (theme === "dark") document.body.classList.add("dark-mode");
+  }
+
+  // --- PWA ---
+
+  function registerSW() {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./service-worker.js").catch(function() {});
+    }
+  }
+
+  // --- Init ---
+
+  function init() {
+    applyTheme();
+    registerSW();
+    var data = loadData();
+    updateSessionCount(data);
+    renderSessionsList();
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>

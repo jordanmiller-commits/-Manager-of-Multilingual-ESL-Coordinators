@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reports & Analytics Hub — MLP Coordinator Suite</title>
+<link rel="manifest" href="./manifest.json">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f0f2f7;
+  color: #23272f;
+  min-height: 100vh;
+}
+body.dark-mode { background: #181c24; color: #d1d5db; }
+body.dark-mode .card, body.dark-mode .report-section { background: #23272f; color: #d1d5db; }
+body.dark-mode .filter-bar { background: #23272f; border-color: #333; }
+body.dark-mode input, body.dark-mode select { background: #2a2e38; color: #d1d5db; border-color: #444; }
+body.dark-mode table th { background: #2a2e38; }
+body.dark-mode table td { border-color: #333; }
+body.dark-mode .tab-btn { background: #2a2e38; color: #aaa; }
+body.dark-mode .tab-btn.active { background: #4a90d9; color: #fff; }
+body.dark-mode .stat-card { background: #2a2e38; }
+
+header {
+  background: linear-gradient(135deg, #2c3e6e, #4a90d9);
+  color: #fff;
+  padding: 24px 32px 18px;
+  position: relative;
+}
+header h1 { font-size: 1.7rem; font-weight: 700; }
+header p.subtitle { opacity: 0.85; margin-top: 4px; font-size: 0.95rem; }
+.header-actions { position: absolute; top: 18px; right: 24px; display: flex; gap: 10px; align-items: center; }
+.header-actions a, .header-actions button {
+  background: rgba(255,255,255,0.18);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 6px;
+  padding: 7px 16px;
+  cursor: pointer;
+  text-decoration: none;
+  font-size: 0.88rem;
+  font-family: inherit;
+}
+.header-actions a:hover, .header-actions button:hover { background: rgba(255,255,255,0.32); }
+
+.tab-bar { display: flex; gap: 6px; padding: 16px 24px 0; flex-wrap: wrap; }
+.tab-btn {
+  padding: 9px 20px;
+  border-radius: 20px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.92rem;
+  font-family: inherit;
+  background: #dde2ec;
+  color: #444;
+  transition: background 0.2s;
+}
+.tab-btn.active { background: #4a90d9; color: #fff; font-weight: 600; }
+.tab-btn:hover { background: #b8c6e0; color: #222; }
+.tab-btn.active:hover { background: #3b7fc4; color: #fff; }
+
+.filter-bar {
+  display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+  padding: 14px 24px;
+  background: #fff;
+  border-bottom: 1px solid #dde2ec;
+  margin-bottom: 8px;
+}
+.filter-bar label { font-size: 0.85rem; font-weight: 600; color: #555; }
+.filter-bar input, .filter-bar select {
+  padding: 6px 10px; border: 1px solid #ccc; border-radius: 6px;
+  font-size: 0.88rem; font-family: inherit;
+}
+.filter-bar .export-csv-btn {
+  margin-left: auto;
+  background: #27ae60;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 7px 16px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-family: inherit;
+}
+.filter-bar .export-csv-btn:hover { background: #219a52; }
+
+.main-content { padding: 16px 24px 40px; max-width: 1280px; margin: 0 auto; }
+
+.report-section { display: none; }
+.report-section.active { display: block; }
+
+.card {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  padding: 20px 24px;
+  margin-bottom: 20px;
+}
+.card h3 { font-size: 1.08rem; margin-bottom: 12px; color: #2c3e6e; }
+body.dark-mode .card h3 { color: #7eb3f0; }
+
+.stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; margin-bottom: 20px; }
+.stat-card {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  padding: 18px 16px;
+  text-align: center;
+}
+.stat-card .stat-value { font-size: 2rem; font-weight: 700; color: #2c3e6e; }
+body.dark-mode .stat-card .stat-value { color: #7eb3f0; }
+.stat-card .stat-label { font-size: 0.82rem; color: #777; margin-top: 4px; }
+
+.chart-container { position: relative; width: 100%; max-height: 380px; }
+.chart-container canvas { width: 100% !important; max-height: 360px; }
+
+table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+table th { background: #eef1f7; text-align: left; padding: 9px 10px; font-weight: 600; }
+table td { padding: 8px 10px; border-bottom: 1px solid #eee; }
+
+.pipeline-funnel { display: flex; flex-direction: column; gap: 8px; }
+.funnel-stage {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: #eef1f7;
+}
+body.dark-mode .funnel-stage { background: #2a2e38; }
+.funnel-stage .stage-bar {
+  height: 28px;
+  border-radius: 6px;
+  min-width: 20px;
+  transition: width 0.4s;
+}
+.funnel-stage .stage-label { font-weight: 600; min-width: 120px; font-size: 0.88rem; }
+.funnel-stage .stage-count { font-size: 0.85rem; color: #666; }
+.funnel-stage .stage-rate { font-size: 0.78rem; color: #999; margin-left: auto; }
+
+.coord-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 20px; }
+.coord-card {
+  background: #fff; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  padding: 18px 20px; border-top: 4px solid #ccc;
+}
+body.dark-mode .coord-card { background: #23272f; }
+.coord-card h4 { margin-bottom: 10px; font-size: 1rem; }
+.coord-card .metric-row { display: flex; justify-content: space-between; font-size: 0.85rem; padding: 3px 0; }
+.coord-card .metric-row .mv { font-weight: 600; }
+
+.campus-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+.campus-pill {
+  padding: 6px 14px; border-radius: 16px; border: 1px solid #bbb;
+  cursor: pointer; font-size: 0.84rem; background: #fff; font-family: inherit;
+}
+.campus-pill.active { background: #4a90d9; color: #fff; border-color: #4a90d9; }
+body.dark-mode .campus-pill { background: #2a2e38; border-color: #555; color: #ccc; }
+body.dark-mode .campus-pill.active { background: #4a90d9; color: #fff; }
+
+.action-item { padding: 8px 12px; border-left: 4px solid #e74c3c; background: #fdf0f0; margin-bottom: 8px; border-radius: 0 6px 6px 0; font-size: 0.88rem; }
+body.dark-mode .action-item { background: #2e2020; }
+
+.toast {
+  position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+  background: #333; color: #fff; padding: 12px 28px; border-radius: 8px;
+  font-size: 0.92rem; opacity: 0; transition: opacity 0.35s; pointer-events: none; z-index: 9999;
+}
+.toast.show { opacity: 1; pointer-events: auto; }
+
+.print-footer { display: none; text-align: center; font-size: 0.78rem; color: #999; padding: 12px 0; }
+
+@media print {
+  .header-actions, .filter-bar, .tab-bar, .toast { display: none !important; }
+  header { padding: 12px 16px; }
+  body, body.dark-mode { background: #fff !important; color: #000 !important; }
+  .card, .stat-card, .coord-card, body.dark-mode .card, body.dark-mode .stat-card {
+    background: #fff !important; color: #000 !important;
+    box-shadow: none; border: 1px solid #ddd;
+  }
+  .report-section { page-break-before: auto; }
+  .card { page-break-inside: avoid; }
+  .print-footer { display: block !important; }
+  .chart-container canvas { max-height: 300px; }
+}
+
+@media (max-width: 768px) {
+  header { padding: 18px 14px 14px; }
+  header h1 { font-size: 1.3rem; }
+  .header-actions { position: static; margin-top: 12px; flex-wrap: wrap; }
+  .main-content { padding: 10px 10px 30px; }
+  .stat-row { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+  .coord-cards { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .tab-btn, .header-actions button, .header-actions a, .filter-bar .export-csv-btn,
+  .campus-pill { min-height: 44px; display: inline-flex; align-items: center; }
+  .filter-bar { flex-direction: column; align-items: stretch; }
+  .filter-bar .export-csv-btn { margin-left: 0; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Reports &amp; Analytics Hub</h1>
+  <p class="subtitle">Cross-tool reporting for the MLP coordinator team</p>
+  <div class="header-actions">
+    <a href="./index.html">Home</a>
+    <button onclick="window.print()">Print Report</button>
+    <button id="darkToggle" onclick="toggleDark()">Dark Mode</button>
+  </div>
+</header>
+
+<div class="tab-bar">
+  <button class="tab-btn active" data-tab="semester" onclick="switchTab('semester')">Semester Overview</button>
+  <button class="tab-btn" data-tab="coordinator" onclick="switchTab('coordinator')">Coordinator Comparison</button>
+  <button class="tab-btn" data-tab="campus" onclick="switchTab('campus')">Campus Summary</button>
+  <button class="tab-btn" data-tab="coaching" onclick="switchTab('coaching')">Coaching Effectiveness</button>
+</div>
+
+<div class="filter-bar">
+  <label>From <input type="date" id="filterStart"></label>
+  <label>To <input type="date" id="filterEnd"></label>
+  <label>Coordinator
+    <select id="filterCoord"><option value="all">All</option></select>
+  </label>
+  <label>Campus
+    <select id="filterCampus"><option value="all">All</option></select>
+  </label>
+  <button class="export-csv-btn" onclick="exportCurrentCSV()">Export CSV</button>
+</div>
+
+<div class="main-content">
+
+  <!-- SEMESTER OVERVIEW -->
+  <div class="report-section active" id="sec-semester">
+    <div class="stat-row" id="semesterStats"></div>
+    <div class="card"><h3>Activity Timeline</h3><div class="chart-container"><canvas id="chartTimeline"></canvas></div></div>
+    <div class="card"><h3>Coaching Pipeline Summary</h3><div class="chart-container"><canvas id="chartPipeline"></canvas></div></div>
+    <div class="card"><h3>PD Hours by Category</h3><div class="chart-container"><canvas id="chartPDCat"></canvas></div></div>
+    <div class="card"><h3>Compliance Status by Campus</h3><div id="complianceTable"></div></div>
+    <div class="card"><h3>Goal Progress</h3><div id="goalSummary"></div></div>
+  </div>
+
+  <!-- COORDINATOR COMPARISON -->
+  <div class="report-section" id="sec-coordinator">
+    <div class="coord-cards" id="coordCards"></div>
+    <div class="card"><h3>Coordinator Comparison</h3><div class="chart-container"><canvas id="chartCoordCompare"></canvas></div></div>
+    <div class="card"><h3>Activity Distribution</h3><div class="chart-container" style="max-width:420px;margin:0 auto;"><canvas id="chartCoordDoughnut"></canvas></div></div>
+    <div class="card"><h3>PD Hours by Coordinator &amp; Category</h3><div id="pdCrossTable"></div></div>
+  </div>
+
+  <!-- CAMPUS SUMMARY -->
+  <div class="report-section" id="sec-campus">
+    <div class="campus-pills" id="campusPills"></div>
+    <div class="stat-row" id="campusStats"></div>
+    <div class="card"><h3>Audit Score Trend</h3><div class="chart-container"><canvas id="chartCampusAudit"></canvas></div></div>
+    <div class="card"><h3>Teacher Coverage</h3><div id="teacherCoverage"></div></div>
+    <div class="card"><h3>Top Action Items</h3><div id="actionItems"></div></div>
+  </div>
+
+  <!-- COACHING EFFECTIVENESS -->
+  <div class="report-section" id="sec-coaching">
+    <div class="card"><h3>Pipeline Funnel</h3><div class="pipeline-funnel" id="pipelineFunnel"></div></div>
+    <div class="card"><h3>Cycle Duration (Days to Completion)</h3><div class="chart-container"><canvas id="chartCycleDuration"></canvas></div></div>
+    <div class="card"><h3>Stalled Cycles (No Movement 14+ Days)</h3><div id="stalledTable"></div></div>
+    <div class="card"><h3>Coach Load — Active Cycles per Coordinator</h3><div class="chart-container"><canvas id="chartCoachLoad"></canvas></div></div>
+    <div class="card"><h3>Coached vs Non-Coached Audit Scores</h3><div id="correlationPreview"></div></div>
+  </div>
+
+</div>
+
+<div class="print-footer" id="printFooter"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ========== CONSTANTS ========== */
+var COORDINATORS = [
+  {id:"jmiller", name:"J. Miller", color:"#8e44ad"},
+  {id:"kpatterson", name:"K. Patterson", color:"#16a085"},
+  {id:"pokolo", name:"P. Okolo", color:"#c0392b"},
+  {id:"vpalencia", name:"V. Palencia", color:"#2980b9"}
+];
+
+var STAGE_NAMES = ["Observation","Feedback","Action Step","Follow-Up","Growth","Completed"];
+var STAGE_COLORS = ["#3498db","#e67e22","#9b59b6","#1abc9c","#f1c40f","#27ae60"];
+var PD_CATEGORIES = ["Sheltered Instruction","ELPS Integration","LPAC Procedures","Newcomer Supports","Assessment Literacy","Cultural Responsiveness","Leadership/Coaching","Technology"];
+
+var activeTab = "semester";
+var activeCharts = {};
+var selectedCampus = "all";
+
+/* ========== UTILITIES ========== */
+function escHtml(str) {
+  var node = document.createTextNode(str || "");
+  var wrap = document.createElement("span");
+  wrap.appendChild(node);
+  return wrap.innerHTML;
+}
+
+function showToast(msg) {
+  var t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(function() { t.classList.remove("show"); }, 2600);
+}
+
+function parseLS(key) {
+  try { return JSON.parse(localStorage.getItem(key)) || null; }
+  catch(e) { return null; }
+}
+
+function fmtDate(d) {
+  if (!d) return "";
+  var dt = new Date(d);
+  return isNaN(dt.getTime()) ? "" : dt.toISOString().slice(0, 10);
+}
+
+function daysBetween(a, b) {
+  var d1 = new Date(a), d2 = new Date(b);
+  return Math.round(Math.abs(d2 - d1) / 86400000);
+}
+
+function inRange(dateStr, start, end) {
+  if (!dateStr) return false;
+  var d = dateStr.slice(0, 10);
+  return d >= start && d <= end;
+}
+
+function destroyChart(key) {
+  if (activeCharts[key]) { activeCharts[key].destroy(); activeCharts[key] = null; }
+}
+
+function getWeekKey(dateStr) {
+  var d = new Date(dateStr);
+  var day = d.getDay();
+  var diff = d.getDate() - day + (day === 0 ? -6 : 1);
+  var mon = new Date(d.setDate(diff));
+  return mon.toISOString().slice(0, 10);
+}
+
+/* ========== DATA LOADING ========== */
+function loadAllData() {
+  var walkthroughs = parseLS("walkthrough_history") || [];
+  var audits = parseLS("esl_audit_history") || [];
+  var coachingRaw = parseLS("coaching_cycles_data") || {};
+  var cycles = coachingRaw.cycles || [];
+  var pdRaw = parseLS("pd_tracker_data") || {};
+  var sessions = pdRaw.sessions || [];
+  var compRaw = parseLS("compliance_checklist_data") || {};
+  var goalRaw = parseLS("goal_setting_data") || {};
+  var goals = goalRaw.goals || [];
+  var checkins = goalRaw.checkins || [];
+  var calRaw = parseLS("calibration_sessions") || {};
+
+  return {
+    walkthroughs: walkthroughs,
+    audits: audits,
+    cycles: cycles,
+    sessions: sessions,
+    compliance: compRaw,
+    goals: goals,
+    checkins: checkins,
+    calibration: calRaw.sessions || []
+  };
+}
+
+function getFilters() {
+  return {
+    start: document.getElementById("filterStart").value,
+    end: document.getElementById("filterEnd").value,
+    coord: document.getElementById("filterCoord").value,
+    campus: document.getElementById("filterCampus").value
+  };
+}
+
+function filterWalkthroughs(data, f) {
+  return data.walkthroughs.filter(function(w) {
+    var m = w.meta || {};
+    if (!inRange(m.date, f.start, f.end)) return false;
+    if (f.coord !== "all" && (m.coordinator || m.coordinatorId || "") !== f.coord) return false;
+    if (f.campus !== "all" && (m.campus || "") !== f.campus) return false;
+    return true;
+  });
+}
+
+function filterAudits(data, f) {
+  return data.audits.filter(function(a) {
+    var m = a.meta || {};
+    if (!inRange(m.date, f.start, f.end)) return false;
+    if (f.coord !== "all" && (m.coordinator || m.coordinatorId || "") !== f.coord) return false;
+    if (f.campus !== "all" && (m.campus || "") !== f.campus) return false;
+    return true;
+  });
+}
+
+function filterCycles(data, f) {
+  return data.cycles.filter(function(c) {
+    if (f.coord !== "all" && (c.coordinatorId || c.coordinator || "") !== f.coord) return false;
+    if (f.campus !== "all" && (c.campus || "") !== f.campus) return false;
+    var dt = c.createdAt || "";
+    if (dt && !inRange(dt, f.start, f.end)) return false;
+    return true;
+  });
+}
+
+function filterSessions(data, f) {
+  return data.sessions.filter(function(s) {
+    if (!inRange(s.date, f.start, f.end)) return false;
+    if (f.coord !== "all" && (s.coordinatorId || "") !== f.coord) return false;
+    return true;
+  });
+}
+
+/* ========== POPULATE FILTERS ========== */
+function buildCampusList(data) {
+  var map = {};
+  data.walkthroughs.forEach(function(w) { if (w.meta && w.meta.campus) map[w.meta.campus] = true; });
+  data.audits.forEach(function(a) { if (a.meta && a.meta.campus) map[a.meta.campus] = true; });
+  var compSettings = (data.compliance.settings || {});
+  (compSettings.campuses || []).forEach(function(c) { map[c] = true; });
+  return Object.keys(map).sort();
+}
+
+function populateFilters(data) {
+  var sel = document.getElementById("filterCoord");
+  COORDINATORS.forEach(function(c) {
+    var o = document.createElement("option");
+    o.value = c.id;
+    o.textContent = c.name;
+    sel.appendChild(o);
+  });
+  var campuses = buildCampusList(data);
+  var cs = document.getElementById("filterCampus");
+  campuses.forEach(function(c) {
+    var o = document.createElement("option");
+    o.value = c;
+    o.textContent = c;
+    cs.appendChild(o);
+  });
+}
+
+function setDefaultDates() {
+  var now = new Date();
+  var month = now.getMonth();
+  var year = now.getFullYear();
+  var start, end;
+  if (month >= 7) {
+    start = year + "-08-01";
+    end = year + 1 + "-01-15";
+  } else if (month >= 0) {
+    start = year + "-01-06";
+    end = year + "-06-15";
+  }
+  document.getElementById("filterStart").value = start;
+  document.getElementById("filterEnd").value = end;
+}
+
+/* ========== TAB SWITCHING ========== */
+function switchTab(tab) {
+  activeTab = tab;
+  var btns = document.querySelectorAll(".tab-btn");
+  for (var i = 0; i < btns.length; i++) {
+    btns[i].classList.toggle("active", btns[i].getAttribute("data-tab") === tab);
+  }
+  var secs = document.querySelectorAll(".report-section");
+  for (var j = 0; j < secs.length; j++) {
+    secs[j].classList.toggle("active", secs[j].id === "sec-" + tab);
+  }
+  renderAll();
+}
+
+/* ========== DARK MODE ========== */
+function toggleDark() {
+  var on = document.body.classList.toggle("dark-mode");
+  localStorage.setItem("esl_app_theme", on ? "dark" : "light");
+  document.getElementById("darkToggle").textContent = on ? "Light Mode" : "Dark Mode";
+  renderAll();
+}
+
+function initTheme() {
+  if (localStorage.getItem("esl_app_theme") === "dark") {
+    document.body.classList.add("dark-mode");
+    document.getElementById("darkToggle").textContent = "Light Mode";
+  }
+}
+
+/* ========== RENDER: SEMESTER OVERVIEW ========== */
+function renderSemester(data, f) {
+  var wt = filterWalkthroughs(data, f);
+  var au = filterAudits(data, f);
+  var cy = filterCycles(data, f);
+  var pd = filterSessions(data, f);
+
+  var avgAudit = 0;
+  if (au.length) {
+    var total = 0;
+    au.forEach(function(a) { total += (a.scorePct || 0); });
+    avgAudit = Math.round(total / au.length);
+  }
+
+  var activeCycles = 0, completedCycles = 0;
+  cy.forEach(function(c) {
+    var stages = c.stages || [];
+    var lastStatus = stages.length ? stages[stages.length - 1].status : "";
+    if (lastStatus === "Completed" || lastStatus === "completed") completedCycles++;
+    else activeCycles++;
+  });
+
+  var totalPD = 0;
+  pd.forEach(function(s) { totalPD += (parseFloat(s.hours) || 0); });
+
+  var html = "";
+  var stats = [
+    {v: wt.length, l: "Walkthroughs"},
+    {v: au.length, l: "Audits Completed"},
+    {v: avgAudit + "%", l: "Avg Audit Score"},
+    {v: activeCycles, l: "Active Coaching Cycles"},
+    {v: completedCycles, l: "Completed Cycles"},
+    {v: totalPD.toFixed(1), l: "PD Hours Logged"}
+  ];
+  stats.forEach(function(s) {
+    html += '<div class="stat-card"><div class="stat-value">' + escHtml(String(s.v)) + '</div><div class="stat-label">' + escHtml(s.l) + '</div></div>';
+  });
+  document.getElementById("semesterStats").innerHTML = html;
+
+  renderTimelineChart(wt, au, f);
+  renderPipelineChart(cy);
+  renderPDCategoryChart(pd);
+  renderComplianceTable(data, f);
+  renderGoalSummary(data, f);
+}
+
+function renderTimelineChart(wt, au, f) {
+  destroyChart("timeline");
+  var weekMap = {};
+  wt.forEach(function(w) {
+    var k = getWeekKey(w.meta.date);
+    if (!weekMap[k]) weekMap[k] = {w: 0, a: 0};
+    weekMap[k].w++;
+  });
+  au.forEach(function(a) {
+    var k = getWeekKey(a.meta.date);
+    if (!weekMap[k]) weekMap[k] = {w: 0, a: 0};
+    weekMap[k].a++;
+  });
+  var keys = Object.keys(weekMap).sort();
+  var wData = keys.map(function(k) { return weekMap[k].w; });
+  var aData = keys.map(function(k) { return weekMap[k].a; });
+
+  var ctx = document.getElementById("chartTimeline").getContext("2d");
+  activeCharts.timeline = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: keys,
+      datasets: [
+        {label: "Walkthroughs", data: wData, borderColor: "#4a90d9", backgroundColor: "rgba(74,144,217,0.1)", fill: true, tension: 0.3},
+        {label: "Audits", data: aData, borderColor: "#e67e22", backgroundColor: "rgba(230,126,34,0.1)", fill: true, tension: 0.3}
+      ]
+    },
+    options: {responsive: true, maintainAspectRatio: false, plugins: {legend: {position: "top"}}}
+  });
+}
+
+function renderPipelineChart(cy) {
+  destroyChart("pipeline");
+  var counts = {};
+  STAGE_NAMES.forEach(function(s) { counts[s] = 0; });
+  cy.forEach(function(c) {
+    var stages = c.stages || [];
+    var last = stages.length ? stages[stages.length - 1].status : "Observation";
+    var matched = false;
+    STAGE_NAMES.forEach(function(s) {
+      if (s.toLowerCase() === (last || "").toLowerCase()) { counts[s]++; matched = true; }
+    });
+    if (!matched) counts["Observation"]++;
+  });
+  var ctx = document.getElementById("chartPipeline").getContext("2d");
+  activeCharts.pipeline = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: STAGE_NAMES,
+      datasets: [{
+        label: "Cycles",
+        data: STAGE_NAMES.map(function(s) { return counts[s]; }),
+        backgroundColor: STAGE_COLORS
+      }]
+    },
+    options: {indexAxis: "y", responsive: true, maintainAspectRatio: false, plugins: {legend: {display: false}}}
+  });
+}
+
+function renderPDCategoryChart(pd) {
+  destroyChart("pdcat");
+  var catMap = {};
+  PD_CATEGORIES.forEach(function(c) { catMap[c] = 0; });
+  pd.forEach(function(s) {
+    var cat = s.category || "Other";
+    if (!catMap[cat]) catMap[cat] = 0;
+    catMap[cat] += (parseFloat(s.hours) || 0);
+  });
+  var labels = Object.keys(catMap);
+  var vals = labels.map(function(l) { return Math.round(catMap[l] * 10) / 10; });
+  var colors = ["#3498db","#e67e22","#9b59b6","#1abc9c","#e74c3c","#f39c12","#2ecc71","#34495e"];
+  var ctx = document.getElementById("chartPDCat").getContext("2d");
+  activeCharts.pdcat = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: labels,
+      datasets: [{label: "Hours", data: vals, backgroundColor: colors}]
+    },
+    options: {indexAxis: "y", responsive: true, maintainAspectRatio: false, plugins: {legend: {display: false}}}
+  });
+}
+
+function renderComplianceTable(data, f) {
+  var comp = data.compliance;
+  var items = comp.items || [];
+  var completions = comp.completions || {};
+  var campuses = (comp.settings || {}).campuses || buildCampusList(data);
+  if (f.campus !== "all") campuses = campuses.filter(function(c) { return c === f.campus; });
+  if (!items.length || !campuses.length) {
+    document.getElementById("complianceTable").innerHTML = '<p style="color:#999;font-size:0.9rem;">No compliance data available.</p>';
+    return;
+  }
+  var html = '<table><tr><th>Campus</th><th>Items</th><th>Completed</th><th>%</th></tr>';
+  campuses.forEach(function(campus) {
+    var total = items.length;
+    var done = 0;
+    items.forEach(function(item) {
+      var key = campus + "_" + (item.id || item.text);
+      if (completions[key]) done++;
+    });
+    var pct = total ? Math.round(done / total * 100) : 0;
+    html += '<tr><td>' + escHtml(campus) + '</td><td>' + total + '</td><td>' + done + '</td><td><strong>' + pct + '%</strong></td></tr>';
+  });
+  html += '</table>';
+  document.getElementById("complianceTable").innerHTML = html;
+}
+
+function renderGoalSummary(data) {
+  var goals = data.goals;
+  var checkins = data.checkins || [];
+  if (!goals.length) {
+    document.getElementById("goalSummary").innerHTML = '<p style="color:#999;font-size:0.9rem;">No goal data available.</p>';
+    return;
+  }
+  var statusMap = {active: 0, paused: 0, completed: 0};
+  var totalSteps = 0, doneSteps = 0;
+  goals.forEach(function(g) {
+    var s = (g.status || "active").toLowerCase();
+    if (statusMap[s] !== undefined) statusMap[s]++;
+    else statusMap.active++;
+    var steps = g.actionSteps || g.actions || [];
+    totalSteps += steps.length;
+    steps.forEach(function(st) { if (st.completed || st.done) doneSteps++; });
+  });
+  var stepPct = totalSteps ? Math.round(doneSteps / totalSteps * 100) : 0;
+  var html = '<div class="stat-row">';
+  html += '<div class="stat-card"><div class="stat-value">' + statusMap.active + '</div><div class="stat-label">Active Goals</div></div>';
+  html += '<div class="stat-card"><div class="stat-value">' + statusMap.paused + '</div><div class="stat-label">Paused Goals</div></div>';
+  html += '<div class="stat-card"><div class="stat-value">' + statusMap.completed + '</div><div class="stat-label">Completed Goals</div></div>';
+  html += '<div class="stat-card"><div class="stat-value">' + stepPct + '%</div><div class="stat-label">Action Steps Done</div></div>';
+  html += '</div>';
+  document.getElementById("goalSummary").innerHTML = html;
+}
+
+/* ========== RENDER: COORDINATOR COMPARISON ========== */
+function renderCoordinator(data, f) {
+  var html = "";
+  var coordMetrics = [];
+  COORDINATORS.forEach(function(coord) {
+    var cf = {start: f.start, end: f.end, coord: coord.id, campus: f.campus};
+    var wt = filterWalkthroughs(data, cf);
+    var au = filterAudits(data, cf);
+    var cy = filterCycles(data, cf);
+    var pd = filterSessions(data, cf);
+
+    var avgScore = 0;
+    if (au.length) {
+      var t = 0; au.forEach(function(a) { t += (a.scorePct || 0); });
+      avgScore = Math.round(t / au.length);
+    }
+    var active = 0, completed = 0;
+    cy.forEach(function(c) {
+      var stages = c.stages || [];
+      var last = stages.length ? stages[stages.length - 1].status : "";
+      if (last === "Completed" || last === "completed") completed++;
+      else active++;
+    });
+    var pdHrs = 0;
+    pd.forEach(function(s) { pdHrs += (parseFloat(s.hours) || 0); });
+
+    var m = {id: coord.id, name: coord.name, color: coord.color, wt: wt.length, au: au.length, active: active, completed: completed, pdHrs: Math.round(pdHrs * 10) / 10, avgScore: avgScore};
+    coordMetrics.push(m);
+
+    html += '<div class="coord-card" style="border-top-color:' + coord.color + '">';
+    html += '<h4>' + escHtml(coord.name) + '</h4>';
+    html += '<div class="metric-row"><span>Walkthroughs</span><span class="mv">' + m.wt + '</span></div>';
+    html += '<div class="metric-row"><span>Audits</span><span class="mv">' + m.au + '</span></div>';
+    html += '<div class="metric-row"><span>Active Cycles</span><span class="mv">' + m.active + '</span></div>';
+    html += '<div class="metric-row"><span>Completed Cycles</span><span class="mv">' + m.completed + '</span></div>';
+    html += '<div class="metric-row"><span>PD Hours</span><span class="mv">' + m.pdHrs + '</span></div>';
+    html += '<div class="metric-row"><span>Avg Audit Score</span><span class="mv">' + m.avgScore + '%</span></div>';
+    html += '</div>';
+  });
+  document.getElementById("coordCards").innerHTML = html;
+
+  renderCoordCompareChart(coordMetrics);
+  renderCoordDoughnut(coordMetrics);
+  renderPDCrossTable(data, f);
+}
+
+function renderCoordCompareChart(metrics) {
+  destroyChart("coordCompare");
+  var labels = metrics.map(function(m) { return m.name; });
+  var colors = metrics.map(function(m) { return m.color; });
+  var ctx = document.getElementById("chartCoordCompare").getContext("2d");
+  activeCharts.coordCompare = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: labels,
+      datasets: [
+        {label: "Walkthroughs", data: metrics.map(function(m) { return m.wt; }), backgroundColor: "rgba(52,152,219,0.7)"},
+        {label: "Audits", data: metrics.map(function(m) { return m.au; }), backgroundColor: "rgba(230,126,34,0.7)"},
+        {label: "Active Cycles", data: metrics.map(function(m) { return m.active; }), backgroundColor: "rgba(155,89,182,0.7)"},
+        {label: "PD Hours", data: metrics.map(function(m) { return m.pdHrs; }), backgroundColor: "rgba(39,174,96,0.7)"}
+      ]
+    },
+    options: {responsive: true, maintainAspectRatio: false, plugins: {legend: {position: "top"}}}
+  });
+}
+
+function renderCoordDoughnut(metrics) {
+  destroyChart("coordDoughnut");
+  var labels = metrics.map(function(m) { return m.name; });
+  var vals = metrics.map(function(m) { return m.wt; });
+  var colors = metrics.map(function(m) { return m.color; });
+  var ctx = document.getElementById("chartCoordDoughnut").getContext("2d");
+  activeCharts.coordDoughnut = new Chart(ctx, {
+    type: "doughnut",
+    data: { labels: labels, datasets: [{data: vals, backgroundColor: colors}] },
+    options: {responsive: true, maintainAspectRatio: false, plugins: {legend: {position: "bottom"}}}
+  });
+}
+
+function renderPDCrossTable(data, f) {
+  var rows = [];
+  COORDINATORS.forEach(function(coord) {
+    var cf = {start: f.start, end: f.end, coord: coord.id, campus: f.campus};
+    var pd = filterSessions(data, cf);
+    var catMap = {};
+    PD_CATEGORIES.forEach(function(c) { catMap[c] = 0; });
+    var total = 0;
+    pd.forEach(function(s) {
+      var cat = s.category || "Other";
+      if (!catMap[cat]) catMap[cat] = 0;
+      catMap[cat] += (parseFloat(s.hours) || 0);
+      total += (parseFloat(s.hours) || 0);
+    });
+    rows.push({name: coord.name, cats: catMap, total: Math.round(total * 10) / 10});
+  });
+  var html = '<table><tr><th>Coordinator</th>';
+  PD_CATEGORIES.forEach(function(c) { html += '<th>' + escHtml(c) + '</th>'; });
+  html += '<th>Total</th></tr>';
+  rows.forEach(function(r) {
+    html += '<tr><td><strong>' + escHtml(r.name) + '</strong></td>';
+    PD_CATEGORIES.forEach(function(c) { html += '<td>' + (Math.round((r.cats[c] || 0) * 10) / 10) + '</td>'; });
+    html += '<td><strong>' + r.total + '</strong></td></tr>';
+  });
+  html += '</table>';
+  document.getElementById("pdCrossTable").innerHTML = html;
+}
+
+/* ========== RENDER: CAMPUS SUMMARY ========== */
+function renderCampus(data, f) {
+  var campuses = buildCampusList(data);
+  var pillsHtml = '<button class="campus-pill' + (selectedCampus === "all" ? " active" : "") + '" onclick="selectCampus(\'all\')">All</button>';
+  campuses.forEach(function(c) {
+    pillsHtml += '<button class="campus-pill' + (selectedCampus === c ? " active" : "") + '" onclick="selectCampus(\'' + escHtml(c) + '\')">' + escHtml(c) + '</button>';
+  });
+  document.getElementById("campusPills").innerHTML = pillsHtml;
+
+  var cf = {start: f.start, end: f.end, coord: f.coord, campus: selectedCampus !== "all" ? selectedCampus : f.campus};
+  var wt = filterWalkthroughs(data, cf);
+  var au = filterAudits(data, cf);
+  var cy = filterCycles(data, cf);
+
+  var avgAudit = 0;
+  if (au.length) {
+    var t = 0; au.forEach(function(a) { t += (a.scorePct || 0); });
+    avgAudit = Math.round(t / au.length);
+  }
+
+  var compPct = calcCompliancePct(data, selectedCampus !== "all" ? selectedCampus : null);
+
+  var statsHtml = '';
+  var cStats = [
+    {v: wt.length, l: "Walkthroughs"},
+    {v: avgAudit + "%", l: "Avg Audit Score"},
+    {v: cy.length, l: "Coaching Cycles"},
+    {v: compPct + "%", l: "Compliance"}
+  ];
+  cStats.forEach(function(s) {
+    statsHtml += '<div class="stat-card"><div class="stat-value">' + escHtml(String(s.v)) + '</div><div class="stat-label">' + escHtml(s.l) + '</div></div>';
+  });
+  document.getElementById("campusStats").innerHTML = statsHtml;
+
+  renderCampusAuditChart(au);
+  renderTeacherCoverage(wt, au);
+  renderActionItems(wt, au, cy);
+}
+
+function calcCompliancePct(data, campus) {
+  var comp = data.compliance;
+  var items = comp.items || [];
+  var completions = comp.completions || {};
+  if (!items.length) return 0;
+  if (!campus) {
+    var campuses = (comp.settings || {}).campuses || buildCampusList(data);
+    if (!campuses.length) return 0;
+    var totalDone = 0, totalAll = 0;
+    campuses.forEach(function(c) {
+      items.forEach(function(item) {
+        totalAll++;
+        if (completions[c + "_" + (item.id || item.text)]) totalDone++;
+      });
+    });
+    return totalAll ? Math.round(totalDone / totalAll * 100) : 0;
+  }
+  var done = 0;
+  items.forEach(function(item) {
+    if (completions[campus + "_" + (item.id || item.text)]) done++;
+  });
+  return Math.round(done / items.length * 100);
+}
+
+function renderCampusAuditChart(au) {
+  destroyChart("campusAudit");
+  if (!au.length) {
+    document.getElementById("chartCampusAudit").parentNode.querySelector("h3").textContent = "Audit Score Trend (no data)";
+    return;
+  }
+  document.getElementById("chartCampusAudit").parentNode.querySelector("h3").textContent = "Audit Score Trend";
+  var sorted = au.slice().sort(function(a, b) { return (a.meta.date || "").localeCompare(b.meta.date || ""); });
+  var labels = sorted.map(function(a) { return a.meta.date; });
+  var vals = sorted.map(function(a) { return a.scorePct || 0; });
+  var ctx = document.getElementById("chartCampusAudit").getContext("2d");
+  activeCharts.campusAudit = new Chart(ctx, {
+    type: "line",
+    data: { labels: labels, datasets: [{label: "Audit Score %", data: vals, borderColor: "#4a90d9", backgroundColor: "rgba(74,144,217,0.1)", fill: true, tension: 0.3}] },
+    options: {responsive: true, maintainAspectRatio: false, scales: {y: {min: 0, max: 100}}}
+  });
+}
+
+function renderTeacherCoverage(wt, au) {
+  var teacherMap = {};
+  wt.forEach(function(w) {
+    var teacher = (w.meta || {}).teacher || "Unknown";
+    if (!teacherMap[teacher]) teacherMap[teacher] = {wt: 0, lastAudit: null, auditScore: null};
+    teacherMap[teacher].wt++;
+  });
+  au.forEach(function(a) {
+    var teacher = (a.meta || {}).teacher || "Unknown";
+    if (!teacherMap[teacher]) teacherMap[teacher] = {wt: 0, lastAudit: null, auditScore: null};
+    if (!teacherMap[teacher].lastAudit || a.meta.date > teacherMap[teacher].lastAudit) {
+      teacherMap[teacher].lastAudit = a.meta.date;
+      teacherMap[teacher].auditScore = a.scorePct;
+    }
+  });
+  var keys = Object.keys(teacherMap).sort();
+  if (!keys.length) {
+    document.getElementById("teacherCoverage").innerHTML = '<p style="color:#999;font-size:0.9rem;">No teacher data found.</p>';
+    return;
+  }
+  var html = '<table><tr><th>Teacher</th><th>Walkthroughs</th><th>Latest Audit</th><th>Score</th></tr>';
+  keys.forEach(function(t) {
+    var d = teacherMap[t];
+    html += '<tr><td>' + escHtml(t) + '</td><td>' + d.wt + '</td><td>' + escHtml(d.lastAudit || "—") + '</td><td>' + (d.auditScore !== null ? d.auditScore + "%" : "—") + '</td></tr>';
+  });
+  html += '</table>';
+  document.getElementById("teacherCoverage").innerHTML = html;
+}
+
+function renderActionItems(wt, au, cy) {
+  var items = [];
+  var today = new Date();
+  var teacherLast = {};
+  wt.forEach(function(w) {
+    var t = (w.meta || {}).teacher || "";
+    var d = (w.meta || {}).date || "";
+    if (t && (!teacherLast[t] || d > teacherLast[t])) teacherLast[t] = d;
+  });
+  Object.keys(teacherLast).forEach(function(t) {
+    var last = new Date(teacherLast[t]);
+    if (daysBetween(last, today) > 30) {
+      items.push("Teacher <strong>" + escHtml(t) + "</strong> has not been observed in " + daysBetween(last, today) + " days (last: " + teacherLast[t] + ")");
+    }
+  });
+  cy.forEach(function(c) {
+    var stages = c.stages || [];
+    if (stages.length) {
+      var lastStage = stages[stages.length - 1];
+      if (lastStage.date && daysBetween(new Date(lastStage.date), today) > 14) {
+        var status = lastStage.status || "Unknown";
+        if (status.toLowerCase() !== "completed") {
+          items.push("Coaching cycle for <strong>" + escHtml(c.teacher || "Unknown") + "</strong> stalled at " + escHtml(status) + " for " + daysBetween(new Date(lastStage.date), today) + " days");
+        }
+      }
+    }
+  });
+  au.forEach(function(a) {
+    if ((a.scorePct || 0) < 60) {
+      items.push("Low audit score (" + a.scorePct + "%) for <strong>" + escHtml((a.meta || {}).teacher || "Unknown") + "</strong> on " + escHtml((a.meta || {}).date || ""));
+    }
+  });
+  if (!items.length) {
+    document.getElementById("actionItems").innerHTML = '<p style="color:#27ae60;font-size:0.9rem;">No action items identified. Great work!</p>';
+    return;
+  }
+  var html = "";
+  items.forEach(function(item) { html += '<div class="action-item">' + item + '</div>'; });
+  document.getElementById("actionItems").innerHTML = html;
+}
+
+function selectCampus(c) {
+  selectedCampus = c;
+  renderAll();
+}
+
+/* ========== RENDER: COACHING EFFECTIVENESS ========== */
+function renderCoaching(data, f) {
+  var cy = filterCycles(data, f);
+  renderFunnel(cy);
+  renderCycleDurationChart(cy);
+  renderStalledTable(cy);
+  renderCoachLoadChart(data, f);
+  renderCorrelation(data, f, cy);
+}
+
+function renderFunnel(cy) {
+  var stageCounts = {};
+  STAGE_NAMES.forEach(function(s) { stageCounts[s] = 0; });
+  cy.forEach(function(c) {
+    var stages = c.stages || [];
+    var last = stages.length ? stages[stages.length - 1].status : "Observation";
+    var matched = false;
+    STAGE_NAMES.forEach(function(s) {
+      if (s.toLowerCase() === (last || "").toLowerCase()) { stageCounts[s]++; matched = true; }
+    });
+    if (!matched) stageCounts["Observation"]++;
+  });
+  var maxCount = Math.max.apply(null, STAGE_NAMES.map(function(s) { return stageCounts[s]; }).concat([1]));
+  var html = "";
+  var prev = cy.length || 1;
+  STAGE_NAMES.forEach(function(s, i) {
+    var cnt = stageCounts[s];
+    var widthPct = Math.max(5, Math.round(cnt / maxCount * 100));
+    var cumulative = 0;
+    for (var j = i; j < STAGE_NAMES.length; j++) cumulative += stageCounts[STAGE_NAMES[j]];
+    var rate = prev > 0 ? Math.round(cumulative / prev * 100) : 0;
+    html += '<div class="funnel-stage">';
+    html += '<span class="stage-label">' + escHtml(s) + '</span>';
+    html += '<div class="stage-bar" style="width:' + widthPct + '%;background:' + STAGE_COLORS[i] + ';"></div>';
+    html += '<span class="stage-count">' + cnt + ' cycle' + (cnt !== 1 ? 's' : '') + '</span>';
+    if (i > 0) html += '<span class="stage-rate">' + rate + '% reached</span>';
+    html += '</div>';
+  });
+  document.getElementById("pipelineFunnel").innerHTML = html || '<p style="color:#999;">No coaching cycle data available.</p>';
+}
+
+function renderCycleDurationChart(cy) {
+  destroyChart("cycleDuration");
+  var durations = [];
+  cy.forEach(function(c) {
+    var stages = c.stages || [];
+    if (!stages.length) return;
+    var last = stages[stages.length - 1];
+    if ((last.status || "").toLowerCase() !== "completed") return;
+    var start = c.createdAt || (stages[0] || {}).date;
+    var end = last.date;
+    if (start && end) durations.push(daysBetween(start, end));
+  });
+  if (!durations.length) {
+    document.getElementById("chartCycleDuration").parentNode.querySelector("h3").textContent = "Cycle Duration (no completed cycles)";
+    return;
+  }
+  document.getElementById("chartCycleDuration").parentNode.querySelector("h3").textContent = "Cycle Duration (Days to Completion)";
+  var buckets = {"0-14": 0, "15-30": 0, "31-45": 0, "46-60": 0, "60+": 0};
+  durations.forEach(function(d) {
+    if (d <= 14) buckets["0-14"]++;
+    else if (d <= 30) buckets["15-30"]++;
+    else if (d <= 45) buckets["31-45"]++;
+    else if (d <= 60) buckets["46-60"]++;
+    else buckets["60+"]++;
+  });
+  var ctx = document.getElementById("chartCycleDuration").getContext("2d");
+  activeCharts.cycleDuration = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: Object.keys(buckets),
+      datasets: [{label: "Cycles", data: Object.keys(buckets).map(function(k) { return buckets[k]; }), backgroundColor: ["#27ae60","#2ecc71","#f39c12","#e67e22","#e74c3c"]}]
+    },
+    options: {responsive: true, maintainAspectRatio: false, plugins: {legend: {display: false}}}
+  });
+}
+
+function renderStalledTable(cy) {
+  var today = new Date();
+  var stalled = [];
+  cy.forEach(function(c) {
+    var stages = c.stages || [];
+    if (!stages.length) return;
+    var last = stages[stages.length - 1];
+    if ((last.status || "").toLowerCase() === "completed") return;
+    if (last.date && daysBetween(new Date(last.date), today) >= 14) {
+      stalled.push({teacher: c.teacher || "Unknown", campus: c.campus || "—", stage: last.status || "—", days: daysBetween(new Date(last.date), today), coordinator: c.coordinatorId || c.coordinator || "—"});
+    }
+  });
+  if (!stalled.length) {
+    document.getElementById("stalledTable").innerHTML = '<p style="color:#27ae60;font-size:0.9rem;">No stalled cycles. All cycles are progressing.</p>';
+    return;
+  }
+  var html = '<table><tr><th>Teacher</th><th>Campus</th><th>Current Stage</th><th>Days Stalled</th><th>Coordinator</th></tr>';
+  stalled.sort(function(a, b) { return b.days - a.days; });
+  stalled.forEach(function(s) {
+    html += '<tr><td>' + escHtml(s.teacher) + '</td><td>' + escHtml(s.campus) + '</td><td>' + escHtml(s.stage) + '</td><td><strong>' + s.days + '</strong></td><td>' + escHtml(s.coordinator) + '</td></tr>';
+  });
+  html += '</table>';
+  document.getElementById("stalledTable").innerHTML = html;
+}
+
+function renderCoachLoadChart(data, f) {
+  destroyChart("coachLoad");
+  var loads = [];
+  COORDINATORS.forEach(function(coord) {
+    var cf = {start: f.start, end: f.end, coord: coord.id, campus: f.campus};
+    var cy = filterCycles(data, cf);
+    var active = 0;
+    cy.forEach(function(c) {
+      var stages = c.stages || [];
+      var last = stages.length ? stages[stages.length - 1].status : "";
+      if ((last || "").toLowerCase() !== "completed") active++;
+    });
+    loads.push({name: coord.name, color: coord.color, active: active});
+  });
+  var ctx = document.getElementById("chartCoachLoad").getContext("2d");
+  activeCharts.coachLoad = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: loads.map(function(l) { return l.name; }),
+      datasets: [{label: "Active Cycles", data: loads.map(function(l) { return l.active; }), backgroundColor: loads.map(function(l) { return l.color; })}]
+    },
+    options: {responsive: true, maintainAspectRatio: false, plugins: {legend: {display: false}}, scales: {y: {beginAtZero: true, ticks: {stepSize: 1}}}}
+  });
+}
+
+function renderCorrelation(data, f, cy) {
+  var au = filterAudits(data, f);
+  if (!au.length || !cy.length) {
+    document.getElementById("correlationPreview").innerHTML = '<p style="color:#999;font-size:0.9rem;">Insufficient data for coached vs non-coached comparison.</p>';
+    return;
+  }
+  var coachedTeachers = {};
+  cy.forEach(function(c) {
+    var stages = c.stages || [];
+    var last = stages.length ? stages[stages.length - 1].status : "";
+    if ((last || "").toLowerCase() === "completed") {
+      coachedTeachers[c.teacher] = true;
+    }
+  });
+  var coachedScores = [], nonCoachedScores = [];
+  au.forEach(function(a) {
+    var teacher = (a.meta || {}).teacher || "";
+    if (coachedTeachers[teacher]) coachedScores.push(a.scorePct || 0);
+    else nonCoachedScores.push(a.scorePct || 0);
+  });
+  var avgCoached = coachedScores.length ? Math.round(coachedScores.reduce(function(a, b) { return a + b; }, 0) / coachedScores.length) : null;
+  var avgNon = nonCoachedScores.length ? Math.round(nonCoachedScores.reduce(function(a, b) { return a + b; }, 0) / nonCoachedScores.length) : null;
+
+  var html = '<div class="stat-row">';
+  html += '<div class="stat-card"><div class="stat-value">' + (avgCoached !== null ? avgCoached + "%" : "N/A") + '</div><div class="stat-label">Avg Score — Coached Teachers (' + coachedScores.length + ' audits)</div></div>';
+  html += '<div class="stat-card"><div class="stat-value">' + (avgNon !== null ? avgNon + "%" : "N/A") + '</div><div class="stat-label">Avg Score — Non-Coached Teachers (' + nonCoachedScores.length + ' audits)</div></div>';
+  if (avgCoached !== null && avgNon !== null) {
+    var diff = avgCoached - avgNon;
+    var diffLabel = diff >= 0 ? "+" + diff + " pts" : diff + " pts";
+    html += '<div class="stat-card"><div class="stat-value" style="color:' + (diff >= 0 ? "#27ae60" : "#e74c3c") + '">' + diffLabel + '</div><div class="stat-label">Coaching Impact</div></div>';
+  }
+  html += '</div>';
+  html += '<p style="font-size:0.82rem;color:#999;margin-top:8px;">Note: Correlation does not imply causation. This is a simplified comparison.</p>';
+  document.getElementById("correlationPreview").innerHTML = html;
+}
+
+/* ========== RENDER ALL ========== */
+function renderAll() {
+  var data = loadAllData();
+  var f = getFilters();
+  if (activeTab === "semester") renderSemester(data, f);
+  else if (activeTab === "coordinator") renderCoordinator(data, f);
+  else if (activeTab === "campus") renderCampus(data, f);
+  else if (activeTab === "coaching") renderCoaching(data, f);
+  document.getElementById("printFooter").textContent = "Printed on " + new Date().toLocaleDateString();
+}
+
+/* ========== CSV EXPORT ========== */
+function exportCurrentCSV() {
+  var data = loadAllData();
+  var f = getFilters();
+  var csv = "";
+  var filename = "report.csv";
+
+  if (activeTab === "semester") {
+    filename = "semester_overview.csv";
+    csv = "Type,Count/Value\n";
+    var wt = filterWalkthroughs(data, f);
+    var au = filterAudits(data, f);
+    var cy = filterCycles(data, f);
+    var pd = filterSessions(data, f);
+    var avgA = 0;
+    if (au.length) { var t = 0; au.forEach(function(a) { t += (a.scorePct || 0); }); avgA = Math.round(t / au.length); }
+    var ac = 0, cc = 0;
+    cy.forEach(function(c) { var s = c.stages || []; var l = s.length ? s[s.length - 1].status : ""; if ((l || "").toLowerCase() === "completed") cc++; else ac++; });
+    var pdH = 0; pd.forEach(function(s) { pdH += (parseFloat(s.hours) || 0); });
+    csv += "Walkthroughs," + wt.length + "\n";
+    csv += "Audits," + au.length + "\n";
+    csv += "Avg Audit Score," + avgA + "%\n";
+    csv += "Active Cycles," + ac + "\n";
+    csv += "Completed Cycles," + cc + "\n";
+    csv += "PD Hours," + pdH.toFixed(1) + "\n";
+  } else if (activeTab === "coordinator") {
+    filename = "coordinator_comparison.csv";
+    csv = "Coordinator,Walkthroughs,Audits,Active Cycles,Completed Cycles,PD Hours,Avg Audit Score\n";
+    COORDINATORS.forEach(function(coord) {
+      var cf = {start: f.start, end: f.end, coord: coord.id, campus: f.campus};
+      var wt = filterWalkthroughs(data, cf);
+      var au = filterAudits(data, cf);
+      var cy = filterCycles(data, cf);
+      var pd = filterSessions(data, cf);
+      var avg = 0; if (au.length) { var t = 0; au.forEach(function(a) { t += (a.scorePct || 0); }); avg = Math.round(t / au.length); }
+      var ac = 0, cc = 0;
+      cy.forEach(function(c) { var s = c.stages || []; var l = s.length ? s[s.length - 1].status : ""; if ((l || "").toLowerCase() === "completed") cc++; else ac++; });
+      var pdH = 0; pd.forEach(function(s) { pdH += (parseFloat(s.hours) || 0); });
+      csv += coord.name + "," + wt.length + "," + au.length + "," + ac + "," + cc + "," + pdH.toFixed(1) + "," + avg + "%\n";
+    });
+  } else if (activeTab === "campus") {
+    filename = "campus_summary.csv";
+    var campuses = buildCampusList(data);
+    csv = "Campus,Walkthroughs,Avg Audit Score,Coaching Cycles,Compliance %\n";
+    campuses.forEach(function(campus) {
+      var cf = {start: f.start, end: f.end, coord: f.coord, campus: campus};
+      var wt = filterWalkthroughs(data, cf);
+      var au = filterAudits(data, cf);
+      var cy = filterCycles(data, cf);
+      var avg = 0; if (au.length) { var t = 0; au.forEach(function(a) { t += (a.scorePct || 0); }); avg = Math.round(t / au.length); }
+      var comp = calcCompliancePct(data, campus);
+      csv += '"' + campus + '",' + wt.length + "," + avg + "%," + cy.length + "," + comp + "%\n";
+    });
+  } else if (activeTab === "coaching") {
+    filename = "coaching_effectiveness.csv";
+    var cy = filterCycles(data, f);
+    csv = "Teacher,Campus,Coordinator,Current Stage,Days Since Last Update,Created\n";
+    cy.forEach(function(c) {
+      var stages = c.stages || [];
+      var last = stages.length ? stages[stages.length - 1] : {};
+      var days = last.date ? daysBetween(new Date(last.date), new Date()) : "—";
+      csv += '"' + (c.teacher || "") + '","' + (c.campus || "") + '","' + (c.coordinatorId || c.coordinator || "") + '","' + (last.status || "") + '",' + days + ',"' + (c.createdAt || "") + '"\n';
+    });
+  }
+
+  var blob = new Blob([csv], {type: "text/csv;charset=utf-8;"});
+  var link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  link.click();
+  showToast("CSV exported: " + filename);
+}
+
+/* ========== PWA ========== */
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("./service-worker.js").catch(function() {});
+}
+
+/* ========== INIT ========== */
+(function init() {
+  initTheme();
+  setDefaultDates();
+  var data = loadAllData();
+  populateFilters(data);
+  renderAll();
+
+  document.getElementById("filterStart").addEventListener("change", renderAll);
+  document.getElementById("filterEnd").addEventListener("change", renderAll);
+  document.getElementById("filterCoord").addEventListener("change", renderAll);
+  document.getElementById("filterCampus").addEventListener("change", renderAll);
+})();
+</script>
+</body>
+</html>

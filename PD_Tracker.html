@@ -166,6 +166,7 @@ body.dark-mode .empty-state{color:#666}
     <div class="toolbar">
       <button class="tool-btn accent" onclick="openLogModal()">&#xff0b; Log Session</button>
       <button class="tool-btn" onclick="exportCsv()">&#128190; Export CSV</button>
+      <button class="tool-btn" onclick="triggerImport()">&#8679; Import CSV</button>
       <button class="tool-btn" onclick="toggleDarkMode()" id="darkModeToggle" aria-label="Toggle dark mode">&#9789; Dark</button>
       <a class="tool-btn" href="index.html" style="margin-left:auto">&#127968; Home</a>
     </div>
@@ -329,7 +330,25 @@ body.dark-mode .empty-state{color:#666}
   </div>
 </div>
 
+<!-- Import CSV Modal -->
+<div class="modal-overlay" id="importModal">
+  <div class="modal">
+    <h3>&#8679; Import PD Sessions CSV</h3>
+    <div style="padding:0 20px 20px">
+      <div class="csv-preview-info" id="importPreviewInfo" style="background:#f0f4fb;border-radius:6px;padding:10px 12px;font-size:12px;color:#2c3e6e;margin-bottom:12px"></div>
+      <p style="font-size:12px;color:#555;margin-bottom:8px">Expected columns (header row): <code>Date, Coordinator, Category, Title, Hours, Facilitator, Notes</code></p>
+      <p style="font-size:12px;color:#555;margin-bottom:14px">Coordinator names are matched to IDs automatically. All imported rows are added as new sessions.</p>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn-cancel" onclick="closeImportModal()">Cancel</button>
+        <button class="btn-primary" onclick="confirmImport()">&#10003; Import</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
+
+<input type="file" id="csvFileInput" accept=".csv" style="display:none" onchange="handleCsvFile(event)"/>
 
 <script>
 // =============================================
@@ -885,6 +904,115 @@ function exportCsv() {
 }
 
 // =============================================
+// CSV IMPORT
+// =============================================
+var pendingImportRows = [];
+
+function triggerImport() {
+  document.getElementById('csvFileInput').value = '';
+  document.getElementById('csvFileInput').click();
+}
+
+function handleCsvFile(evt) {
+  var file = evt.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var text = e.target.result;
+    var rows = parseCsv(text);
+    if (rows.length < 2) {
+      showToast('CSV appears empty or has no data rows.');
+      return;
+    }
+    var header = rows[0].map(function(h) { return h.trim().toLowerCase(); });
+    var dataRows = rows.slice(1).filter(function(r) { return r.join('').trim() !== ''; });
+    pendingImportRows = dataRows.map(function(row) {
+      var obj = {};
+      header.forEach(function(h, i) { obj[h] = (row[i] || '').trim(); });
+      return obj;
+    }).filter(function(r) { return r.title || r.category || r.date; });
+
+    document.getElementById('importPreviewInfo').textContent =
+      'Found ' + pendingImportRows.length + ' session' + (pendingImportRows.length !== 1 ? 's' : '') + ' in the CSV file.';
+    document.getElementById('importModal').classList.add('active');
+  };
+  reader.readAsText(file);
+}
+
+function parseCsv(text) {
+  var rows = [];
+  var lines = text.split(/\r?\n/);
+  for (var i = 0; i < lines.length; i++) {
+    rows.push(parseCsvLine(lines[i]));
+  }
+  return rows;
+}
+
+function parseCsvLine(line) {
+  var fields = [];
+  var cur = '';
+  var inQ = false;
+  for (var i = 0; i < line.length; i++) {
+    var ch = line[i];
+    if (ch === '"') {
+      if (inQ && line[i + 1] === '"') { cur += '"'; i++; }
+      else { inQ = !inQ; }
+    } else if (ch === ',' && !inQ) {
+      fields.push(cur);
+      cur = '';
+    } else {
+      cur += ch;
+    }
+  }
+  fields.push(cur);
+  return fields;
+}
+
+function resolveCoordinatorId(name) {
+  if (!name) return 'jmiller';
+  var lower = name.toLowerCase().trim();
+  if (lower.indexOf('miller') >= 0 || lower === 'jmiller') return 'jmiller';
+  if (lower.indexOf('patterson') >= 0 || lower === 'kpatterson') return 'kpatterson';
+  if (lower.indexOf('okolo') >= 0 || lower === 'pokolo') return 'pokolo';
+  if (lower.indexOf('palencia') >= 0 || lower === 'vpalencia') return 'vpalencia';
+  return lower.replace(/[^a-z0-9]/g, '');
+}
+
+function confirmImport() {
+  var added = 0;
+  for (var i = 0; i < pendingImportRows.length; i++) {
+    var row = pendingImportRows[i];
+    var coordId = resolveCoordinatorId(row.coordinator || row.coordinatorid || row.coordinatorname || '');
+    var hours = parseFloat(row.hours || '0');
+    if (isNaN(hours) || hours <= 0) hours = 1;
+
+    pdData.sessions.push({
+      id: 'pd-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
+      date: row.date || todayStr(),
+      coordinatorId: coordId,
+      coordinatorName: getCoordName(coordId),
+      category: row.category || 'ELPS / Language Acquisition',
+      title: row.title || row.topic || '',
+      hours: hours,
+      facilitator: row.facilitator || row.presenter || '',
+      notes: row.notes || '',
+      createdAt: new Date().toISOString()
+    });
+    added++;
+  }
+
+  saveData();
+  renderAll();
+  closeImportModal();
+  showToast('Imported ' + added + ' PD session' + (added !== 1 ? 's' : '') + '.');
+}
+
+function closeImportModal() {
+  document.getElementById('importModal').classList.remove('active');
+  pendingImportRows = [];
+}
+
+// =============================================
 // SETTINGS — HOUR TARGETS & PROGRESS
 // =============================================
 function populateSettingsGrid() {
@@ -985,6 +1113,9 @@ function populateCategoryDropdowns() {
 // =============================================
 document.getElementById('logModal').addEventListener('click', function(e) {
   if (e.target === this) closeLogModal();
+});
+document.getElementById('importModal').addEventListener('click', function(e) {
+  if (e.target === this) closeImportModal();
 });
 
 // =============================================

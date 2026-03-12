@@ -1,6 +1,7 @@
-var CACHE_NAME = "mlp-suite-v1";
+var CACHE_NAME = "mlp-suite-v4";
 var ASSETS = [
   "./Principal_Checkpoint_Portal/Principal_Checkpoint_Portal.html",
+  "./Principal_Checkpoint_Portal/Campus_Report_Card.html",
   "./index.html",
   "./Data_Backup_Hub.html",
   "./Team_Overview.html",
@@ -21,6 +22,8 @@ var ASSETS = [
   "./ESL_Classroom_Audit/Audit_Dashboard.html",
   "./ESL_Programming_Plans/ESL_Coordinator_Scope_Sequence.html",
   "./ELPS_Agent/ELPS_Agent.html",
+  "./Calibration_Tool.html",
+  "./Reports_Hub.html",
   "./Teacher_360_Profile.html",
   "https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"
 ];

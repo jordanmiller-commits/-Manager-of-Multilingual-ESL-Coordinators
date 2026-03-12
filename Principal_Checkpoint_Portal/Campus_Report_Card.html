@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Campus Report Card — MLP Coordinator Hub</title>
+<link rel="manifest" href="../manifest.json">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f0f2f7;
+  color: #2c3e50;
+  min-height: 100vh;
+}
+/* Dark mode */
+body.dark-mode { background: #1a1a2e; color: #e0e0e0; }
+body.dark-mode .card { background: #16213e; border-color: #1a1a4e; }
+body.dark-mode .header { background: linear-gradient(135deg, #1a1a3e, #2c3e6e); }
+body.dark-mode input, body.dark-mode select { background: #0f3460; color: #e0e0e0; border-color: #1a1a4e; }
+body.dark-mode .metric-box { background: #1a1a3e; }
+body.dark-mode .pipeline-stage { background: #1a1a3e; border-color: #2c3e6e; }
+body.dark-mode .action-item { background: #1a1a3e; }
+body.dark-mode .coordinator-row { background: #1a1a3e; }
+body.dark-mode .nav-link { color: #8ab4f8; }
+
+.header {
+  background: linear-gradient(135deg, #2c3e6e, #4a90d9);
+  color: #fff;
+  padding: 20px 24px 16px;
+}
+.header-top { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+.header h1 { font-size: 1.5rem; font-weight: 700; }
+.header .subtitle { opacity: 0.85; font-size: 0.9rem; margin-top: 4px; }
+.header-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+.header-btns button {
+  background: rgba(255,255,255,0.18);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.3);
+  padding: 7px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+.header-btns button:hover { background: rgba(255,255,255,0.3); }
+.nav-bar { margin-top: 10px; display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+.nav-link { color: #cee0ff; text-decoration: none; font-size: 0.85rem; }
+.nav-link:hover { color: #fff; text-decoration: underline; }
+.last-synced { font-size: 0.78rem; opacity: 0.7; margin-left: auto; }
+
+.main { max-width: 1100px; margin: 0 auto; padding: 20px 16px 40px; }
+.card {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  padding: 22px 24px;
+  margin-bottom: 20px;
+}
+.card h2 { font-size: 1.15rem; margin-bottom: 14px; color: #2c3e6e; }
+body.dark-mode .card h2 { color: #8ab4f8; }
+
+/* Setup card */
+.setup-card { border-left: 4px solid #e67e22; }
+.setup-card label { display: block; font-weight: 600; margin: 10px 0 4px; font-size: 0.9rem; }
+.setup-card input {
+  width: 100%; padding: 9px 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 0.9rem;
+}
+.setup-card .btn-save {
+  margin-top: 14px; background: #2c3e6e; color: #fff; border: none;
+  padding: 10px 24px; border-radius: 6px; cursor: pointer; font-size: 0.9rem;
+}
+.setup-card .btn-save:hover { background: #4a90d9; }
+
+/* Health score */
+.health-score-wrap { text-align: center; padding: 20px 0; }
+.health-canvas-wrap { display: inline-block; position: relative; }
+.health-label {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  font-size: 2.2rem; font-weight: 700;
+}
+.health-subtitle { font-size: 0.95rem; margin-top: 8px; color: #666; }
+body.dark-mode .health-subtitle { color: #aaa; }
+.metric-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 18px; }
+.metric-box {
+  background: #f0f2f7; border-radius: 8px; padding: 14px 18px;
+  text-align: center; min-width: 130px; flex: 1; max-width: 200px;
+}
+.metric-box .metric-val { font-size: 1.5rem; font-weight: 700; }
+.metric-box .metric-name { font-size: 0.78rem; color: #666; margin-top: 2px; }
+body.dark-mode .metric-box .metric-name { color: #aaa; }
+
+/* Walkthrough */
+.wt-stat-row { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+.wt-big { font-size: 2rem; font-weight: 700; }
+.trend-arrow { font-size: 1.2rem; margin-left: 4px; }
+.trend-up { color: #27ae60; }
+.trend-down { color: #e74c3c; }
+.trend-flat { color: #999; }
+.coverage-bar-bg {
+  background: #e0e0e0; border-radius: 8px; height: 18px; position: relative; overflow: hidden; margin: 8px 0;
+}
+body.dark-mode .coverage-bar-bg { background: #333; }
+.coverage-bar-fill { height: 100%; border-radius: 8px; background: #4a90d9; transition: width 0.4s; }
+.attention-list { margin-top: 10px; }
+.attention-list li { font-size: 0.88rem; margin: 3px 0; color: #c0392b; }
+.chart-wrap { max-width: 500px; margin: 14px auto 0; }
+
+/* Pipeline */
+.pipeline-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.pipeline-stage {
+  flex: 1; min-width: 90px; text-align: center; padding: 14px 8px;
+  border-radius: 8px; border: 2px solid #ddd; background: #fafafa;
+}
+body.dark-mode .pipeline-stage { background: #1a1a3e; }
+.pipeline-stage.active { border-color: #4a90d9; background: #eaf2fd; }
+body.dark-mode .pipeline-stage.active { background: #1a2a5e; }
+.pipeline-stage .stage-count { font-size: 1.6rem; font-weight: 700; }
+.pipeline-stage .stage-name { font-size: 0.72rem; color: #666; margin-top: 2px; }
+body.dark-mode .pipeline-stage .stage-name { color: #aaa; }
+.pipeline-stage.empty { opacity: 0.5; }
+
+/* Audit */
+.audit-stat { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+.audit-avg { font-size: 2rem; font-weight: 700; }
+.bracket-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
+.bracket-box { flex: 1; min-width: 70px; text-align: center; padding: 8px; border-radius: 6px; font-size: 0.82rem; }
+.teacher-list { font-size: 0.88rem; margin: 4px 0 10px; }
+.teacher-list span { display: inline-block; background: #eaf2fd; padding: 2px 8px; border-radius: 4px; margin: 2px 4px 2px 0; }
+body.dark-mode .teacher-list span { background: #1a2a5e; }
+
+/* Coordinator */
+.coordinator-row {
+  display: flex; align-items: center; gap: 14px; padding: 12px;
+  background: #f8f9fb; border-radius: 8px; margin-bottom: 8px; flex-wrap: wrap;
+}
+.coord-name { font-weight: 700; font-size: 0.95rem; min-width: 120px; }
+.coord-stat { font-size: 0.82rem; color: #666; }
+body.dark-mode .coord-stat { color: #aaa; }
+.freshness { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
+.fresh-green { background: #27ae60; }
+.fresh-yellow { background: #f39c12; }
+.fresh-red { background: #e74c3c; }
+
+/* Action items */
+.action-item {
+  display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px;
+  background: #f8f9fb; border-radius: 6px; margin-bottom: 6px; font-size: 0.88rem;
+}
+.action-icon { font-weight: 700; font-size: 1rem; min-width: 22px; text-align: center; }
+.priority-red { color: #e74c3c; }
+.priority-yellow { color: #f39c12; }
+.priority-green { color: #27ae60; }
+.btn-print-actions {
+  margin-top: 10px; background: #2c3e6e; color: #fff; border: none;
+  padding: 8px 18px; border-radius: 6px; cursor: pointer; font-size: 0.85rem;
+}
+.btn-print-actions:hover { background: #4a90d9; }
+
+/* Empty state */
+.empty-state { text-align: center; padding: 40px 20px; color: #999; }
+.empty-state .empty-icon { font-size: 3rem; margin-bottom: 12px; }
+.empty-state p { font-size: 0.95rem; }
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+  background: #333; color: #fff; padding: 12px 24px; border-radius: 8px;
+  font-size: 0.9rem; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 9999;
+}
+.toast.show { opacity: 1; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header h1 { font-size: 1.2rem; }
+  .metric-row { gap: 8px; }
+  .metric-box { min-width: 100px; padding: 10px 12px; }
+  .pipeline-row { gap: 6px; }
+  .pipeline-stage { min-width: 70px; padding: 10px 4px; }
+}
+@media (max-width: 600px) {
+  .header-btns button { min-height: 44px; padding: 10px 14px; }
+  .btn-save, .btn-print-actions { min-height: 44px; }
+  .card { padding: 16px; }
+  .metric-box { min-width: 45%; }
+}
+
+/* Print */
+@media print {
+  body { background: #fff !important; color: #000 !important; font-size: 11pt; }
+  .header-btns, .nav-bar, #setupCard, .btn-print-actions, #toast { display: none !important; }
+  .header { background: #2c3e6e !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .card { box-shadow: none; border: 1px solid #ddd; page-break-inside: avoid; break-inside: avoid; }
+  .main { max-width: 100%; padding: 10px; }
+  #printFooter { display: block !important; text-align: center; font-size: 9pt; color: #999; margin-top: 20px; }
+  .coverage-bar-fill, .pipeline-stage.active, .freshness, .bracket-box {
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+}
+@media print and (not all) {
+  .card { margin-bottom: 12px; }
+}
+</style>
+</head>
+<body>
+
+<div class="header" id="appHeader">
+  <div class="header-top">
+    <div>
+      <h1 id="headerTitle">Campus Report Card</h1>
+      <div class="subtitle" id="headerSubtitle">Weekly snapshot</div>
+    </div>
+    <div class="header-btns">
+      <button onclick="refreshData()">Refresh</button>
+      <button onclick="toggleSetup()">Setup</button>
+      <button onclick="window.print()">Print</button>
+      <button id="darkBtn" onclick="toggleDark()">Dark Mode</button>
+    </div>
+  </div>
+  <div class="nav-bar">
+    <a class="nav-link" href="../index.html">Home</a>
+    <a class="nav-link" href="Principal_Checkpoint.html">Principal Portal</a>
+    <a class="nav-link" href="Audit_Dashboard.html">Audit Dashboard</a>
+    <span class="last-synced" id="lastSynced">Last synced: —</span>
+  </div>
+</div>
+
+<div class="main">
+  <!-- Setup Card -->
+  <div class="card setup-card" id="setupCard" style="display:none;">
+    <h2>Setup</h2>
+    <label for="gasUrlInput">Google Apps Script URL</label>
+    <input type="text" id="gasUrlInput" placeholder="https://script.google.com/macros/s/.../exec">
+    <label for="campusInput">Campus Name</label>
+    <input type="text" id="campusInput" placeholder="e.g. Lincoln Elementary">
+    <button class="btn-save" onclick="saveSetup()">Save</button>
+  </div>
+
+  <!-- Overall Health Score -->
+  <div class="card" id="healthCard">
+    <h2>Overall Health Score</h2>
+    <div class="health-score-wrap">
+      <div class="health-canvas-wrap">
+        <canvas id="healthGauge" width="180" height="180"></canvas>
+        <div class="health-label" id="healthLabel">—</div>
+      </div>
+      <div class="health-subtitle">Campus Health Score</div>
+    </div>
+    <div class="metric-row" id="metricRow">
+      <div class="metric-box"><div class="metric-val" id="metWalk">—</div><div class="metric-name">Walkthroughs</div></div>
+      <div class="metric-box"><div class="metric-val" id="metAudit">—</div><div class="metric-name">Audit Scores</div></div>
+      <div class="metric-box"><div class="metric-val" id="metCoach">—</div><div class="metric-name">Coaching Progress</div></div>
+      <div class="metric-box"><div class="metric-val" id="metComply">—</div><div class="metric-name">Compliance</div></div>
+    </div>
+  </div>
+
+  <!-- Walkthrough Activity -->
+  <div class="card" id="walkthroughCard">
+    <h2>Walkthrough Activity</h2>
+    <div id="wtContent">
+      <div class="empty-state"><div class="empty-icon">&#128203;</div><p>No walkthrough data yet.</p></div>
+    </div>
+  </div>
+
+  <!-- Coaching Pipeline -->
+  <div class="card" id="coachingCard">
+    <h2>Coaching Pipeline</h2>
+    <div id="coachContent">
+      <div class="empty-state"><div class="empty-icon">&#127919;</div><p>No coaching data yet.</p></div>
+    </div>
+  </div>
+
+  <!-- Audit Summary -->
+  <div class="card" id="auditCard">
+    <h2>Audit Summary</h2>
+    <div id="auditContent">
+      <div class="empty-state"><div class="empty-icon">&#128221;</div><p>No audit data yet.</p></div>
+    </div>
+  </div>
+
+  <!-- Coordinator Activity -->
+  <div class="card" id="coordCard">
+    <h2>Coordinator Activity</h2>
+    <div id="coordContent">
+      <div class="empty-state"><div class="empty-icon">&#128101;</div><p>No coordinator data yet.</p></div>
+    </div>
+  </div>
+
+  <!-- Weekly Action Items -->
+  <div class="card" id="actionsCard">
+    <h2>Weekly Action Items</h2>
+    <div id="actionsContent">
+      <div class="empty-state"><div class="empty-icon">&#9989;</div><p>No action items at this time.</p></div>
+    </div>
+  </div>
+
+  <!-- No data state -->
+  <div class="card" id="noDataCard" style="display:none;">
+    <div class="empty-state">
+      <div class="empty-icon">&#128269;</div>
+      <p>No data found for this campus.</p>
+      <p style="margin-top:8px;font-size:0.85rem;">Check that the campus name matches what coordinators use, or click <strong>Setup</strong> to reconfigure.</p>
+    </div>
+  </div>
+</div>
+
+<div id="printFooter" style="display:none;"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  /* ── Utility ─────────────────────────────────────────────── */
+  function escHtml(str) {
+    var tn = document.createTextNode(str);
+    var d = document.createElement('div');
+    d.appendChild(tn);
+    return d.innerHTML;
+  }
+
+  function showToast(msg, duration) {
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(window._toastTimer);
+    window._toastTimer = setTimeout(function () { t.classList.remove('show'); }, duration || 3000);
+  }
+
+  function getParam(name) {
+    var m = location.search.match(new RegExp('[?&]' + name + '=([^&]*)'));
+    return m ? decodeURIComponent(m[1]) : '';
+  }
+
+  function parseKey(env, key) {
+    try { return JSON.parse(env.data[key]); } catch (e) { return null; }
+  }
+
+  function daysBetween(a, b) { return Math.floor(Math.abs(a - b) / 86400000); }
+
+  /* ── Config ──────────────────────────────────────────────── */
+  var gasUrl = '';
+  var campusName = '';
+  var gasSecret = '';
+  var principalEmail = '';
+
+  function loadConfig() {
+    var pcRaw = localStorage.getItem('principal_checkpoint_config');
+    var pc = null;
+    try { pc = JSON.parse(pcRaw); } catch (e) { pc = null; }
+
+    var paramCampus = getParam('campus');
+    var paramGas = getParam('gasUrl');
+
+    if (pc) {
+      gasUrl = paramGas || pc.gasUrl || '';
+      campusName = paramCampus || pc.campus || '';
+      gasSecret = pc.secret || '';
+      principalEmail = pc.principalEmail || '';
+    }
+
+    if (!gasUrl || !gasSecret) {
+      var fallbackRaw = localStorage.getItem('esl_gas_sync');
+      var fb = null;
+      try { fb = JSON.parse(fallbackRaw); } catch (e) { fb = null; }
+      if (fb) {
+        gasUrl = gasUrl || fb.gasUrl || fb.url || '';
+        gasSecret = gasSecret || fb.secret || '';
+      }
+    }
+
+    if (paramGas) gasUrl = paramGas;
+    if (paramCampus) campusName = paramCampus;
+
+    document.getElementById('gasUrlInput').value = gasUrl;
+    document.getElementById('campusInput').value = campusName;
+  }
+
+  function saveSetup() {
+    var url = document.getElementById('gasUrlInput').value.trim();
+    var campus = document.getElementById('campusInput').value.trim();
+    if (!url) { showToast('Please enter a GAS URL.'); return; }
+    if (!campus) { showToast('Please enter a campus name.'); return; }
+
+    gasUrl = url;
+    campusName = campus;
+
+    var existing = {};
+    try { existing = JSON.parse(localStorage.getItem('principal_checkpoint_config')) || {}; } catch (e) { existing = {}; }
+    existing.gasUrl = gasUrl;
+    existing.campus = campusName;
+    if (!existing.secret) existing.secret = '';
+    localStorage.setItem('principal_checkpoint_config', JSON.stringify(existing));
+    gasSecret = existing.secret;
+
+    document.getElementById('setupCard').style.display = 'none';
+    showToast('Configuration saved.');
+    refreshData();
+  }
+
+  function toggleSetup() {
+    var el = document.getElementById('setupCard');
+    el.style.display = el.style.display === 'none' ? '' : 'none';
+  }
+
+  /* ── Dark mode ──────────────────────────────────────────── */
+  function applyTheme() {
+    var theme = localStorage.getItem('esl_app_theme') || 'light';
+    if (theme === 'dark') {
+      document.body.classList.add('dark-mode');
+      document.getElementById('darkBtn').textContent = 'Light Mode';
+    } else {
+      document.body.classList.remove('dark-mode');
+      document.getElementById('darkBtn').textContent = 'Dark Mode';
+    }
+  }
+
+  function toggleDark() {
+    var isDark = document.body.classList.contains('dark-mode');
+    localStorage.setItem('esl_app_theme', isDark ? 'light' : 'dark');
+    applyTheme();
+    showToast(isDark ? 'Light mode enabled.' : 'Dark mode enabled.');
+  }
+
+  /* ── Data fetch ─────────────────────────────────────────── */
+  var allEnvelopes = [];
+
+  function refreshData() {
+    if (!gasUrl) {
+      document.getElementById('setupCard').style.display = '';
+      showToast('Please configure the GAS URL first.');
+      return;
+    }
+    showToast('Refreshing data...');
+    var url = gasUrl + '?action=readAll&t=' + Date.now() + '&secret=' + encodeURIComponent(gasSecret);
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.onload = function () {
+      if (xhr.status === 200) {
+        try {
+          var resp = JSON.parse(xhr.responseText);
+          var envs = resp.data || resp.envelopes || resp;
+          if (!Array.isArray(envs)) envs = [];
+          allEnvelopes = [];
+          for (var i = 0; i < envs.length; i++) {
+            var env = envs[i];
+            if (env.coordinatorId && env.coordinatorId.indexOf('principal_') === 0) continue;
+            allEnvelopes.push(env);
+          }
+          document.getElementById('lastSynced').textContent = 'Last synced: ' + new Date().toLocaleTimeString();
+          renderAll();
+          showToast('Data refreshed.');
+        } catch (e) {
+          showToast('Error parsing response.');
+        }
+      } else {
+        showToast('Fetch failed: ' + xhr.status);
+      }
+    };
+    xhr.onerror = function () { showToast('Network error.'); };
+    xhr.send();
+  }
+
+  /* ── Rendering ──────────────────────────────────────────── */
+  var COORD_COLORS = {
+    jmiller: '#8e44ad',
+    kpatterson: '#16a085',
+    pokolo: '#c0392b',
+    vpalencia: '#2980b9'
+  };
+  var STAGES = ['Observation', 'Feedback', 'Action Step', 'Follow-Up', 'Growth'];
+  var now = new Date();
+  var chartInstances = {};
+
+  function destroyChart(key) {
+    if (chartInstances[key]) { chartInstances[key].destroy(); chartInstances[key] = null; }
+  }
+
+  /* Data structures from the suite:
+     walkthrough_history: array of { meta:{campus,date}, savedAt, rounds:[], observations:[{teacher,code,roundIdx}] }
+     esl_audit_history:   array of { meta:{teacher,campus,date}, timestamp, scorePct, ratings:{} }
+     coaching_cycles_data: { cycles:[{ teacher, campus, stages:[{status,date}], createdAt }] }
+     compliance_checklist_data: { items:[], completions:{"{sem}_{campus}_{id}":…}, settings:{campuses[],semesters[]} }
+  */
+
+  function matchCampus(val) {
+    if (!campusName || !val) return !campusName;
+    return val.toLowerCase() === campusName.toLowerCase();
+  }
+
+  function collectWalkthroughs() {
+    var all = [];
+    for (var i = 0; i < allEnvelopes.length; i++) {
+      var env = allEnvelopes[i];
+      var wh = parseKey(env, 'walkthrough_history');
+      if (!wh || !Array.isArray(wh)) continue;
+      for (var j = 0; j < wh.length; j++) {
+        var entry = wh[j];
+        if (!entry.meta) continue;
+        if (!matchCampus(entry.meta.campus)) continue;
+        var date = entry.meta.date || (entry.savedAt ? entry.savedAt.slice(0, 10) : null);
+        // Collect teacher names from observations
+        var teacherMap = {};
+        var obs = entry.observations || [];
+        for (var o = 0; o < obs.length; o++) {
+          var tName = (obs[o].teacher || '').trim();
+          if (tName) teacherMap[tName] = true;
+        }
+        // Also from round targetTeachers
+        var rounds = entry.rounds || [];
+        for (var r = 0; r < rounds.length; r++) {
+          if (!rounds[r].targetTeachers) continue;
+          var targets = rounds[r].targetTeachers.split(/[,;]+/);
+          for (var t = 0; t < targets.length; t++) {
+            var tgt = targets[t].trim();
+            if (tgt) teacherMap[tgt] = true;
+          }
+        }
+        var teachers = Object.keys(teacherMap);
+        all.push({
+          date: date,
+          timestamp: entry.savedAt || date,
+          teachers: teachers,
+          coordinatorId: env.coordinatorId
+        });
+      }
+    }
+    return all;
+  }
+
+  function collectAudits() {
+    var all = [];
+    for (var i = 0; i < allEnvelopes.length; i++) {
+      var env = allEnvelopes[i];
+      var ah = parseKey(env, 'esl_audit_history');
+      if (!ah || !Array.isArray(ah)) continue;
+      for (var j = 0; j < ah.length; j++) {
+        var audit = ah[j];
+        if (!audit.meta || !audit.meta.teacher) continue;
+        if (!matchCampus(audit.meta.campus)) continue;
+        var rawScore = 0;
+        if (audit.ratings) {
+          for (var rk in audit.ratings) {
+            if (audit.ratings.hasOwnProperty(rk)) rawScore += (audit.ratings[rk] || 0);
+          }
+        }
+        var pct = audit.scorePct !== undefined ? audit.scorePct : Math.round(rawScore / 174 * 100);
+        all.push({
+          date: audit.meta.date || (audit.timestamp ? audit.timestamp.slice(0, 10) : null),
+          timestamp: audit.timestamp || audit.meta.date,
+          teacher: audit.meta.teacher,
+          score: pct,
+          coordinatorId: env.coordinatorId
+        });
+      }
+    }
+    return all;
+  }
+
+  function collectCycles() {
+    var all = [];
+    for (var i = 0; i < allEnvelopes.length; i++) {
+      var env = allEnvelopes[i];
+      var cd = parseKey(env, 'coaching_cycles_data');
+      var cycles = cd ? (cd.cycles || (Array.isArray(cd) ? cd : [])) : [];
+      for (var j = 0; j < cycles.length; j++) {
+        var cycle = cycles[j];
+        if (!matchCampus(cycle.campus)) continue;
+        // Determine current stage and completion
+        var stages = cycle.stages || [];
+        var curStage = 0;
+        var isComplete = true;
+        var latestDate = null;
+        for (var s = 0; s < stages.length; s++) {
+          if (stages[s].date && (!latestDate || stages[s].date > latestDate)) latestDate = stages[s].date;
+          if (stages[s].status !== 'complete') { curStage = s; isComplete = false; break; }
+        }
+        if (isComplete && stages.length > 0) curStage = stages.length - 1;
+        all.push({
+          teacher: cycle.teacher || '',
+          campus: cycle.campus || '',
+          stage: STAGES[curStage] || 'Observation',
+          stageIdx: curStage,
+          isComplete: isComplete,
+          lastUpdated: latestDate || cycle.createdAt || null,
+          createdAt: cycle.createdAt || null,
+          coordinatorId: env.coordinatorId
+        });
+      }
+    }
+    return all;
+  }
+
+  function collectCompliance() {
+    // Aggregate compliance across all coordinator data for this campus
+    var totalItems = 0;
+    var doneItems = 0;
+    for (var i = 0; i < allEnvelopes.length; i++) {
+      var cd = parseKey(allEnvelopes[i], 'compliance_checklist_data');
+      if (!cd) continue;
+      var items = cd.items || [];
+      var completions = cd.completions || {};
+      var settings = cd.settings || {};
+      var semesters = settings.semesters || [];
+      // Use the last semester in the list as current
+      var curSem = semesters.length > 0 ? semesters[semesters.length - 1] : '';
+      for (var j = 0; j < items.length; j++) {
+        var itemId = items[j].id || j;
+        var key = curSem + '_' + campusName + '_' + itemId;
+        totalItems++;
+        if (completions[key] && completions[key].checked) doneItems++;
+      }
+    }
+    return { total: totalItems, done: doneItems };
+  }
+
+  function collectTeachers(walkthroughs, audits, cycles) {
+    var map = {};
+    var i, j;
+    for (i = 0; i < walkthroughs.length; i++) {
+      var teachers = walkthroughs[i].teachers || [];
+      for (j = 0; j < teachers.length; j++) {
+        if (teachers[j]) map[teachers[j]] = true;
+      }
+    }
+    for (i = 0; i < audits.length; i++) {
+      if (audits[i].teacher) map[audits[i].teacher] = true;
+    }
+    for (i = 0; i < cycles.length; i++) {
+      if (cycles[i].teacher) map[cycles[i].teacher] = true;
+    }
+    return Object.keys(map);
+  }
+
+  function renderAll() {
+    var walkthroughs = collectWalkthroughs();
+    var audits = collectAudits();
+    var cycles = collectCycles();
+    var compliance = collectCompliance();
+    var teachers = collectTeachers(walkthroughs, audits, cycles);
+
+    updateHeader();
+
+    var noData = walkthroughs.length === 0 && audits.length === 0 && cycles.length === 0;
+    document.getElementById('noDataCard').style.display = noData ? '' : 'none';
+    document.getElementById('healthCard').style.display = noData ? 'none' : '';
+    document.getElementById('walkthroughCard').style.display = noData ? 'none' : '';
+    document.getElementById('coachingCard').style.display = noData ? 'none' : '';
+    document.getElementById('auditCard').style.display = noData ? 'none' : '';
+    document.getElementById('coordCard').style.display = noData ? 'none' : '';
+    document.getElementById('actionsCard').style.display = noData ? 'none' : '';
+
+    if (noData) return;
+
+    var scores = calcHealthScores(walkthroughs, audits, cycles, compliance, teachers);
+    renderHealthGauge(scores);
+    renderWalkthroughs(walkthroughs, teachers);
+    renderCoaching(cycles);
+    renderAudits(audits);
+    renderCoordinators(walkthroughs, audits, cycles);
+    renderActions(walkthroughs, audits, cycles, teachers);
+
+    document.getElementById('printFooter').textContent = 'Printed on ' + now.toLocaleDateString();
+  }
+
+  function updateHeader() {
+    var title = 'Campus Report Card';
+    if (campusName) title += ' — ' + escHtml(campusName);
+    document.getElementById('headerTitle').innerHTML = title;
+    document.getElementById('headerSubtitle').textContent = 'Weekly snapshot — ' + now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  }
+
+  /* ── Health Score ───────────────────────────────────────── */
+  function calcHealthScores(wt, audits, cycles, compliance, teachers) {
+    var thirtyAgo = new Date(now.getTime() - 30 * 86400000);
+    var fourteenAgo = new Date(now.getTime() - 14 * 86400000);
+
+    // Walkthrough frequency: walkthroughs in last 30 days vs expected (1 per teacher)
+    var recentWt = 0;
+    for (var i = 0; i < wt.length; i++) {
+      var d = new Date(wt[i].date || wt[i].timestamp || 0);
+      if (d >= thirtyAgo) recentWt++;
+    }
+    var expectedWt = Math.max(teachers.length, 1);
+    var walkScore = Math.min(100, Math.round((recentWt / expectedWt) * 100));
+
+    // Audit scores — average of most recent per teacher
+    var auditByTeacher = {};
+    for (var a = 0; a < audits.length; a++) {
+      var at = audits[a].teacher || 'unknown';
+      var aDate = new Date(audits[a].date || audits[a].timestamp || 0);
+      if (!auditByTeacher[at] || aDate > auditByTeacher[at].date) {
+        auditByTeacher[at] = { date: aDate, score: audits[a].score || 0 };
+      }
+    }
+    var auditKeys = Object.keys(auditByTeacher);
+    var auditScore = 0;
+    if (auditKeys.length > 0) {
+      var sum = 0;
+      for (var ak = 0; ak < auditKeys.length; ak++) sum += auditByTeacher[auditKeys[ak]].score;
+      auditScore = Math.round(sum / auditKeys.length);
+    }
+
+    // Coaching progress — % of active cycles with recent movement (14 days)
+    var activeCycles = 0;
+    var recentCycles = 0;
+    for (var c = 0; c < cycles.length; c++) {
+      var cy = cycles[c];
+      if (cy.isComplete) continue;
+      activeCycles++;
+      var lastUpdate = new Date(cy.lastUpdated || cy.createdAt || 0);
+      if (lastUpdate >= fourteenAgo) recentCycles++;
+    }
+    var coachScore = activeCycles > 0 ? Math.round((recentCycles / activeCycles) * 100) : 0;
+
+    // Compliance (already aggregated by collectCompliance)
+    var complyScore = compliance.total > 0 ? Math.round((compliance.done / compliance.total) * 100) : 0;
+
+    var composite = Math.round(walkScore * 0.25 + auditScore * 0.25 + coachScore * 0.25 + complyScore * 0.25);
+
+    return { composite: composite, walk: walkScore, audit: auditScore, coach: coachScore, comply: complyScore };
+  }
+
+  function renderHealthGauge(scores) {
+    var canvas = document.getElementById('healthGauge');
+    var ctx = canvas.getContext('2d');
+    var size = 180;
+    var cx = size / 2;
+    var cy = size / 2;
+    var r = 70;
+    var lw = 14;
+
+    ctx.clearRect(0, 0, size, size);
+
+    // Background arc
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0.75 * Math.PI, 2.25 * Math.PI);
+    ctx.strokeStyle = '#e0e0e0';
+    ctx.lineWidth = lw;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+
+    // Score arc
+    var pct = Math.max(0, Math.min(100, scores.composite)) / 100;
+    var endAngle = 0.75 * Math.PI + pct * 1.5 * Math.PI;
+    var color = scores.composite >= 75 ? '#27ae60' : (scores.composite >= 50 ? '#f39c12' : '#e74c3c');
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0.75 * Math.PI, endAngle);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = lw;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+
+    var label = document.getElementById('healthLabel');
+    label.textContent = scores.composite;
+    label.style.color = color;
+
+    document.getElementById('metWalk').textContent = scores.walk + '%';
+    document.getElementById('metAudit').textContent = scores.audit + '%';
+    document.getElementById('metCoach').textContent = scores.coach + '%';
+    document.getElementById('metComply').textContent = scores.comply + '%';
+  }
+
+  /* ── Walkthroughs ───────────────────────────────────────── */
+  function renderWalkthroughs(wt, teachers) {
+    var container = document.getElementById('wtContent');
+    if (wt.length === 0) {
+      container.innerHTML = '<div class="empty-state"><div class="empty-icon">&#128203;</div><p>No walkthrough data yet.</p></div>';
+      return;
+    }
+
+    var thirtyAgo = new Date(now.getTime() - 30 * 86400000);
+    var sixtyAgo = new Date(now.getTime() - 60 * 86400000);
+
+    var thisMonth = 0;
+    var lastMonth = 0;
+    var visitedTeachers = {};
+
+    for (var i = 0; i < wt.length; i++) {
+      var d = new Date(wt[i].date || wt[i].timestamp || 0);
+      var wtTeachers = wt[i].teachers || [];
+      if (d >= thirtyAgo) {
+        thisMonth++;
+        for (var ti = 0; ti < wtTeachers.length; ti++) {
+          if (wtTeachers[ti]) visitedTeachers[wtTeachers[ti]] = true;
+        }
+      } else if (d >= sixtyAgo) {
+        lastMonth++;
+      }
+    }
+
+    var diff = thisMonth - lastMonth;
+    var trendClass = diff > 0 ? 'trend-up' : (diff < 0 ? 'trend-down' : 'trend-flat');
+    var trendSymbol = diff > 0 ? '&#9650;' : (diff < 0 ? '&#9660;' : '&#9644;');
+
+    var visitedCount = Object.keys(visitedTeachers).length;
+    var totalTeachers = Math.max(teachers.length, 1);
+    var coveragePct = Math.round((visitedCount / totalTeachers) * 100);
+
+    var notVisited = [];
+    for (var t = 0; t < teachers.length; t++) {
+      if (!visitedTeachers[teachers[t]]) notVisited.push(teachers[t]);
+    }
+
+    var html = '<div class="wt-stat-row">';
+    html += '<div><span class="wt-big">' + thisMonth + '</span> this month</div>';
+    html += '<div><span class="trend-arrow ' + trendClass + '">' + trendSymbol + '</span> ';
+    html += diff >= 0 ? '+' + diff : '' + diff;
+    html += ' vs last month</div>';
+    html += '</div>';
+
+    html += '<div style="font-size:0.88rem;margin-bottom:4px;">Coverage: ' + visitedCount + ' / ' + totalTeachers + ' teachers (' + coveragePct + '%)</div>';
+    html += '<div class="coverage-bar-bg"><div class="coverage-bar-fill" style="width:' + coveragePct + '%;"></div></div>';
+
+    if (notVisited.length > 0) {
+      html += '<div style="margin-top:10px;font-size:0.88rem;font-weight:600;">Not visited in 30 days:</div>';
+      html += '<ul class="attention-list">';
+      for (var nv = 0; nv < notVisited.length; nv++) {
+        html += '<li>' + escHtml(notVisited[nv]) + '</li>';
+      }
+      html += '</ul>';
+    }
+
+    html += '<div class="chart-wrap"><canvas id="wtChart" height="180"></canvas></div>';
+    container.innerHTML = html;
+
+    // Weekly chart for last 8 weeks
+    var weekCounts = [];
+    var weekLabels = [];
+    for (var w = 7; w >= 0; w--) {
+      var weekStart = new Date(now.getTime() - (w + 1) * 7 * 86400000);
+      var weekEnd = new Date(now.getTime() - w * 7 * 86400000);
+      var count = 0;
+      for (var wi = 0; wi < wt.length; wi++) {
+        var wd = new Date(wt[wi].date || wt[wi].timestamp || 0);
+        if (wd >= weekStart && wd < weekEnd) count++;
+      }
+      weekCounts.push(count);
+      weekLabels.push('W' + (8 - w));
+    }
+
+    destroyChart('wtChart');
+    var wtCtx = document.getElementById('wtChart');
+    if (wtCtx) {
+      chartInstances.wtChart = new Chart(wtCtx, {
+        type: 'bar',
+        data: {
+          labels: weekLabels,
+          datasets: [{ label: 'Walkthroughs', data: weekCounts, backgroundColor: '#4a90d9', borderRadius: 4 }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        }
+      });
+    }
+  }
+
+  /* ── Coaching Pipeline ──────────────────────────────────── */
+  function renderCoaching(cycles) {
+    var container = document.getElementById('coachContent');
+    if (cycles.length === 0) {
+      container.innerHTML = '<div class="empty-state"><div class="empty-icon">&#127919;</div><p>No coaching data yet.</p></div>';
+      return;
+    }
+
+    var fourteenAgo = new Date(now.getTime() - 14 * 86400000);
+    var stageCounts = {};
+    var stalled = [];
+    var completed = 0;
+
+    for (var s = 0; s < STAGES.length; s++) stageCounts[STAGES[s]] = 0;
+
+    for (var i = 0; i < cycles.length; i++) {
+      var cy = cycles[i];
+      if (cy.isComplete) { completed++; continue; }
+      var stage = cy.stage || 'Observation';
+      if (stageCounts[stage] !== undefined) {
+        stageCounts[stage]++;
+      } else {
+        stageCounts['Observation']++;
+      }
+      var lastUp = new Date(cy.lastUpdated || cy.createdAt || 0);
+      if (lastUp < fourteenAgo) {
+        stalled.push({ teacher: cy.teacher || 'Unknown', stage: stage, days: daysBetween(lastUp, now) });
+      }
+    }
+
+    var html = '<div class="pipeline-row">';
+    for (var p = 0; p < STAGES.length; p++) {
+      var cnt = stageCounts[STAGES[p]];
+      var cls = cnt > 0 ? 'pipeline-stage active' : 'pipeline-stage empty';
+      html += '<div class="' + cls + '">';
+      html += '<div class="stage-count">' + cnt + '</div>';
+      html += '<div class="stage-name">' + escHtml(STAGES[p]) + '</div>';
+      html += '</div>';
+    }
+    html += '</div>';
+
+    html += '<div style="font-size:0.88rem;color:#666;">Completed this semester: <strong>' + completed + '</strong></div>';
+
+    if (stalled.length > 0) {
+      html += '<div style="margin-top:12px;font-size:0.88rem;font-weight:600;color:#c0392b;">Needs Attention (no movement in 14+ days):</div>';
+      html += '<ul class="attention-list">';
+      for (var st = 0; st < stalled.length; st++) {
+        html += '<li>' + escHtml(stalled[st].teacher) + ' — ' + escHtml(stalled[st].stage) + ' (' + stalled[st].days + ' days)</li>';
+      }
+      html += '</ul>';
+    }
+
+    container.innerHTML = html;
+  }
+
+  /* ── Audit Summary ──────────────────────────────────────── */
+  function renderAudits(audits) {
+    var container = document.getElementById('auditContent');
+    if (audits.length === 0) {
+      container.innerHTML = '<div class="empty-state"><div class="empty-icon">&#128221;</div><p>No audit data yet.</p></div>';
+      return;
+    }
+
+    // Most recent audit per teacher
+    var byTeacher = {};
+    var prevByTeacher = {};
+    for (var i = 0; i < audits.length; i++) {
+      var t = audits[i].teacher || 'Unknown';
+      var d = new Date(audits[i].date || audits[i].timestamp || 0);
+      var sc = audits[i].score || 0;
+      if (!byTeacher[t] || d > byTeacher[t].date) {
+        if (byTeacher[t]) prevByTeacher[t] = byTeacher[t];
+        byTeacher[t] = { date: d, score: sc };
+      }
+    }
+
+    var keys = Object.keys(byTeacher);
+    var sumCurrent = 0;
+    var sumPrev = 0;
+    var prevCount = 0;
+    var brackets = [0, 0, 0, 0]; // 0-39, 40-59, 60-79, 80-100
+    var topPerf = [];
+    var needsSupport = [];
+
+    for (var k = 0; k < keys.length; k++) {
+      var sc2 = byTeacher[keys[k]].score;
+      sumCurrent += sc2;
+      if (prevByTeacher[keys[k]]) { sumPrev += prevByTeacher[keys[k]].score; prevCount++; }
+      if (sc2 < 40) brackets[0]++;
+      else if (sc2 < 60) brackets[1]++;
+      else if (sc2 < 80) brackets[2]++;
+      else brackets[3]++;
+      if (sc2 >= 80) topPerf.push(keys[k]);
+      if (sc2 < 60) needsSupport.push(keys[k]);
+    }
+
+    var avg = keys.length > 0 ? Math.round(sumCurrent / keys.length) : 0;
+    var prevAvg = prevCount > 0 ? Math.round(sumPrev / prevCount) : avg;
+    var diff = avg - prevAvg;
+    var trendClass = diff > 0 ? 'trend-up' : (diff < 0 ? 'trend-down' : 'trend-flat');
+    var trendSymbol = diff > 0 ? '&#9650;' : (diff < 0 ? '&#9660;' : '&#9644;');
+
+    var bracketColors = ['#e74c3c', '#f39c12', '#3498db', '#27ae60'];
+    var bracketLabels = ['0-39%', '40-59%', '60-79%', '80-100%'];
+
+    var html = '<div class="audit-stat">';
+    html += '<div class="audit-avg" style="color:' + (avg >= 75 ? '#27ae60' : avg >= 50 ? '#f39c12' : '#e74c3c') + ';">' + avg + '%</div>';
+    html += '<div><span class="trend-arrow ' + trendClass + '">' + trendSymbol + '</span> ';
+    html += (diff >= 0 ? '+' : '') + diff + ' vs previous round</div>';
+    html += '</div>';
+
+    html += '<div class="bracket-row">';
+    for (var b = 0; b < 4; b++) {
+      html += '<div class="bracket-box" style="background:' + bracketColors[b] + '22;border:1px solid ' + bracketColors[b] + ';">';
+      html += '<div style="font-weight:700;font-size:1.1rem;">' + brackets[b] + '</div>';
+      html += '<div>' + bracketLabels[b] + '</div></div>';
+    }
+    html += '</div>';
+
+    html += '<div class="chart-wrap"><canvas id="auditChart" height="120"></canvas></div>';
+
+    if (topPerf.length > 0) {
+      html += '<div style="margin-top:10px;font-size:0.88rem;font-weight:600;color:#27ae60;">Top Performers (&ge;80%):</div>';
+      html += '<div class="teacher-list">';
+      for (var tp = 0; tp < topPerf.length; tp++) html += '<span>' + escHtml(topPerf[tp]) + '</span>';
+      html += '</div>';
+    }
+    if (needsSupport.length > 0) {
+      html += '<div style="font-size:0.88rem;font-weight:600;color:#e74c3c;">Needs Support (&lt;60%):</div>';
+      html += '<div class="teacher-list">';
+      for (var ns = 0; ns < needsSupport.length; ns++) html += '<span>' + escHtml(needsSupport[ns]) + '</span>';
+      html += '</div>';
+    }
+
+    container.innerHTML = html;
+
+    destroyChart('auditChart');
+    var auditCtx = document.getElementById('auditChart');
+    if (auditCtx) {
+      chartInstances.auditChart = new Chart(auditCtx, {
+        type: 'bar',
+        data: {
+          labels: bracketLabels,
+          datasets: [{ label: 'Teachers', data: brackets, backgroundColor: bracketColors.map(function (c) { return c + '99'; }), borderColor: bracketColors, borderWidth: 1, borderRadius: 4 }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        }
+      });
+    }
+  }
+
+  /* ── Coordinator Activity ───────────────────────────────── */
+  function renderCoordinators(wt, audits, cycles) {
+    var container = document.getElementById('coordContent');
+    var coordMap = {};
+
+    for (var i = 0; i < allEnvelopes.length; i++) {
+      var env = allEnvelopes[i];
+      var id = env.coordinatorId || env.id || '';
+      if (!id) continue;
+
+      // Check if this coordinator has data for our campus
+      var envWt = parseKey(env, 'walkthrough_history') || [];
+      var envAu = parseKey(env, 'esl_audit_history') || [];
+      var envCd = parseKey(env, 'coaching_cycles_data');
+      var envCy = envCd ? (envCd.cycles || (Array.isArray(envCd) ? envCd : [])) : [];
+
+      var hasData = false;
+      var wtCount = 0;
+      var auCount = 0;
+      var cyCount = 0;
+      var j;
+
+      for (j = 0; j < envWt.length; j++) {
+        if (envWt[j].meta && matchCampus(envWt[j].meta.campus)) { hasData = true; wtCount++; }
+      }
+      for (j = 0; j < envAu.length; j++) {
+        if (envAu[j].meta && matchCampus(envAu[j].meta.campus)) { hasData = true; auCount++; }
+      }
+      for (j = 0; j < envCy.length; j++) {
+        if (matchCampus(envCy[j].campus)) { hasData = true; cyCount++; }
+      }
+
+      if (!hasData) continue;
+
+      var lastSync = new Date(env.lastSync || env.lastSynced || 0);
+      coordMap[id] = {
+        id: id,
+        name: env.coordinatorName || id,
+        lastSync: lastSync,
+        walkthroughs: wtCount,
+        audits: auCount,
+        cycles: cyCount
+      };
+    }
+
+    var coordKeys = Object.keys(coordMap);
+    if (coordKeys.length === 0) {
+      container.innerHTML = '<div class="empty-state"><div class="empty-icon">&#128101;</div><p>No coordinator data yet.</p></div>';
+      return;
+    }
+
+    var html = '';
+    var chartLabels = [];
+    var chartWt = [];
+    var chartAu = [];
+    var chartCy = [];
+    var chartColors = [];
+
+    for (var ck = 0; ck < coordKeys.length; ck++) {
+      var co = coordMap[coordKeys[ck]];
+      var color = COORD_COLORS[co.id] || '#2c3e6e';
+      var hoursSince = (now - co.lastSync) / 3600000;
+      var freshClass = hoursSince < 24 ? 'fresh-green' : (hoursSince < 168 ? 'fresh-yellow' : 'fresh-red');
+
+      html += '<div class="coordinator-row">';
+      html += '<div class="coord-name" style="color:' + color + ';">' + escHtml(co.name) + '</div>';
+      html += '<div class="coord-stat"><span class="freshness ' + freshClass + '"></span>Synced: ' + co.lastSync.toLocaleDateString() + '</div>';
+      html += '<div class="coord-stat">WT: ' + co.walkthroughs + '</div>';
+      html += '<div class="coord-stat">Audits: ' + co.audits + '</div>';
+      html += '<div class="coord-stat">Cycles: ' + co.cycles + '</div>';
+      html += '</div>';
+
+      chartLabels.push(co.name);
+      chartWt.push(co.walkthroughs);
+      chartAu.push(co.audits);
+      chartCy.push(co.cycles);
+      chartColors.push(color);
+    }
+
+    html += '<div class="chart-wrap"><canvas id="coordChart" height="160"></canvas></div>';
+    container.innerHTML = html;
+
+    destroyChart('coordChart');
+    var coordCtx = document.getElementById('coordChart');
+    if (coordCtx) {
+      chartInstances.coordChart = new Chart(coordCtx, {
+        type: 'bar',
+        data: {
+          labels: chartLabels,
+          datasets: [
+            { label: 'Walkthroughs', data: chartWt, backgroundColor: '#4a90d9', borderRadius: 4 },
+            { label: 'Audits', data: chartAu, backgroundColor: '#27ae60', borderRadius: 4 },
+            { label: 'Cycles', data: chartCy, backgroundColor: '#f39c12', borderRadius: 4 }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } },
+          scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        }
+      });
+    }
+  }
+
+  /* ── Action Items ───────────────────────────────────────── */
+  function renderActions(wt, audits, cycles, teachers) {
+    var container = document.getElementById('actionsContent');
+    var items = [];
+
+    var thirtyAgo = new Date(now.getTime() - 30 * 86400000);
+    var fourteenAgo = new Date(now.getTime() - 14 * 86400000);
+
+    // Teachers not observed in 30+ days
+    var visited = {};
+    for (var i = 0; i < wt.length; i++) {
+      var d = new Date(wt[i].date || wt[i].timestamp || 0);
+      var wtTeachers = wt[i].teachers || [];
+      if (d >= thirtyAgo) {
+        for (var ti = 0; ti < wtTeachers.length; ti++) {
+          if (wtTeachers[ti]) visited[wtTeachers[ti]] = true;
+        }
+      }
+    }
+    for (var t = 0; t < teachers.length; t++) {
+      if (!visited[teachers[t]]) {
+        items.push({ priority: 'red', text: escHtml(teachers[t]) + ' has not been observed in 30+ days.' });
+      }
+    }
+
+    // Stalled coaching cycles
+    for (var c = 0; c < cycles.length; c++) {
+      var cy = cycles[c];
+      if (cy.isComplete) continue;
+      var lastUp = new Date(cy.lastUpdated || cy.createdAt || 0);
+      if (lastUp < fourteenAgo) {
+        items.push({ priority: 'yellow', text: 'Coaching cycle for ' + escHtml(cy.teacher || 'Unknown') + ' stalled for ' + daysBetween(lastUp, now) + ' days.' });
+      }
+    }
+
+    // Low audit scores
+    var auditByTeacher = {};
+    for (var a = 0; a < audits.length; a++) {
+      var at = audits[a].teacher || 'Unknown';
+      var aDate = new Date(audits[a].date || audits[a].timestamp || 0);
+      if (!auditByTeacher[at] || aDate > auditByTeacher[at].date) {
+        auditByTeacher[at] = { date: aDate, score: audits[a].score || 0 };
+      }
+    }
+    var atKeys = Object.keys(auditByTeacher);
+    for (var ak = 0; ak < atKeys.length; ak++) {
+      if (auditByTeacher[atKeys[ak]].score < 60) {
+        items.push({ priority: 'red', text: escHtml(atKeys[ak]) + ' audit score is below 60% (' + Math.round(auditByTeacher[atKeys[ak]].score) + '%).' });
+      }
+    }
+
+    // Stale coordinator data
+    for (var ei = 0; ei < allEnvelopes.length; ei++) {
+      var env = allEnvelopes[ei];
+      var lastSync = new Date(env.lastSync || env.lastSynced || 0);
+      if ((now - lastSync) > 7 * 86400000) {
+        var coordName = env.coordinatorName || env.coordinatorId || 'Unknown';
+        items.push({ priority: 'yellow', text: 'Coordinator ' + escHtml(coordName) + ' data is ' + daysBetween(lastSync, now) + ' days old.' });
+      }
+    }
+
+    if (items.length === 0) {
+      container.innerHTML = '<div class="empty-state"><div class="empty-icon">&#9989;</div><p>No action items at this time. Everything looks good!</p></div>';
+      return;
+    }
+
+    // Sort: red first, yellow, green
+    var priorityOrder = { red: 0, yellow: 1, green: 2 };
+    items.sort(function (a, b) { return (priorityOrder[a.priority] || 0) - (priorityOrder[b.priority] || 0); });
+
+    var html = '';
+    for (var ai = 0; ai < items.length; ai++) {
+      var item = items[ai];
+      var icon = item.priority === 'red' ? '!' : (item.priority === 'yellow' ? '!' : '&#10003;');
+      var iconClass = 'priority-' + item.priority;
+      html += '<div class="action-item">';
+      html += '<div class="action-icon ' + iconClass + '">' + icon + '</div>';
+      html += '<div>' + item.text + '</div>';
+      html += '</div>';
+    }
+    html += '<button class="btn-print-actions" onclick="printActions()">Print Action Items</button>';
+    container.innerHTML = html;
+  }
+
+  /* ── Print Action Items ─────────────────────────────────── */
+  window.printActions = function () {
+    var cards = document.querySelectorAll('.card');
+    var hidden = [];
+    for (var i = 0; i < cards.length; i++) {
+      if (cards[i].id !== 'actionsCard') {
+        cards[i].style.display = 'none';
+        hidden.push(cards[i]);
+      }
+    }
+    window.print();
+    for (var h = 0; h < hidden.length; h++) {
+      hidden[h].style.display = '';
+    }
+  };
+
+  /* ── Expose globals ─────────────────────────────────────── */
+  window.refreshData = refreshData;
+  window.toggleSetup = toggleSetup;
+  window.toggleDark = toggleDark;
+  window.saveSetup = saveSetup;
+
+  /* ── PWA ─────────────────────────────────────────────────── */
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('../service-worker.js').catch(function () {});
+  }
+
+  /* ── Init ────────────────────────────────────────────────── */
+  applyTheme();
+  loadConfig();
+  updateHeader();
+
+  if (!gasUrl) {
+    document.getElementById('setupCard').style.display = '';
+  } else {
+    refreshData();
+  }
+})();
+</script>
+</body>
+</html>
