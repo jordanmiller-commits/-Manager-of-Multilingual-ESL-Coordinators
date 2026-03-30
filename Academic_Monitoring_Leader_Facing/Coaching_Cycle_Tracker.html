@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <link rel="manifest" href="../manifest.json"/>
 <meta name="theme-color" content="#2c3e6e"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://api.github.com; font-src 'self'; frame-src 'none'"/>
 <title>Coaching Cycle Tracker &mdash; Observation to Growth</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -312,6 +313,14 @@ body.dark-mode .teacher-link:hover{color:#a8d4ff}
 .dash-link:hover{background:#eaf3fb;border-color:#4a90d9;text-decoration:none}
 body.dark-mode .dash-link{background:#1a2744;border-color:#2d3a6e;color:#7eb8f7}
 body.dark-mode .dash-link:hover{background:#2d3a6e;border-color:#4a90d9}
+.last-saved-footer{position:fixed;bottom:0;left:0;width:100%;background:rgba(248,249,251,.95);border-top:1px solid #e0e3e8;padding:4px 16px;font-size:10px;color:#999;text-align:right;z-index:50;font-family:inherit}
+body.dark-mode .last-saved-footer,body.dark .last-saved-footer{background:rgba(30,30,30,.95);border-color:#333;color:#666}
+@media print{.last-saved-footer{display:none}}
+.notif-bell-link{position:relative;display:inline-block;padding:6px 13px;border-radius:7px;border:2px solid rgba(255,255,255,.35);background:rgba(255,255,255,.13);color:#fff;font-size:14px;text-decoration:none;transition:all .15s;line-height:1;cursor:pointer}
+.notif-bell-link:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.55)}
+.notif-bell-badge{position:absolute;top:-4px;right:-4px;background:#e74c3c;color:#fff;font-size:9px;font-weight:800;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 4px;line-height:1}
+.notif-bell-badge.hidden{display:none}
+@media print{.notif-bell-link{display:none!important}}
 </style>
 </head>
 <body>
@@ -327,8 +336,10 @@ body.dark-mode .dash-link:hover{background:#2d3a6e;border-color:#4a90d9}
       <button class="tool-btn" onclick="exportData()">&#128190; Export</button>
       <button class="tool-btn" onclick="showModal('importDataModal')">&#128194; Import</button>
       <button class="tool-btn danger" onclick="showModal('resetModal')">&#128260; Reset</button>
+      <a class="notif-bell-link" href="../index.html" title="Notifications" id="notifBellLink">&#128276;<span class="notif-bell-badge hidden" id="notifBellBadge">0</span></a>
       <button class="tool-btn" onclick="toggleDarkMode()" id="darkModeToggle" aria-label="Toggle dark mode">&#9789; Dark</button>
       <button class="tool-btn" onclick="exportCalendar()" aria-label="Export coaching deadlines to calendar">&#128197; Export Calendar</button>
+      <button class="tool-btn" onclick="window.print()">&#128438; Print / PDF</button>
       <span class="save-indicator" id="saveStatus">Auto-save: ready</span>
     </div>
     <div class="nav-links">
@@ -474,12 +485,15 @@ body.dark-mode .dash-link:hover{background:#2d3a6e;border-color:#4a90d9}
   </div>
 </div>
 
+<div class="last-saved-footer" id="lastSavedFooter"></div>
 <div class="toast" id="toastEl"></div>
 
 <script>
 /* ======================================================
    DARK MODE
    ====================================================== */
+
+function initNotifBell(){var c=localStorage.getItem('notification_unread_count');var n=parseInt(c)||0;var b=document.getElementById('notifBellBadge');if(b){b.textContent=n>9?'9+':String(n);b.className=n>0?'notif-bell-badge':'notif-bell-badge hidden';}}
 
 function toggleDarkMode(){var d=document.body.classList.toggle("dark-mode");localStorage.setItem("esl_app_theme",d?"dark":"light");var b=document.getElementById("darkModeToggle");if(b)b.innerHTML=d?"&#9788; Light":"&#9789; Dark";}
 (function(){if(localStorage.getItem("esl_app_theme")==="dark"){document.body.classList.add("dark-mode");var b=document.getElementById("darkModeToggle");if(b)b.innerHTML="&#9788; Light";}})();
@@ -735,6 +749,7 @@ function collectState() {
 function saveToStorage() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(collectState()));
+    stampLastSaved();
     var el = document.getElementById("saveStatus");
     el.textContent = "Saved " + new Date().toLocaleTimeString();
     setTimeout(function() { el.textContent = "Auto-save: ready"; }, 2000);
@@ -1570,7 +1585,12 @@ function exportCalendar(){
    SERVICE WORKER REGISTRATION
    ====================================================== */
 
+var LAST_SAVED_KEY = 'coaching_cycles_data_lastSaved';
+function stampLastSaved(){localStorage.setItem(LAST_SAVED_KEY,String(Date.now()));renderLastSaved();}
+function renderLastSaved(){var ts=localStorage.getItem(LAST_SAVED_KEY);var el=document.getElementById('lastSavedFooter');if(el)el.textContent=ts?'Last saved: '+new Date(parseInt(ts)).toLocaleString():'';}
+renderLastSaved();
 if("serviceWorker" in navigator){navigator.serviceWorker.register("../service-worker.js").catch(function(){});}
+initNotifBell();
 </script>
 </body>
 </html>

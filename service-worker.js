@@ -1,4 +1,4 @@
-var CACHE_NAME = "mlp-suite-v4";
+var CACHE_NAME = "mlp-suite-v5";
 var ASSETS = [
   "./Principal_Checkpoint_Portal/Principal_Checkpoint_Portal.html",
   "./Principal_Checkpoint_Portal/Campus_Report_Card.html",

@@ -6,6 +6,7 @@
 <title>MLP Audit Dashboard &mdash; Trend Analysis</title>
 <link rel="manifest" href="../manifest.json"/>
 <meta name="theme-color" content="#2c3e6e"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://api.github.com; font-src 'self'; frame-src 'none'"/>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -106,6 +107,14 @@ body.dark-mode .teacher-link:hover{color:#a8d4ff}
 body.dark-mode .audit-entries-table th{background:#1a2744}
 body.dark-mode .audit-entries-table td{border-color:#2d3a6e;color:#ccc}
 body.dark-mode .audit-entries-table tr:hover td{background:#1a2744}
+.last-saved-footer{position:fixed;bottom:0;left:0;width:100%;background:rgba(248,249,251,.95);border-top:1px solid #e0e3e8;padding:4px 16px;font-size:10px;color:#999;text-align:right;z-index:50;font-family:inherit}
+body.dark-mode .last-saved-footer,body.dark .last-saved-footer{background:rgba(30,30,30,.95);border-color:#333;color:#666}
+@media print{.last-saved-footer{display:none}}
+.notif-bell-link{position:relative;display:inline-block;padding:6px 13px;border-radius:7px;border:2px solid rgba(255,255,255,.35);background:rgba(255,255,255,.13);color:#fff;font-size:14px;text-decoration:none;transition:all .15s;line-height:1;cursor:pointer}
+.notif-bell-link:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.55)}
+.notif-bell-badge{position:absolute;top:-4px;right:-4px;background:#e74c3c;color:#fff;font-size:9px;font-weight:800;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 4px;line-height:1}
+.notif-bell-badge.hidden{display:none}
+@media print{.notif-bell-link{display:none!important}}
 </style>
 </head>
 <body>
@@ -118,6 +127,7 @@ body.dark-mode .audit-entries-table tr:hover td{background:#1a2744}
     <div class="toolbar">
       <a class="tool-btn" href="ESL_Classroom_Audit.html">&larr; Back to Audit</a>
       <button class="tool-btn" onclick="refreshDashboard()" title="Reload data from localStorage">&#x21bb; Refresh</button>
+      <a class="notif-bell-link" href="../index.html" title="Notifications" id="notifBellLink">&#128276;<span class="notif-bell-badge hidden" id="notifBellBadge">0</span></a>
       <button class="tool-btn" onclick="toggleDarkMode()" id="darkModeToggle" aria-label="Toggle dark mode">&#9789; Dark</button>
       <a class="tool-btn" href="../index.html" style="margin-left:auto" aria-label="Back to Home">&#127968; Home</a>
       <span id="lastUpdated" style="font-size:10px;color:rgba(255,255,255,.6)"></span>
@@ -192,6 +202,7 @@ body.dark-mode .audit-entries-table tr:hover td{background:#1a2744}
     <div class="audit-table-wrap"><div id="auditTableWrap"></div></div>
   </div>
 
+  <div class="last-saved-footer" id="lastSavedFooter"></div>
   <div class="toast" id="toast"></div>
 </div>
 
@@ -199,6 +210,8 @@ body.dark-mode .audit-entries-table tr:hover td{background:#1a2744}
 /* ======================================================
    SECTIONS reference data (id, title, type, itemCount)
    ====================================================== */
+function initNotifBell(){var c=localStorage.getItem('notification_unread_count');var n=parseInt(c)||0;var b=document.getElementById('notifBellBadge');if(b){b.textContent=n>9?'9+':String(n);b.className=n>0?'notif-bell-badge':'notif-bell-badge hidden';}}
+
 var SECTIONS = [
   {id:"s01",title:"Language Production Supports",type:"permanent",itemCount:5},
   {id:"s02",title:"Vocabulary Systems",type:"permanent",itemCount:5},
@@ -1047,7 +1060,10 @@ function toggleDarkMode(){var d=document.body.classList.toggle("dark-mode");loca
   refreshDashboard();
 })();
 
+function renderLastSaved(){var ts=localStorage.getItem('esl_audit_history_lastSaved');var el=document.getElementById('lastSavedFooter');if(el)el.textContent=ts?'Data last updated: '+new Date(parseInt(ts)).toLocaleString():'';}
+renderLastSaved();
 if("serviceWorker" in navigator){navigator.serviceWorker.register("../service-worker.js").catch(function(){});}
+initNotifBell();
 </script>
 </body>
 </html>

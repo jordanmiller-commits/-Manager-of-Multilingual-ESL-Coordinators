@@ -6,6 +6,7 @@
 <title>EB Student Roster</title>
 <link rel="manifest" href="./manifest.json"/>
 <meta name="theme-color" content="#2c3e6e"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://api.github.com; font-src 'self'; frame-src 'none'"/>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -157,6 +158,14 @@ body.dark-mode .empty-state{color:#555}
   .stats-row{grid-template-columns:repeat(2,1fr)}
   .filter-bar{flex-direction:column;align-items:stretch}
 }
+.last-saved-footer{position:fixed;bottom:0;left:0;width:100%;background:rgba(248,249,251,.95);border-top:1px solid #e0e3e8;padding:4px 16px;font-size:10px;color:#999;text-align:right;z-index:50;font-family:inherit}
+body.dark-mode .last-saved-footer{background:rgba(30,30,30,.95);border-color:#333;color:#666}
+@media print{.last-saved-footer{display:none}}
+.notif-bell-link{position:relative;display:inline-block;padding:6px 13px;border-radius:7px;border:2px solid rgba(255,255,255,.35);background:rgba(255,255,255,.13);color:#fff;font-size:14px;text-decoration:none;transition:all .15s;line-height:1;cursor:pointer}
+.notif-bell-link:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.55)}
+.notif-bell-badge{position:absolute;top:-4px;right:-4px;background:#e74c3c;color:#fff;font-size:9px;font-weight:800;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 4px;line-height:1}
+.notif-bell-badge.hidden{display:none}
+@media print{.notif-bell-link{display:none!important}}
 </style>
 </head>
 <body>
@@ -169,6 +178,8 @@ body.dark-mode .empty-state{color:#555}
       <button class="tool-btn" onclick="openStudentModal(null)">&#65291; Add Student</button>
       <button class="tool-btn" onclick="triggerImport()">&#8679; Import CSV</button>
       <button class="tool-btn" onclick="exportCsv()">&#8681; Export CSV</button>
+      <button class="tool-btn" onclick="window.print()">&#128438; Print / PDF</button>
+      <a class="notif-bell-link" href="index.html" title="Notifications" id="notifBellLink">&#128276;<span class="notif-bell-badge hidden" id="notifBellBadge">0</span></a>
       <button class="tool-btn" onclick="toggleDark()">&#9790; Dark Mode</button>
       <a class="tool-btn" href="index.html" style="margin-left:auto">&#127968; Home</a>
     </div>
@@ -413,9 +424,11 @@ body.dark-mode .empty-state{color:#555}
 <input type="file" id="csvFileInput" accept=".csv" style="display:none" onchange="handleCsvFile(event)"/>
 
 <!-- TOAST -->
+<div class="last-saved-footer" id="lastSavedFooter"></div>
 <div class="toast" id="toast"></div>
 
 <script>
+function initNotifBell(){var c=localStorage.getItem('notification_unread_count');var n=parseInt(c)||0;var b=document.getElementById('notifBellBadge');if(b){b.textContent=n>9?'9+':String(n);b.className=n>0?'notif-bell-badge':'notif-bell-badge hidden';}}
 var DATA_KEY = "student_roster_data";
 var data = {version:1, students:[]};
 var profChart = null;
@@ -426,10 +439,15 @@ var deletingId = null;
 /* =====================
    INIT
    ===================== */
+var LAST_SAVED_KEY = 'student_roster_data_lastSaved';
+function stampLastSaved(){localStorage.setItem(LAST_SAVED_KEY,String(Date.now()));renderLastSaved();}
+function renderLastSaved(){var ts=localStorage.getItem(LAST_SAVED_KEY);var el=document.getElementById('lastSavedFooter');if(el)el.textContent=ts?'Last saved: '+new Date(parseInt(ts)).toLocaleString():'';}
+
 function init() {
   applyTheme();
   loadData();
   renderAll();
+  renderLastSaved();
 }
 
 function applyTheme() {
@@ -458,6 +476,7 @@ function loadData() {
 function saveData() {
   try {
     localStorage.setItem(DATA_KEY, JSON.stringify(data));
+    stampLastSaved();
   } catch(e) {
     showToast("Error saving data — storage may be full.");
   }
@@ -982,6 +1001,7 @@ if ("serviceWorker" in navigator) {
 }
 
 init();
+initNotifBell();
 </script>
 </body>
 </html>

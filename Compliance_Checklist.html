@@ -6,6 +6,7 @@
 <title>MLP Program Compliance Checklist</title>
 <link rel="manifest" href="./manifest.json"/>
 <meta name="theme-color" content="#2c3e6e"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://api.github.com; font-src 'self'; frame-src 'none'"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh;padding:20px;color:#333}
@@ -197,6 +198,9 @@ body.dark-mode .section-badge.partial{background:#3e2a10;color:#f5c842;border-co
   .campus-cards-row{gap:8px}
   .campus-card{min-width:120px;padding:10px 12px}
 }
+.last-saved-footer{position:fixed;bottom:0;left:0;width:100%;background:rgba(248,249,251,.95);border-top:1px solid #e0e3e8;padding:4px 16px;font-size:10px;color:#999;text-align:right;z-index:50;font-family:inherit}
+body.dark-mode .last-saved-footer{background:rgba(30,30,30,.95);border-color:#333;color:#666}
+@media print{.last-saved-footer{display:none}}
 
 /* PRINT */
 @media print{
@@ -207,6 +211,11 @@ body.dark-mode .section-badge.partial{background:#3e2a10;color:#f5c842;border-co
   .notes-area.open textarea{border:1px solid #ddd;background:#fff}
   .report-table th{background:#2c3e6e!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
+.notif-bell-link{position:relative;display:inline-block;padding:6px 13px;border-radius:7px;border:2px solid rgba(255,255,255,.35);background:rgba(255,255,255,.13);color:#fff;font-size:14px;text-decoration:none;transition:all .15s;line-height:1;cursor:pointer}
+.notif-bell-link:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.55)}
+.notif-bell-badge{position:absolute;top:-4px;right:-4px;background:#e74c3c;color:#fff;font-size:9px;font-weight:800;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 4px;line-height:1}
+.notif-bell-badge.hidden{display:none}
+@media print{.notif-bell-link{display:none!important}}
 </style>
 </head>
 <body>
@@ -220,6 +229,7 @@ body.dark-mode .section-badge.partial{background:#3e2a10;color:#f5c842;border-co
       <button class="tool-btn accent" onclick="generateReport()">&#128196; Generate Report</button>
       <button class="tool-btn" onclick="openItemsModal()">&#9999; Manage Items</button>
       <button class="tool-btn" onclick="openCampusModal()">&#127970; Manage Campuses</button>
+      <a class="notif-bell-link" href="index.html" title="Notifications" id="notifBellLink">&#128276;<span class="notif-bell-badge hidden" id="notifBellBadge">0</span></a>
       <button class="tool-btn" onclick="toggleDarkMode()" id="darkModeToggle">&#9789; Dark</button>
       <a class="tool-btn" href="index.html" style="margin-left:auto">&#127968; Home</a>
     </div>
@@ -322,14 +332,20 @@ body.dark-mode .section-badge.partial{background:#3e2a10;color:#f5c842;border-co
 </div>
 
 <!-- TOAST -->
+<div class="last-saved-footer" id="lastSavedFooter"></div>
 <div class="toast" id="toast"></div>
 
 <script>
+function initNotifBell(){var c=localStorage.getItem('notification_unread_count');var n=parseInt(c)||0;var b=document.getElementById('notifBellBadge');if(b){b.textContent=n>9?'9+':String(n);b.className=n>0?'notif-bell-badge':'notif-bell-badge hidden';}}
 var STORAGE_KEY = 'compliance_checklist_data';
 var SEMESTERS = ['Fall 2024-25','Spring 2024-25','Fall 2025-26','Spring 2025-26','Fall 2026-27','Spring 2026-27'];
 var appData = null;
 var newItemRequired = false;
 var _saveTimer = null;
+
+var LAST_SAVED_KEY = 'compliance_checklist_data_lastSaved';
+function stampLastSaved(){localStorage.setItem(LAST_SAVED_KEY,String(Date.now()));renderLastSaved();}
+function renderLastSaved(){var ts=localStorage.getItem(LAST_SAVED_KEY);var el=document.getElementById('lastSavedFooter');if(el)el.textContent=ts?'Last saved: '+new Date(parseInt(ts)).toLocaleString():'';}
 
 /* =====================
    UTILITIES
@@ -384,6 +400,7 @@ function saveData() {
   clearTimeout(_saveTimer);
   _saveTimer = setTimeout(function() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+    stampLastSaved();
   }, 300);
 }
 
@@ -832,9 +849,11 @@ function init() {
   // Select first semester by default, leave campus blank
   renderChecklist();
   renderCampusSummary();
+  renderLastSaved();
 }
 
 init();
+initNotifBell();
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./service-worker.js').catch(function(){});

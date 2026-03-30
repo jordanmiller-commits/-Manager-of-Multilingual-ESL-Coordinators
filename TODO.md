@@ -1,6 +1,6 @@
 # MLP Coordinator Hub — Project TODO
 
-Last updated: 2026-03-10
+Last updated: 2026-03-12
 
 ---
 
@@ -10,7 +10,7 @@ Last updated: 2026-03-10
 - [x] **[CRITICAL] Verify Google Drive folder permissions** — Folder `1HpYZoIgwbr0iZL6pnntBZw648--us9BG` created and owned by script account. Verify via Drive → folder → Share that no extra accounts have access.
 - [x] **[HIGH] GAS input validation** — `sanitizeCoordId()` added in v5.0.0; strips non-alphanumeric chars, enforces 50-char max on all incoming `coordinatorId` values.
 - [ ] **[HIGH] GitHub PAT stored in plaintext** — `esl_gist_sync` stores the Gist PAT in localStorage. Add a "Clear PAT" button to Data Backup Hub. Warn users to use a fine-grained PAT scoped to `gist` only.
-- [ ] **[MEDIUM] Content Security Policy** — Add `<meta http-equiv="Content-Security-Policy">` to all HTML files.
+- [x] **[MEDIUM] Content Security Policy** — Added `<meta http-equiv="Content-Security-Policy">` to all 24 HTML files. Allows `self`, `unsafe-inline`, `cdn.jsdelivr.net` (Chart.js/PDF.js), GAS endpoints, and GitHub API. ELPS Agent has extended policy for Ollama/Anthropic/OpenAI APIs.
 - [ ] **[MEDIUM] GAS audit logging** — Log every write operation (timestamp, coordinatorId, action, payload size) to a Google Sheet.
 - [ ] **[MEDIUM] Enable GitHub secret scanning** — Repo Settings → Code security → Secret scanning (separate from the Actions workflow already on disk).
 - [ ] **[LOW] Encrypt sensitive localStorage keys** — SubtleCrypto AES-GCM for coaching notes and student-adjacent data.
@@ -88,13 +88,13 @@ One-page campus summary for principals.
 
 ### 5. Notification Center
 Persistent cross-tool notification inbox.
-- [ ] Add bell icon to shared header pattern across all tools
-- [ ] Notification types: stale data warnings, stalled coaching cycles, approaching PD hour deadlines, compliance due dates, TELPAS decline alerts
-- [ ] localStorage key: `notification_center_data`
-- [ ] Badge count on bell icon
-- [ ] Notification drawer/panel (slide-out or dropdown)
-- [ ] Mark as read / dismiss / snooze functionality
-- [ ] Each tool writes notifications on save when conditions are met
+- [x] Add bell icon to shared header pattern across all 24 tools (links to home page drawer on non-home tools)
+- [x] Notification types: stale data warnings, stalled coaching cycles, approaching PD hour deadlines, compliance due dates, TELPAS decline alerts, overdue coaching actions
+- [x] localStorage key: `notification_center_data` (dismissed/read state), `notification_unread_count` (badge count for other tools)
+- [x] Badge count on bell icon (red badge, hidden when 0)
+- [x] Notification drawer/panel (slide-out drawer on home page with overlay)
+- [x] Mark as read / dismiss functionality (auto-mark-read on drawer open, per-item dismiss, "Reset dismissed" button)
+- [x] Home page scans all data sources on load and generates notifications dynamically
 
 ### 6. Data Visualization Upgrades
 Enhance existing dashboards with new chart types.
@@ -170,11 +170,11 @@ Lightweight read-only portal for families.
 
 ## ⚡ QUICK WINS (< 1 session each)
 
-- [ ] **Export to PDF button** — Add `window.print()` button to tools that have print CSS but no explicit button
-- [ ] **Keyboard shortcuts** — `Ctrl+N` new entry, `Ctrl+S` force save, `/` focus search; add help overlay (`?` key)
-- [ ] **Data health dashboard** — Section in Data Backup Hub showing localStorage usage per key, last-modified timestamps, 5MB limit warning
+- [x] **Export to PDF button** — Added `window.print()` "Print / PDF" button to all tools that were missing one (17 tools added, 7 already had one)
+- [ ] **Keyboard shortcuts** — `Ctrl+N` new entry, `Ctrl+S` force save, `/` focus search; add help overlay (`?` key) — *deprioritized*
+- [x] **Data health dashboard** — Section in Data Backup Hub showing localStorage usage meter (% of 5MB), per-key size bars, last-saved timestamps, record counts, and color-coded warnings (green/yellow/red)
 - [ ] **Duplicate detection** — Flag students with similar names across campuses in Student Roster and TELPAS Tracker
-- [ ] **"Last saved" timestamp** — Visible footer in each tool showing when data was last written to localStorage
+- [x] **"Last saved" timestamp** — Fixed footer in all 24 tools showing last save time (tools with save functions stamp on save; read-only tools show source data timestamps; sync tools show last sync time)
 
 ---
 

@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Teacher 360 Profile &mdash; MLP Coordinator Hub</title>
 <link rel="manifest" href="./manifest.json"/>
+<meta name="theme-color" content="#2c3e6e"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://api.github.com; font-src 'self'; frame-src 'none'"/>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -312,6 +314,14 @@ body.dark-mode .toast{background:#7eb8f7;color:#1a1a2e}
 .breadcrumb a:hover{text-decoration:underline}
 body.dark-mode .breadcrumb{background:#16213e;color:#aaa}
 body.dark-mode .breadcrumb a{color:#7eb8f7}
+.last-saved-footer{position:fixed;bottom:0;left:0;width:100%;background:rgba(248,249,251,.95);border-top:1px solid #e0e3e8;padding:4px 16px;font-size:10px;color:#999;text-align:right;z-index:50;font-family:inherit}
+body.dark-mode .last-saved-footer{background:rgba(30,30,30,.95);border-color:#333;color:#666}
+@media print{.last-saved-footer{display:none}}
+.notif-bell-link{position:relative;display:inline-block;padding:6px 13px;border-radius:7px;border:2px solid rgba(255,255,255,.35);background:rgba(255,255,255,.13);color:#fff;font-size:14px;text-decoration:none;transition:all .15s;line-height:1;cursor:pointer}
+.notif-bell-link:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.55)}
+.notif-bell-badge{position:absolute;top:-4px;right:-4px;background:#e74c3c;color:#fff;font-size:9px;font-weight:800;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 4px;line-height:1}
+.notif-bell-badge.hidden{display:none}
+@media print{.notif-bell-link{display:none!important}}
 </style>
 </head>
 <body>
@@ -322,6 +332,7 @@ body.dark-mode .breadcrumb a{color:#7eb8f7}
     <p>Aggregated view of walkthrough observations, audits, coaching cycles, and actions for a single teacher.</p>
     <div class="toolbar">
       <a class="tool-btn" href="index.html" style="margin-left:auto" aria-label="Back to Home">&#127968; Home</a>
+      <a class="notif-bell-link" href="index.html" title="Notifications" id="notifBellLink">&#128276;<span class="notif-bell-badge hidden" id="notifBellBadge">0</span></a>
       <button class="tool-btn" id="darkToggle" onclick="toggleDarkMode()" aria-label="Toggle dark mode">&#9790; Dark Mode</button>
       <button class="tool-btn" onclick="window.print()" aria-label="Print this profile">&#128424; Print</button>
     </div>
@@ -425,9 +436,12 @@ body.dark-mode .breadcrumb a{color:#7eb8f7}
     </div>
   </div>
 </div>
+<div class="last-saved-footer" id="lastSavedFooter"></div>
 <div class="toast" id="toast"></div>
 
 <script>
+function initNotifBell(){var c=localStorage.getItem('notification_unread_count');var n=parseInt(c)||0;var b=document.getElementById('notifBellBadge');if(b){b.textContent=n>9?'9+':String(n);b.className=n>0?'notif-bell-badge':'notif-bell-badge hidden';}}
+
 /* ======================================================
    UTILITY FUNCTIONS
    ====================================================== */
@@ -2103,6 +2117,14 @@ function loadTheme() {
    INITIALIZATION
    ====================================================== */
 
+function renderLastSaved(){
+  var keys=['walkthrough_history_lastSaved','esl_audit_history_lastSaved','coaching_cycles_data_lastSaved','pd_tracker_data_lastSaved','meeting_notes_data_lastSaved','compliance_checklist_data_lastSaved','goal_setting_data_lastSaved'];
+  var latest=0;
+  for(var i=0;i<keys.length;i++){var v=parseInt(localStorage.getItem(keys[i])||'0');if(v>latest)latest=v;}
+  var el=document.getElementById('lastSavedFooter');
+  if(el)el.textContent=latest?'Data last updated: '+new Date(latest).toLocaleString():'';
+}
+
 function init() {
   loadTheme();
   populateTeacherDropdown();
@@ -2125,9 +2147,11 @@ function init() {
       }
     }, 100);
   }
+  renderLastSaved();
 }
 
 init();
+initNotifBell();
 
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("./service-worker.js").catch(function() {});

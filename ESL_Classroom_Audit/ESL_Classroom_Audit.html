@@ -4,6 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <meta name="theme-color" content="#2c3e6e"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://api.github.com; font-src 'self'; frame-src 'none'"/>
 <link rel="manifest" href="../manifest.json"/>
 <title>MLP Classroom Environment Audit</title>
 <style>
@@ -292,6 +293,14 @@ mark{background:#fef08a;color:#333;padding:0 2px;border-radius:2px}
   #vizCanvasWrap{max-height:300px}
   .tool-btn,input,select,.rating-btn{min-height:44px}
 }
+.last-saved-footer{position:fixed;bottom:0;left:0;width:100%;background:rgba(248,249,251,.95);border-top:1px solid #e0e3e8;padding:4px 16px;font-size:10px;color:#999;text-align:right;z-index:50;font-family:inherit}
+body.dark-mode .last-saved-footer,body.dark .last-saved-footer{background:rgba(30,30,30,.95);border-color:#333;color:#666}
+@media print{.last-saved-footer{display:none}}
+.notif-bell-link{position:relative;display:inline-block;padding:6px 13px;border-radius:7px;border:2px solid rgba(255,255,255,.35);background:rgba(255,255,255,.13);color:#fff;font-size:14px;text-decoration:none;transition:all .15s;line-height:1;cursor:pointer}
+.notif-bell-link:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.55)}
+.notif-bell-badge{position:absolute;top:-4px;right:-4px;background:#e74c3c;color:#fff;font-size:9px;font-weight:800;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 4px;line-height:1}
+.notif-bell-badge.hidden{display:none}
+@media print{.notif-bell-link{display:none!important}}
 </style>
 </head>
 <body>
@@ -306,7 +315,9 @@ mark{background:#fef08a;color:#333;padding:0 2px;border-radius:2px}
     <button class="tool-btn" onclick="showCampusDash()" title="Campus-level aggregate data" style="border-color:rgba(44,62,110,.5);background:rgba(44,62,110,.2)">&#127979; Campus</button>
     <button class="tool-btn" onclick="enableMultiObserver()" id="multiObsBtn" title="Enable multi-observer mode for calibration" style="border-color:rgba(52,152,219,.5);background:rgba(52,152,219,.15)">&#128101; Multi-Observer</button>
     <button class="tool-btn danger" onclick="showResetModal()" title="Clear all data and start fresh">&#128260; Reset</button>
+    <a class="notif-bell-link" href="../index.html" title="Notifications" id="notifBellLink">&#128276;<span class="notif-bell-badge hidden" id="notifBellBadge">0</span></a>
     <button class="tool-btn" onclick="showSettingsModal()" title="Settings: export, import, appearance">&#9881; Settings</button>
+    <button class="tool-btn" onclick="window.print()">&#128438; Print / PDF</button>
     <a class="tool-btn" href="../index.html" style="margin-left:auto" aria-label="Back to Home">&#127968; Home</a>
     <span class="save-indicator" id="saveStatus">Auto-save: ready</span>
   </div>
@@ -576,12 +587,15 @@ mark{background:#fef08a;color:#333;padding:0 2px;border-radius:2px}
   </div>
 </div>
 
+<div class="last-saved-footer" id="lastSavedFooter"></div>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 <script>
 /* ==============================
    CONSTANTS & DATA
    ============================== */
+
+function initNotifBell(){var c=localStorage.getItem('notification_unread_count');var n=parseInt(c)||0;var b=document.getElementById('notifBellBadge');if(b){b.textContent=n>9?'9+':String(n);b.className=n>0?'notif-bell-badge':'notif-bell-badge hidden';}}
 
 function escHtml(str) {
   if (!str) return "";
@@ -1730,6 +1744,7 @@ function saveToHistory(){
   var history=getHistory();
   history.push(state);
   localStorage.setItem(HISTORY_KEY,JSON.stringify(history));
+  stampLastSaved();
   alert("Audit saved to history for "+( state.meta.teacher||"unnamed teacher")+" on "+(state.meta.date||"unknown date")+".");
 }
 
@@ -1799,6 +1814,7 @@ function deleteFromHistory(id){
   var history=getHistory();
   history=history.filter(function(a){return a.id!==id;});
   localStorage.setItem(HISTORY_KEY,JSON.stringify(history));
+  stampLastSaved();
   renderHistory();
 }
 
@@ -3567,10 +3583,16 @@ document.querySelectorAll(".modal-overlay").forEach(function(o){
   o.addEventListener("click",function(e){if(e.target===o)o.classList.remove("active");});
 });
 
+var LAST_SAVED_KEY = 'esl_audit_history_lastSaved';
+function stampLastSaved(){localStorage.setItem(LAST_SAVED_KEY,String(Date.now()));renderLastSaved();}
+function renderLastSaved(){var ts=localStorage.getItem(LAST_SAVED_KEY);var el=document.getElementById('lastSavedFooter');if(el)el.textContent=ts?'Last saved: '+new Date(parseInt(ts)).toLocaleString():'';}
+renderLastSaved();
+
 // PWA Service Worker registration
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("../service-worker.js").catch(function() {});
 }
+initNotifBell();
 
 // Walkthrough → Audit handoff
 (function(){

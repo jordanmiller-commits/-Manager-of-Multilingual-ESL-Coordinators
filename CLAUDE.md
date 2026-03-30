@@ -23,7 +23,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Adding a new HTML tool
 1. Create the `.html` file following the conventions below (copy header/dark mode/toast pattern from an existing tool)
 2. Add the file path to `ASSETS` array in root `service-worker.js`
-3. Bump `CACHE_NAME` in `service-worker.js` (e.g., `mlp-suite-v1` → `mlp-suite-v2`)
+3. Bump `CACHE_NAME` in `service-worker.js` (e.g., `mlp-suite-v5` → `mlp-suite-v2`)
 4. Add a tool card in `index.html` with appropriate `data-roles` attribute
 5. If it uses localStorage, add its key(s) to the Cross-Tool Data Sharing table below
 6. If the data should sync to Drive, add the key to `SYNC_KEYS` in `google_apps_script/Code.gs`
@@ -118,6 +118,10 @@ Every HTML tool must include:
 4. **PWA registration** — `navigator.serviceWorker.register('./service-worker.js')` (or `../service-worker.js` for subdirectory tools)
 5. **Print CSS** — `@media print` rules to hide toolbars and format for paper
 6. **Mobile responsive** — `min-height:44px` on interactive elements at `≤600px`; layout breakpoints at `768px`
+7. **Content Security Policy** — `<meta http-equiv="Content-Security-Policy">` in `<head>` allowing `self`, `unsafe-inline`, `cdn.jsdelivr.net`, GAS/GitHub endpoints
+8. **"Last saved" footer** — `<div class="last-saved-footer" id="lastSavedFooter"></div>` + `renderLastSaved()` on load; tools with save functions also call `stampLastSaved()` after `localStorage.setItem`
+9. **Print / PDF button** — `<button class="tool-btn" onclick="window.print()">` in toolbar
+10. **Notification bell** — `<a class="notif-bell-link" href="index.html">` in toolbar; reads `notification_unread_count` from localStorage; use `../index.html` for subdirectory tools
 
 ---
 
@@ -166,6 +170,10 @@ Tools share data through localStorage keys. **Before renaming or restructuring a
 | `student_roster_data` | Student Roster | Student Roster | **FERPA: never sync to Drive** |
 | `telpas_tracker_data` | TELPAS Tracker | TELPAS Tracker | **FERPA: never sync to Drive** |
 | `calibration_sessions` | Calibration Tool | Calibration Tool, Backup Hub | `{version, sessions[]}` — inter-rater reliability sessions |
+| `notification_center_data` | Home Page | Home Page, Backup Hub | `{dismissed[], read[]}` — notification state |
+| `notification_unread_count` | Home Page | All tools | Unread notification count for bell badge |
+| `*_lastSaved` | Each tool | Each tool, Dashboards, Backup Hub | Timestamp (ms) of last save per localStorage key |
+| `principal_checkpoint_config` | Principal Portal | Principal Portal, Campus Report Card | `{gasUrl, campus, secret}` |
 
 ### Cross-tool navigation
 - **Teacher profile links**: `<a class="teacher-link">` → `Teacher_360_Profile.html?teacher=NAME`
@@ -194,7 +202,7 @@ Tools share data through localStorage keys. **Before renaming or restructuring a
 ├── Calibration_Tool.html               # Scoring calibration — inter-rater reliability for audit items
 ├── Reports_Hub.html                    # Cross-tool reporting — semester overview, coordinator/campus/coaching reports
 ├── manifest.json                       # PWA manifest ("MLP Coordinator Hub")
-├── service-worker.js                   # PWA service worker — cache-first, CACHE_NAME = "mlp-suite-v1"
+├── service-worker.js                   # PWA service worker — cache-first, CACHE_NAME = "mlp-suite-v5"
 ├── Principal_Checkpoint_Portal/
 │   ├── Principal_Checkpoint_Portal.html  # Campus leader view — coaching, audit scores, notes sync to GAS
 │   └── Campus_Report_Card.html           # One-page weekly campus snapshot — health score, pipeline, action items
@@ -298,7 +306,7 @@ No npm, no node_modules, no build step.
 
 ## PWA & Caching
 
-- **Cache name**: `mlp-suite-v1` in root `service-worker.js`
+- **Cache name**: `mlp-suite-v5` in root `service-worker.js`
 - Strategy: cache-first with network fallback
 - All 21 HTML files + Chart.js CDN listed in `ASSETS` array
 - **When adding files**: add to `ASSETS` and bump `CACHE_NAME`

@@ -6,6 +6,7 @@
 <title>MLP Tools - Data Backup Hub</title>
 <link rel="manifest" href="./manifest.json"/>
 <meta name="theme-color" content="#2c3e6e"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://api.github.com; font-src 'self'; frame-src 'none'"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f7;min-height:100vh;padding:20px;color:#333}
@@ -119,6 +120,40 @@ body.dark-mode .gist-section{background:#1a2744;border-color:#2d3a6e}
 body.dark-mode .gist-section h3{color:#7eb8f7}
 body.dark-mode .gist-input{background:#16213e;color:#e0e0e0;border-color:#2d3a6e}
 
+/* Data Health Dashboard */
+.health-card{margin-bottom:18px}
+.health-card h2{font-size:16px;font-weight:700;color:#2c3e6e;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.usage-meter{margin-bottom:18px}
+.usage-bar-track{height:24px;background:#eee;border-radius:12px;overflow:hidden;position:relative}
+.usage-bar-fill{height:100%;border-radius:12px;transition:width .6s;background:linear-gradient(90deg,#27ae60,#4a90d9)}
+.usage-bar-fill.warn{background:linear-gradient(90deg,#f39c12,#e67e22)}
+.usage-bar-fill.danger{background:linear-gradient(90deg,#e74c3c,#c0392b)}
+.usage-bar-label{position:absolute;top:0;left:0;right:0;height:100%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.3)}
+.usage-legend{display:flex;gap:16px;margin-top:8px;font-size:11px;color:#888;flex-wrap:wrap}
+.usage-legend-item{display:flex;align-items:center;gap:4px}
+.usage-legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.health-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:12px}
+.health-table th{background:#2c3e6e;color:#fff;padding:8px 10px;text-align:left;font-weight:600;font-size:11px;white-space:nowrap}
+.health-table td{padding:8px 10px;border-bottom:1px solid #eee;vertical-align:middle}
+.health-table tr:hover td{background:#f8fafd}
+.size-bar-wrap{width:100%;max-width:120px}
+.size-bar-track{height:6px;background:#eee;border-radius:3px;overflow:hidden}
+.size-bar-fill{height:100%;border-radius:3px;background:#4a90d9;transition:width .4s}
+.health-warn{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:8px;font-size:12px;font-weight:600;margin-bottom:14px}
+.health-warn.ok{background:#e8f5e9;color:#2e7d32;border:1px solid #c8e6c9}
+.health-warn.caution{background:#fff3e0;color:#e65100;border:1px solid #ffe0b2}
+.health-warn.critical{background:#fdecea;color:#e74c3c;border:1px solid #f5c6cb}
+body.dark-mode .health-card h2{color:#7eb8f7}
+body.dark-mode .usage-bar-track{background:#2d3a6e}
+body.dark-mode .health-table th{background:#1a2744}
+body.dark-mode .health-table td{border-color:#2d3a6e}
+body.dark-mode .health-table tr:hover td{background:#1a2744}
+body.dark-mode .size-bar-track{background:#2d3a6e}
+body.dark-mode .health-warn.ok{background:#1a3a1a;color:#66bb6a;border-color:#2a5a2a}
+body.dark-mode .health-warn.caution{background:#3e2a10;color:#f5c842;border-color:#5a3e15}
+body.dark-mode .health-warn.critical{background:#3a1a1a;color:#ef5350;border-color:#5a2a2a}
+body.dark-mode .usage-legend{color:#aaa}
+
 /* Print */
 @media print{
   body{background:#fff!important;padding:0}
@@ -139,6 +174,14 @@ body.dark-mode .gist-input{background:#16213e;color:#e0e0e0;border-color:#2d3a6e
 .tool-btn{justify-content:center}
   .tool-btn,.btn-sm,.btn-confirm,.gist-input{min-height:44px}
 }
+.last-saved-footer{position:fixed;bottom:0;left:0;width:100%;background:rgba(248,249,251,.95);border-top:1px solid #e0e3e8;padding:4px 16px;font-size:10px;color:#999;text-align:right;z-index:50;font-family:inherit}
+body.dark-mode .last-saved-footer{background:rgba(30,30,30,.95);border-color:#333;color:#666}
+@media print{.last-saved-footer{display:none}}
+.notif-bell-link{position:relative;display:inline-block;padding:6px 13px;border-radius:7px;border:2px solid rgba(255,255,255,.35);background:rgba(255,255,255,.13);color:#fff;font-size:14px;text-decoration:none;transition:all .15s;line-height:1;cursor:pointer}
+.notif-bell-link:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.55)}
+.notif-bell-badge{position:absolute;top:-4px;right:-4px;background:#e74c3c;color:#fff;font-size:9px;font-weight:800;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 4px;line-height:1}
+.notif-bell-badge.hidden{display:none}
+@media print{.notif-bell-link{display:none!important}}
 </style>
 </head>
 <body>
@@ -154,12 +197,41 @@ body.dark-mode .gist-input{background:#16213e;color:#e0e0e0;border-color:#2d3a6e
 <button class="tool-btn" onclick="refreshDashboard()">&#128260; Refresh</button>
 <button class="tool-btn" onclick="toggleGistSection()" aria-label="Cloud sync settings">&#9729; Cloud Sync</button>
 <button class="tool-btn" onclick="toggleGasSection()" aria-label="Google Drive sync settings">&#128190; Drive Sync</button>
+<a class="notif-bell-link" href="index.html" title="Notifications" id="notifBellLink">&#128276;<span class="notif-bell-badge hidden" id="notifBellBadge">0</span></a>
 <button class="tool-btn" onclick="toggleDarkMode()" id="darkModeToggle" aria-label="Toggle dark mode">&#9789; Dark</button>
+<button class="tool-btn" onclick="window.print()">&#128438; Print / PDF</button>
 <a class="tool-btn" href="index.html" style="margin-left:auto" aria-label="Back to Home">&#127968; Home</a>
 </div>
 </div>
 
 <div class="summary-bar" id="summaryBar"></div>
+
+<div class="card health-card" id="healthCard">
+<h2>&#128168; Data Health Dashboard</h2>
+<div id="healthWarning"></div>
+<div class="usage-meter">
+  <div class="usage-bar-track">
+    <div class="usage-bar-fill" id="usageFill" style="width:0%"></div>
+    <div class="usage-bar-label" id="usageLabel">Calculating...</div>
+  </div>
+  <div class="usage-legend" id="usageLegend"></div>
+</div>
+<div class="table-wrap" style="overflow-x:auto">
+  <table class="health-table" id="healthTable">
+    <thead>
+      <tr>
+        <th>Tool</th>
+        <th>Key</th>
+        <th>Size</th>
+        <th style="min-width:120px">Usage</th>
+        <th>Last Saved</th>
+        <th>Records</th>
+      </tr>
+    </thead>
+    <tbody id="healthTableBody"></tbody>
+  </table>
+</div>
+</div>
 
 <div class="card">
 <h2>&#128202; Status Dashboard</h2>
@@ -267,9 +339,12 @@ body.dark-mode .gist-input{background:#16213e;color:#e0e0e0;border-color:#2d3a6e
 </div>
 </div>
 
+<div class="last-saved-footer" id="lastSavedFooter"></div>
 <div class="toast" id="toast"></div>
 
 <script>
+function initNotifBell(){var c=localStorage.getItem('notification_unread_count');var n=parseInt(c)||0;var b=document.getElementById('notifBellBadge');if(b){b.textContent=n>9?'9+':String(n);b.className=n>0?'notif-bell-badge':'notif-bell-badge hidden';}}
+
 var KEY_CONFIG = [
   {key: 'esl_audit_data', tool: 'Classroom Audit', icon: '&#128203;', desc: 'Current working audit', countFn: null},
   {key: 'esl_audit_history', tool: 'Classroom Audit', icon: '&#128203;', desc: 'Saved audit archive', countFn: function(d){return Array.isArray(d) ? d.length + ' audits' : null;}},
@@ -280,7 +355,8 @@ var KEY_CONFIG = [
   {key: 'shared_teacher_roster', tool: 'Shared', icon: '&#128101;', desc: 'Teacher name autocomplete list', countFn: function(d){return Array.isArray(d) ? d.length + ' teachers' : null;}},
   {key: 'coaching_cycles_data', tool: 'Coaching Cycle Tracker', icon: '&#128736;', desc: 'Coaching cycle state', countFn: null},
   {key: 'esl_gist_sync', tool: 'Backup Hub', icon: '&#9729;', desc: 'GitHub Gist sync settings', countFn: null},
-  {key: 'esl_gas_sync', tool: 'Backup Hub', icon: '&#128190;', desc: 'Google Drive sync settings', countFn: null}
+  {key: 'esl_gas_sync', tool: 'Backup Hub', icon: '&#128190;', desc: 'Google Drive sync settings', countFn: null},
+  {key: 'notification_center_data', tool: 'Notifications', icon: '&#128276;', desc: 'Notification dismissed/read state', countFn: null}
 ];
 
 var pendingImportData = null;
@@ -310,14 +386,27 @@ function validateStructure(key, data) {
   return validator(data);
 }
 
+function renderLastSaved(){
+  var el=document.getElementById('lastSavedFooter');
+  if(!el)return;
+  var gs=localStorage.getItem('esl_gist_sync');
+  var gas=localStorage.getItem('esl_gas_sync');
+  var parts=[];
+  if(gs){try{var g=JSON.parse(gs);if(g.lastSync)parts.push('Gist: '+new Date(g.lastSync).toLocaleString());}catch(e){}}
+  if(gas){try{var a=JSON.parse(gas);if(a.lastSync)parts.push('Drive: '+new Date(a.lastSync).toLocaleString());}catch(e){}}
+  el.textContent=parts.length?'Last sync: '+parts.join(' | '):'No sync history';
+}
+
 function init() {
   refreshDashboard();
   setupDragDrop();
+  renderLastSaved();
 }
 
 function refreshDashboard() {
   buildSummary();
   buildKeyGrid();
+  buildHealthDashboard();
   updateSelectAllState();
 }
 
@@ -343,6 +432,138 @@ function formatSize(chars) {
   if (bytes < 1024) return bytes + ' B';
   if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
   return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+function buildHealthDashboard() {
+  var ALL_KEYS = [
+    {key: 'esl_audit_data', tool: 'Classroom Audit', countFn: null},
+    {key: 'esl_audit_history', tool: 'Audit Archive', countFn: function(d){return Array.isArray(d)?d.length+' audits':null;}},
+    {key: 'esl_audit_campuses', tool: 'Audit Campuses', countFn: function(d){return Array.isArray(d)?d.length+' campuses':null;}},
+    {key: 'walkthrough_plan_data_v2', tool: 'Walkthrough Planner', countFn: null},
+    {key: 'walkthrough_history', tool: 'Walkthrough Archive', countFn: function(d){return Array.isArray(d)?d.length+' sessions':null;}},
+    {key: 'esl_scope_data', tool: 'Scope & Sequence', countFn: null},
+    {key: 'shared_teacher_roster', tool: 'Teacher Roster', countFn: function(d){return Array.isArray(d)?d.length+' teachers':null;}},
+    {key: 'coaching_cycles_data', tool: 'Coaching Tracker', countFn: function(d){return d&&d.cycles?d.cycles.length+' cycles':null;}},
+    {key: 'pd_tracker_data', tool: 'PD Tracker', countFn: function(d){return d&&d.sessions?d.sessions.length+' sessions':null;}},
+    {key: 'meeting_notes_data', tool: 'Meeting Notes', countFn: function(d){return d&&d.meetings?d.meetings.length+' meetings':null;}},
+    {key: 'parent_comm_log', tool: 'Parent Comm Log', countFn: function(d){return d&&d.entries?d.entries.length+' entries':null;}},
+    {key: 'compliance_checklist_data', tool: 'Compliance Checklist', countFn: function(d){return d&&d.items?d.items.length+' items':null;}},
+    {key: 'goal_setting_data', tool: 'Goal Setting', countFn: function(d){return d&&d.goals?d.goals.length+' goals':null;}},
+    {key: 'student_roster_data', tool: 'Student Roster (FERPA)', countFn: function(d){return d&&d.students?d.students.length+' students':null;}},
+    {key: 'telpas_tracker_data', tool: 'TELPAS Tracker (FERPA)', countFn: function(d){return d&&d.records?d.records.length+' records':null;}},
+    {key: 'calibration_sessions', tool: 'Calibration Tool', countFn: function(d){return d&&d.sessions?d.sessions.length+' sessions':null;}},
+    {key: 'esl_gist_sync', tool: 'Gist Sync Settings', countFn: null},
+    {key: 'esl_gas_sync', tool: 'Drive Sync Settings', countFn: null},
+    {key: 'esl_app_theme', tool: 'Theme Setting', countFn: null},
+    {key: 'esl_home_role', tool: 'Home Role Setting', countFn: null},
+    {key: 'esl_onboarding_complete', tool: 'Onboarding', countFn: null},
+    {key: 'esl_workload_campuses', tool: 'Workload Assignments', countFn: null},
+    {key: 'principal_checkpoint_config', tool: 'Principal Portal Config', countFn: null},
+    {key: 'notification_center_data', tool: 'Notification Center', countFn: null},
+    {key: 'elps_agent_docs', tool: 'ELPS Agent Docs', countFn: function(d){return Array.isArray(d)?d.length+' docs':null;}},
+    {key: 'elps_agent_index', tool: 'ELPS Agent Index', countFn: null},
+    {key: 'elps_agent_settings', tool: 'ELPS Agent Settings', countFn: null},
+    {key: 'elps_agent_history', tool: 'ELPS Agent History', countFn: function(d){return Array.isArray(d)?d.length+' queries':null;}}
+  ];
+
+  var MAX_BYTES = 5242880;
+  var totalBytes = 0;
+  var rows = [];
+  var maxSize = 0;
+
+  for (var i = 0; i < ALL_KEYS.length; i++) {
+    var k = ALL_KEYS[i];
+    var raw = localStorage.getItem(k.key);
+    var sizeChars = raw ? raw.length : 0;
+    var sizeBytes = sizeChars * 2;
+    totalBytes += sizeBytes;
+    if (sizeBytes > maxSize) maxSize = sizeBytes;
+
+    var data = null;
+    if (raw) {
+      try { data = JSON.parse(raw); } catch(e) { data = raw; }
+    }
+
+    var lastSavedTs = localStorage.getItem(k.key + '_lastSaved');
+    var lastSavedStr = '';
+    if (lastSavedTs) {
+      lastSavedStr = new Date(parseInt(lastSavedTs)).toLocaleString();
+    }
+
+    var countStr = '';
+    if (data !== null && k.countFn) {
+      var c = k.countFn(data);
+      if (c) countStr = c;
+    }
+
+    rows.push({
+      tool: k.tool,
+      key: k.key,
+      sizeBytes: sizeBytes,
+      sizeStr: formatSize(sizeChars),
+      lastSaved: lastSavedStr,
+      count: countStr,
+      hasData: raw !== null
+    });
+  }
+
+  rows.sort(function(a, b) { return b.sizeBytes - a.sizeBytes; });
+
+  var pct = Math.min(100, Math.round(totalBytes / MAX_BYTES * 100));
+  var fill = document.getElementById('usageFill');
+  var label = document.getElementById('usageLabel');
+  if (fill) {
+    fill.style.width = pct + '%';
+    fill.className = 'usage-bar-fill' + (pct > 80 ? ' danger' : (pct > 50 ? ' warn' : ''));
+  }
+  if (label) {
+    label.textContent = formatSize(totalBytes / 2) + ' / 5 MB (' + pct + '%)';
+  }
+
+  var warnEl = document.getElementById('healthWarning');
+  if (warnEl) {
+    if (pct > 80) {
+      warnEl.innerHTML = '<div class="health-warn critical">&#9888; Storage is ' + pct + '% full. Consider exporting and clearing unused data to avoid data loss.</div>';
+    } else if (pct > 50) {
+      warnEl.innerHTML = '<div class="health-warn caution">&#9888; Storage is ' + pct + '% full. Monitor usage and export backups regularly.</div>';
+    } else {
+      warnEl.innerHTML = '<div class="health-warn ok">&#9989; Storage health is good — ' + pct + '% used.</div>';
+    }
+  }
+
+  var legendEl = document.getElementById('usageLegend');
+  if (legendEl) {
+    var usedKeys = 0;
+    var emptyKeys = 0;
+    for (var li = 0; li < rows.length; li++) {
+      if (rows[li].hasData) usedKeys++;
+      else emptyKeys++;
+    }
+    legendEl.innerHTML = '<span class="usage-legend-item"><span class="usage-legend-dot" style="background:#27ae60"></span> ' + usedKeys + ' keys with data</span>' +
+      '<span class="usage-legend-item"><span class="usage-legend-dot" style="background:#e74c3c"></span> ' + emptyKeys + ' empty keys</span>' +
+      '<span class="usage-legend-item">Total: ' + formatSize(totalBytes / 2) + ' of ~5 MB</span>';
+  }
+
+  var tbody = document.getElementById('healthTableBody');
+  if (!tbody) return;
+  var html = '';
+  for (var ri = 0; ri < rows.length; ri++) {
+    var r = rows[ri];
+    if (!r.hasData) continue;
+    var barPct = maxSize > 0 ? Math.max(1, Math.round(r.sizeBytes / maxSize * 100)) : 0;
+    html += '<tr>';
+    html += '<td style="font-weight:600;color:#2c3e6e;white-space:nowrap">' + escHtml(r.tool) + '</td>';
+    html += '<td style="font-family:\'Courier New\',monospace;font-size:10px;color:#888">' + escHtml(r.key) + '</td>';
+    html += '<td style="white-space:nowrap;font-weight:600">' + r.sizeStr + '</td>';
+    html += '<td><div class="size-bar-wrap"><div class="size-bar-track"><div class="size-bar-fill" style="width:' + barPct + '%"></div></div></div></td>';
+    html += '<td style="font-size:11px;color:#888;white-space:nowrap">' + (r.lastSaved || '—') + '</td>';
+    html += '<td style="font-size:11px;color:#555">' + (r.count || '—') + '</td>';
+    html += '</tr>';
+  }
+  if (!html) {
+    html = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#aaa;font-style:italic">No data stored yet</td></tr>';
+  }
+  tbody.innerHTML = html;
 }
 
 function getLastModified(data) {
@@ -1177,6 +1398,7 @@ function pullFromDrive() {
 }
 
 init();
+initNotifBell();
 
 // PWA
 if("serviceWorker" in navigator){navigator.serviceWorker.register("./service-worker.js").catch(function(){});}

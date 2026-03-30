@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Campus Report Card — MLP Coordinator Hub</title>
 <link rel="manifest" href="../manifest.json">
+<meta name="theme-color" content="#2c3e6e"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://api.github.com; font-src 'self'; frame-src 'none'"/>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -200,6 +202,14 @@ body.dark-mode .coord-stat { color: #aaa; }
 @media print and (not all) {
   .card { margin-bottom: 12px; }
 }
+.last-saved-footer{position:fixed;bottom:0;left:0;width:100%;background:rgba(248,249,251,.95);border-top:1px solid #e0e3e8;padding:4px 16px;font-size:10px;color:#999;text-align:right;z-index:50;font-family:inherit}
+body.dark-mode .last-saved-footer{background:rgba(30,30,30,.95);border-color:#333;color:#666}
+@media print{.last-saved-footer{display:none}}
+.notif-bell-link{position:relative;display:inline-block;padding:6px 13px;border-radius:7px;border:2px solid rgba(255,255,255,.35);background:rgba(255,255,255,.13);color:#fff;font-size:14px;text-decoration:none;transition:all .15s;line-height:1;cursor:pointer}
+.notif-bell-link:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.55)}
+.notif-bell-badge{position:absolute;top:-4px;right:-4px;background:#e74c3c;color:#fff;font-size:9px;font-weight:800;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 4px;line-height:1}
+.notif-bell-badge.hidden{display:none}
+@media print{.notif-bell-link{display:none!important}}
 </style>
 </head>
 <body>
@@ -214,6 +224,7 @@ body.dark-mode .coord-stat { color: #aaa; }
       <button onclick="refreshData()">Refresh</button>
       <button onclick="toggleSetup()">Setup</button>
       <button onclick="window.print()">Print</button>
+      <a class="notif-bell-link" href="../index.html" title="Notifications" id="notifBellLink">&#128276;<span class="notif-bell-badge hidden" id="notifBellBadge">0</span></a>
       <button id="darkBtn" onclick="toggleDark()">Dark Mode</button>
     </div>
   </div>
@@ -305,9 +316,12 @@ body.dark-mode .coord-stat { color: #aaa; }
 </div>
 
 <div id="printFooter" style="display:none;"></div>
+<div class="last-saved-footer" id="lastSavedFooter"></div>
 <div class="toast" id="toast"></div>
 
 <script>
+function initNotifBell(){var c=localStorage.getItem('notification_unread_count');var n=parseInt(c)||0;var b=document.getElementById('notifBellBadge');if(b){b.textContent=n>9?'9+':String(n);b.className=n>0?'notif-bell-badge':'notif-bell-badge hidden';}}
+
 (function () {
   /* ── Utility ─────────────────────────────────────────────── */
   function escHtml(str) {
@@ -1225,6 +1239,14 @@ body.dark-mode .coord-stat { color: #aaa; }
     navigator.serviceWorker.register('../service-worker.js').catch(function () {});
   }
 
+  function renderLastSaved(){
+    var el=document.getElementById('lastSavedFooter');
+    if(!el)return;
+    var gas=localStorage.getItem('esl_gas_sync');
+    if(gas){try{var a=JSON.parse(gas);if(a.lastSync){el.textContent='Last sync: '+new Date(a.lastSync).toLocaleString();return;}}catch(e){}}
+    el.textContent='';
+  }
+
   /* ── Init ────────────────────────────────────────────────── */
   applyTheme();
   loadConfig();
@@ -1235,7 +1257,9 @@ body.dark-mode .coord-stat { color: #aaa; }
   } else {
     refreshData();
   }
+  renderLastSaved();
 })();
+initNotifBell();
 </script>
 </body>
 </html>
