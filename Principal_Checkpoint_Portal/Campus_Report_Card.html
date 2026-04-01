@@ -45,6 +45,8 @@ body.dark-mode{
   --toast-bg:#7eb8f7;--toast-text:#1a1a2e;
   --footer-bg:rgba(30,30,30,.95);--footer-border:#333;--footer-text:#666
 }
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes modalIn{from{opacity:0;transform:scale(.95) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -52,6 +54,7 @@ body {
   color: var(--text);
   min-height: 100vh;
 }
+.main { animation: fadeIn .4s ease both; }
 
 .header {
   background: linear-gradient(135deg, var(--header-gradient-1), var(--header-gradient-2));
@@ -61,17 +64,33 @@ body {
 .header-top { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
 .header h1 { font-size: 1.5rem; font-weight: 700; }
 .header .subtitle { opacity: 0.85; font-size: 0.9rem; margin-top: 4px; }
-.header-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+.header-btns { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 .header-btns button {
   background: rgba(255,255,255,0.18);
   color: #fff;
-  border: 1px solid rgba(255,255,255,0.3);
-  padding: 7px 14px;
-  border-radius: 6px;
+  border: 2px solid rgba(255,255,255,0.35);
+  padding: 6px 13px;
+  border-radius: 7px;
   cursor: pointer;
-  font-size: 0.85rem;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: inherit;
+  transition: background .15s, border-color .15s, transform .1s;
 }
-.header-btns button:hover { background: rgba(255,255,255,0.3); }
+.header-btns button:hover { background: rgba(255,255,255,0.3); border-color: rgba(255,255,255,0.55); }
+.header-btns button:active { transform: scale(.97); }
+/* Unified button system */
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 16px; border-radius: 7px; border: 1.5px solid var(--input-border); background: var(--card-bg); font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; transition: background .15s, border-color .15s, transform .1s; color: var(--text-secondary); text-decoration: none; }
+.btn:hover { background: var(--hover-bg); border-color: var(--primary); color: var(--primary); }
+.btn:active { transform: scale(.97); }
+.btn-primary, .btn.primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+.btn-primary:hover, .btn.primary:hover { background: #3a7bc8; }
+.btn-primary:active, .btn.primary:active { transform: scale(.97); }
+.btn-danger, .btn.danger { background: var(--danger); color: #fff; border-color: var(--danger); }
+.btn-danger:hover, .btn.danger:hover { background: #c0392b; }
+.btn-danger:active, .btn.danger:active { transform: scale(.97); }
+.btn-sm, .btn.sm { font-size: 11px; padding: 5px 12px; }
+.btn-lg, .btn.lg { font-size: 14px; padding: 10px 22px; }
 .nav-bar { margin-top: 10px; display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
 .nav-link { color: #cee0ff; text-decoration: none; font-size: 0.85rem; }
 .nav-link:hover { color: #fff; text-decoration: underline; }
@@ -84,7 +103,9 @@ body {
   box-shadow: var(--shadow);
   padding: 22px 24px;
   margin-bottom: 20px;
+  transition: box-shadow .2s;
 }
+.card:hover { box-shadow: 0 4px 14px rgba(0,0,0,.10); }
 .card h2 { font-size: 1.15rem; margin-bottom: 14px; color: var(--text-heading); }
 
 /* Setup card */
@@ -95,9 +116,11 @@ body {
 }
 .setup-card .btn-save {
   margin-top: 14px; background: #2c3e6e; color: #fff; border: none;
-  padding: 10px 24px; border-radius: 6px; cursor: pointer; font-size: 0.9rem;
+  padding: 10px 24px; border-radius: 7px; cursor: pointer; font-size: 0.9rem;
+  font-family: inherit; font-weight: 600; transition: background .15s, transform .1s;
 }
 .setup-card .btn-save:hover { background: #4a90d9; }
+.setup-card .btn-save:active { transform: scale(.97); }
 
 /* Health score */
 .health-score-wrap { text-align: center; padding: 20px 0; }
@@ -172,14 +195,19 @@ body {
 .priority-green { color: #27ae60; }
 .btn-print-actions {
   margin-top: 10px; background: #2c3e6e; color: #fff; border: none;
-  padding: 8px 18px; border-radius: 6px; cursor: pointer; font-size: 0.85rem;
+  padding: 8px 18px; border-radius: 7px; cursor: pointer; font-size: 0.85rem;
+  font-family: inherit; font-weight: 600; transition: background .15s, transform .1s;
 }
 .btn-print-actions:hover { background: #4a90d9; }
+.btn-print-actions:active { transform: scale(.97); }
 
 /* Empty state */
 .empty-state { text-align: center; padding: 40px 20px; color: #999; }
 .empty-state .empty-icon { font-size: 3rem; margin-bottom: 12px; }
 .empty-state p { font-size: 0.95rem; }
+.empty-state .empty-cta { display: inline-block; margin-top: 16px; padding: 9px 22px; background: var(--primary); color: #fff; border: none; border-radius: 7px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; text-decoration: none; transition: background .15s, transform .1s; }
+.empty-state .empty-cta:hover { background: #3a7bc8; }
+.empty-state .empty-cta:active { transform: scale(.97); }
 
 /* Toast */
 .toast {
@@ -199,7 +227,7 @@ body {
 }
 @media (max-width: 600px) {
   .header-btns button { min-height: 44px; padding: 10px 14px; }
-  .btn-save, .btn-print-actions { min-height: 44px; }
+  .btn-save, .btn-print-actions, .btn, .btn-primary, .btn-danger, .empty-cta { min-height: 44px; }
   .card { padding: 16px; }
   .metric-box { min-width: 45%; }
 }
@@ -246,8 +274,8 @@ body {
   </div>
   <div class="nav-bar">
     <a class="nav-link" href="../index.html">Home</a>
-    <a class="nav-link" href="Principal_Checkpoint.html">Principal Portal</a>
-    <a class="nav-link" href="Audit_Dashboard.html">Audit Dashboard</a>
+    <a class="nav-link" href="Principal_Checkpoint_Portal.html">Principal Portal</a>
+    <a class="nav-link" href="../ESL_Classroom_Audit/Audit_Dashboard.html">Audit Dashboard</a>
     <span class="last-synced" id="lastSynced">Last synced: —</span>
   </div>
 </div>
@@ -326,7 +354,8 @@ body {
     <div class="empty-state">
       <div class="empty-icon">&#128269;</div>
       <p>No data found for this campus.</p>
-      <p style="margin-top:8px;font-size:0.85rem;">Check that the campus name matches what coordinators use, or click <strong>Setup</strong> to reconfigure.</p>
+      <p style="margin-top:8px;font-size:0.85rem;">Check that the campus name matches what coordinators use, or configure the portal to start pulling live data.</p>
+      <a class="empty-cta" href="Principal_Checkpoint_Portal.html">&#127983; Go to Principal Portal</a>
     </div>
   </div>
 </div>

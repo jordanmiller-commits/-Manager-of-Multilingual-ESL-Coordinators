@@ -81,9 +81,31 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 .empty-state{text-align:center;padding:60px 20px}
 .empty-icon{font-size:48px;color:#ccc;margin-bottom:16px}
 .empty-title{font-size:18px;font-weight:700;color:var(--text-secondary);margin-bottom:8px}
-.empty-sub{font-size:13px;color:var(--text-muted);max-width:400px;margin:0 auto;line-height:1.6}
+.empty-sub{font-size:13px;color:var(--text-muted);max-width:400px;margin:0 auto 16px;line-height:1.6}
 .empty-sub a{color:var(--primary);text-decoration:none;font-weight:600}
 .empty-sub a:hover{text-decoration:underline}
+.empty-state .btn-primary{display:inline-block}
+
+/* Button system */
+.btn{display:inline-block;padding:6px 14px;border-radius:7px;border:1.5px solid var(--input-border);background:var(--card-bg);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;color:var(--text-secondary);text-decoration:none}
+.btn:hover{background:#eaf3fb;border-color:#4a90d9;color:#2c3e6e}
+.btn-primary,.btn.primary{background:#4a90d9;color:#fff;border-color:#4a90d9}
+.btn-primary:hover,.btn.primary:hover{background:#3a7bc8;border-color:#3a7bc8}
+.btn-danger,.btn.danger-btn{background:#e74c3c;color:#fff;border-color:#e74c3c}
+.btn-danger:hover,.btn.danger-btn:hover{background:#c0392b;border-color:#c0392b}
+.btn-sm{padding:4px 10px;font-size:10px;border-radius:5px}
+.btn-lg{padding:10px 22px;font-size:13px;border-radius:8px}
+
+/* Card hover lift */
+.card,.stat-card{transition:box-shadow .18s,transform .18s}
+.card:hover,.stat-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.11);transform:translateY(-1px)}
+
+/* Fade-in */
+@keyframes fadeInUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.wrap{animation:fadeInUp .35s ease both}
+
+/* Modal fade-in (no modals in this file, but consistent with suite) */
+@keyframes modalFadeIn{from{opacity:0;transform:translateY(-12px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
 
 /* Legend helpers */
 .legend-row{display:flex;flex-wrap:wrap;gap:14px;margin-top:14px;justify-content:center}
@@ -210,6 +232,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
         tool, then return here to view trends and insights.
         Saved audits are stored in your browser automatically.
       </div>
+      <a class="btn-primary" href="../index.html?demo=1">Load Demo Data</a>
     </div>
   </div>
 

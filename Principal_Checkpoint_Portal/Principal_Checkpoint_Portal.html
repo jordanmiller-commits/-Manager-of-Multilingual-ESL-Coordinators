@@ -44,9 +44,11 @@ body.dark-mode{
   --toast-bg:#7eb8f7;--toast-text:#1a1a2e;
   --footer-bg:rgba(30,30,30,.95);--footer-border:#333;--footer-text:#666
 }
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes modalIn{from{opacity:0;transform:scale(.95) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100vh;padding:20px;color:var(--text)}
-.wrap{max-width:1160px;margin:0 auto}
+.wrap{max-width:1160px;margin:0 auto;animation:fadeIn .4s ease both}
 
 /* ============================
    HEADER
@@ -66,13 +68,20 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 /* ============================
    CARDS / SHARED
    ============================ */
-.card{background:var(--card-bg);border-radius:10px;box-shadow:var(--shadow);padding:16px 20px;margin-bottom:12px}
+.card{background:var(--card-bg);border-radius:10px;box-shadow:var(--shadow);padding:16px 20px;margin-bottom:12px;transition:box-shadow .2s}
+.card:hover{box-shadow:0 4px 14px rgba(0,0,0,.10)}
 .first-card{border-radius:0 0 10px 10px;margin-top:0}
-.btn{padding:6px 14px;border-radius:7px;border:1.5px solid var(--input-border);background:var(--card-bg);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;color:var(--text-secondary)}
+.btn{padding:6px 14px;border-radius:7px;border:1.5px solid var(--input-border);background:var(--card-bg);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s,border-color .15s,transform .1s;color:var(--text-secondary)}
 .btn:hover{background:#eaf3fb;border-color:#4a90d9;color:#2c3e6e}
-.btn.primary{background:#4a90d9;color:#fff;border-color:#4a90d9}
-.btn.primary:hover{background:#3a7bc8}
-.btn.sm{font-size:11px;padding:5px 12px}
+.btn:active{transform:scale(.97)}
+.btn.primary,.btn-primary{background:#4a90d9;color:#fff;border-color:#4a90d9}
+.btn.primary:hover,.btn-primary:hover{background:#3a7bc8}
+.btn.primary:active,.btn-primary:active{transform:scale(.97)}
+.btn-danger,.btn.danger{background:var(--danger);color:#fff;border-color:var(--danger)}
+.btn-danger:hover,.btn.danger:hover{background:#c0392b}
+.btn-danger:active,.btn.danger:active{transform:scale(.97)}
+.btn.sm,.btn-sm{font-size:11px;padding:5px 12px}
+.btn-lg,.btn.lg{font-size:14px;padding:10px 22px}
 
 /* ============================
    SETUP CARD
@@ -202,6 +211,9 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 .center-card p{font-size:13px;color:#aaa}
 .center-card .big-icon{font-size:42px;margin-bottom:10px}
 .center-card h3{font-size:16px;color:#2c3e6e;margin-bottom:6px}
+.center-card .empty-cta{display:inline-block;margin-top:14px;padding:8px 20px;background:var(--primary);color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;text-decoration:none;transition:background .15s,transform .1s}
+.center-card .empty-cta:hover{background:#3a7bc8}
+.center-card .empty-cta:active{transform:scale(.97)}
 
 /* ============================
    TOAST
@@ -225,7 +237,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
   body{padding:8px}
   .stats-row{grid-template-columns:1fr 1fr}
   .filter-bar{gap:6px}
-  .btn,.ack-btn,.tool-btn{min-height:40px}
+  .btn,.btn-primary,.btn-danger,.ack-btn,.tool-btn{min-height:44px}
   .notes-ta{min-height:80px}
   .tc-name{font-size:14px}
 }
@@ -372,6 +384,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
     <div class="big-icon">&#127983;</div>
     <h3>No Teacher Data Found</h3>
     <p>No observations or audits found for <strong id="emptyStateCampus">this campus</strong>.<br/>Make sure your coordinator has synced recently, then click Refresh.</p>
+    <button class="empty-cta" onclick="openSetup()">&#9881; Reconfigure Setup</button>
   </div>
 
 </div><!-- /wrap -->

@@ -237,6 +237,44 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 .notif-bell-badge{position:absolute;top:-4px;right:-4px;background:#e74c3c;color:#fff;font-size:9px;font-weight:800;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 4px;line-height:1}
 .notif-bell-badge.hidden{display:none}
 @media print{.notif-bell-link{display:none!important}}
+
+/* ============================
+   PHASE 4 — VISUAL POLISH
+   ============================ */
+@keyframes fadeInUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.wrap>.card,.wrap>.header,.wrap>.view-toggle{animation:fadeInUp .35s ease both}
+.wrap>.card:nth-child(2){animation-delay:.05s}
+.wrap>.card:nth-child(3){animation-delay:.1s}
+.wrap>.card:nth-child(4){animation-delay:.15s}
+.wrap>.card:nth-child(5){animation-delay:.2s}
+
+/* Normalised button system */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:8px 16px;border-radius:7px;border:1.5px solid var(--input-border);background:var(--card-bg);color:var(--text-secondary);font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;transition:background .15s,border-color .15s,box-shadow .15s,transform .1s;text-decoration:none}
+.btn:hover{background:var(--hover-bg);border-color:#bbb}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.btn-primary:hover{background:#3a80c9;border-color:#3a80c9}
+.btn-danger{background:var(--danger);color:#fff;border-color:var(--danger)}
+.btn-danger:hover{background:#c0392b;border-color:#c0392b}
+.btn-sm{padding:4px 10px;font-size:11px;border-radius:6px}
+.btn-lg{padding:12px 24px;font-size:14px;border-radius:8px}
+
+/* Card hover lift */
+.card{transition:box-shadow .2s,transform .2s}
+.card:hover{box-shadow:0 4px 14px rgba(0,0,0,.11);transform:translateY(-1px)}
+.action-card{transition:box-shadow .2s,border-color .15s,transform .2s}
+.action-card:hover{box-shadow:0 3px 10px rgba(0,0,0,.09);transform:translateY(-1px);border-color:#bbb}
+
+/* Modal fade-in */
+@keyframes modalIn{from{opacity:0;transform:scale(.96) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.modal-overlay.active .modal{animation:modalIn .22s ease both}
+
+/* Empty state */
+.empty-state{text-align:center;padding:40px 20px;color:var(--text-faint)}
+.empty-state .empty-icon{font-size:40px;margin-bottom:10px;display:block}
+.empty-state p{font-size:13px;line-height:1.6}
+.empty-state a{color:var(--primary);font-weight:600;text-decoration:none}
+.empty-state a:hover{text-decoration:underline}
 </style>
 </head>
 <body>
@@ -1026,7 +1064,7 @@ function renderInteractiveActions(){
   }
 
   if(html===""){
-    html='<div style="text-align:center;padding:40px;color:#aaa;font-size:14px">No actions scheduled for this month with current filters.</div>';
+    html='<div class="empty-state"><span class="empty-icon">&#128197;</span><p>No actions scheduled for this month with current filters.<br><a href="../index.html?demo=1">Load demo data</a> to see a sample plan.</p></div>';
   }
 
   document.getElementById("actionContainer").innerHTML=html;

@@ -277,6 +277,37 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
 .breadcrumb.show{display:block}
 .breadcrumb a{color:var(--primary);text-decoration:none;font-weight:600}
 .breadcrumb a:hover{text-decoration:underline}
+
+/* ============================
+   PHASE 4 — VISUAL POLISH
+   ============================ */
+@keyframes fadeInUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.wrap>.card,.wrap>.header,.wrap>.stats-row,.wrap>.first-card{animation:fadeInUp .35s ease both}
+.wrap>.first-card{animation-delay:.04s}
+.wrap>.stats-row{animation-delay:.08s}
+.wrap>.card:nth-child(4){animation-delay:.12s}
+.wrap>.card:nth-child(5){animation-delay:.16s}
+.wrap>.card:nth-child(n+6){animation-delay:.2s}
+
+/* Normalised button system */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:8px 16px;border-radius:7px;border:1.5px solid var(--input-border);background:var(--card-bg);color:var(--text-secondary);font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;transition:background .15s,border-color .15s,box-shadow .15s,transform .1s;text-decoration:none}
+.btn:hover{background:var(--hover-bg);border-color:#bbb}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.btn-primary:hover{background:#3a80c9;border-color:#3a80c9}
+.btn-danger{background:var(--danger);color:#fff;border-color:var(--danger)}
+.btn-danger:hover{background:#c0392b;border-color:#c0392b}
+.btn-sm{padding:4px 10px;font-size:11px;border-radius:6px}
+.btn-lg{padding:12px 24px;font-size:14px;border-radius:8px}
+
+/* Card hover lift */
+.card,.summary-stat{transition:box-shadow .2s,transform .2s}
+.card:hover{box-shadow:0 4px 14px rgba(0,0,0,.11);transform:translateY(-1px)}
+.summary-stat:hover{box-shadow:0 4px 14px rgba(0,0,0,.11);transform:translateY(-1px)}
+
+/* Cycle item lift */
+.cycle-item{transition:box-shadow .2s,border-color .15s,transform .2s}
+.cycle-item:hover{box-shadow:0 3px 10px rgba(0,0,0,.09);transform:translateY(-1px);border-color:#c9d5e0}
 .last-saved-footer{position:fixed;bottom:0;left:0;width:100%;background:var(--footer-bg);border-top:1px solid var(--footer-border);padding:4px 16px;font-size:10px;color:var(--footer-text);text-align:right;z-index:50;font-family:inherit}
 @media print{.last-saved-footer{display:none}}
 .notif-bell-link{position:relative;display:inline-block;padding:6px 13px;border-radius:7px;border:2px solid rgba(255,255,255,.35);background:rgba(255,255,255,.13);color:#fff;font-size:14px;text-decoration:none;transition:all .15s;line-height:1;cursor:pointer}

@@ -58,8 +58,13 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 .tool-btn.accent{border-color:rgba(46,204,113,.5);background:rgba(46,204,113,.15)}
 .tool-btn.accent:hover{background:rgba(46,204,113,.3)}
 
+/* ANIMATION */
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+body{animation:fadeIn .25s ease both}
+
 /* CARDS */
-.card{background:var(--card-bg);border-radius:10px;box-shadow:var(--shadow);padding:18px 20px;margin-bottom:14px}
+.card{background:var(--card-bg);border-radius:10px;box-shadow:var(--shadow);padding:18px 20px;margin-bottom:14px;transition:box-shadow .18s,transform .18s}
+.card:hover{box-shadow:0 4px 16px rgba(0,0,0,.11);transform:translateY(-1px)}
 .first-card{border-radius:0 0 10px 10px;margin-top:0;margin-bottom:14px}
 
 /* FILTER BAR */
@@ -120,22 +125,29 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 
 /* CARD ACTIONS */
 .goal-card-actions{display:flex;gap:6px;padding:10px 16px;border-top:1px solid var(--border-light);flex-wrap:wrap}
-.btn{padding:5px 11px;border-radius:6px;border:1.5px solid var(--input-border);background:var(--card-bg);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;color:var(--text-secondary)}
+.btn{padding:5px 11px;border-radius:6px;border:1.5px solid var(--input-border);background:var(--card-bg);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s,border-color .15s,transform .1s;color:var(--text-secondary)}
 .btn:hover{background:var(--hover-bg);border-color:var(--primary);color:var(--text-heading)}
-.btn.primary{background:var(--primary);color:#fff;border-color:var(--primary)}
-.btn.primary:hover{background:#3a7bc8}
+.btn:active{transform:scale(.97)}
+.btn.primary,.btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.btn.primary:hover,.btn-primary:hover{background:#3a7bc8}
 .btn.success{background:var(--success);color:#fff;border-color:var(--success)}
 .btn.success:hover{background:#219a52}
-.btn.danger{color:var(--danger);border-color:#f5c6cb}
-.btn.danger:hover{background:var(--danger-light);border-color:var(--danger)}
+.btn.danger,.btn-danger{color:var(--danger);border-color:#f5c6cb}
+.btn.danger:hover,.btn-danger:hover{background:var(--danger-light);border-color:var(--danger)}
+.btn-sm{padding:4px 9px;font-size:10px}
+.btn-lg{padding:10px 22px;font-size:13px;border-radius:8px}
 
 /* EMPTY STATE */
-.empty-state{text-align:center;padding:48px 20px;color:var(--text-faint);font-size:13px;font-style:italic}
+.empty-state{text-align:center;padding:48px 20px;color:var(--text-faint)}
+.empty-state .es-icon{font-size:46px;margin-bottom:12px}
+.empty-state p{font-size:13px;margin-bottom:14px}
+.empty-state .es-cta{margin-top:4px}
 
 /* MODAL */
+@keyframes modalFadeIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
 .modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--modal-overlay);display:none;justify-content:center;align-items:flex-start;z-index:1000;padding:24px 14px;overflow-y:auto}
 .modal-overlay.open{display:flex}
-.modal{background:var(--modal-bg);border-radius:12px;padding:24px;max-width:580px;width:100%;box-shadow:0 8px 30px rgba(0,0,0,.2);margin:auto;color:var(--text)}
+.modal{background:var(--modal-bg);border-radius:12px;padding:24px;max-width:580px;width:100%;box-shadow:0 8px 30px rgba(0,0,0,.2);margin:auto;color:var(--text);animation:modalFadeIn .2s ease both}
 .modal h3{font-size:17px;font-weight:800;color:var(--text-heading);margin-bottom:16px;display:flex;align-items:center;gap:8px}
 .modal-close{margin-left:auto;background:none;border:none;font-size:18px;cursor:pointer;color:var(--text-muted);padding:0 4px;line-height:1}
 .modal-close:hover{color:var(--text)}
@@ -695,7 +707,7 @@ function renderGoals() {
   var board = document.getElementById('goalsBoard');
 
   if (!goals.length) {
-    board.innerHTML = '<div class="empty-state" style="grid-column:1/-1">No goals found. Click <strong>+ New Goal</strong> to create one.</div>';
+    board.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="es-icon">&#127945;</div><p>No goals found. Create your first goal to get started.</p><div class="es-cta"><button class="btn btn-primary btn-lg" onclick="openGoalModal(null)">&#65291; New Goal</button></div></div>';
     return;
   }
 

@@ -57,8 +57,13 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 .tool-btn{background:rgba(255,255,255,.13);color:#fff;border:2px solid rgba(255,255,255,.35);padding:6px 13px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;text-decoration:none;display:inline-block}
 .tool-btn:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.55)}
 
+/* ANIMATION */
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+body{animation:fadeIn .25s ease both}
+
 /* CARDS */
-.card{background:var(--card-bg);border-radius:10px;box-shadow:var(--shadow);padding:16px 20px;margin-bottom:12px}
+.card{background:var(--card-bg);border-radius:10px;box-shadow:var(--shadow);padding:16px 20px;margin-bottom:12px;transition:box-shadow .18s,transform .18s}
+.card:hover{box-shadow:0 4px 16px rgba(0,0,0,.11);transform:translateY(-1px)}
 .first-card{border-radius:0 0 10px 10px;margin-top:0}
 
 /* FERPA BANNER */
@@ -87,10 +92,15 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 .filter-bar select,.filter-bar input{padding:7px 10px;border:1px solid var(--input-border);border-radius:6px;font-size:12px;font-family:inherit;background:var(--input-bg);color:var(--input-text)}
 .filter-bar select:focus,.filter-bar input:focus{border-color:var(--primary);outline:none;box-shadow:0 0 0 2px rgba(74,144,217,.15)}
 .filter-group{display:flex;flex-direction:column}
-.btn{padding:7px 14px;border-radius:7px;border:1.5px solid var(--input-border);background:var(--card-bg);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;color:var(--text-secondary)}
+.btn{padding:7px 14px;border-radius:7px;border:1.5px solid var(--input-border);background:var(--card-bg);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s,border-color .15s,transform .1s;color:var(--text-secondary)}
 .btn:hover{background:var(--hover-bg);border-color:var(--primary);color:var(--text-heading)}
-.btn.primary{background:var(--primary);color:#fff;border-color:var(--primary)}
-.btn.primary:hover{background:#3a7bc8}
+.btn:active{transform:scale(.97)}
+.btn.primary,.btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.btn.primary:hover,.btn-primary:hover{background:#3a7bc8}
+.btn.danger,.btn-danger{background:var(--card-bg);color:var(--danger);border-color:var(--danger)}
+.btn.danger:hover,.btn-danger:hover{background:var(--danger-light)}
+.btn-sm{padding:4px 9px;font-size:10px}
+.btn-lg{padding:10px 22px;font-size:13px;border-radius:8px}
 
 /* CHART */
 .chart-wrap{height:260px;position:relative}
@@ -132,9 +142,10 @@ tr:hover td{background:var(--item-hover)}
 .pg-info{font-size:11px;color:var(--text-muted)}
 
 /* MODAL */
+@keyframes modalFadeIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
 .modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:var(--modal-overlay);z-index:1000;justify-content:center;align-items:flex-start;padding:40px 20px;overflow-y:auto}
 .modal-overlay.open{display:flex}
-.modal{background:var(--modal-bg);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.2);width:100%;max-width:480px;overflow:hidden;color:var(--text)}
+.modal{background:var(--modal-bg);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.2);width:100%;max-width:480px;overflow:hidden;color:var(--text);animation:modalFadeIn .2s ease both}
 .modal-header{background:linear-gradient(135deg,var(--header-gradient-1),var(--header-gradient-2));color:#fff;padding:16px 20px;display:flex;justify-content:space-between;align-items:center}
 .modal-header h3{font-size:15px;font-weight:800}
 .modal-close{background:none;border:none;color:#fff;font-size:20px;cursor:pointer;line-height:1;padding:0 4px}
@@ -149,7 +160,8 @@ tr:hover td{background:var(--item-hover)}
 /* EMPTY STATE */
 .empty-state{text-align:center;padding:40px 20px;color:var(--text-faint)}
 .empty-state .es-icon{font-size:42px;margin-bottom:10px}
-.empty-state p{font-size:12px}
+.empty-state p{font-size:12px;margin-bottom:14px}
+.empty-state .es-cta{margin-top:4px}
 
 /* TOAST */
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(30px);background:var(--toast-bg);color:var(--toast-text);padding:10px 22px;border-radius:24px;font-size:13px;font-weight:600;z-index:9999;opacity:0;transition:opacity .3s,transform .3s;pointer-events:none;white-space:nowrap}
@@ -813,8 +825,11 @@ function renderRecordsTable(filtered) {
 
   var tbody = document.getElementById("recordsTbody");
   if (filtered.length === 0) {
-    tbody.innerHTML = "<tr><td colspan='13'><div class='empty-state'><div class='es-icon'>&#128202;</div>" +
-      "<p>" + (data.records.length === 0 ? "No records yet. Import a CSV to get started." : "No records match current filters.") + "</p></div></td></tr>";
+    var emptyMsg = data.records.length === 0 ? "No records yet. Import a CSV file to get started." : "No records match the current filters.";
+    var emptyCta = data.records.length === 0
+      ? "<div class='es-cta'><button class='btn btn-primary btn-lg' onclick='triggerImport()'>&#8679; Import CSV</button></div>"
+      : "";
+    tbody.innerHTML = "<tr><td colspan='13'><div class='empty-state'><div class='es-icon'>&#128202;</div><p>" + emptyMsg + "</p>" + emptyCta + "</div></td></tr>";
     document.getElementById("pagination").innerHTML = "";
     return;
   }

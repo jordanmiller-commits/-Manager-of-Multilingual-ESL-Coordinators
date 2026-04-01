@@ -195,7 +195,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 .compare-section h3{color:#8e44ad;margin-bottom:12px}
 .compare-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
 .compare-close{padding:4px 10px;border-radius:5px;border:1px solid #d2b4de;background:#fff;font-size:11px;cursor:pointer;color:#8e44ad;font-weight:600}
-.no-history{text-align:center;padding:30px;color:var(--text-faint);font-size:13px}
+/* .no-history consolidated in Phase 4 block below */
 .tool-btn.viz-btn{border-color:rgba(142,68,173,.5);background:rgba(142,68,173,.15)}
 .tool-btn.viz-btn:hover{background:rgba(142,68,173,.3)}
 .viz-modal{max-width:900px;width:100%;background:var(--modal-bg);border-radius:12px;padding:0;box-shadow:0 8px 30px rgba(0,0,0,.3);max-height:90vh;display:flex;flex-direction:column;overflow:hidden}
@@ -350,6 +350,38 @@ mark{background:#fef08a;color:#333;padding:0 2px;border-radius:2px}
 .template-card p{margin:0;font-size:13px;color:var(--text-muted);line-height:1.5}
 .template-card .template-icon{font-size:22px;margin-bottom:8px;display:block}
 .template-modal-close{display:flex;justify-content:flex-end;margin-top:18px}
+
+/* ============================
+   PHASE 4 — VISUAL POLISH
+   ============================ */
+@keyframes fadeInUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.wrap>.card,.wrap>.header,.wrap>#sumReport{animation:fadeInUp .35s ease both}
+.wrap>.card:nth-child(2){animation-delay:.05s}
+.wrap>.card:nth-child(3){animation-delay:.1s}
+.wrap>.card:nth-child(4){animation-delay:.15s}
+
+/* Normalised button system */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:8px 16px;border-radius:7px;border:1.5px solid var(--input-border);background:var(--card-bg);color:var(--text-secondary);font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;transition:background .15s,border-color .15s,box-shadow .15s,transform .1s;text-decoration:none}
+.btn:hover{background:var(--hover-bg);border-color:#bbb}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.btn-primary:hover{background:#3a80c9;border-color:#3a80c9}
+.btn-danger{background:var(--danger);color:#fff;border-color:var(--danger)}
+.btn-danger:hover{background:#c0392b;border-color:#c0392b}
+.btn-sm{padding:4px 10px;font-size:11px;border-radius:6px}
+.btn-lg{padding:12px 24px;font-size:14px;border-radius:8px}
+
+/* Card hover lift */
+.card{transition:box-shadow .2s,transform .2s}
+.card:hover{box-shadow:0 4px 14px rgba(0,0,0,.11);transform:translateY(-1px)}
+
+/* Modal fade-in */
+@keyframes modalIn{from{opacity:0;transform:scale(.96) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.modal-overlay.active .modal,.modal-overlay.active .viz-modal,.modal-overlay.active .settings-modal{animation:modalIn .22s ease both}
+
+/* Empty state (no-history) */
+.no-history{display:flex;flex-direction:column;align-items:center;gap:8px;padding:40px 24px;color:var(--text-faint);font-size:13px}
+.no-history::before{content:'\\1F4CB';font-size:38px;display:block}
 </style>
 </head>
 <body>
@@ -3114,7 +3146,7 @@ function renderCampusDash() {
   var body = document.getElementById("campusDashBody");
 
   if (!filtered.length) {
-    body.innerHTML = "<p style='text-align:center;color:var(--text-faint);padding:40px'>No audits found" + (campus ? " for " + campus : "") + ". Save audits to history to populate this dashboard.</p>";
+    body.innerHTML = "<div class='no-history'>No audits found" + (campus ? " for " + escHtml(campus) : "") + ". Save audits to history to populate this dashboard.</div>";
     return;
   }
 

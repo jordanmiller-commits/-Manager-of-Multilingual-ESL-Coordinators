@@ -178,6 +178,43 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 .notif-bell-badge{position:absolute;top:-4px;right:-4px;background:#e74c3c;color:#fff;font-size:9px;font-weight:800;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 4px;line-height:1}
 .notif-bell-badge.hidden{display:none}
 @media print{.notif-bell-link{display:none!important}}
+
+/* ============================
+   PHASE 4 — VISUAL POLISH
+   ============================ */
+@keyframes fadeInUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.wrap>.card,.wrap>.header,.wrap>.summary-bar,.wrap>#syncNotice{animation:fadeInUp .35s ease both}
+.wrap>.summary-bar{animation-delay:.05s}
+.wrap>#syncNotice{animation-delay:.07s}
+.wrap>.card:nth-child(3){animation-delay:.1s}
+.wrap>.card:nth-child(4){animation-delay:.15s}
+.wrap>.card:nth-child(5){animation-delay:.2s}
+
+/* Normalised button system */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:8px 16px;border-radius:7px;border:1.5px solid var(--input-border);background:var(--card-bg);color:var(--text-secondary);font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;transition:background .15s,border-color .15s,box-shadow .15s,transform .1s;text-decoration:none}
+.btn:hover{background:var(--hover-bg);border-color:#bbb}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.btn-primary:hover{background:#3a80c9;border-color:#3a80c9}
+.btn-danger{background:var(--danger);color:#fff;border-color:var(--danger)}
+.btn-danger:hover{background:#c0392b;border-color:#c0392b}
+.btn-lg{padding:12px 24px;font-size:14px;border-radius:8px}
+
+/* Card hover lift */
+.card,.key-card{transition:box-shadow .2s,transform .2s}
+.card:hover{box-shadow:0 4px 14px rgba(0,0,0,.11);transform:translateY(-1px)}
+.key-card:hover{box-shadow:0 4px 14px rgba(0,0,0,.1);transform:translateY(-1px)}
+
+/* Modal fade-in */
+@keyframes modalIn{from{opacity:0;transform:scale(.96) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.modal-overlay.open .modal{animation:modalIn .22s ease both}
+
+/* No-sync-configured notice */
+#syncNotice{display:none;align-items:flex-start;gap:14px;padding:14px 18px;border-radius:10px;background:var(--warn-bg);border:1.5px solid var(--warn-border);margin-bottom:18px;font-size:13px;color:var(--warn-text);line-height:1.5}
+#syncNotice .sync-icon{font-size:22px;flex-shrink:0;margin-top:1px}
+#syncNotice strong{display:block;font-size:13px;margin-bottom:3px}
+#syncNotice.visible{display:flex}
+@media(max-width:600px){#syncNotice{flex-direction:column;gap:8px}}
 </style>
 </head>
 <body>
@@ -201,6 +238,15 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 </div>
 
 <div class="summary-bar" id="summaryBar"></div>
+
+<div id="syncNotice" role="status" aria-live="polite">
+  <span class="sync-icon">&#9888;</span>
+  <div>
+    <strong>Cloud sync not configured</strong>
+    Neither GitHub Gist sync nor Google Drive sync is set up. Your data is stored only in this browser.
+    Use the <strong>Cloud Sync</strong> or <strong>Drive Sync</strong> buttons above to enable backup.
+  </div>
+</div>
 
 <div class="card health-card" id="healthCard">
 <h2>&#128168; Data Health Dashboard</h2>
@@ -393,10 +439,23 @@ function renderLastSaved(){
   el.textContent=parts.length?'Last sync: '+parts.join(' | '):'No sync history';
 }
 
+function checkSyncNotice() {
+  var hasGist = !!localStorage.getItem('esl_gist_sync');
+  var hasGas = !!localStorage.getItem('esl_gas_sync');
+  var el = document.getElementById('syncNotice');
+  if (!el) return;
+  if (!hasGist && !hasGas) {
+    el.className = 'visible';
+  } else {
+    el.className = '';
+  }
+}
+
 function init() {
   refreshDashboard();
   setupDragDrop();
   renderLastSaved();
+  checkSyncNotice();
 }
 
 function refreshDashboard() {
@@ -404,6 +463,7 @@ function refreshDashboard() {
   buildKeyGrid();
   buildHealthDashboard();
   updateSelectAllState();
+  checkSyncNotice();
 }
 
 function getKeyData(key) {

@@ -44,9 +44,11 @@ body.dark-mode{
   --toast-bg:#7eb8f7;--toast-text:#1a1a2e;
   --footer-bg:rgba(30,30,30,.95);--footer-border:#333;--footer-text:#666
 }
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeInFast{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100vh;padding:20px;color:var(--text)}
-.wrap{max-width:860px;margin:0 auto}
+.wrap{max-width:860px;margin:0 auto;animation:fadeIn .4s ease both}
 
 .header{background:linear-gradient(135deg,var(--header-gradient-1),var(--header-gradient-2));color:#fff;padding:28px 32px 20px;border-radius:14px 14px 0 0}
 .header h1{font-size:24px;font-weight:800;margin-bottom:4px}
@@ -59,11 +61,26 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 .progress-bar-fill{background:#fff;height:8px;border-radius:10px;transition:width .4s}
 .progress-label{font-size:11px;opacity:.85;margin-top:4px}
 
-.card{background:var(--card-bg);border-radius:10px;box-shadow:var(--shadow);padding:20px 24px;margin-bottom:14px}
+.card{background:var(--card-bg);border-radius:10px;box-shadow:var(--shadow);padding:20px 24px;margin-bottom:14px;transition:box-shadow .2s}
+.card:hover{box-shadow:0 4px 14px rgba(0,0,0,.10)}
 .first-card{border-radius:0 0 10px 10px;margin-top:0;margin-bottom:14px}
 
+/* Button system */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 16px;border-radius:7px;border:1.5px solid var(--input-border);background:var(--card-bg);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s,border-color .15s,transform .1s,box-shadow .15s;color:var(--text-secondary);text-decoration:none}
+.btn:hover{background:var(--hover-bg);border-color:var(--primary);color:var(--primary)}
+.btn:active{transform:scale(.97)}
+.btn-primary,.btn.primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.btn-primary:hover,.btn.primary:hover{background:#3a7bc8;border-color:#3a7bc8}
+.btn-primary:active,.btn.primary:active{transform:scale(.97)}
+.btn-danger,.btn.danger{background:var(--danger);color:#fff;border-color:var(--danger)}
+.btn-danger:hover,.btn.danger:hover{background:#c0392b;border-color:#c0392b}
+.btn-danger:active,.btn.danger:active{transform:scale(.97)}
+.btn-sm,.btn.sm{font-size:11px;padding:5px 12px}
+.btn-lg,.btn.lg{font-size:14px;padding:10px 22px}
+
 /* Step cards */
-.step-card{border-radius:10px;box-shadow:var(--shadow);padding:20px 24px;margin-bottom:14px;border-left:5px solid var(--primary);background:var(--card-bg);transition:border-color .2s}
+.step-card{border-radius:10px;box-shadow:var(--shadow);padding:20px 24px;margin-bottom:14px;border-left:5px solid var(--primary);background:var(--card-bg);transition:border-color .2s,box-shadow .2s}
+.step-card:hover{box-shadow:0 4px 14px rgba(0,0,0,.10)}
 .step-card.done{border-left-color:var(--success);background:var(--success-light)}
 .step-header{display:flex;align-items:center;gap:12px;margin-bottom:10px;cursor:pointer}
 .step-num{width:32px;height:32px;border-radius:50%;background:var(--primary);color:#fff;font-size:14px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
@@ -85,8 +102,9 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 .form-group label{font-size:11px;font-weight:600;color:var(--text-secondary)}
 .form-group input{padding:8px 12px;border:1px solid var(--input-border);border-radius:7px;font-size:13px;font-family:inherit;min-height:38px;background:var(--input-bg);color:var(--input-text)}
 .form-group input:focus{outline:none;border-color:var(--primary)}
-.save-btn{background:var(--success);color:#fff;border:none;border-radius:7px;padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;min-height:38px}
+.save-btn{background:var(--success);color:#fff;border:none;border-radius:7px;padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;min-height:38px;transition:background .15s,transform .1s}
 .save-btn:hover{background:#219a52}
+.save-btn:active{transform:scale(.97)}
 .save-confirm{color:var(--success);font-size:12px;font-weight:600;display:none;margin-top:4px}
 
 /* Platform badges */
@@ -104,7 +122,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 @media(max-width:600px){
   body{padding:8px}
   .header{padding:18px 16px}
-  .tool-btn,input{min-height:44px}
+  .tool-btn,input,.save-btn,.btn,.btn-primary,.btn-danger{min-height:44px}
   .form-row{flex-direction:column}
   .save-btn{width:100%}
 }

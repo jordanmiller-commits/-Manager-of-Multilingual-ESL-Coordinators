@@ -8,6 +8,8 @@
 <meta name="theme-color" content="#2c3e6e"/>
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://api.github.com http://localhost:* https://api.anthropic.com https://api.openai.com; font-src 'self'; worker-src 'self' blob:; frame-src 'none'"/>
 <style>
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes modalIn{from{opacity:0;transform:scale(.95) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
   --bg:#f0f2f7;--card-bg:#fff;--card-border:transparent;--card-shadow:rgba(0,0,0,.07);
@@ -52,7 +54,7 @@ body.dark-mode{
   --chat-ai-bg:#23272e;--chat-ai-border:#444
 }
 body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);padding:18px;min-height:100vh;transition:background .3s,color .3s}
-.wrap{max-width:920px;margin:0 auto}
+.wrap{max-width:920px;margin:0 auto;animation:fadeIn .4s ease both}
 .header{background:linear-gradient(135deg,var(--header-gradient-1),var(--header-gradient-2));color:#fff;border-radius:12px;padding:24px 28px 16px;margin-bottom:18px}
 .header h1{font-size:22px;font-weight:800;margin-bottom:2px}
 .header .subtitle{font-size:12px;opacity:.85;margin-bottom:12px}
@@ -63,7 +65,8 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .tool-btn.danger:hover{background:rgba(231,76,60,.3)}
 .tool-btn.active{background:rgba(255,255,255,.3);border-color:rgba(255,255,255,.7)}
 .save-indicator{font-size:10px;opacity:.7;margin-left:auto}
-.card{background:var(--card);border:1px solid var(--card-border);border-radius:10px;padding:18px;margin-bottom:14px;box-shadow:var(--shadow);transition:background .3s}
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:10px;padding:18px;margin-bottom:14px;box-shadow:var(--shadow);transition:background .3s,box-shadow .2s}
+.card:hover{box-shadow:0 4px 14px rgba(0,0,0,.10)}
 .card-title{font-size:14px;font-weight:700;color:var(--text-heading);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
 .card-title .badge{font-size:11px;background:var(--primary-light);color:var(--primary);padding:2px 10px;border-radius:10px;font-weight:600}
 .stats-row{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--text-muted)}
@@ -121,8 +124,9 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .ask-row{display:flex;gap:8px}
 .ask-input{flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;background:var(--input-bg);color:var(--text);transition:border-color .15s}
 .ask-input:focus{border-color:var(--primary);outline:none;box-shadow:0 0 0 2px rgba(74,144,217,.15)}
-.ask-btn{padding:10px 22px;background:linear-gradient(135deg,#2c3e6e,#4a90d9);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap}
+.ask-btn{padding:10px 22px;background:linear-gradient(135deg,#2c3e6e,#4a90d9);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;transition:opacity .15s,transform .1s}
 .ask-btn:hover{opacity:.9}
+.ask-btn:active{transform:scale(.97)}
 .ask-btn:disabled{opacity:.5;cursor:not-allowed}
 .mode-row{display:flex;align-items:center;gap:14px;margin-top:10px;font-size:12px}
 .mode-label{font-weight:600;color:var(--text-muted)}
@@ -138,6 +142,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 kbd{background:var(--code-bg);border:1px solid var(--border);border-radius:3px;padding:1px 5px;font-size:10px;font-family:inherit}
 .modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center}
 .modal-overlay.show{display:flex}
+.modal-overlay.show .modal{animation:modalIn .2s ease both}
 .modal{background:var(--card);border-radius:12px;padding:24px;max-width:600px;width:90%;box-shadow:0 10px 40px rgba(0,0,0,.2);max-height:85vh;overflow-y:auto;color:var(--text)}
 .modal.wide{max-width:800px}
 .modal h3{font-size:16px;color:var(--text-heading);margin-bottom:14px}
@@ -147,13 +152,17 @@ kbd{background:var(--code-bg);border:1px solid var(--border);border-radius:3px;p
 .modal input:focus,.modal textarea:focus,.modal select:focus{border-color:var(--primary);outline:none}
 .modal textarea{min-height:100px;resize:vertical}
 .modal-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
-.modal-btns button{padding:8px 18px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;border:none}
+.modal-btns button{padding:8px 18px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;border:none;transition:background .15s,transform .1s}
+.modal-btns button:active{transform:scale(.97)}
 .btn-cancel{background:var(--border-light);color:var(--text-muted)}
 .btn-cancel:hover{opacity:.8}
 .btn-confirm{background:var(--primary);color:#fff}
 .btn-confirm:hover{background:#3a7bc8}
 .btn-danger{background:var(--danger);color:#fff}
 .btn-danger:hover{background:#c0392b}
+/* Unified button variants */
+.btn-sm{font-size:11px;padding:5px 12px}
+.btn-lg{font-size:14px;padding:10px 22px}
 .btn-secondary{background:var(--hover-bg);color:var(--text);border:1px solid var(--border) !important}
 .warning{font-size:10px;color:var(--warn);font-style:italic}
 .coverage-grid{display:grid;gap:2px;margin-top:12px}
@@ -186,6 +195,13 @@ kbd{background:var(--code-bg);border:1px solid var(--border);border-radius:3px;p
 @media print{.header,.toolbar,.ask-row,.mode-row,.filters-row,.kbd-hint,.doc-actions,.chat-action-btn,.followup-chip,.upload-zone,.modal-overlay,.onboard-overlay{display:none!important}.card,.chat-area{box-shadow:none;border:1px solid #ddd}.chat-area{height:auto;overflow:visible}body{background:#fff;padding:10px}}
 @media(max-width:768px){.stats-row{gap:10px}.ask-row{flex-direction:column}.ask-btn{width:100%}.chat-area{height:320px}}
 @media(max-width:600px){body{padding:10px}.header{padding:18px 16px 12px}.header h1{font-size:18px}.toolbar{gap:4px}.tool-btn{padding:5px 9px;font-size:10px}.card{padding:14px}.chat-area{height:280px}button,input,select,.doc-btn{min-height:44px}}
+/* Empty state for chat/results */
+.chat-empty-state{text-align:center;padding:48px 24px;color:var(--text-muted)}
+.chat-empty-state .empty-icon{font-size:3rem;margin-bottom:12px;display:block}
+.chat-empty-state p{font-size:13px;line-height:1.6;max-width:340px;margin:0 auto 8px}
+.chat-empty-state .empty-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:16px}
+.chat-empty-state .empty-chip{padding:5px 14px;border-radius:14px;border:1.5px solid var(--border);background:var(--card);font-size:11px;cursor:pointer;color:var(--primary);font-family:inherit;font-weight:500;transition:all .15s}
+.chat-empty-state .empty-chip:hover{background:var(--primary);color:#fff;border-color:var(--primary)}
 .recommended-banner{padding:10px 14px;border-radius:8px;background:#fff8e6;border:1.5px solid #f0c27a;margin-bottom:14px;font-size:12px;color:#856404;display:none}
 .recommended-banner.visible{display:block}
 .recommended-banner strong{color:#664d03}
@@ -252,7 +268,7 @@ body.dark-mode .recommended-banner .dismiss-rec{border-color:#664d03;color:#f0c2
 </div>
 <div class="card">
 <div class="card-title">Chat</div>
-<div class="chat-area" id="chatArea"><div id="chatWelcome" style="text-align:center;padding:40px 20px;color:var(--text-muted);font-size:13px">Ask a question about ELPS standards, proficiency levels, accommodations, or strategies.<br/>Your knowledge base is pre-loaded and ready to search.</div></div>
+<div class="chat-area" id="chatArea"><div id="chatWelcome" class="chat-empty-state"><span class="empty-icon">&#128218;</span><p>Ask a question about ELPS standards, proficiency levels, accommodations, or strategies.</p><p style="font-size:11px;color:var(--text-faint)">Your knowledge base is pre-loaded and ready to search.</p><div class="empty-chips"><button class="empty-chip" onclick="window.quickAsk('What are the ELPS proficiency levels?')">ELPS proficiency levels</button><button class="empty-chip" onclick="window.quickAsk('What accommodations support beginning ELs?')">Accommodations for beginners</button><button class="empty-chip" onclick="window.quickAsk('What does ELPS say about listening strategies?')">Listening strategies</button></div></div></div>
 <div class="ask-row">
 <input type="text" class="ask-input" id="askInput" placeholder="Ask about ELPS standards, proficiency levels, accommodations..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();handleAskQuestion()}"/>
 <button class="ask-btn" id="askBtn" onclick="handleAskQuestion()">Search</button>
@@ -509,7 +525,8 @@ function renderChat(){var area=document.getElementById("chatArea");var welcome=d
 function renderChatBubble(m,idx){var cls=m.role==="user"?"user":"ai";var h='<div class="chat-msg '+cls+'">';h+='<div class="chat-bubble">';if(m.role==="user"){h+=escapeHtml(m.content);}else{var text=m.content||"";var followups=[];var sep=text.indexOf("---FOLLOWUPS---");if(sep!==-1){var fpText=text.substring(sep+16);text=text.substring(0,sep).trim();var fpLines=fpText.split("\n");for(var f=0;f<fpLines.length;f++){var fl=fpLines[f].replace(/^-\s*/,"").trim();if(fl)followups.push(fl);}}h+=linkifyElpsCodes(escapeHtml(text));}if(m.results&&m.results.length>0){for(var r=0;r<m.results.length;r++){var res=m.results[r];h+='<div class="result-inline">';h+='<div class="result-inline-header"><span class="result-inline-source">'+escapeHtml(getDocNameForChunk(res.chunkId))+", Page "+res.page+"</span><span>Score: "+Math.round(res.score)+"</span></div>";h+='<div class="result-inline-text">'+linkifyElpsCodes(res.snippet)+"</div>";h+='<span class="result-expand" onclick="toggleFullPage(this,\''+res.chunkId+'\')">Show full page</span>';h+='<div class="result-full-page" id="fp-'+idx+"-"+r+'"></div>';h+="</div>";}}if(m.sources){h+='<div class="chat-sources"><strong>Sources:</strong> '+escapeHtml(m.sources)+"</div>";}var followupsToShow=m.followUps||[];if(m.role==="ai"){var text2=m.content||"";var sep2=text2.indexOf("---FOLLOWUPS---");if(sep2!==-1){var fpText2=text2.substring(sep2+16);var fpLines2=fpText2.split("\n");for(var f2=0;f2<fpLines2.length;f2++){var fl2=fpLines2[f2].replace(/^-\s*/,"").trim();if(fl2&&followupsToShow.indexOf(fl2)===-1)followupsToShow.push(fl2);}}}if(followupsToShow.length>0){h+='<div class="chat-followups">';for(var f3=0;f3<followupsToShow.length;f3++){h+='<button class="followup-chip" onclick="askFollowUp(\''+escapeAttr(followupsToShow[f3])+'\')">'+escapeHtml(followupsToShow[f3])+"</button>";}h+="</div>";}if(m.role==="ai"&&m.content){h+='<div class="chat-actions">';h+='<button class="chat-action-btn" onclick="copyMessage('+idx+')">Copy</button>';h+='<button class="chat-action-btn" onclick="printMessage('+idx+')">Print</button>';h+="</div>";}h+="</div></div>";return h;}
 function toggleFullPage(el,chunkId){var container=el.nextElementSibling;if(container.style.display==="block"){container.style.display="none";el.textContent="Show full page";}else{container.textContent=getFullPageText(chunkId);container.style.display="block";el.textContent="Hide full page";}}
 function askFollowUp(q){document.getElementById("askInput").value=q;handleAskQuestion();}
-function clearChat(){chatMessages=[];saveChatMessages();document.getElementById("chatArea").innerHTML='<div id="chatWelcome" style="text-align:center;padding:40px 20px;color:var(--text-muted);font-size:13px">Chat cleared. Ask a new question to get started.</div>';}
+window.quickAsk=function(q){document.getElementById("askInput").value=q;handleAskQuestion();};
+function clearChat(){chatMessages=[];saveChatMessages();document.getElementById("chatArea").innerHTML='<div id="chatWelcome" class="chat-empty-state"><span class="empty-icon">&#128218;</span><p>Chat cleared. Ask a new question to get started.</p><div class="empty-chips"><button class="empty-chip" onclick="window.quickAsk(\'What are the ELPS proficiency levels?\')">ELPS proficiency levels</button><button class="empty-chip" onclick="window.quickAsk(\'What accommodations support beginning ELs?\')">Accommodations for beginners</button><button class="empty-chip" onclick="window.quickAsk(\'What does ELPS say about listening strategies?\')">Listening strategies</button></div></div>';}
 function copyMessage(idx){var m=chatMessages[idx];if(m){var text=m.content||"";var sep=text.indexOf("---FOLLOWUPS---");if(sep!==-1)text=text.substring(0,sep).trim();navigator.clipboard.writeText(text);}}
 function printMessage(idx){var m=chatMessages[idx];if(!m)return;var text=m.content||"";var sep=text.indexOf("---FOLLOWUPS---");if(sep!==-1)text=text.substring(0,sep).trim();var w=window.open("","_blank");w.document.write("<html><head><title>ELPS Agent Answer</title><style>body{font-family:Segoe UI,sans-serif;padding:40px;line-height:1.7;white-space:pre-wrap;}</style></head><body>"+escapeHtml(text)+"</body></html>");w.document.close();w.print();}
 function searchElpsCode(code){document.getElementById("askInput").value=code;handleAskQuestion();}

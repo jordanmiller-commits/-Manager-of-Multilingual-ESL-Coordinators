@@ -94,14 +94,6 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 .editor-header{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
 .editor-type-pill{padding:4px 12px;border-radius:12px;font-size:11px;font-weight:700}
 .editor-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-left:auto}
-.btn{padding:6px 14px;border-radius:7px;border:1.5px solid var(--input-border);background:var(--card-bg);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;color:var(--text-secondary)}
-.btn:hover{background:var(--hover-bg);border-color:var(--primary);color:var(--text-heading)}
-.btn.primary{background:var(--primary);color:#fff;border-color:var(--primary)}
-.btn.primary:hover{background:#3a7bc8}
-.btn.danger{background:var(--card-bg);color:var(--danger);border-color:var(--danger)}
-.btn.danger:hover{background:var(--danger-light)}
-.btn.success{background:var(--success);color:#fff;border-color:var(--success)}
-.btn.success:hover{background:#219a52}
 
 .field-group{margin-bottom:16px}
 .field-group label{display:block;font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px}
@@ -184,6 +176,33 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
   .action-row{grid-template-columns:1fr 30px 30px}
 }
 
+/* ANIMATIONS & HOVER LIFT */
+@keyframes fadeInUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.wrap{animation:fadeInUp .35s ease both}
+.card{transition:box-shadow .18s,transform .18s}
+.card:hover{box-shadow:0 4px 16px rgba(0,0,0,.12);transform:translateY(-2px)}
+@keyframes modalFadeIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+.modal-overlay.active .modal{animation:modalFadeIn .22s ease both}
+
+/* BUTTON SYSTEM NORMALIZATION */
+.btn{padding:6px 14px;border-radius:7px;border:1.5px solid var(--input-border);background:var(--card-bg);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;color:var(--text-secondary)}
+.btn:hover{background:var(--hover-bg);border-color:var(--primary);color:var(--text-heading)}
+.btn:active{transform:scale(.96)}
+.btn.primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.btn.primary:hover{background:#3a7bc8}
+.btn.primary:active{transform:scale(.96)}
+.btn.danger{background:var(--card-bg);color:var(--danger);border-color:var(--danger)}
+.btn.danger:hover{background:var(--danger-light)}
+.btn.danger:active{transform:scale(.96)}
+.btn.success{background:var(--success);color:#fff;border-color:var(--success)}
+.btn.success:hover{background:#219a52}
+.btn-sm{padding:4px 10px;border-radius:6px;border:1.5px solid var(--input-border);background:var(--card-bg);color:var(--text-secondary);font-size:10px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.btn-sm:hover{background:var(--hover-bg);border-color:var(--primary);color:var(--text-heading)}
+.btn-sm:active{transform:scale(.96)}
+.btn-lg{padding:10px 24px;font-size:13px;border-radius:8px;border:none;background:var(--primary);color:#fff;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s}
+.btn-lg:hover{opacity:.88}
+.btn-lg:active{transform:scale(.97)}
+
 /* TEMPLATE PICKER */
 .template-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:16px}
 .template-card{background:var(--section-bg-light);border:2px solid var(--border);border-radius:8px;padding:16px;cursor:pointer;transition:border-color .15s,transform .15s;text-align:left;font-family:inherit;width:100%}
@@ -241,7 +260,11 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
           <span class="archive-count" id="archiveCount">0 meetings</span>
         </div>
         <div class="archive-list" id="archiveList">
-          <div class="archive-empty">No meetings yet. Click &ldquo;+ New Meeting&rdquo; to start.</div>
+          <div class="archive-empty" style="padding:30px 16px">
+            <div style="font-size:32px;margin-bottom:8px">&#128196;</div>
+            <p style="margin-bottom:10px">No meetings yet. Click &ldquo;+ New Meeting&rdquo; to start.</p>
+            <a href="index.html?demo=1" style="display:inline-block;padding:6px 16px;border-radius:7px;background:#4a90d9;color:#fff;font-size:11px;font-weight:700;text-decoration:none">&#9654; Load Demo Data</a>
+          </div>
         </div>
       </div>
     </div>
