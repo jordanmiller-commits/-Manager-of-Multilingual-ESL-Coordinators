@@ -25,7 +25,7 @@ All coordinator dropdowns are populated via `getCoordinators()` → reads `mlp_h
 ### Adding a new HTML tool
 1. Create the `.html` file following the conventions below (copy header/dark mode/toast pattern from an existing tool)
 2. Add the file path to `ASSETS` array in root `service-worker.js`
-3. Bump `CACHE_NAME` in `service-worker.js` (e.g., `mlp-suite-v7` → `mlp-suite-v8`)
+3. Bump `CACHE_NAME` in `service-worker.js` (e.g., `mlp-suite-v10` → `mlp-suite-v10`)
 4. Add a tool card in `index.html` with appropriate `data-roles` attribute
 5. If it uses localStorage, add its key(s) to the Cross-Tool Data Sharing table below
 6. If the data should sync to Drive, add the key to `SYNC_KEYS` in `google_apps_script/Code.gs`
@@ -142,7 +142,7 @@ All tools use CSS custom properties (`:root` variables) — do **not** hardcode 
 | Card style | `background:var(--card-bg); border-radius:10px; box-shadow:var(--shadow); padding:16px 20px` |
 | Primary color | `var(--primary)` / `var(--primary-dark)` |
 | Header buttons | `.tool-btn` class — semi-transparent white on gradient |
-| Content buttons | `.btn` / `.btn.primary` / `.btn.danger` classes |
+| Content buttons | `.btn` / `.btn-primary` (or `.btn.primary`) / `.btn-danger` / `.btn-sm` / `.btn-lg` — normalized with `:active { transform: scale(.97) }` |
 | Table header bg | `var(--section-bg-light)` |
 | Coordinator colors | Stored in `mlp_hub_config.coordinators[].color`; default: purple/teal/red/blue |
 
@@ -203,7 +203,8 @@ Tools share data through localStorage keys. **Before renaming or restructuring a
 | `elps_agent_index` | ELPS Agent | ELPS Agent | Inverted search index |
 | `elps_agent_settings` | ELPS Agent | ELPS Agent | API key, model preference |
 | `elps_agent_history` | ELPS Agent | ELPS Agent | Recent query history |
-| `mlp_hub_config` | index.html Settings modal | All tools (theme snippet) | `{version, orgName, theme, customColors, logoDataUrl, coordinators[]}` |
+| `mlp_hub_config` | index.html Settings modal | All tools (theme snippet) | `{version, orgName, productName, theme, customColors, logoDataUrl, coordinators[], hiddenTools[], userId, userName, userRole, orgId}` |
+| `mlp_hub_demo_loaded` | index.html demo system | index.html | `'1'` when demo data is active; demo records tagged `_isDemo:true` |
 | `esl_app_theme` | All tools | All tools | `"dark"` / `"light"` |
 | `esl_gist_sync` | Backup Hub | Backup Hub | GitHub Gist PAT + Gist ID |
 | `esl_gas_sync` | Backup Hub, Onboarding | Backup Hub, Team Overview, Onboarding, Workload, Principal Portal | Drive sync URL, coordinator ID/name, secret |
@@ -248,8 +249,8 @@ Tools share data through localStorage keys. **Before renaming or restructuring a
 ├── TELPAS_Tracker.html                 # TELPAS score tracker with decline alerts (localStorage only)
 ├── Calibration_Tool.html               # Scoring calibration — inter-rater reliability for audit items
 ├── Reports_Hub.html                    # Cross-tool reporting — semester overview, coordinator/campus/coaching reports
-├── manifest.json                       # PWA manifest ("MLP Coordinator Hub")
-├── service-worker.js                   # PWA service worker — cache-first, CACHE_NAME = "mlp-suite-v9"
+├── manifest.json                       # PWA manifest ("Coordinator Hub" / "CoordHub" — white-label neutral)
+├── service-worker.js                   # PWA service worker — cache-first, CACHE_NAME = "mlp-suite-v10"
 ├── Principal_Checkpoint_Portal/
 │   ├── Principal_Checkpoint_Portal.html  # Campus leader view — coaching, audit scores, notes sync to GAS
 │   └── Campus_Report_Card.html           # One-page weekly campus snapshot — health score, pipeline, action items
@@ -288,8 +289,12 @@ Tools share data through localStorage keys. **Before renaming or restructuring a
 ### index.html — Unified Home Page
 - **3 role tabs**: Manager (all 19 tools), MLP Coordinator (17 tools), Campus Leader (3 tools)
 - `data-roles` attribute on `.tool-card` controls visibility per role
-- Global search across localStorage (teachers, campuses, observations, coaching actions)
-- Stats bar, alerts (overdue coaching, stalled cycles), recent activity timeline
+- **Tool visibility toggles** — Settings → Tool Visibility lets admins hide tools per org (stored in `mlp_hub_config.hiddenTools`)
+- Global search across localStorage with result count, "Show more", keyboard arrow navigation
+- Stats bar (with count-up animation), alerts (overdue coaching, stalled cycles), recent activity timeline
+- **Demo data system** — "Try Demo" button loads `_isDemo`-tagged records into all major localStorage keys; "Clear Demo Data" strips them. Auto-triggers via `?demo=1` URL param.
+- **Interactive tutorial** — "?" button launches 7-step spotlight tour; works best after loading demo data
+- **Settings modal** — theme picker (8 palettes), custom colors, org name, product name, logo upload, coordinator management, tool visibility
 - Role persisted in `esl_home_role`
 
 ### Team_Overview.html — Manager Dashboard
@@ -353,7 +358,7 @@ No npm, no node_modules, no build step.
 
 ## PWA & Caching
 
-- **Cache name**: `mlp-suite-v9` in root `service-worker.js` — bump whenever HTML files are added or significant changes are deployed
+- **Cache name**: `mlp-suite-v10` in root `service-worker.js` — bump whenever HTML files are added or significant changes are deployed
 - Strategy: cache-first with network fallback
 - All 24 HTML files + Chart.js CDN listed in `ASSETS` array
 - **When adding files**: add to `ASSETS` and bump `CACHE_NAME`
@@ -476,3 +481,34 @@ function getCoordinators() {
 }
 ```
 Call `getCoordinators()` wherever coordinator lists, dropdowns, or color maps were previously hardcoded arrays.
+
+### Filter persistence (sessionStorage)
+```javascript
+function saveFilters() {
+    var f = {};
+    var sels = document.querySelectorAll('.filter-bar select');
+    for (var i = 0; i < sels.length; i++) { if (sels[i].id) f[sels[i].id] = sels[i].value; }
+    sessionStorage.setItem('TOOL_NAME_filters', JSON.stringify(f));
+}
+function restoreFilters() {
+    try { var f = JSON.parse(sessionStorage.getItem('TOOL_NAME_filters') || '{}');
+        for (var k in f) { var el = document.getElementById(k); if (el) el.value = f[k]; }
+    } catch(e) {}
+}
+// Call restoreFilters() on load, saveFilters() on filter change
+```
+
+### Undo/redo (4 tools: Coaching, Goal Setting, Compliance, Calibration)
+```javascript
+var undoStack = [], redoStack = [], MAX_UNDO = 30;
+function pushUndo() { undoStack.push(JSON.stringify(data)); if (undoStack.length > MAX_UNDO) undoStack.shift(); redoStack = []; }
+function undo() { if (!undoStack.length) return; redoStack.push(JSON.stringify(data)); data = JSON.parse(undoStack.pop()); saveData(); render(); }
+function redo() { if (!redoStack.length) return; undoStack.push(JSON.stringify(data)); data = JSON.parse(redoStack.pop()); saveData(); render(); }
+// Call pushUndo() BEFORE any data mutation; Ctrl+Z/Ctrl+Shift+Z in keydown handler
+```
+
+### Inline editing (4 tools: PD Tracker, Meeting Notes, Parent Comm, Compliance)
+Double-click table cells to edit in place. `enableInlineEdit(td, recordIndex, fieldName)` replaces cell content with an `<input>`, commits on blur/Enter, cancels on Escape.
+
+### Template system (4 tools: Audit, Coaching, Meeting Notes, Goal Setting)
+Each tool has a "Templates" toolbar button that opens a template picker modal (`.template-overlay`, `.template-modal`, `.template-grid`, `.template-card`). Templates pre-fill forms — they do NOT create saved records.

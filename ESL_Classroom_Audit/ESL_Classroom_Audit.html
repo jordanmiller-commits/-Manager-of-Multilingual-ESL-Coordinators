@@ -448,10 +448,10 @@ mark{background:#fef08a;color:#333;padding:0 2px;border-radius:2px}
     <div style="flex:1">
       <div class="bar-wrap"><div class="bar-fill" id="barFill"></div></div>
       <div class="legend">
-        <div class="legend-item"><span class="ldot" style="background:#2c3e6e"></span>1 = Not Observed</div>
-        <div class="legend-item"><span class="ldot" style="background:#4a90d9"></span>2 = Infrequently Implemented</div>
-        <div class="legend-item"><span class="ldot" style="background:#f1c40f"></span>3 = Inconsistently Implemented</div>
-        <div class="legend-item"><span class="ldot" style="background:#27ae60"></span>4 = Routinely Implemented</div>
+        <div class="legend-item"><span class="ldot" style="background:#2c3e6e"></span>0 = Not Observed</div>
+        <div class="legend-item"><span class="ldot" style="background:#4a90d9"></span>1 = Approaching Expectations</div>
+        <div class="legend-item"><span class="ldot" style="background:#f1c40f"></span>2 = Meets Expectations</div>
+        <div class="legend-item"><span class="ldot" style="background:#27ae60"></span>3 = Exceeds Expectations</div>
       </div>
       <div class="score-meta" id="scoreMeta">0 of 0 items rated · 0 of 0 points</div>
       <div class="score-split">
@@ -855,10 +855,10 @@ function restoreAuditFilters() {
 }
 
 var R = {
-  0:{label:"Not Observed",level:1,color:"#2c3e6e",bg:"#e8ecf4"},
-  1:{label:"Infrequently Implemented",level:2,color:"#4a90d9",bg:"#eaf3fb"},
-  2:{label:"Inconsistently Implemented",level:3,color:"#f1c40f",bg:"#fefde7"},
-  3:{label:"Routinely Implemented",level:4,color:"#27ae60",bg:"#eafaf1"}
+  0:{label:"Not Observed",level:0,color:"#2c3e6e",bg:"#e8ecf4"},
+  1:{label:"Approaching Expectations",level:1,color:"#4a90d9",bg:"#eaf3fb"},
+  2:{label:"Meets Expectations",level:2,color:"#f1c40f",bg:"#fefde7"},
+  3:{label:"Exceeds Expectations",level:3,color:"#27ae60",bg:"#eafaf1"}
 };
 
 var SECTIONS = [
@@ -1328,7 +1328,7 @@ function buildSections(type){
 
       var fbList=document.createElement("div");fbList.className="fb-bank-list";fbList.id="fbbank-"+key;
       var categories=["low","developing","strong"];
-      var catLabels={"low":"Not Observed / Infrequent","developing":"Developing","strong":"Routinely Implemented"};
+      var catLabels={"low":"Not Observed / Approaching","developing":"Meets Expectations","strong":"Exceeds Expectations"};
       for(var ci=0;ci<categories.length;ci++){
         var catDiv=document.createElement("div");
         catDiv.style.cssText="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-top:6px;margin-bottom:2px";
@@ -1511,7 +1511,7 @@ function buildSummary(){
   var nextTxt=pct>=80
     ?"This classroom demonstrates a strong language-forward environment. Focus coaching on deepening scholar interaction with materials. Consider a scholar voice audit next."
     :pct>=55
-    ?"Solid foundations are in place. Prioritize items at Mastery Level 1-2 in the summary above, particularly in Vocabulary Systems and Writing Supports, which have the most direct impact on TELPAS growth."
+    ?"Solid foundations are in place. Prioritize items scored 0-1 in the summary above, particularly in Vocabulary Systems and Writing Supports, which have the most direct impact on TELPAS growth."
     :"Begin with the highest-impact permanent materials: the Sentence Frames Wall, Word Wall, Language Objectives display, and Writing Process Anchor Chart. Schedule a follow-up audit in 6-8 weeks.";
 
   // Flags
@@ -1528,7 +1528,7 @@ function buildSummary(){
       }
     }
   }
-  if(!flagHTML)flagHTML="<p style='font-size:13px;color:#888'>No items rated at Mastery Level 1 or 2.</p>";
+  if(!flagHTML)flagHTML="<p style='font-size:13px;color:#888'>No items rated Not Observed or Approaching Expectations.</p>";
 
   // Strengths
   var strengthHTML="";
@@ -1539,11 +1539,11 @@ function buildSummary(){
       if(ratings[key]!==undefined&&ratings[key]===3){
         var short=s.items[ji].split("—")[0].trim();
         var tagNote=itemTags[key]&&itemTags[key].length?" <span style='color:#3498db;font-size:11px'>["+itemTags[key].join(", ")+"]</span>":"";
-        strengthHTML+="<div class='strength-item'><span class='flag-badge' style='background:#eafaf1;color:#27ae60'>Routinely Implemented</span><span style='color:#444'><strong style='color:#777'>"+s.title+":</strong> "+short+tagNote+"</span></div>";
+        strengthHTML+="<div class='strength-item'><span class='flag-badge' style='background:#eafaf1;color:#27ae60'>Exceeds Expectations</span><span style='color:#444'><strong style='color:#777'>"+s.title+":</strong> "+short+tagNote+"</span></div>";
       }
     }
   }
-  if(!strengthHTML)strengthHTML="<p style='font-size:13px;color:#888'>No items rated Routinely Implemented yet.</p>";
+  if(!strengthHTML)strengthHTML="<p style='font-size:13px;color:#888'>No items rated Exceeds Expectations yet.</p>";
 
   // Section bars
   var barsHTML="";
@@ -1605,8 +1605,8 @@ function buildSummary(){
     "</div>"+
     ((sectionTimers["permanent"]||0)<60&&(timerElapsed>120)?"<div style='font-size:11px;color:#e67e22;margin-bottom:10px'>Note: Less than 1 minute was spent on Permanent Materials. Consider spending more time reviewing this category.</div>":"")+
     ((sectionTimers["rotating"]||0)<60&&(timerElapsed>120)?"<div style='font-size:11px;color:#e67e22;margin-bottom:10px'>Note: Less than 1 minute was spent on Rotating Materials. Consider spending more time reviewing this category.</div>":"")+
-    "<h3 class='sub-h' style='color:#27ae60'>Strengths (Mastery Level 4 — Routinely Implemented)</h3>"+strengthHTML+
-    "<h3 class='sub-h' style='color:#e74c3c'>Items Needing Attention (Mastery Level 1-2)</h3>"+flagHTML+
+    "<h3 class='sub-h' style='color:#27ae60'>Strengths (Exceeds Expectations)</h3>"+strengthHTML+
+    "<h3 class='sub-h' style='color:#e74c3c'>Items Needing Attention (Not Observed / Approaching)</h3>"+flagHTML+
     "<h3 class='sub-h'>Environment Principles</h3>"+prDetailHTML+
     "<p style='font-size:13px;color:#555;margin-top:8px'><strong>"+pc+" of "+PRINCIPLES.length+"</strong> environment principles observed.</p>"+
     "<div class='next-box'><h3>Recommended Next Steps</h3><p>"+nextTxt+"</p></div>"+
@@ -1661,7 +1661,7 @@ function copySummary(){
   }
 
   lines.push("");
-  lines.push("STRENGTHS (Mastery Level 4 — Routinely Implemented):");
+  lines.push("STRENGTHS (Exceeds Expectations):");
   var hasStr=false;
   for(var i=0;i<SECTIONS.length;i++){
     var s=SECTIONS[i];
@@ -1678,7 +1678,7 @@ function copySummary(){
   if(!hasStr)lines.push("  (none)");
 
   lines.push("");
-  lines.push("ITEMS NEEDING ATTENTION (Mastery Level 1-2):");
+  lines.push("ITEMS NEEDING ATTENTION (Not Observed / Approaching):");
   var hasFlag=false;
   for(var i=0;i<SECTIONS.length;i++){
     var s=SECTIONS[i];
@@ -1716,6 +1716,7 @@ function copySummary(){
 function collectState(){
   return {
     version:3,
+    formType:"full",
     timestamp:new Date().toISOString(),
     meta:{
       teacher:document.getElementById("m-teacher").value,
@@ -2463,7 +2464,7 @@ function renderVizMastery(filterType) {
   var weak = counts[0] + counts[1];
   var insight = "<strong>" + rated + "</strong> of <strong>" + total + "</strong> items rated. ";
   if (rated > 0) {
-    insight += "<strong>" + strong + "</strong> at Mastery 4 (Routinely Implemented). ";
+    insight += "<strong>" + strong + "</strong> at Exceeds Expectations (3).";
     insight += "<strong>" + weak + "</strong> at Mastery 1-2 (need attention).";
   }
   document.getElementById("vizInsight").innerHTML = insight;
@@ -2703,7 +2704,7 @@ function renderVizHeatmap(filterType) {
   document.getElementById("vizHeatmapWrap").innerHTML = html;
 
   var insight = "<strong>" + ratedCount + "</strong> of <strong>" + totalCount + "</strong> items rated. ";
-  insight += "<strong style='color:#27ae60'>" + strongCount + "</strong> at Mastery 4. ";
+  insight += "<strong style='color:#27ae60'>" + strongCount + "</strong> at Exceeds Expectations.";
   insight += "<strong style='color:#e74c3c'>" + weakCount + "</strong> at Mastery 1-2.";
   if (totalCount - ratedCount > 0) {
     insight += " <strong>" + (totalCount - ratedCount) + "</strong> items still unrated.";

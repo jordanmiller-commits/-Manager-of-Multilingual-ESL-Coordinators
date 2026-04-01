@@ -1,0 +1,1403 @@
+<!DOCTYPE html>
+<html lang="en" role="document">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="theme-color" content="#2c3e6e"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://api.github.com; font-src 'self'; frame-src 'none'"/>
+<link rel="manifest" href="../manifest.json"/>
+<title>Streamlined Classroom Audit</title>
+<style>
+:root{
+  --bg:#f0f2f7;--card-bg:#fff;--card-border:transparent;--card-shadow:rgba(0,0,0,.07);
+  --text:#333;--text-secondary:#555;--text-muted:#888;--text-faint:#aaa;--text-heading:#2c3e6e;
+  --input-bg:#fff;--input-border:#ddd;--input-text:#333;
+  --border:#eee;--border-light:#f5f5f5;--hover-bg:#f0f4fb;--item-hover:#f8f9fb;
+  --section-bg-light:#f8f9fb;
+  --primary:#4a90d9;--primary-dark:#2c3e6e;--primary-light:#7eb8f7;
+  --success:#27ae60;--success-light:#e8f5e9;--success-text:#2e7d32;
+  --danger:#e74c3c;--danger-light:#fdecea;--danger-text:#c0392b;
+  --warn:#f39c12;--warn-bg:#fff3e0;--warn-text:#e65100;--warn-border:#ffe0b2;
+  --header-gradient-1:#2c3e6e;--header-gradient-2:#4a90d9;
+  --shadow:0 1px 5px rgba(0,0,0,.07);
+  --modal-bg:#fff;--modal-overlay:rgba(0,0,0,.45);
+  --toast-bg:#2c3e6e;--toast-text:#fff;
+  --footer-bg:rgba(248,249,251,.95);--footer-border:#e0e3e8;--footer-text:#999;
+  --bar-track:#eee;--item-border:#f0f0f0;--tag-border:#ddd;--tag-text:#999;
+  --perm-color:#d4a017;--rot-color:#8e44ad;--bonus-color:#3498db
+}
+body.dark-mode{
+  --bg:#1a1a2e;--card-bg:#16213e;--card-border:#2d3a6e;--card-shadow:rgba(0,0,0,.3);
+  --text:#e0e0e0;--text-secondary:#ccc;--text-muted:#999;--text-faint:#666;--text-heading:#7eb8f7;
+  --input-bg:#16213e;--input-border:#2d3a6e;--input-text:#e0e0e0;
+  --border:#2d3a6e;--border-light:#2d3a6e;--hover-bg:#1a2744;--item-hover:#1a2744;
+  --section-bg-light:#1a2744;
+  --primary:#4a90d9;--primary-dark:#2d3a6e;--primary-light:#7eb8f7;
+  --success:#27ae60;--success-light:#1a3a1a;--success-text:#66bb6a;
+  --danger:#e74c3c;--danger-light:#3a1a1a;--danger-text:#ef5350;
+  --warn:#f39c12;--warn-bg:#3e2a10;--warn-text:#f5c842;--warn-border:#5a3e15;
+  --header-gradient-1:#1a1a2e;--header-gradient-2:#2d3a6e;
+  --shadow:0 1px 5px rgba(0,0,0,.3);
+  --modal-bg:#16213e;--modal-overlay:rgba(0,0,0,.7);
+  --toast-bg:#7eb8f7;--toast-text:#1a1a2e;
+  --footer-bg:rgba(30,30,30,.95);--footer-border:#333;--footer-text:#666;
+  --bar-track:#3a3a5c;--item-border:#333355;--tag-border:#444;--tag-text:#aaa;
+  --perm-color:#f0c27a;--rot-color:#bb86fc;--bonus-color:#64b5f6
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100vh;padding:20px;color:var(--text);transition:background .3s,color .3s}
+.wrap{max-width:860px;margin:0 auto}
+.header{background:linear-gradient(135deg,var(--header-gradient-1),var(--header-gradient-2));border-radius:12px;padding:26px 30px;color:#fff;margin-bottom:22px}
+.header h1{font-size:22px;font-weight:800}
+.header p{font-size:13px;opacity:.85;margin-top:6px}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;align-items:center}
+.tool-btn{padding:7px 14px;border-radius:7px;border:2px solid rgba(255,255,255,.35);background:rgba(255,255,255,.12);color:#fff;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:5px}
+.tool-btn:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.5)}
+.tool-btn.danger{border-color:rgba(231,76,60,.5);background:rgba(231,76,60,.15)}
+.tool-btn.danger:hover{background:rgba(231,76,60,.3)}
+.tool-btn.history-btn{border-color:rgba(46,204,113,.5);background:rgba(46,204,113,.15)}
+.tool-btn.history-btn:hover{background:rgba(46,204,113,.3)}
+.save-indicator{font-size:11px;color:rgba(255,255,255,.65);margin-left:auto}
+.card{background:var(--card-bg);border-radius:10px;padding:20px;margin-bottom:18px;box-shadow:0 1px 5px var(--card-shadow)}
+.meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.meta-grid label{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;display:block;margin-bottom:4px}
+.meta-grid input{width:100%;padding:8px 10px;border-radius:6px;border:1px solid var(--input-border);font-size:13px;font-family:inherit;background:var(--input-bg);color:var(--input-text)}
+.score-banner{display:flex;align-items:center;gap:20px}
+.score-num{font-size:42px;font-weight:900;min-width:80px;text-align:center;color:#4a90d9}
+.score-label{font-size:11px;color:var(--text-muted);font-weight:700;text-align:center}
+.bar-wrap{height:18px;background:var(--bar-track);border-radius:10px;overflow:hidden;flex:1}
+.bar-fill{height:100%;border-radius:10px;background:#4a90d9;width:0%;transition:width .4s}
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-secondary)}
+.ldot{width:10px;height:10px;border-radius:3px;display:inline-block}
+.score-meta{font-size:12px;color:var(--text-muted);margin-top:8px}
+.score-split{display:flex;gap:14px;margin-top:10px;flex-wrap:wrap}
+.split-item{flex:1;min-width:140px;background:var(--section-bg-light);border-radius:8px;padding:8px 12px}
+.split-label{font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text-muted);margin-bottom:4px}
+.split-bar{height:6px;background:var(--bar-track);border-radius:4px;overflow:hidden;margin-top:4px}
+.split-fill{height:100%;border-radius:4px;transition:width .4s}
+.split-val{font-size:13px;font-weight:800}
+.sec-block{margin-bottom:18px;border-radius:10px;overflow:hidden;border:1.5px solid var(--card-border)}
+.sec-head{padding:12px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;user-select:none}
+.sec-title{font-weight:700;font-size:15px}
+.sec-badge{font-size:11px;color:#fff;border-radius:20px;padding:2px 9px;margin-left:8px}
+.sec-body{padding:16px}
+.sec-quickrate{display:flex;gap:6px;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid #eee;flex-wrap:wrap;align-items:center}
+.sec-quickrate span{font-size:11px;color:var(--text-muted);font-weight:600}
+.qr-btn{padding:3px 10px;font-size:10px;border-radius:14px;border:1.5px solid var(--input-border);background:var(--input-bg);color:var(--text-muted);cursor:pointer;font-weight:600;transition:all .15s}
+.qr-btn:hover{border-color:var(--tag-border);background:var(--section-bg-light)}
+.item-row{margin-bottom:14px;padding:10px;padding-bottom:14px;border-bottom:1px solid var(--item-border);border-radius:6px;cursor:pointer;transition:background .1s,border-color .1s;border-left:3px solid transparent}
+.item-row:last-of-type{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.item-row.focused{background:var(--item-hover);border-left-color:#4a90d9}
+.item-top{display:flex;align-items:flex-start;gap:10px}
+.item-cb{margin-top:3px;width:16px;height:16px;flex-shrink:0}
+.item-text{font-size:13.5px;color:var(--text);line-height:1.55}
+.rating-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px;padding-left:26px}
+.rbtn{padding:4px 11px;font-size:11px;border-radius:20px;border:2px solid var(--input-border);background:var(--input-bg);color:var(--text-muted);cursor:pointer;transition:all .15s;font-weight:500}
+.item-comment-toggle{font-size:11px;color:#4a90d9;cursor:pointer;margin-top:5px;padding-left:26px;display:inline-block}
+.item-comment-toggle:hover{text-decoration:underline}
+.item-comment{padding-left:26px;margin-top:5px;display:none}
+.item-comment textarea{width:100%;padding:6px 8px;border-radius:5px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--input-text);font-size:11px;resize:vertical;min-height:36px;font-family:inherit}
+.item-comment.open{display:block}
+.sec-notes{margin-top:14px}
+.sec-notes label{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase}
+.sec-notes textarea{width:100%;margin-top:5px;padding:8px 10px;border-radius:6px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--input-text);font-size:12px;resize:vertical;min-height:60px;font-family:inherit}
+.bonus-badge{display:inline-block;font-size:10px;font-weight:700;background:#ebf5fb;color:#2980b9;border-radius:10px;padding:2px 8px;margin-left:6px;vertical-align:middle}
+.sum-btn{width:100%;padding:14px;background:linear-gradient(135deg,#2c3e6e,#4a90d9);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;margin-top:22px}
+#sumReport{display:none;background:var(--card-bg);border-radius:10px;padding:24px;margin-top:12px;box-shadow:0 1px 5px var(--card-shadow)}
+.sum-meta{font-size:13px;color:var(--text-secondary);margin-bottom:16px}
+.sum-overall{padding:14px 16px;border-radius:8px;display:flex;align-items:center;gap:14px;margin-bottom:20px}
+.sum-big{font-size:34px;font-weight:900}
+.sum-lbl{font-weight:700}
+.sum-sub{font-size:12px;color:#666}
+.sum-split{display:flex;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+.sum-split-card{flex:1;min-width:120px;border-radius:8px;padding:10px 14px;text-align:center}
+.sum-split-val{font-size:22px;font-weight:900}
+.sum-split-lbl{font-size:11px;font-weight:600;margin-top:2px}
+.sub-h{font-size:14px;color:#444;margin-bottom:10px;margin-top:18px}
+.sbar-row{margin-bottom:10px}
+.sbar-lbl{display:flex;justify-content:space-between;font-size:13px;margin-bottom:3px}
+.sbar-track{height:8px;background:var(--bar-track);border-radius:6px;overflow:hidden}
+.sbar-fill{height:100%;border-radius:6px}
+.snote{font-size:11px;color:#888;font-style:italic;margin-top:3px}
+.flag-item{display:flex;gap:10px;margin-bottom:8px;font-size:13px;align-items:flex-start}
+.flag-badge{border-radius:6px;padding:2px 8px;font-weight:700;font-size:11px;flex-shrink:0;white-space:nowrap}
+.strength-item{display:flex;gap:10px;margin-bottom:8px;font-size:13px;align-items:flex-start}
+.next-box{margin-top:18px;padding:14px 16px;background:#f8f9fb;border-radius:8px}
+.next-box h3{font-size:14px;color:#444;margin-bottom:8px}
+.next-box p{font-size:13px;color:#666;line-height:1.7}
+.sum-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.print-btn{padding:10px 18px;background:#2c3e6e;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer}
+.copy-btn{padding:10px 18px;background:#27ae60;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer}
+.save-history-btn{padding:10px 18px;background:#8e44ad;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer}
+.start-cycle-btn{padding:10px 18px;background:#27ae60;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;margin-top:10px}
+.start-cycle-btn:hover{background:#219a52}
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--modal-overlay);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px}
+.modal-overlay.active{display:flex}
+.modal{background:var(--modal-bg);border-radius:12px;padding:24px;max-width:500px;width:100%;box-shadow:0 8px 30px rgba(0,0,0,.3);max-height:85vh;overflow-y:auto}
+.modal h3{font-size:16px;color:#2c3e6e;margin-bottom:10px}
+.modal p{font-size:13px;color:var(--text-muted);line-height:1.6;margin-bottom:16px}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end}
+.modal-btns button{padding:8px 18px;border-radius:7px;border:none;font-size:13px;font-weight:600;cursor:pointer}
+.btn-cancel{background:var(--section-bg-light);color:var(--text-secondary)}
+.btn-confirm{background:#e74c3c;color:#fff}
+.hist-filters{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.hist-filters input,.hist-filters select{padding:6px 10px;border-radius:6px;border:1px solid var(--input-border);font-size:12px;font-family:inherit;background:var(--input-bg);color:var(--input-text)}
+.hist-list{max-height:400px;overflow-y:auto}
+.hist-item{border:1px solid var(--card-border);border-radius:8px;padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.hist-info{flex:1;min-width:200px}
+.hist-teacher{font-weight:700;font-size:14px;color:var(--text)}
+.hist-detail{font-size:12px;color:var(--text-muted);margin-top:2px}
+.hist-score{font-size:20px;font-weight:900;min-width:55px;text-align:center}
+.hist-actions{display:flex;gap:5px;flex-wrap:wrap}
+.hist-actions button{padding:4px 10px;border-radius:5px;border:1px solid var(--input-border);background:var(--input-bg);font-size:11px;cursor:pointer;font-weight:600;color:var(--text-secondary)}
+.hist-actions button:hover{background:var(--section-bg-light)}
+.hist-actions button.load{color:#4a90d9;border-color:#aed6f1}
+.hist-actions button.delete{color:#e74c3c;border-color:#f5b7b1}
+.no-history{text-align:center;padding:30px;color:var(--text-muted);font-size:13px}
+.skip-link{position:absolute;top:-100px;left:10px;background:#2c3e6e;color:#fff;padding:8px 16px;border-radius:0 0 6px 6px;z-index:2000;font-weight:600;text-decoration:none;font-size:13px}
+.skip-link:focus{top:0}
+.notif-bell-link{position:relative;font-size:18px;text-decoration:none;padding:4px 8px}
+.notif-bell-badge{position:absolute;top:-4px;right:-2px;background:#e74c3c;color:#fff;font-size:9px;font-weight:700;border-radius:50%;min-width:16px;height:16px;display:flex;align-items:center;justify-content:center;padding:0 4px}
+.notif-bell-badge.hidden{display:none}
+.last-saved-footer{position:fixed;bottom:0;left:0;right:0;background:var(--footer-bg);border-top:1px solid var(--footer-border);padding:6px 16px;font-size:11px;color:var(--footer-text);text-align:center;z-index:500;backdrop-filter:blur(8px)}
+/* Shortcuts overlay */
+.shortcuts-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:var(--modal-overlay);z-index:1000;justify-content:center;align-items:center;padding:20px}
+.shortcuts-overlay.active{display:flex}
+.shortcuts-modal{background:var(--modal-bg);border-radius:12px;padding:24px 28px;max-width:460px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,.2)}
+.shortcuts-modal h3{font-size:16px;font-weight:800;color:var(--text-heading);margin-bottom:14px}
+.shortcuts-modal table{width:100%;border-collapse:collapse;font-size:12px}
+.shortcuts-modal td{padding:6px 8px;border-bottom:1px solid var(--border)}
+.shortcuts-modal kbd{display:inline-block;padding:2px 7px;border-radius:4px;background:var(--section-bg-light);border:1px solid var(--border);font-family:inherit;font-size:11px;font-weight:700;color:var(--text-heading)}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--toast-bg);color:var(--toast-text);padding:12px 20px;border-radius:8px;font-size:13px;font-weight:600;box-shadow:0 4px 15px rgba(0,0,0,.2);z-index:2000;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+/* Animations */
+@keyframes fadeInUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.wrap>.card,.wrap>.header,.wrap>#sumReport{animation:fadeInUp .35s ease both}
+/* Print */
+@media print{
+  body{padding:0;background:#fff}
+  .header,.tool-btn,.toolbar,.save-indicator,.modal-overlay,.toast,.shortcuts-overlay,.last-saved-footer,.skip-link,.notif-bell-link{display:none!important}
+  .card,.sec-block,#sumReport{box-shadow:none;border:1px solid #ddd}
+  #sumReport{display:block!important}
+  .sum-actions{display:none}
+}
+/* Mobile */
+@media(max-width:600px){
+  body{padding:10px}
+  .header{padding:18px 16px}
+  .meta-grid{grid-template-columns:1fr}
+  .score-banner{flex-direction:column;align-items:flex-start;gap:12px}
+  .score-num{font-size:34px}
+  .score-split{flex-direction:column;gap:8px}
+  .tool-btn,input,select,.rbtn{min-height:44px}
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#scoreCard">Skip to content</a>
+<div class="wrap">
+
+<div class="header" role="banner">
+  <h1>Streamlined Classroom Audit</h1>
+  <p>Focused Classroom Environment Check — Core Look-Fors Aligned to MLP Walkthrough Indicators</p>
+  <div class="toolbar" role="toolbar" aria-label="Audit tools">
+    <button class="tool-btn history-btn" onclick="showHistoryModal()" title="View saved audit history">&#128202; History</button>
+    <button class="tool-btn danger" onclick="showResetModal()" title="Clear all data and start fresh">&#128260; Reset</button>
+    <a class="notif-bell-link" href="../index.html" title="Notifications" id="notifBellLink">&#128276;<span class="notif-bell-badge hidden" id="notifBellBadge">0</span></a>
+    <button class="tool-btn" onclick="toggleDarkMode()" aria-label="Toggle dark mode">&#127769; Dark</button>
+    <button class="tool-btn" onclick="window.print()" aria-label="Print or save as PDF">&#128438; Print / PDF</button>
+    <button class="tool-btn" onclick="toggleShortcutsHelp()" aria-label="Keyboard shortcuts">&#9000; Keys</button>
+    <a class="tool-btn" href="ESL_Classroom_Audit.html" title="Open Full 58-Item Audit">&#128203; Full Audit</a>
+    <a class="tool-btn" href="../index.html" style="margin-left:auto" aria-label="Back to Home">&#127968; Home</a>
+    <span class="save-indicator" id="saveStatus">Auto-save: ready</span>
+  </div>
+</div>
+
+<div class="card">
+  <div class="meta-grid">
+    <div><label for="m-teacher">Teacher Name</label><input type="text" id="m-teacher" placeholder="Enter teacher name" oninput="scheduleSave()"/></div>
+    <div>
+      <label for="m-campus">Campus</label>
+      <input type="text" id="m-campus" list="campus-list" placeholder="Select or type campus name" oninput="scheduleSave()"/>
+      <datalist id="campus-list"></datalist>
+    </div>
+    <div><label for="m-observer">Observer</label><input type="text" id="m-observer" placeholder="Enter observer name" oninput="scheduleSave()"/></div>
+    <div><label for="m-date">Date</label><input type="date" id="m-date" oninput="scheduleSave()"/></div>
+  </div>
+</div>
+
+<div class="card" id="scoreCard">
+  <div class="score-banner">
+    <div>
+      <div class="score-num" id="scorePct" role="status" aria-live="polite" aria-label="Overall score percentage">0%</div>
+      <div class="score-label">OVERALL SCORE</div>
+    </div>
+    <div style="flex:1">
+      <div class="bar-wrap"><div class="bar-fill" id="barFill"></div></div>
+      <div class="legend">
+        <div class="legend-item"><span class="ldot" style="background:#2c3e6e"></span>0 = Not Observed</div>
+        <div class="legend-item"><span class="ldot" style="background:#4a90d9"></span>1 = Approaching Expectations</div>
+        <div class="legend-item"><span class="ldot" style="background:#f1c40f"></span>2 = Meets Expectations</div>
+        <div class="legend-item"><span class="ldot" style="background:#27ae60"></span>3 = Exceeds Expectations</div>
+      </div>
+      <div class="score-meta" id="scoreMeta">0 of 0 items rated &middot; 0 of 0 points</div>
+      <div class="score-split">
+        <div class="split-item">
+          <div class="split-label" style="color:#d4a017">Permanent</div>
+          <div class="split-val" id="permVal">0%</div>
+          <div class="split-bar"><div class="split-fill" id="permFill" style="background:#d4a017"></div></div>
+        </div>
+        <div class="split-item">
+          <div class="split-label" style="color:#8e44ad">Rotating</div>
+          <div class="split-val" id="rotVal">0%</div>
+          <div class="split-bar"><div class="split-fill" id="rotFill" style="background:#8e44ad"></div></div>
+        </div>
+        <div class="split-item">
+          <div class="split-label" style="color:#3498db">Bonus (Tech)</div>
+          <div class="split-val" id="bonusVal">0%</div>
+          <div class="split-bar"><div class="split-fill" id="bonusFill" style="background:#3498db"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="sectionsContainer"></div>
+
+<button class="sum-btn" onclick="toggleSummary()">View Summary Report</button>
+<div id="sumReport"></div>
+
+<!-- History Modal -->
+<div class="modal-overlay" id="historyModal" role="dialog" aria-modal="true" aria-label="Audit history">
+  <div class="modal" style="max-width:700px">
+    <h3>Streamlined Audit History</h3>
+    <div class="hist-filters">
+      <input type="text" id="histFilterTeacher" placeholder="Filter by teacher..." oninput="renderHistory()"/>
+      <select id="histFilterCampus" onchange="renderHistory()"><option value="">All Campuses</option></select>
+    </div>
+    <div class="hist-list" id="histList"></div>
+    <div class="modal-btns" style="margin-top:14px">
+      <button class="btn-cancel" onclick="closeHistoryModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reset Modal -->
+<div class="modal-overlay" id="resetModal" role="dialog" aria-modal="true" aria-label="Reset confirmation">
+  <div class="modal">
+    <h3>Reset Audit</h3>
+    <p>This will clear all ratings, notes, and meta fields. This action cannot be undone.</p>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeResetModal()">Cancel</button>
+      <button class="btn-confirm" onclick="doReset()">Reset</button>
+    </div>
+  </div>
+</div>
+
+<!-- Shortcuts overlay -->
+<div class="shortcuts-overlay" id="shortcutsOverlay" role="dialog" aria-modal="true" aria-label="Keyboard shortcuts">
+  <div class="shortcuts-modal">
+    <h3>Keyboard Shortcuts</h3>
+    <table>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>S</kbd></td><td>Force save</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>D</kbd></td><td>Toggle dark mode</td></tr>
+      <tr><td><kbd>Esc</kbd></td><td>Close modal</td></tr>
+      <tr><td><kbd>?</kbd></td><td>Toggle this help</td></tr>
+      <tr><td><kbd>0</kbd>-<kbd>3</kbd></td><td>Rate focused item</td></tr>
+      <tr><td><kbd>&#8593;</kbd>/<kbd>&#8595;</kbd></td><td>Navigate items</td></tr>
+    </table>
+    <div style="text-align:right;margin-top:14px"><button class="btn-cancel" onclick="toggleShortcutsHelp()">Close</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="last-saved-footer" id="lastSavedFooter"></div>
+</div>
+
+<script>
+/* ==============================
+   THEME IIFE
+   ============================== */
+(function(){
+  try {
+    var raw = localStorage.getItem("mlp_hub_config");
+    var cfg = raw ? JSON.parse(raw) : {};
+    var THEMES = {"default":{primary:"#4a90d9",primaryDark:"#2c3e6e",headerGrad1:"#2c3e6e",headerGrad2:"#4a90d9"},"forest":{primary:"#27ae60",primaryDark:"#1e8449",headerGrad1:"#1e8449",headerGrad2:"#27ae60"},"sunset":{primary:"#e67e22",primaryDark:"#d35400",headerGrad1:"#d35400",headerGrad2:"#e67e22"},"ruby":{primary:"#e74c3c",primaryDark:"#c0392b",headerGrad1:"#c0392b",headerGrad2:"#e74c3c"},"slate":{primary:"#7f8c8d",primaryDark:"#2c3e50",headerGrad1:"#2c3e50",headerGrad2:"#7f8c8d"},"royal":{primary:"#8e44ad",primaryDark:"#6c3483",headerGrad1:"#6c3483",headerGrad2:"#8e44ad"},"teal":{primary:"#0097a7",primaryDark:"#00695c",headerGrad1:"#00695c",headerGrad2:"#0097a7"},"charcoal":{primary:"#546e7a",primaryDark:"#263238",headerGrad1:"#263238",headerGrad2:"#546e7a"}};
+    var colors = cfg.customColors || THEMES[cfg.theme || "default"] || THEMES["default"];
+    var r = document.documentElement.style;
+    r.setProperty("--primary", colors.primary);
+    r.setProperty("--primary-dark", colors.primaryDark);
+    r.setProperty("--header-gradient-1", colors.headerGrad1);
+    r.setProperty("--header-gradient-2", colors.headerGrad2);
+    r.setProperty("--text-heading", colors.primaryDark);
+    var pName = cfg.productName || cfg.orgName || '';
+    if (pName) {
+      var h1 = document.querySelector(".header h1"); if (h1) h1.textContent = pName + ' \u2014 Streamlined Audit';
+      document.title = pName + ' \u2014 ' + document.title;
+    }
+  } catch(e){}
+})();
+if (localStorage.getItem('esl_app_theme') === 'dark') document.body.classList.add('dark-mode');
+
+/* ==============================
+   UTILITIES
+   ============================== */
+function escHtml(s) {
+  var d = document.createElement("div");
+  d.appendChild(document.createTextNode(s));
+  return d.innerHTML;
+}
+
+function showToast(msg) {
+  var t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(function(){ t.classList.remove("show"); }, 2200);
+}
+
+function toggleDarkMode() {
+  var isDark = document.body.classList.toggle("dark-mode");
+  localStorage.setItem("esl_app_theme", isDark ? "dark" : "light");
+}
+
+function getCurrentUser() {
+  try {
+    var raw = localStorage.getItem("mlp_hub_config");
+    var cfg = raw ? JSON.parse(raw) : {};
+    return { id: cfg.userId || "", name: cfg.userName || "", role: cfg.userRole || "manager", orgId: cfg.orgId || "", orgName: cfg.orgName || "" };
+  } catch(e) { return { id:"", name:"", role:"manager", orgId:"", orgName:"" }; }
+}
+
+function teacherProfileLink(name) {
+  if (!name) return "";
+  return "<a class='teacher-link' href='../Teacher_360_Profile.html?teacher=" + encodeURIComponent(name) + "' style='color:var(--primary);text-decoration:underline;font-weight:600'>" + escHtml(name) + "</a>";
+}
+
+/* ==============================
+   RATING SCALE
+   ============================== */
+var R = {
+  0:{label:"Not Observed",level:0,color:"#2c3e6e",bg:"#e8ecf4"},
+  1:{label:"Approaching Expectations",level:1,color:"#4a90d9",bg:"#eaf3fb"},
+  2:{label:"Meets Expectations",level:2,color:"#f1c40f",bg:"#fefde7"},
+  3:{label:"Exceeds Expectations",level:3,color:"#27ae60",bg:"#eafaf1"}
+};
+
+/* ==============================
+   SECTIONS — STREAMLINED
+   ============================== */
+var SECTIONS = [
+  {id:"s01",type:"permanent",color:"#d4a017",bg:"#fef9e7",title:"Language Production Supports",items:[
+    "Sentence Frames and Stems Wall \u2014 organized by language function, tiered by proficiency level, color-coded",
+    "Discourse Stems Anchor Chart \u2014 categories: Starting, Responding, Pushing Back, Building, Wrapping Up",
+    "Language Function Cards \u2014 individual/table sets for scholar use during discussions and writing",
+    "Question Stems by Depth of Knowledge (DOK 1\u20134) \u2014 teacher and scholars reference regularly",
+    "Transitional Words and Phrases Chart \u2014 organized by function (sequence, contrast, cause/effect, conclusion)"
+  ]},
+  {id:"s02",type:"permanent",color:"#d4a017",bg:"#fef9e7",title:"Vocabulary Systems",items:[
+    "Basic Interpersonal Vocabulary Wall \u2014 high-frequency conversational words with visuals and home language translations",
+    "Academic Content Vocabulary Wall \u2014 Tier 2 and Tier 3 words organized by content area, includes visuals and definitions"
+  ]},
+  {id:"s03",type:"permanent",color:"#d4a017",bg:"#fef9e7",title:"Writing Supports",items:[
+    "Writer\u2019s Checklist \u2014 laminated, scholar-facing, includes language and content criteria",
+    "Sentence Stems and Frames for Writing \u2014 tiered by proficiency level, accessible during writing tasks",
+    "Graphic Organizers for Writing \u2014 reusable organizers aligned to text structures and writing genres"
+  ]},
+  {id:"s04",type:"permanent",color:"#d4a017",bg:"#fef9e7",title:"Data and Goal Tracking",items:[
+    "Scholar Language Goal Tracker \u2014 scholar-friendly TELPAS domain labels, updated and referenced regularly",
+    "Scholar Academic Content Goal Tracker \u2014 content mastery targets visible, tracked, and referenced by scholars"
+  ]},
+  {id:"s05",type:"permanent",color:"#d4a017",bg:"#fef9e7",title:"Culture and Identity",items:[
+    "Visible Representation of Scholars\u2019 Home Languages and Cultures \u2014 multilingual welcome signs, heritage map, bilingual labels, flags, or library corner demonstrating the value of home languages"
+  ]},
+  {id:"s06",type:"permanent",color:"#d4a017",bg:"#fef9e7",title:"Classroom Structures and Routines",items:[
+    "Daily Agenda Display \u2014 activities posted consistently and updated daily",
+    "Content and Language Objectives \u2014 content objective and language objective posted, visible, and referenced during instruction",
+    "Discussion Norms and Expectations \u2014 co-created norms for academic conversations, includes behavioral and language expectations",
+    "Group Roles \u2014 Facilitator, Recorder, Reporter, Timekeeper, Language Monitor with stems for each role",
+    "Collaborative Protocol or Structure \u2014 visible steps for active discussion or group protocol (e.g., Socratic Seminar, Think-Pair-Share, Numbered Heads)",
+    "Individual Accountability in Group Work \u2014 clear mechanism ensuring each scholar has a defined role or product within collaborative tasks"
+  ]},
+  {id:"s07",type:"bonus",color:"#3498db",bg:"#ebf5fb",title:"Technology and Reference Tools",items:[
+    "QR Code Station \u2014 links to Google Translate, bilingual dictionaries, vocabulary lists, support tools",
+    "Bilingual Dictionary Station \u2014 physical dictionaries matching scholar home languages",
+    "Headphone Station \u2014 dedicated, accessible location for audio support and language tools"
+  ]},
+  {id:"s08",type:"rotating",color:"#8e44ad",bg:"#f5eefb",title:"Unit-Specific Vocabulary",items:[
+    "Unit Word Wall Section \u2014 current Tier 2 and Tier 3 vocabulary, updated at unit start, archived when done",
+    "Frayer Model Displays \u2014 teacher or scholar-completed models for 5\u20138 priority words posted during unit"
+  ]},
+  {id:"s09",type:"rotating",color:"#8e44ad",bg:"#f5eefb",title:"Content Comprehension Supports",items:[
+    "Unit-Specific Graphic Organizers \u2014 current text structure organizer posted and accessible",
+    "Background Knowledge Activation Display \u2014 KWL chart, anticipation guide, or brainstorm built and updated live"
+  ]},
+  {id:"s10",type:"rotating",color:"#8e44ad",bg:"#f5eefb",title:"Unit-Specific Writing Supports",items:[
+    "Current Unit Paragraph or Essay Frame \u2014 aligned to current writing task type and genre",
+    "Writing Exemplars for Current Genre \u2014 2\u20133 samples at varying proficiency levels"
+  ]},
+  {id:"s11",type:"rotating",color:"#8e44ad",bg:"#f5eefb",title:"Discussion and Interaction Supports",items:[
+    "Unit Essential Questions Display \u2014 driving questions posted and referenced throughout the unit",
+    "Current Discussion Protocol Reminder \u2014 visual steps and roles for active protocol"
+  ]},
+  {id:"s12",type:"rotating",color:"#8e44ad",bg:"#f5eefb",title:"Assessment and Progress Monitoring",items:[
+    "Unit Learning Targets Tracker \u2014 scholar self-assessment tracker for current unit goals",
+    "Exit Ticket Display \u2014 current exit ticket prompt posted and changed daily or every few days"
+  ]},
+  {id:"s13",type:"rotating",color:"#8e44ad",bg:"#f5eefb",title:"Culture and Content Connections",items:[
+    "Scholar Work Display (Unit-Specific) \u2014 current unit work at multiple proficiency levels, archived when unit ends"
+  ]}
+];
+
+/* ==============================
+   KEYS & STATE
+   ============================== */
+var STORAGE_KEY = "esl_streamlined_audit_data";
+var HISTORY_KEY = "esl_audit_history";
+var CAMPUS_KEY = "esl_audit_campuses";
+var LAST_SAVED_KEY = "esl_audit_history_lastSaved";
+
+var ratings = {};
+var notes = {};
+var itemComments = {};
+var sumVisible = false;
+var saveTimeout = null;
+var focusedKey = null;
+var allItemKeys = [];
+
+/* ==============================
+   SCORING
+   ============================== */
+function getCol(pct){ return pct>=80?"#27ae60":pct>=55?"#f1c40f":"#4a90d9"; }
+
+function totalScore(){
+  var score=0,rated=0,total=0;
+  for(var i=0;i<SECTIONS.length;i++){
+    if(SECTIONS[i].type==="bonus") continue;
+    for(var j=0;j<SECTIONS[i].items.length;j++){
+      total++;
+      var k=SECTIONS[i].id+"-"+j;
+      if(ratings[k]!==undefined){rated++;score+=ratings[k];}
+    }
+  }
+  return {score:score,max:total*3,rated:rated,total:total};
+}
+
+function secScore(s){
+  var score=0,rated=0;
+  for(var j=0;j<s.items.length;j++){
+    var k=s.id+"-"+j;
+    if(ratings[k]!==undefined){rated++;score+=ratings[k];}
+  }
+  return {score:score,max:s.items.length*3,rated:rated,total:s.items.length};
+}
+
+function typeScore(type){
+  var score=0,rated=0,total=0;
+  for(var i=0;i<SECTIONS.length;i++){
+    if(SECTIONS[i].type!==type)continue;
+    for(var j=0;j<SECTIONS[i].items.length;j++){
+      total++;
+      var k=SECTIONS[i].id+"-"+j;
+      if(ratings[k]!==undefined){rated++;score+=ratings[k];}
+    }
+  }
+  return {score:score,max:total*3,rated:rated,total:total};
+}
+
+/* ==============================
+   BANNER REFRESH
+   ============================== */
+function refreshBanner(){
+  var t=totalScore();
+  var pct=t.max>0?Math.round((t.score/t.max)*100):0;
+  document.getElementById("scorePct").textContent=pct+"%";
+  document.getElementById("barFill").style.width=pct+"%";
+  document.getElementById("barFill").style.background=getCol(pct);
+  document.getElementById("scoreMeta").textContent=t.rated+" of "+t.total+" items rated \u00b7 "+t.score+" of "+t.max+" points";
+
+  var perm=typeScore("permanent");
+  var rot=typeScore("rotating");
+  var bonus=typeScore("bonus");
+  var permPct=perm.max>0?Math.round((perm.score/perm.max)*100):0;
+  var rotPct=rot.max>0?Math.round((rot.score/rot.max)*100):0;
+  var bonusPct=bonus.max>0?Math.round((bonus.score/bonus.max)*100):0;
+
+  document.getElementById("permVal").textContent=permPct+"%";
+  document.getElementById("permFill").style.width=permPct+"%";
+  document.getElementById("rotVal").textContent=rotPct+"%";
+  document.getElementById("rotFill").style.width=rotPct+"%";
+  document.getElementById("bonusVal").textContent=bonusPct+"%";
+  document.getElementById("bonusFill").style.width=bonusPct+"%";
+
+  // Update section badges
+  for(var i=0;i<SECTIONS.length;i++){
+    var s=SECTIONS[i];
+    var sc=secScore(s);
+    var sp=sc.max>0?Math.round((sc.score/sc.max)*100):0;
+    var badge=document.getElementById("badge-"+s.id);
+    if(badge){
+      badge.textContent=sp+"% ("+sc.rated+"/"+sc.total+")";
+      badge.style.background=getCol(sp);
+    }
+  }
+}
+
+/* ==============================
+   RATING
+   ============================== */
+function rateItem(key,val){
+  ratings[key]=val;
+  // Update button states
+  var row=document.getElementById("rrow-"+key);
+  if(row){
+    var btns=row.querySelectorAll(".rbtn");
+    for(var i=0;i<btns.length;i++){
+      var bv=parseInt(btns[i].getAttribute("data-v"));
+      if(bv===val){
+        btns[i].style.background=R[bv].bg;
+        btns[i].style.color=R[bv].color;
+        btns[i].style.borderColor=R[bv].color;
+        btns[i].setAttribute("aria-pressed","true");
+      } else {
+        btns[i].style.background="";
+        btns[i].style.color="";
+        btns[i].style.borderColor="";
+        btns[i].setAttribute("aria-pressed","false");
+      }
+    }
+  }
+  // Update checkbox
+  var cb=document.getElementById("cb-"+key);
+  if(cb) cb.checked=true;
+  refreshBanner();
+  scheduleSave();
+}
+
+function setFocus(key){
+  if(focusedKey){
+    var prev=document.getElementById("item-"+focusedKey);
+    if(prev) prev.classList.remove("focused");
+  }
+  focusedKey=key;
+  var el=document.getElementById("item-"+key);
+  if(el) el.classList.add("focused");
+}
+
+function quickRateSection(secId,val){
+  for(var i=0;i<SECTIONS.length;i++){
+    if(SECTIONS[i].id!==secId) continue;
+    for(var j=0;j<SECTIONS[i].items.length;j++){
+      rateItem(secId+"-"+j,val);
+    }
+  }
+}
+
+/* ==============================
+   RENDER SECTIONS
+   ============================== */
+function renderSections(){
+  var container=document.getElementById("sectionsContainer");
+  var html="";
+  allItemKeys=[];
+
+  for(var i=0;i<SECTIONS.length;i++){
+    var s=SECTIONS[i];
+    var typeLabel=s.type==="permanent"?"PERMANENT":s.type==="rotating"?"ROTATING":"BONUS";
+    var typeColor=s.type==="permanent"?"#d4a017":s.type==="rotating"?"#8e44ad":"#3498db";
+    var bonusTag=s.type==="bonus"?" <span class='bonus-badge'>Does not count toward score</span>":"";
+
+    html+="<div class='sec-block' style='border-color:"+s.color+"' id='sec-"+s.id+"'>";
+    html+="<div class='sec-head' style='background:"+s.bg+"' onclick='toggleSection(\""+s.id+"\")'>";
+    html+="<div><span class='sec-title' style='color:"+s.color+"'>"+escHtml(s.title)+"</span>"+bonusTag+"<span class='sec-badge' id='badge-"+s.id+"' style='background:"+typeColor+"'>"+typeLabel+"</span></div>";
+    html+="</div>";
+    html+="<div class='sec-body' id='body-"+s.id+"'>";
+
+    // Quick rate
+    html+="<div class='sec-quickrate'><span>Quick rate all:</span>";
+    for(var qv=0;qv<4;qv++){
+      html+="<button class='qr-btn' onclick='quickRateSection(\""+s.id+"\","+qv+")'>"+R[qv].level+" \u2014 "+R[qv].label+"</button>";
+    }
+    html+="</div>";
+
+    // Items
+    for(var ii=0;ii<s.items.length;ii++){
+      var key=s.id+"-"+ii;
+      allItemKeys.push(key);
+      html+="<div class='item-row' id='item-"+key+"' onclick='handleItemClick(event,\""+key+"\")'>";
+      html+="<div class='item-top'>";
+      html+="<input type='checkbox' class='item-cb' id='cb-"+key+"' readonly onclick='return false'/>";
+      html+="<span class='item-text'>"+escHtml(s.items[ii])+"</span>";
+      html+="</div>";
+      html+="<div class='rating-row' id='rrow-"+key+"' role='group' aria-label='Rating for item "+(ii+1)+"'>";
+      for(var v=0;v<4;v++){
+        html+="<button class='rbtn' data-v='"+v+"' role='radio' aria-pressed='false' aria-label='Level "+R[v].level+": "+R[v].label+"' onclick='rateItem(\""+key+"\","+v+")'>"+R[v].level+" \u2014 "+R[v].label+"</button>";
+      }
+      html+="</div>";
+      html+="<div class='item-comment-toggle' onclick='toggleComment(\""+key+"\")'>+ Add note</div>";
+      html+="<div class='item-comment' id='comment-"+key+"'><textarea id='ctext-"+key+"' placeholder='Add observation note...' oninput='saveComment(\""+key+"\")'></textarea></div>";
+      html+="</div>";
+    }
+
+    // Section notes
+    html+="<div class='sec-notes'><label for='notes-"+s.id+"'>Section Notes</label><textarea id='notes-"+s.id+"' placeholder='General notes for this section...' oninput='saveNote(\""+s.id+"\")'></textarea></div>";
+    html+="</div></div>";
+  }
+  container.innerHTML=html;
+}
+
+function handleItemClick(e,key){
+  var t=e.target.tagName;
+  if(t==="BUTTON"||t==="INPUT"||t==="TEXTAREA") return;
+  setFocus(key);
+}
+
+function toggleSection(secId){
+  var body=document.getElementById("body-"+secId);
+  if(body) body.style.display=body.style.display==="none"?"block":"none";
+}
+
+function toggleComment(key){
+  var el=document.getElementById("comment-"+key);
+  if(el) el.classList.toggle("open");
+}
+
+function saveComment(key){
+  var el=document.getElementById("ctext-"+key);
+  if(el) itemComments[key]=el.value;
+  scheduleSave();
+}
+
+function saveNote(secId){
+  var el=document.getElementById("notes-"+secId);
+  if(el) notes[secId]=el.value;
+  scheduleSave();
+}
+
+/* ==============================
+   PERSISTENCE
+   ============================== */
+function collectState(){
+  return {
+    version:1,
+    formType:"streamlined",
+    timestamp:new Date().toISOString(),
+    meta:{
+      teacher:document.getElementById("m-teacher").value,
+      campus:document.getElementById("m-campus").value,
+      observer:document.getElementById("m-observer").value,
+      date:document.getElementById("m-date").value
+    },
+    ratings:ratings,
+    notes:notes,
+    itemComments:itemComments
+  };
+}
+
+function scheduleSave(){
+  if(saveTimeout)clearTimeout(saveTimeout);
+  saveTimeout=setTimeout(saveToStorage,500);
+}
+
+function saveToStorage(){
+  try{
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(collectState()));
+    saveCampus(document.getElementById("m-campus").value);
+    var el=document.getElementById("saveStatus");
+    el.textContent="Saved "+new Date().toLocaleTimeString();
+    setTimeout(function(){el.textContent="Auto-save: active";},2000);
+    broadcastSync();
+  }catch(e){document.getElementById("saveStatus").textContent="Auto-save: error";}
+}
+
+function loadFromStorage(){
+  try{
+    var raw=localStorage.getItem(STORAGE_KEY);
+    if(!raw)return false;
+    applyState(JSON.parse(raw));
+    return true;
+  }catch(e){return false;}
+}
+
+function applyState(state){
+  if(state.meta){
+    document.getElementById("m-teacher").value=state.meta.teacher||"";
+    document.getElementById("m-campus").value=state.meta.campus||"";
+    document.getElementById("m-observer").value=state.meta.observer||"";
+    document.getElementById("m-date").value=state.meta.date||"";
+  }
+  ratings=state.ratings||{};
+  notes=state.notes||{};
+  itemComments=state.itemComments||{};
+
+  // Restore ratings UI
+  for(var key in ratings) rateItem(key,ratings[key]);
+  // Restore notes
+  for(var sid in notes){
+    var el=document.getElementById("notes-"+sid);
+    if(el) el.value=notes[sid];
+  }
+  // Restore item comments
+  for(var ck in itemComments){
+    var ct=document.getElementById("ctext-"+ck);
+    if(ct){
+      ct.value=itemComments[ck];
+      if(itemComments[ck]){
+        var wrap=document.getElementById("comment-"+ck);
+        if(wrap) wrap.classList.add("open");
+      }
+    }
+  }
+  refreshBanner();
+}
+
+/* ==============================
+   CAMPUS LIST
+   ============================== */
+function saveCampus(name){
+  if(!name) return;
+  try{
+    var raw=localStorage.getItem(CAMPUS_KEY);
+    var list=raw?JSON.parse(raw):[];
+    for(var i=0;i<list.length;i++) if(list[i]===name) return;
+    list.push(name);
+    list.sort();
+    localStorage.setItem(CAMPUS_KEY,JSON.stringify(list));
+    populateCampusList();
+  }catch(e){}
+}
+
+function populateCampusList(){
+  try{
+    var raw=localStorage.getItem(CAMPUS_KEY);
+    var list=raw?JSON.parse(raw):[];
+    var dl=document.getElementById("campus-list");
+    if(!dl) return;
+    dl.innerHTML="";
+    for(var i=0;i<list.length;i++){
+      var o=document.createElement("option");
+      o.value=list[i];
+      dl.appendChild(o);
+    }
+  }catch(e){}
+}
+
+function populateHistoryCampusFilter(){
+  try{
+    var raw=localStorage.getItem(CAMPUS_KEY);
+    var list=raw?JSON.parse(raw):[];
+    var sel=document.getElementById("histFilterCampus");
+    if(!sel) return;
+    while(sel.options.length>1) sel.remove(1);
+    for(var i=0;i<list.length;i++){
+      var o=document.createElement("option");
+      o.value=list[i];o.textContent=list[i];
+      sel.appendChild(o);
+    }
+  }catch(e){}
+}
+
+/* ==============================
+   HISTORY — shared esl_audit_history
+   ============================== */
+function getHistory(){
+  try{
+    var raw=localStorage.getItem(HISTORY_KEY);
+    return raw?JSON.parse(raw):[];
+  }catch(e){return [];}
+}
+
+function saveToHistory(){
+  var state=collectState();
+  state.id=Date.now().toString();
+  var t=totalScore();
+  state.scorePct=t.max>0?Math.round((t.score/t.max)*100):0;
+  var history=getHistory();
+  history.push(state);
+  localStorage.setItem(HISTORY_KEY,JSON.stringify(history));
+  stampLastSaved();
+  alert("Streamlined audit saved to history for "+(state.meta.teacher||"unnamed teacher")+" on "+(state.meta.date||"unknown date")+".");
+  showToast("Saved to history");
+}
+
+function showHistoryModal(){
+  populateHistoryCampusFilter();
+  renderHistory();
+  document.getElementById("historyModal").classList.add("active");
+}
+function closeHistoryModal(){ document.getElementById("historyModal").classList.remove("active"); }
+
+function renderHistory(){
+  var list=document.getElementById("histList");
+  var history=getHistory();
+  var filterTeacher=document.getElementById("histFilterTeacher").value.toLowerCase();
+  var filterCampus=document.getElementById("histFilterCampus").value;
+
+  // Show only streamlined audits
+  var filtered=history.filter(function(a){
+    if(a.formType!=="streamlined") return false;
+    if(filterTeacher&&(!a.meta.teacher||a.meta.teacher.toLowerCase().indexOf(filterTeacher)===-1)) return false;
+    if(filterCampus&&a.meta.campus!==filterCampus) return false;
+    return true;
+  });
+
+  if(!filtered.length){
+    list.innerHTML="<div class='no-history'>No saved streamlined audits"+(filterTeacher||filterCampus?" match your filters":"")+".<br>Use \"Save to Audit History\" in the summary report to archive completed audits.</div>";
+    return;
+  }
+
+  filtered.sort(function(a,b){return(b.timestamp||"").localeCompare(a.timestamp||"");});
+
+  var html="";
+  for(var i=0;i<filtered.length;i++){
+    var a=filtered[i];
+    var pct=a.scorePct||0;
+    var col=getCol(pct);
+    var date=a.meta.date||"No date";
+    html+="<div class='hist-item'>"+
+      "<div class='hist-info'>"+
+      "<div class='hist-teacher'>"+escHtml(a.meta.teacher||"Unnamed Teacher")+"</div>"+
+      "<div class='hist-detail'>"+escHtml(a.meta.campus||"No campus")+" &nbsp;|&nbsp; "+escHtml(date)+" &nbsp;|&nbsp; Observer: "+escHtml(a.meta.observer||"\u2014")+"</div>"+
+      "</div>"+
+      "<div class='hist-score' style='color:"+col+"'>"+pct+"%</div>"+
+      "<div class='hist-actions'>"+
+      "<button class='load' onclick='loadFromHistory(\""+a.id+"\")'>Load</button>"+
+      "<button class='delete' onclick='deleteFromHistory(\""+a.id+"\")'>Delete</button>"+
+      "</div></div>";
+  }
+  list.innerHTML=html;
+}
+
+function loadFromHistory(id){
+  var history=getHistory();
+  for(var i=0;i<history.length;i++){
+    if(history[i].id===id){
+      applyState(history[i]);
+      saveToStorage();
+      closeHistoryModal();
+      showToast("Loaded from history");
+      return;
+    }
+  }
+}
+
+function deleteFromHistory(id){
+  if(!confirm("Delete this audit from history?")) return;
+  var history=getHistory();
+  var filtered=[];
+  for(var i=0;i<history.length;i++){
+    if(history[i].id!==id) filtered.push(history[i]);
+  }
+  localStorage.setItem(HISTORY_KEY,JSON.stringify(filtered));
+  renderHistory();
+  showToast("Deleted from history");
+}
+
+/* ==============================
+   RESET
+   ============================== */
+function showResetModal(){ document.getElementById("resetModal").classList.add("active"); }
+function closeResetModal(){ document.getElementById("resetModal").classList.remove("active"); }
+
+function doReset(){
+  ratings={};
+  notes={};
+  itemComments={};
+  focusedKey=null;
+  document.getElementById("m-teacher").value="";
+  document.getElementById("m-campus").value="";
+  document.getElementById("m-observer").value="";
+  document.getElementById("m-date").value="";
+
+  // Reset all UI
+  var cbs=document.querySelectorAll(".item-cb");
+  for(var i=0;i<cbs.length;i++) cbs[i].checked=false;
+  var btns=document.querySelectorAll(".rbtn");
+  for(var i=0;i<btns.length;i++){
+    btns[i].style.background="";
+    btns[i].style.color="";
+    btns[i].style.borderColor="";
+    btns[i].setAttribute("aria-pressed","false");
+  }
+  var tas=document.querySelectorAll(".sec-notes textarea, .item-comment textarea");
+  for(var i=0;i<tas.length;i++) tas[i].value="";
+  var cms=document.querySelectorAll(".item-comment");
+  for(var i=0;i<cms.length;i++) cms[i].classList.remove("open");
+
+  document.getElementById("sumReport").style.display="none";
+  sumVisible=false;
+
+  refreshBanner();
+  saveToStorage();
+  closeResetModal();
+  showToast("Audit reset");
+}
+
+/* ==============================
+   SUMMARY REPORT
+   ============================== */
+function toggleSummary(){
+  sumVisible=!sumVisible;
+  var el=document.getElementById("sumReport"),btn=document.querySelector(".sum-btn");
+  if(sumVisible){buildSummary();el.style.display="block";btn.textContent="Hide Summary Report";}
+  else{el.style.display="none";btn.textContent="View Summary Report";}
+}
+
+function buildSummary(){
+  var el=document.getElementById("sumReport");
+  var tn=document.getElementById("m-teacher").value||"\u2014";
+  var cp=document.getElementById("m-campus").value||"\u2014";
+  var ob=document.getElementById("m-observer").value||"\u2014";
+  var dt=document.getElementById("m-date").value||"\u2014";
+  var t=totalScore();
+  var pct=t.max>0?Math.round((t.score/t.max)*100):0;
+  var col=getCol(pct);
+  var oBg=pct>=80?"#eafaf1":pct>=55?"#fefde7":"#fdecea";
+  var lbl=pct>=80?"Strong Language-Forward Environment":pct>=55?"Developing Language-Forward Environment":"Beginning Language-Forward Environment";
+
+  var perm=typeScore("permanent"),rot=typeScore("rotating"),bonus=typeScore("bonus");
+  var permPct=perm.max>0?Math.round((perm.score/perm.max)*100):0;
+  var rotPct=rot.max>0?Math.round((rot.score/rot.max)*100):0;
+  var bonusPct=bonus.max>0?Math.round((bonus.score/bonus.max)*100):0;
+
+  // Flags (items rated 0 or 1)
+  var flagHTML="";
+  for(var si=0;si<SECTIONS.length;si++){
+    var s=SECTIONS[si];
+    for(var ji=0;ji<s.items.length;ji++){
+      var key=s.id+"-"+ji;
+      if(ratings[key]!==undefined&&ratings[key]<=1){
+        var r=R[ratings[key]],short=s.items[ji].split("\u2014")[0].trim();
+        var commentNote=itemComments[key]?" <em style='color:#888'>("+escHtml(itemComments[key])+")</em>":"";
+        var bonusNote=s.type==="bonus"?" <span class='bonus-badge'>Bonus</span>":"";
+        flagHTML+="<div class='flag-item'><span class='flag-badge' style='background:"+r.bg+";color:"+r.color+"'>"+r.label+"</span><span style='color:var(--text)'><strong style='color:var(--text-muted)'>"+escHtml(s.title)+":</strong> "+escHtml(short)+commentNote+bonusNote+"</span></div>";
+      }
+    }
+  }
+  if(!flagHTML)flagHTML="<p style='font-size:13px;color:var(--text-muted)'>No items rated Not Observed or Approaching Expectations.</p>";
+
+  // Strengths (items rated 3)
+  var strengthHTML="";
+  for(var si=0;si<SECTIONS.length;si++){
+    var s=SECTIONS[si];
+    for(var ji=0;ji<s.items.length;ji++){
+      var key=s.id+"-"+ji;
+      if(ratings[key]!==undefined&&ratings[key]===3){
+        var short=s.items[ji].split("\u2014")[0].trim();
+        strengthHTML+="<div class='strength-item'><span class='flag-badge' style='background:#eafaf1;color:#27ae60'>Exceeds Expectations</span><span style='color:var(--text)'><strong style='color:var(--text-muted)'>"+escHtml(s.title)+":</strong> "+escHtml(short)+"</span></div>";
+      }
+    }
+  }
+  if(!strengthHTML)strengthHTML="<p style='font-size:13px;color:var(--text-muted)'>No items rated Exceeds Expectations yet.</p>";
+
+  // Section bars
+  var barsHTML="";
+  for(var si=0;si<SECTIONS.length;si++){
+    var s=SECTIONS[si],sc=secScore(s),sp=sc.max>0?Math.round((sc.score/sc.max)*100):0,sc2=getCol(sp);
+    var noteHTML=notes[s.id]?"<div class='snote'>Note: "+escHtml(notes[s.id])+"</div>":"";
+    var bonusLbl=s.type==="bonus"?" (Bonus)":"";
+    barsHTML+="<div class='sbar-row'><div class='sbar-lbl'><span style='color:"+s.color+";font-weight:600'>"+escHtml(s.title)+bonusLbl+"</span><span style='color:"+sc2+";font-weight:700'>"+sp+"% ("+sc.score+"/"+sc.max+")</span></div><div class='sbar-track'><div class='sbar-fill' style='width:"+sp+"%;background:"+sc2+"'></div></div>"+noteHTML+"</div>";
+  }
+
+  // Completion warning
+  var completionHTML="";
+  if(t.rated<t.total)
+    completionHTML="<div style='background:var(--warn-bg);border:1px solid var(--warn-border);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--warn-text);margin-bottom:16px'><strong>Incomplete Audit:</strong> "+(t.total-t.rated)+" of "+t.total+" items have not been rated.</div>";
+
+  // Next steps
+  var nextTxt=pct>=80
+    ?"This classroom demonstrates a strong language-forward environment. Focus coaching on deepening scholar interaction with materials."
+    :pct>=55
+    ?"Solid foundations are in place. Prioritize items scored 0\u20131 above, particularly Vocabulary and Writing Supports."
+    :"Begin with the highest-impact permanent materials: Vocabulary Walls, Content and Language Objectives, and Writing Supports. Schedule a follow-up audit in 6\u20138 weeks.";
+
+  var splitHTML=
+    "<div class='sum-split'>"+
+    "<div class='sum-split-card' style='background:#fef9e7'><div class='sum-split-val' style='color:#d4a017'>"+permPct+"%</div><div class='sum-split-lbl' style='color:#d4a017'>Permanent</div></div>"+
+    "<div class='sum-split-card' style='background:#f5eefb'><div class='sum-split-val' style='color:#8e44ad'>"+rotPct+"%</div><div class='sum-split-lbl' style='color:#8e44ad'>Rotating</div></div>"+
+    "<div class='sum-split-card' style='background:#ebf5fb'><div class='sum-split-val' style='color:#3498db'>"+bonusPct+"%</div><div class='sum-split-lbl' style='color:#3498db'>Bonus (Tech)</div></div>"+
+    "</div>";
+
+  el.innerHTML=
+    "<div class='sum-meta'>"+teacherProfileLink(tn)+" &nbsp;|&nbsp; Campus: "+escHtml(cp)+" &nbsp;|&nbsp; Observer: "+escHtml(ob)+" &nbsp;|&nbsp; Date: "+escHtml(dt)+" &nbsp;|&nbsp; Form: Streamlined</div>"+
+    completionHTML+
+    "<div class='sum-overall' style='background:"+oBg+"'><div class='sum-big' style='color:"+col+"'>"+pct+"%</div><div><div class='sum-lbl'>"+lbl+"</div><div class='sum-sub'>"+t.score+" of "+t.max+" points &nbsp;\u00b7&nbsp; "+t.rated+"/"+t.total+" items rated</div></div></div>"+
+    splitHTML+
+    "<h3 class='sub-h'>Section Breakdown</h3>"+barsHTML+
+    "<h3 class='sub-h' style='color:#27ae60'>Strengths (Exceeds Expectations)</h3>"+strengthHTML+
+    "<h3 class='sub-h' style='color:#e74c3c'>Items Needing Attention (Not Observed / Approaching)</h3>"+flagHTML+
+    "<div class='next-box'><h3>Recommended Next Steps</h3><p>"+nextTxt+"</p></div>"+
+    "<div style='margin-top:14px;text-align:center'>"+
+    "<button class='start-cycle-btn' onclick='createCoachingCycleFromAudit()'>Start Coaching Cycle from This Audit</button>"+
+    "<div id='cycleCreatedMsg' style='margin-top:8px;font-size:12px;color:#27ae60;display:none'></div>"+
+    "</div>"+
+    "<div class='sum-actions'>"+
+    "<button class='print-btn' onclick='window.print()'>Print / PDF</button>"+
+    "<button class='copy-btn' onclick='copySummary()'>Copy as Text</button>"+
+    "<button class='save-history-btn' onclick='saveToHistory()'>Save to Audit History</button>"+
+    "</div>";
+}
+
+/* ==============================
+   COPY SUMMARY AS TEXT
+   ============================== */
+function copySummary(){
+  var t=totalScore();
+  var pct=t.max>0?Math.round((t.score/t.max)*100):0;
+  var perm=typeScore("permanent"),rot=typeScore("rotating"),bonus=typeScore("bonus");
+  var permPct=perm.max>0?Math.round((perm.score/perm.max)*100):0;
+  var rotPct=rot.max>0?Math.round((rot.score/rot.max)*100):0;
+  var bonusPct=bonus.max>0?Math.round((bonus.score/bonus.max)*100):0;
+
+  var lines=[];
+  lines.push("STREAMLINED CLASSROOM AUDIT REPORT");
+  lines.push("==================================");
+  lines.push("Teacher: "+(document.getElementById("m-teacher").value||"\u2014"));
+  lines.push("Campus: "+(document.getElementById("m-campus").value||"\u2014"));
+  lines.push("Observer: "+(document.getElementById("m-observer").value||"\u2014"));
+  lines.push("Date: "+(document.getElementById("m-date").value||"\u2014"));
+  lines.push("");
+  lines.push("OVERALL: "+pct+"% ("+t.score+"/"+t.max+")");
+  lines.push("Permanent: "+permPct+"% | Rotating: "+rotPct+"% | Bonus (Tech): "+bonusPct+"%");
+  lines.push("");
+
+  lines.push("SECTION BREAKDOWN:");
+  for(var i=0;i<SECTIONS.length;i++){
+    var s=SECTIONS[i],sc=secScore(s),sp=sc.max>0?Math.round((sc.score/sc.max)*100):0;
+    var bonusLbl=s.type==="bonus"?" (Bonus)":"";
+    lines.push("  "+s.title+bonusLbl+": "+sp+"% ("+sc.score+"/"+sc.max+")");
+    if(notes[s.id]) lines.push("    Note: "+notes[s.id]);
+  }
+  lines.push("");
+
+  lines.push("STRENGTHS (Exceeds Expectations):");
+  var hasStrength=false;
+  for(var i=0;i<SECTIONS.length;i++){
+    var s=SECTIONS[i];
+    for(var j=0;j<s.items.length;j++){
+      var k=s.id+"-"+j;
+      if(ratings[k]===3){
+        lines.push("  ["+s.title+"] "+s.items[j].split("\u2014")[0].trim());
+        hasStrength=true;
+      }
+    }
+  }
+  if(!hasStrength) lines.push("  None");
+  lines.push("");
+
+  lines.push("ITEMS NEEDING ATTENTION (Not Observed / Approaching):");
+  var hasFlag=false;
+  for(var i=0;i<SECTIONS.length;i++){
+    var s=SECTIONS[i];
+    for(var j=0;j<s.items.length;j++){
+      var k=s.id+"-"+j;
+      if(ratings[k]!==undefined&&ratings[k]<=1){
+        var cmt=itemComments[k]?" ("+itemComments[k]+")":"";
+        lines.push("  ["+R[ratings[k]].label+"] "+s.title+": "+s.items[j].split("\u2014")[0].trim()+cmt);
+        hasFlag=true;
+      }
+    }
+  }
+  if(!hasFlag) lines.push("  None");
+
+  var text=lines.join("\n");
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(text).then(function(){showToast("Copied to clipboard");});
+  }
+}
+
+/* ==============================
+   AUDIT-TO-COACHING PIPELINE
+   ============================== */
+function buildEvidenceSummary(){
+  var state=collectState();
+  var sectionData=[];
+  for(var i=0;i<SECTIONS.length;i++){
+    var s=SECTIONS[i];
+    if(s.type==="bonus") continue;
+    var sc=secScore(s);
+    var pct=sc.max>0?Math.round((sc.score/sc.max)*100):0;
+    var weakItems=[];
+    for(var j=0;j<s.items.length;j++){
+      var k=s.id+"-"+j;
+      if(ratings[k]!==undefined&&ratings[k]<=1){
+        weakItems.push({
+          itemKey:k,
+          itemText:s.items[j].split("\u2014")[0].trim(),
+          rating:ratings[k],
+          comment:itemComments[k]||""
+        });
+      }
+    }
+    sectionData.push({sectionId:s.id,sectionTitle:s.title,sectionType:s.type,scorePct:pct,weakItems:weakItems});
+  }
+  sectionData.sort(function(a,b){return a.scorePct-b.scorePct;});
+  var weakSections=sectionData.slice(0,3);
+
+  var auditDate=state.meta.date||new Date().toISOString().slice(0,10);
+  var t=totalScore();
+  var auditScorePct=t.max>0?Math.round((t.score/t.max)*100):0;
+
+  return {auditDate:auditDate,auditScorePct:auditScorePct,weakSections:weakSections};
+}
+
+function createCoachingCycleFromAudit(){
+  var state=collectState();
+  var evidenceSummary=buildEvidenceSummary();
+  var teacher=state.meta.teacher||"Unknown Teacher";
+  var campus=state.meta.campus||"";
+  var auditDate=state.meta.date||new Date().toISOString().slice(0,10);
+
+  var auditId="audit-"+Date.now();
+  var history=getHistory();
+  for(var i=history.length-1;i>=0;i--){
+    if(history[i].meta&&history[i].meta.teacher===teacher&&history[i].meta.date===auditDate){
+      auditId=history[i].id;
+      break;
+    }
+  }
+
+  var weakParts=[];
+  for(var w=0;w<evidenceSummary.weakSections.length;w++){
+    var ws=evidenceSummary.weakSections[w];
+    weakParts.push(ws.sectionTitle+" ("+ws.scorePct+"%)");
+  }
+  var weakSummaryText=weakParts.join("; ");
+
+  var recommendationParts=[];
+  for(var r=0;r<evidenceSummary.weakSections.length;r++){
+    var rs=evidenceSummary.weakSections[r];
+    if(rs.sectionType==="permanent"){
+      recommendationParts.push("- "+rs.sectionTitle+": Co-create a plan to install or update materials. Schedule a working session to build materials together.");
+    } else {
+      recommendationParts.push("- "+rs.sectionTitle+": Review upcoming unit plans and identify where materials should be prepared before the unit launches.");
+    }
+  }
+  var recommendationText=recommendationParts.join("\n");
+
+  var nextStepsParts=[];
+  if(evidenceSummary.weakSections[0]) nextStepsParts.push("Address "+evidenceSummary.weakSections[0].sectionTitle+" in weeks 1-2");
+  if(evidenceSummary.weakSections[1]) nextStepsParts.push(evidenceSummary.weakSections[1].sectionTitle+" in weeks 3-4");
+  nextStepsParts.push("follow-up audit weeks 6-8");
+  var nextStepsText=nextStepsParts.join(", ");
+
+  var cycle={
+    id:"cyc"+Date.now()+Math.floor(Math.random()*10000),
+    teacher:teacher,
+    campus:campus,
+    createdAt:new Date().toISOString(),
+    stages:[
+      {key:"observation",status:"complete",date:auditDate,notes:"Streamlined audit observation \u2014 "+weakSummaryText},
+      {key:"feedback",status:"in-progress",date:"",notes:"Coaching recommendations from streamlined audit:\n"+recommendationText},
+      {key:"actionStep",status:"not-started",date:"",notes:"Suggested next steps:\n"+nextStepsText},
+      {key:"followUp",status:"not-started",date:"",notes:""},
+      {key:"growth",status:"not-started",date:"",notes:""}
+    ],
+    sourceWalkthroughId:null,
+    sourceAuditId:auditId,
+    evidenceSummary:evidenceSummary
+  };
+
+  var cyclesData;
+  try{
+    var raw=localStorage.getItem("coaching_cycles_data");
+    cyclesData=raw?JSON.parse(raw):null;
+  }catch(e){cyclesData=null;}
+  if(!cyclesData||!cyclesData.cycles){
+    cyclesData={version:1,savedAt:new Date().toISOString(),cycles:[],settings:{}};
+  }
+  cyclesData.cycles.push(cycle);
+  cyclesData.savedAt=new Date().toISOString();
+  localStorage.setItem("coaching_cycles_data",JSON.stringify(cyclesData));
+
+  // Add teacher to shared roster
+  var roster=[];
+  try{
+    var rosterRaw=localStorage.getItem("shared_teacher_roster");
+    roster=rosterRaw?JSON.parse(rosterRaw):[];
+  }catch(e){roster=[];}
+  var teacherLower=teacher.toLowerCase();
+  var found=false;
+  for(var ti=0;ti<roster.length;ti++){
+    if(roster[ti].toLowerCase()===teacherLower){found=true;break;}
+  }
+  if(!found&&teacher){
+    roster.push(teacher);
+    roster.sort();
+    localStorage.setItem("shared_teacher_roster",JSON.stringify(roster));
+  }
+
+  alert("Coaching cycle created for "+teacher+"!\nOpen the Coaching Cycle Tracker to view it.");
+
+  var msgEl=document.getElementById("cycleCreatedMsg");
+  if(msgEl){
+    msgEl.style.display="block";
+    msgEl.innerHTML="Coaching cycle created. <a href='../Academic_Monitoring_Leader_Facing/Coaching_Cycle_Tracker.html' style='color:#27ae60;font-weight:700;text-decoration:underline'>Open Coaching Cycle Tracker</a>";
+  }
+}
+
+/* ==============================
+   BROADCAST SYNC
+   ============================== */
+function broadcastSync(){
+  try{
+    var bc=new BroadcastChannel("mlp_hub_sync");
+    bc.postMessage({type:"data_update",key:STORAGE_KEY,timestamp:Date.now()});
+    bc.close();
+  }catch(e){}
+}
+
+/* ==============================
+   KEYBOARD SHORTCUTS
+   ============================== */
+function toggleShortcutsHelp(){
+  var el=document.getElementById("shortcutsOverlay");
+  el.classList.toggle("active");
+}
+
+document.addEventListener("keydown",function(e){
+  // Close modals on Escape
+  if(e.key==="Escape"){
+    var modals=document.querySelectorAll(".modal-overlay.active,.shortcuts-overlay.active");
+    for(var i=0;i<modals.length;i++) modals[i].classList.remove("active");
+    return;
+  }
+  // Ctrl+S
+  if(e.ctrlKey&&e.key==="s"){e.preventDefault();saveToStorage();showToast("Saved");return;}
+  // Ctrl+D
+  if(e.ctrlKey&&e.key==="d"){e.preventDefault();toggleDarkMode();return;}
+  // ? for shortcuts
+  if(e.key==="?"&&!e.ctrlKey&&e.target.tagName!=="INPUT"&&e.target.tagName!=="TEXTAREA"){toggleShortcutsHelp();return;}
+  // Number keys for rating focused item
+  if(focusedKey&&e.target.tagName!=="INPUT"&&e.target.tagName!=="TEXTAREA"){
+    if(e.key>="0"&&e.key<="3"){rateItem(focusedKey,parseInt(e.key));return;}
+  }
+  // Arrow keys for navigation
+  if(e.key==="ArrowDown"||e.key==="ArrowUp"){
+    if(e.target.tagName==="INPUT"||e.target.tagName==="TEXTAREA") return;
+    e.preventDefault();
+    var idx=focusedKey?allItemKeys.indexOf(focusedKey):-1;
+    if(e.key==="ArrowDown") idx=Math.min(idx+1,allItemKeys.length-1);
+    else idx=Math.max(idx-1,0);
+    if(allItemKeys[idx]){
+      setFocus(allItemKeys[idx]);
+      var el=document.getElementById("item-"+allItemKeys[idx]);
+      if(el) el.scrollIntoView({block:"center",behavior:"smooth"});
+    }
+  }
+});
+
+/* ==============================
+   NOTIFICATION BELL
+   ============================== */
+function initNotifBell(){
+  try{
+    var count=parseInt(localStorage.getItem("notification_unread_count")||"0");
+    var badge=document.getElementById("notifBellBadge");
+    if(count>0){badge.textContent=count;badge.classList.remove("hidden");}
+    else{badge.classList.add("hidden");}
+  }catch(e){}
+}
+
+/* ==============================
+   LAST SAVED FOOTER
+   ============================== */
+function stampLastSaved(){
+  localStorage.setItem(LAST_SAVED_KEY,Date.now().toString());
+  renderLastSaved();
+}
+
+function renderLastSaved(){
+  var el=document.getElementById("lastSavedFooter");
+  try{
+    var ts=localStorage.getItem(LAST_SAVED_KEY);
+    if(ts){
+      el.textContent="Audit history last saved: "+new Date(parseInt(ts)).toLocaleString();
+    } else {
+      el.textContent="No audit history saved yet";
+    }
+  }catch(e){el.textContent="";}
+}
+
+/* ==============================
+   INIT
+   ============================== */
+renderSections();
+populateCampusList();
+if(!loadFromStorage()){
+  document.getElementById("m-date").value=new Date().toISOString().slice(0,10);
+}
+refreshBanner();
+renderLastSaved();
+
+// PWA Service Worker registration
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.register("../service-worker.js").catch(function(){});
+}
+initNotifBell();
+
+// Walkthrough -> Audit handoff
+(function(){
+  try{
+    var raw=localStorage.getItem("walkthrough_audit_handoff");
+    if(!raw) return;
+    var handoff=JSON.parse(raw);
+    localStorage.removeItem("walkthrough_audit_handoff");
+    if(handoff.source!=="walkthrough") return;
+    if(handoff.campus){
+      var campusEl=document.getElementById("m-campus");
+      if(campusEl) campusEl.value=handoff.campus;
+    }
+    if(handoff.observer){
+      var obsEl=document.getElementById("m-observer");
+      if(obsEl) obsEl.value=handoff.observer;
+    }
+    if(handoff.date){
+      var dateEl=document.getElementById("m-date");
+      if(dateEl) dateEl.value=handoff.date;
+    }
+    var noteLines=[];
+    noteLines.push("=== WALKTHROUGH REFERENCE ===");
+    noteLines.push("Focus: "+(handoff.focusLabel||"N/A"));
+    noteLines.push("Fidelity: "+handoff.fidelityPct+"%");
+    noteLines.push("");
+    if(handoff.observations&&handoff.observations.length>0){
+      noteLines.push("Observations:");
+      for(var i=0;i<handoff.observations.length;i++){
+        var ob=handoff.observations[i];
+        noteLines.push("  "+(ob.code||"?")+" - "+(ob.teacher||"Unknown")+(ob.notes?": "+ob.notes:""));
+      }
+    }
+    var notesEl=document.getElementById("notes-s01");
+    if(notesEl){
+      notesEl.value=noteLines.join("\n");
+      notesEl.style.display="block";
+    }
+    if(typeof notes!=="undefined") notes["s01"]=noteLines.join("\n");
+    scheduleSave();
+    showToast("Walkthrough context loaded \u2014 see Section 1 notes");
+  }catch(e){}
+})();
+
+// Audit view request (from Coaching Cycle Tracker)
+(function(){
+  try{
+    var raw=localStorage.getItem("audit_view_request");
+    if(!raw) return;
+    localStorage.removeItem("audit_view_request");
+    var auditId=raw;
+    var history=getHistory();
+    for(var i=0;i<history.length;i++){
+      if(history[i].id===auditId){
+        applyState(history[i]);
+        saveToStorage();
+        showToast("Loaded audit from history");
+        return;
+      }
+    }
+    alert("Could not find audit with ID: "+auditId+" in history.");
+  }catch(e){}
+})();
+</script>
+</body>
+</html>

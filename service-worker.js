@@ -1,4 +1,4 @@
-var CACHE_NAME = "mlp-suite-v9";
+var CACHE_NAME = "mlp-suite-v10";
 var ASSETS = [
   "./Principal_Checkpoint_Portal/Principal_Checkpoint_Portal.html",
   "./Principal_Checkpoint_Portal/Campus_Report_Card.html",
@@ -20,6 +20,7 @@ var ASSETS = [
   "./Academic_Monitoring_Leader_Facing/Coaching_Cycle_Tracker.html",
   "./ESL_Classroom_Audit/ESL_Classroom_Audit.html",
   "./ESL_Classroom_Audit/Audit_Dashboard.html",
+  "./ESL_Classroom_Audit/Streamlined_Classroom_Audit.html",
   "./ESL_Programming_Plans/ESL_Coordinator_Scope_Sequence.html",
   "./ELPS_Agent/ELPS_Agent.html",
   "./Calibration_Tool.html",

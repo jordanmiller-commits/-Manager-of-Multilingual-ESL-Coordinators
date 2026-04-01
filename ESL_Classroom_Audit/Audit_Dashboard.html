@@ -532,6 +532,7 @@ var filterDateFrom = "";
 var filterDateTo = "";
 var filterCampus = "";
 var filterTeacher = "";
+var filterFormType = "";
 
 function applyFilters(data) {
   var result = [];
@@ -558,6 +559,10 @@ function applyFilters(data) {
     if (filterTeacher) {
       var t = (a.meta && a.meta.teacher) ? a.meta.teacher.trim() : "";
       if (t !== filterTeacher) continue;
+    }
+    if (filterFormType) {
+      var ft = a.formType || "full";
+      if (ft !== filterFormType) continue;
     }
     result.push(a);
   }
@@ -599,7 +604,16 @@ function buildFilterBar(data) {
   var campuses = uniqueValues(data, "campus");
   var teachers = uniqueValues(data, "teacher");
 
+  // Form type filter (all views)
+  html += '<label>Form</label>';
+  html += '<select id="fFormType" onchange="onFilterChange()">';
+  html += '<option value=""' + (filterFormType === "" ? " selected" : "") + '>All Forms</option>';
+  html += '<option value="full"' + (filterFormType === "full" ? " selected" : "") + '>Full Audit</option>';
+  html += '<option value="streamlined"' + (filterFormType === "streamlined" ? " selected" : "") + '>Streamlined</option>';
+  html += '</select>';
+
   // Date range (all views)
+  html += '<div class="filter-sep"></div>';
   html += '<label>From</label>';
   html += '<input type="date" id="fDateFrom" value="' + filterDateFrom + '" onchange="onFilterChange()">';
   html += '<label>To</label>';
@@ -638,10 +652,13 @@ function onFilterChange() {
   var cEl = document.getElementById("fCampus");
   var tEl = document.getElementById("fTeacher");
 
+  var ftEl = document.getElementById("fFormType");
+
   filterDateFrom = dfEl ? dfEl.value : "";
   filterDateTo = dtEl ? dtEl.value : "";
   filterCampus = cEl ? cEl.value : "";
   filterTeacher = tEl ? tEl.value : "";
+  filterFormType = ftEl ? ftEl.value : "";
 
   renderCurrentView();
   saveAuditFilterState();
@@ -654,7 +671,8 @@ function saveAuditFilterState() {
       dateFrom: filterDateFrom,
       dateTo: filterDateTo,
       campus: filterCampus,
-      teacher: filterTeacher
+      teacher: filterTeacher,
+      formType: filterFormType
     }));
   } catch(e) {}
 }
@@ -669,6 +687,7 @@ function restoreAuditFilterState() {
     if (f.dateTo) filterDateTo = f.dateTo;
     if (f.campus) filterCampus = f.campus;
     if (f.teacher) filterTeacher = f.teacher;
+    if (f.formType) filterFormType = f.formType;
     return true;
   } catch(e) { return false; }
 }

@@ -455,7 +455,8 @@ if (_backupSyncChannel) {
 }
 
 var KEY_CONFIG = [
-  {key: 'esl_audit_data', tool: 'Classroom Audit', icon: '&#128203;', desc: 'Current working audit', countFn: null},
+  {key: 'esl_audit_data', tool: 'Classroom Audit', icon: '&#128203;', desc: 'Current working audit (full)', countFn: null},
+  {key: 'esl_streamlined_audit_data', tool: 'Streamlined Audit', icon: '&#9889;', desc: 'Current working audit (streamlined)', countFn: null},
   {key: 'esl_audit_history', tool: 'Classroom Audit', icon: '&#128203;', desc: 'Saved audit archive', countFn: function(d){return Array.isArray(d) ? d.length + ' audits' : null;}},
   {key: 'esl_audit_campuses', tool: 'Classroom Audit', icon: '&#128203;', desc: 'Campus name list', countFn: function(d){return Array.isArray(d) ? d.length + ' campuses' : null;}},
   {key: 'walkthrough_plan_data_v2', tool: 'Walkthrough Planner', icon: '&#128214;', desc: 'Current walkthrough session', countFn: null},
@@ -480,6 +481,7 @@ function escHtml(str) {
 
 var IMPORT_VALIDATORS = {
   esl_audit_data: function(d) { return d && typeof d === 'object'; },
+  esl_streamlined_audit_data: function(d) { return d && typeof d === 'object'; },
   esl_audit_history: function(d) { return Array.isArray(d); },
   esl_audit_campuses: function(d) { return Array.isArray(d); },
   walkthrough_plan_data_v2: function(d) { return d && typeof d === 'object'; },
@@ -559,7 +561,8 @@ function formatSize(chars) {
 
 function buildHealthDashboard() {
   var ALL_KEYS = [
-    {key: 'esl_audit_data', tool: 'Classroom Audit', countFn: null},
+    {key: 'esl_audit_data', tool: 'Classroom Audit (Full)', countFn: null},
+    {key: 'esl_streamlined_audit_data', tool: 'Classroom Audit (Streamlined)', countFn: null},
     {key: 'esl_audit_history', tool: 'Audit Archive', countFn: function(d){return Array.isArray(d)?d.length+' audits':null;}},
     {key: 'esl_audit_campuses', tool: 'Audit Campuses', countFn: function(d){return Array.isArray(d)?d.length+' campuses':null;}},
     {key: 'walkthrough_plan_data_v2', tool: 'Walkthrough Planner', countFn: null},
