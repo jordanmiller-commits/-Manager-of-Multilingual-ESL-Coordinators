@@ -1246,7 +1246,7 @@ function buildSections(type){
     var block=document.createElement("div");block.className="sec-block";
 
     var head=document.createElement("div");head.className="sec-head";head.style.background=s.bg;
-    head.setAttribute("role","button");head.setAttribute("aria-expanded","true");head.setAttribute("aria-controls","body-"+s.id);head.setAttribute("tabindex","0");
+    head.setAttribute("role","button");head.setAttribute("aria-expanded","false");head.setAttribute("aria-controls","body-"+s.id);head.setAttribute("tabindex","0");
     (function(bid,cid,h){head.onclick=function(){toggleSec(bid,cid);h.setAttribute("aria-expanded",document.getElementById(bid).style.display!=="none"?"true":"false");};})("body-"+s.id,"chev-"+s.id,head);
 
     var headLeft=document.createElement("div");
@@ -1256,12 +1256,12 @@ function buildSections(type){
     badge.textContent="0/"+s.items.length+" rated  ·  0/"+(s.items.length*3)+" pts";
     headLeft.appendChild(titleSpan);headLeft.appendChild(badge);
 
-    var chev=document.createElement("span");chev.id="chev-"+s.id;chev.textContent="▲";
+    var chev=document.createElement("span");chev.id="chev-"+s.id;chev.textContent="▼";
     chev.style.cssText="font-size:16px;color:"+s.color;
     head.appendChild(headLeft);head.appendChild(chev);
     block.appendChild(head);
 
-    var body=document.createElement("div");body.className="sec-body";body.id="body-"+s.id;
+    var body=document.createElement("div");body.className="sec-body";body.id="body-"+s.id;body.style.display="none";
 
     // Quick-rate bar
     var qr=document.createElement("div");qr.className="sec-quickrate";

@@ -82,7 +82,11 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 .item-row.focused{background:var(--item-hover);border-left-color:var(--primary)}
 .item-top{display:flex;align-items:flex-start;gap:10px}
 .item-cb{margin-top:3px;width:16px;height:16px;flex-shrink:0}
-.item-text{font-size:13.5px;color:var(--text);line-height:1.55;font-weight:600}
+.item-text{font-size:13.5px;color:var(--text);line-height:1.55;font-weight:600;flex:1}
+.item-chevron{font-size:14px;color:var(--text-muted);transition:transform .2s;flex-shrink:0;margin-top:2px;user-select:none}
+.item-row.expanded .item-chevron{transform:rotate(90deg)}
+.item-body{display:none;overflow:hidden}
+.item-row.expanded .item-body{display:block}
 .sub-lookfors{padding-left:26px;margin-top:4px}
 .sub-lookfors li{font-size:12px;color:var(--text-secondary);line-height:1.6;list-style:disc;margin-left:16px}
 .rating-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px;padding-left:26px}
@@ -172,6 +176,8 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
   .card,#sumReport{box-shadow:none;border:1px solid #ddd}
   #sumReport{display:block!important}
   [id^="pane-"]{display:block!important}
+  .item-body{display:block!important}
+  .item-chevron{display:none!important}
 }
 @media(max-width:600px){
   body{padding:10px}
@@ -521,9 +527,10 @@ function buildItems(type){
     if(it.type!==type) continue;
     var key=it.id;
     allItemKeys.push(key);
-    html+="<div class='item-row' id='item-"+key+"' onclick='handleItemClick(event,\""+key+"\")'>";
-    html+="<div class='item-top'><input type='checkbox' class='item-cb' id='cb-"+key+"' readonly onclick='return false'/>";
-    html+="<span class='item-text'>"+escHtml(it.title)+"</span></div>";
+    html+="<div class='item-row' id='item-"+key+"'>";
+    html+="<div class='item-top' onclick='toggleItem(\""+key+"\")'><input type='checkbox' class='item-cb' id='cb-"+key+"' readonly onclick='return false'/>";
+    html+="<span class='item-text'>"+escHtml(it.title)+"</span><span class='item-chevron'>&#9654;</span></div>";
+    html+="<div class='item-body'>";
     if(it.subs&&it.subs.length){
       html+="<ul class='sub-lookfors'>";
       for(var s=0;s<it.subs.length;s++) html+="<li>"+escHtml(it.subs[s])+"</li>";
@@ -536,7 +543,7 @@ function buildItems(type){
     html+="</div>";
     html+="<div class='item-comment-toggle' onclick='toggleComment(\""+key+"\")'>+ Add note</div>";
     html+="<div class='item-comment' id='comment-"+key+"'><textarea id='ctext-"+key+"' placeholder='Observation note...' oninput='saveComment(\""+key+"\")'></textarea></div>";
-    html+="</div>";
+    html+="</div></div>";
   }
   // Section notes
   html+="<div class='sec-notes'><label for='notes-"+type+"'>"+( type==="permanent"?"Year-Long Essentials":"Unit-Specific Materials")+" Notes</label>";
@@ -563,6 +570,11 @@ function onPrChange(idx,checked){
   scheduleSave();
 }
 
+function toggleItem(key){
+  var row=document.getElementById("item-"+key);
+  if(row) row.classList.toggle("expanded");
+  setFocus(key);
+}
 function handleItemClick(e,key){var t=e.target.tagName;if(t==="BUTTON"||t==="INPUT"||t==="TEXTAREA"||t==="LI")return;setFocus(key);}
 function toggleComment(key){var el=document.getElementById("comment-"+key);if(el)el.classList.toggle("open");}
 function saveComment(key){var el=document.getElementById("ctext-"+key);if(el)itemComments[key]=el.value;scheduleSave();}
