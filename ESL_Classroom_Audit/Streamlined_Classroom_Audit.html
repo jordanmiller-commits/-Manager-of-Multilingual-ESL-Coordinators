@@ -23,8 +23,7 @@
   --modal-bg:#fff;--modal-overlay:rgba(0,0,0,.45);
   --toast-bg:#2c3e6e;--toast-text:#fff;
   --footer-bg:rgba(248,249,251,.95);--footer-border:#e0e3e8;--footer-text:#999;
-  --bar-track:#eee;--item-border:#f0f0f0;--tag-border:#ddd;--tag-text:#999;
-  --perm-color:#d4a017;--rot-color:#8e44ad;--bonus-color:#3498db
+  --bar-track:#eee;--item-border:#f0f0f0;--tag-border:#ddd;--tag-text:#999
 }
 body.dark-mode{
   --bg:#1a1a2e;--card-bg:#16213e;--card-border:#2d3a6e;--card-shadow:rgba(0,0,0,.3);
@@ -41,8 +40,7 @@ body.dark-mode{
   --modal-bg:#16213e;--modal-overlay:rgba(0,0,0,.7);
   --toast-bg:#7eb8f7;--toast-text:#1a1a2e;
   --footer-bg:rgba(30,30,30,.95);--footer-border:#333;--footer-text:#666;
-  --bar-track:#3a3a5c;--item-border:#333355;--tag-border:#444;--tag-text:#aaa;
-  --perm-color:#f0c27a;--rot-color:#bb86fc;--bonus-color:#64b5f6
+  --bar-track:#3a3a5c;--item-border:#333355;--tag-border:#444;--tag-text:#aaa
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100vh;padding:20px;color:var(--text);transition:background .3s,color .3s}
@@ -54,19 +52,17 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 .tool-btn{padding:7px 14px;border-radius:7px;border:2px solid rgba(255,255,255,.35);background:rgba(255,255,255,.12);color:#fff;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:5px}
 .tool-btn:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.5)}
 .tool-btn.danger{border-color:rgba(231,76,60,.5);background:rgba(231,76,60,.15)}
-.tool-btn.danger:hover{background:rgba(231,76,60,.3)}
 .tool-btn.history-btn{border-color:rgba(46,204,113,.5);background:rgba(46,204,113,.15)}
-.tool-btn.history-btn:hover{background:rgba(46,204,113,.3)}
 .save-indicator{font-size:11px;color:rgba(255,255,255,.65);margin-left:auto}
-.card{background:var(--card-bg);border-radius:10px;padding:20px;margin-bottom:18px;box-shadow:0 1px 5px var(--card-shadow)}
+.card{background:var(--card-bg);border-radius:10px;padding:20px;margin-bottom:18px;box-shadow:var(--shadow)}
 .meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .meta-grid label{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;display:block;margin-bottom:4px}
 .meta-grid input{width:100%;padding:8px 10px;border-radius:6px;border:1px solid var(--input-border);font-size:13px;font-family:inherit;background:var(--input-bg);color:var(--input-text)}
 .score-banner{display:flex;align-items:center;gap:20px}
-.score-num{font-size:42px;font-weight:900;min-width:80px;text-align:center;color:#4a90d9}
+.score-num{font-size:42px;font-weight:900;min-width:80px;text-align:center;color:var(--primary)}
 .score-label{font-size:11px;color:var(--text-muted);font-weight:700;text-align:center}
 .bar-wrap{height:18px;background:var(--bar-track);border-radius:10px;overflow:hidden;flex:1}
-.bar-fill{height:100%;border-radius:10px;background:#4a90d9;width:0%;transition:width .4s}
+.bar-fill{height:100%;border-radius:10px;background:var(--primary);width:0%;transition:width .4s}
 .legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
 .legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-secondary)}
 .ldot{width:10px;height:10px;border-radius:3px;display:inline-block}
@@ -77,24 +73,21 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 .split-bar{height:6px;background:var(--bar-track);border-radius:4px;overflow:hidden;margin-top:4px}
 .split-fill{height:100%;border-radius:4px;transition:width .4s}
 .split-val{font-size:13px;font-weight:800}
-.sec-block{margin-bottom:18px;border-radius:10px;overflow:hidden;border:1.5px solid var(--card-border)}
-.sec-head{padding:12px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;user-select:none}
-.sec-title{font-weight:700;font-size:15px}
-.sec-badge{font-size:11px;color:#fff;border-radius:20px;padding:2px 9px;margin-left:8px}
-.sec-body{padding:16px}
-.sec-quickrate{display:flex;gap:6px;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid #eee;flex-wrap:wrap;align-items:center}
-.sec-quickrate span{font-size:11px;color:var(--text-muted);font-weight:600}
-.qr-btn{padding:3px 10px;font-size:10px;border-radius:14px;border:1.5px solid var(--input-border);background:var(--input-bg);color:var(--text-muted);cursor:pointer;font-weight:600;transition:all .15s}
-.qr-btn:hover{border-color:var(--tag-border);background:var(--section-bg-light)}
-.item-row{margin-bottom:14px;padding:10px;padding-bottom:14px;border-bottom:1px solid var(--item-border);border-radius:6px;cursor:pointer;transition:background .1s,border-color .1s;border-left:3px solid transparent}
+.tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.tab-btn{padding:10px 16px;border-radius:8px;border:none;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;position:relative}
+.tab-badge{font-size:10px;font-weight:700;background:rgba(255,255,255,.3);border-radius:10px;padding:1px 7px;margin-left:6px}
+.tab-info{border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:13px}
+.item-row{margin-bottom:14px;padding:10px;padding-bottom:14px;border-bottom:1px solid var(--item-border);border-radius:6px;cursor:pointer;transition:background .1s;border-left:3px solid transparent}
 .item-row:last-of-type{border-bottom:none;margin-bottom:0;padding-bottom:0}
-.item-row.focused{background:var(--item-hover);border-left-color:#4a90d9}
+.item-row.focused{background:var(--item-hover);border-left-color:var(--primary)}
 .item-top{display:flex;align-items:flex-start;gap:10px}
 .item-cb{margin-top:3px;width:16px;height:16px;flex-shrink:0}
-.item-text{font-size:13.5px;color:var(--text);line-height:1.55}
+.item-text{font-size:13.5px;color:var(--text);line-height:1.55;font-weight:600}
+.sub-lookfors{padding-left:26px;margin-top:4px}
+.sub-lookfors li{font-size:12px;color:var(--text-secondary);line-height:1.6;list-style:disc;margin-left:16px}
 .rating-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px;padding-left:26px}
 .rbtn{padding:4px 11px;font-size:11px;border-radius:20px;border:2px solid var(--input-border);background:var(--input-bg);color:var(--text-muted);cursor:pointer;transition:all .15s;font-weight:500}
-.item-comment-toggle{font-size:11px;color:#4a90d9;cursor:pointer;margin-top:5px;padding-left:26px;display:inline-block}
+.item-comment-toggle{font-size:11px;color:var(--primary);cursor:pointer;margin-top:5px;padding-left:26px;display:inline-block}
 .item-comment-toggle:hover{text-decoration:underline}
 .item-comment{padding-left:26px;margin-top:5px;display:none}
 .item-comment textarea{width:100%;padding:6px 8px;border-radius:5px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--input-text);font-size:11px;resize:vertical;min-height:36px;font-family:inherit}
@@ -102,40 +95,42 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 .sec-notes{margin-top:14px}
 .sec-notes label{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase}
 .sec-notes textarea{width:100%;margin-top:5px;padding:8px 10px;border-radius:6px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--input-text);font-size:12px;resize:vertical;min-height:60px;font-family:inherit}
-.bonus-badge{display:inline-block;font-size:10px;font-weight:700;background:#ebf5fb;color:#2980b9;border-radius:10px;padding:2px 8px;margin-left:6px;vertical-align:middle}
-.sum-btn{width:100%;padding:14px;background:linear-gradient(135deg,#2c3e6e,#4a90d9);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;margin-top:22px}
-#sumReport{display:none;background:var(--card-bg);border-radius:10px;padding:24px;margin-top:12px;box-shadow:0 1px 5px var(--card-shadow)}
+.pr-row{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--item-border)}
+.pr-row:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.pr-cb{margin-top:3px;width:18px;height:18px;flex-shrink:0;accent-color:#27ae60}
+.pr-text{font-size:14px;color:var(--text);line-height:1.6}
+.pr-summary{background:var(--success-light);border-radius:8px;padding:10px 14px;font-size:13px;margin-top:16px}
+.sum-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--header-gradient-1),var(--header-gradient-2));color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;margin-top:22px}
+#sumReport{display:none;background:var(--card-bg);border-radius:10px;padding:24px;margin-top:12px;box-shadow:var(--shadow)}
 .sum-meta{font-size:13px;color:var(--text-secondary);margin-bottom:16px}
 .sum-overall{padding:14px 16px;border-radius:8px;display:flex;align-items:center;gap:14px;margin-bottom:20px}
 .sum-big{font-size:34px;font-weight:900}
 .sum-lbl{font-weight:700}
-.sum-sub{font-size:12px;color:#666}
+.sum-sub{font-size:12px;color:var(--text-muted)}
 .sum-split{display:flex;gap:12px;margin-bottom:18px;flex-wrap:wrap}
 .sum-split-card{flex:1;min-width:120px;border-radius:8px;padding:10px 14px;text-align:center}
 .sum-split-val{font-size:22px;font-weight:900}
 .sum-split-lbl{font-size:11px;font-weight:600;margin-top:2px}
-.sub-h{font-size:14px;color:#444;margin-bottom:10px;margin-top:18px}
+.sub-h{font-size:14px;color:var(--text-secondary);margin-bottom:10px;margin-top:18px}
 .sbar-row{margin-bottom:10px}
 .sbar-lbl{display:flex;justify-content:space-between;font-size:13px;margin-bottom:3px}
 .sbar-track{height:8px;background:var(--bar-track);border-radius:6px;overflow:hidden}
 .sbar-fill{height:100%;border-radius:6px}
-.snote{font-size:11px;color:#888;font-style:italic;margin-top:3px}
 .flag-item{display:flex;gap:10px;margin-bottom:8px;font-size:13px;align-items:flex-start}
 .flag-badge{border-radius:6px;padding:2px 8px;font-weight:700;font-size:11px;flex-shrink:0;white-space:nowrap}
 .strength-item{display:flex;gap:10px;margin-bottom:8px;font-size:13px;align-items:flex-start}
-.next-box{margin-top:18px;padding:14px 16px;background:#f8f9fb;border-radius:8px}
-.next-box h3{font-size:14px;color:#444;margin-bottom:8px}
-.next-box p{font-size:13px;color:#666;line-height:1.7}
+.next-box{margin-top:18px;padding:14px 16px;background:var(--section-bg-light);border-radius:8px}
+.next-box h3{font-size:14px;color:var(--text-secondary);margin-bottom:8px}
+.next-box p{font-size:13px;color:var(--text-muted);line-height:1.7}
 .sum-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
-.print-btn{padding:10px 18px;background:#2c3e6e;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer}
-.copy-btn{padding:10px 18px;background:#27ae60;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer}
-.save-history-btn{padding:10px 18px;background:#8e44ad;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer}
+.sum-actions button{padding:10px 18px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;color:#fff}
 .start-cycle-btn{padding:10px 18px;background:#27ae60;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;margin-top:10px}
 .start-cycle-btn:hover{background:#219a52}
 .modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--modal-overlay);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px}
 .modal-overlay.active{display:flex}
 .modal{background:var(--modal-bg);border-radius:12px;padding:24px;max-width:500px;width:100%;box-shadow:0 8px 30px rgba(0,0,0,.3);max-height:85vh;overflow-y:auto}
-.modal h3{font-size:16px;color:#2c3e6e;margin-bottom:10px}
+.modal.wide{max-width:700px}
+.modal h3{font-size:16px;color:var(--text-heading);margin-bottom:10px}
 .modal p{font-size:13px;color:var(--text-muted);line-height:1.6;margin-bottom:16px}
 .modal-btns{display:flex;gap:8px;justify-content:flex-end}
 .modal-btns button{padding:8px 18px;border-radius:7px;border:none;font-size:13px;font-weight:600;cursor:pointer}
@@ -149,19 +144,17 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 .hist-teacher{font-weight:700;font-size:14px;color:var(--text)}
 .hist-detail{font-size:12px;color:var(--text-muted);margin-top:2px}
 .hist-score{font-size:20px;font-weight:900;min-width:55px;text-align:center}
-.hist-actions{display:flex;gap:5px;flex-wrap:wrap}
+.hist-actions{display:flex;gap:5px}
 .hist-actions button{padding:4px 10px;border-radius:5px;border:1px solid var(--input-border);background:var(--input-bg);font-size:11px;cursor:pointer;font-weight:600;color:var(--text-secondary)}
-.hist-actions button:hover{background:var(--section-bg-light)}
-.hist-actions button.load{color:#4a90d9;border-color:#aed6f1}
-.hist-actions button.delete{color:#e74c3c;border-color:#f5b7b1}
+.hist-actions button.load{color:var(--primary);border-color:#aed6f1}
+.hist-actions button.delete{color:var(--danger);border-color:#f5b7b1}
 .no-history{text-align:center;padding:30px;color:var(--text-muted);font-size:13px}
-.skip-link{position:absolute;top:-100px;left:10px;background:#2c3e6e;color:#fff;padding:8px 16px;border-radius:0 0 6px 6px;z-index:2000;font-weight:600;text-decoration:none;font-size:13px}
+.skip-link{position:absolute;top:-100px;left:10px;background:var(--primary-dark);color:#fff;padding:8px 16px;border-radius:0 0 6px 6px;z-index:2000;font-weight:600;text-decoration:none;font-size:13px}
 .skip-link:focus{top:0}
 .notif-bell-link{position:relative;font-size:18px;text-decoration:none;padding:4px 8px}
 .notif-bell-badge{position:absolute;top:-4px;right:-2px;background:#e74c3c;color:#fff;font-size:9px;font-weight:700;border-radius:50%;min-width:16px;height:16px;display:flex;align-items:center;justify-content:center;padding:0 4px}
 .notif-bell-badge.hidden{display:none}
 .last-saved-footer{position:fixed;bottom:0;left:0;right:0;background:var(--footer-bg);border-top:1px solid var(--footer-border);padding:6px 16px;font-size:11px;color:var(--footer-text);text-align:center;z-index:500;backdrop-filter:blur(8px)}
-/* Shortcuts overlay */
 .shortcuts-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:var(--modal-overlay);z-index:1000;justify-content:center;align-items:center;padding:20px}
 .shortcuts-overlay.active{display:flex}
 .shortcuts-modal{background:var(--modal-bg);border-radius:12px;padding:24px 28px;max-width:460px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,.2)}
@@ -171,18 +164,15 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 .shortcuts-modal kbd{display:inline-block;padding:2px 7px;border-radius:4px;background:var(--section-bg-light);border:1px solid var(--border);font-family:inherit;font-size:11px;font-weight:700;color:var(--text-heading)}
 .toast{position:fixed;bottom:24px;right:24px;background:var(--toast-bg);color:var(--toast-text);padding:12px 20px;border-radius:8px;font-size:13px;font-weight:600;box-shadow:0 4px 15px rgba(0,0,0,.2);z-index:2000;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none}
 .toast.show{opacity:1;transform:translateY(0)}
-/* Animations */
 @keyframes fadeInUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 .wrap>.card,.wrap>.header,.wrap>#sumReport{animation:fadeInUp .35s ease both}
-/* Print */
 @media print{
   body{padding:0;background:#fff}
-  .header,.tool-btn,.toolbar,.save-indicator,.modal-overlay,.toast,.shortcuts-overlay,.last-saved-footer,.skip-link,.notif-bell-link{display:none!important}
-  .card,.sec-block,#sumReport{box-shadow:none;border:1px solid #ddd}
+  .header,.toolbar,.save-indicator,.modal-overlay,.toast,.shortcuts-overlay,.last-saved-footer,.skip-link,.notif-bell-link,.tabs,.sum-actions{display:none!important}
+  .card,#sumReport{box-shadow:none;border:1px solid #ddd}
   #sumReport{display:block!important}
-  .sum-actions{display:none}
+  [id^="pane-"]{display:block!important}
 }
-/* Mobile */
 @media(max-width:600px){
   body{padding:10px}
   .header{padding:18px 16px}
@@ -190,6 +180,8 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
   .score-banner{flex-direction:column;align-items:flex-start;gap:12px}
   .score-num{font-size:34px}
   .score-split{flex-direction:column;gap:8px}
+  .tabs{gap:4px}
+  .tab-btn{padding:8px 10px;font-size:11px;flex:1;text-align:center}
   .tool-btn,input,select,.rbtn{min-height:44px}
 }
 </style>
@@ -200,7 +192,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 
 <div class="header" role="banner">
   <h1>Streamlined Classroom Audit</h1>
-  <p>Focused Classroom Environment Check — Core Look-Fors Aligned to MLP Walkthrough Indicators</p>
+  <p>Focused Classroom Environment Check &mdash; 20 Core Look-Fors + Environment Principles</p>
   <div class="toolbar" role="toolbar" aria-label="Audit tools">
     <button class="tool-btn history-btn" onclick="showHistoryModal()" title="View saved audit history">&#128202; History</button>
     <button class="tool-btn danger" onclick="showResetModal()" title="Clear all data and start fresh">&#128260; Reset</button>
@@ -217,11 +209,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 <div class="card">
   <div class="meta-grid">
     <div><label for="m-teacher">Teacher Name</label><input type="text" id="m-teacher" placeholder="Enter teacher name" oninput="scheduleSave()"/></div>
-    <div>
-      <label for="m-campus">Campus</label>
-      <input type="text" id="m-campus" list="campus-list" placeholder="Select or type campus name" oninput="scheduleSave()"/>
-      <datalist id="campus-list"></datalist>
-    </div>
+    <div><label for="m-campus">Campus</label><input type="text" id="m-campus" list="campus-list" placeholder="Select or type campus name" oninput="scheduleSave()"/><datalist id="campus-list"></datalist></div>
     <div><label for="m-observer">Observer</label><input type="text" id="m-observer" placeholder="Enter observer name" oninput="scheduleSave()"/></div>
     <div><label for="m-date">Date</label><input type="date" id="m-date" oninput="scheduleSave()"/></div>
   </div>
@@ -230,73 +218,70 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 <div class="card" id="scoreCard">
   <div class="score-banner">
     <div>
-      <div class="score-num" id="scorePct" role="status" aria-live="polite" aria-label="Overall score percentage">0%</div>
+      <div class="score-num" id="scorePct" role="status" aria-live="polite">0%</div>
       <div class="score-label">OVERALL SCORE</div>
     </div>
     <div style="flex:1">
       <div class="bar-wrap"><div class="bar-fill" id="barFill"></div></div>
       <div class="legend">
         <div class="legend-item"><span class="ldot" style="background:#2c3e6e"></span>0 = Not Observed</div>
-        <div class="legend-item"><span class="ldot" style="background:#4a90d9"></span>1 = Approaching Expectations</div>
-        <div class="legend-item"><span class="ldot" style="background:#f1c40f"></span>2 = Meets Expectations</div>
-        <div class="legend-item"><span class="ldot" style="background:#27ae60"></span>3 = Exceeds Expectations</div>
+        <div class="legend-item"><span class="ldot" style="background:#4a90d9"></span>1 = Approaching</div>
+        <div class="legend-item"><span class="ldot" style="background:#f1c40f"></span>2 = Meets</div>
+        <div class="legend-item"><span class="ldot" style="background:#27ae60"></span>3 = Exceeds</div>
       </div>
-      <div class="score-meta" id="scoreMeta">0 of 0 items rated &middot; 0 of 0 points</div>
+      <div class="score-meta" id="scoreMeta">0 of 20 items rated</div>
       <div class="score-split">
-        <div class="split-item">
-          <div class="split-label" style="color:#d4a017">Permanent</div>
-          <div class="split-val" id="permVal">0%</div>
-          <div class="split-bar"><div class="split-fill" id="permFill" style="background:#d4a017"></div></div>
-        </div>
-        <div class="split-item">
-          <div class="split-label" style="color:#8e44ad">Rotating</div>
-          <div class="split-val" id="rotVal">0%</div>
-          <div class="split-bar"><div class="split-fill" id="rotFill" style="background:#8e44ad"></div></div>
-        </div>
-        <div class="split-item">
-          <div class="split-label" style="color:#3498db">Bonus (Tech)</div>
-          <div class="split-val" id="bonusVal">0%</div>
-          <div class="split-bar"><div class="split-fill" id="bonusFill" style="background:#3498db"></div></div>
-        </div>
+        <div class="split-item"><div class="split-label" style="color:#d4a017">Year-Long</div><div class="split-val" id="permVal">0%</div><div class="split-bar"><div class="split-fill" id="permFill" style="background:#d4a017"></div></div></div>
+        <div class="split-item"><div class="split-label" style="color:#8e44ad">Unit-Specific</div><div class="split-val" id="rotVal">0%</div><div class="split-bar"><div class="split-fill" id="rotFill" style="background:#8e44ad"></div></div></div>
+        <div class="split-item"><div class="split-label" style="color:#27ae60">Principles</div><div class="split-val" id="prVal">0/16</div><div class="split-bar"><div class="split-fill" id="prFill" style="background:#27ae60"></div></div></div>
       </div>
     </div>
   </div>
 </div>
 
-<div id="sectionsContainer"></div>
+<div class="tabs" role="tablist" aria-label="Audit sections">
+  <button class="tab-btn" id="tbtn-permanent" onclick="showTab('permanent')" style="background:#d4a017;color:#fff" role="tab" aria-selected="true" aria-controls="pane-permanent">Year-Long Essentials<span class="tab-badge" id="tbadge-permanent">0/10</span></button>
+  <button class="tab-btn" id="tbtn-rotating" onclick="showTab('rotating')" style="background:#e8ecf0;color:#555" role="tab" aria-selected="false" aria-controls="pane-rotating">Unit-Specific Materials<span class="tab-badge" id="tbadge-rotating">0/10</span></button>
+  <button class="tab-btn" id="tbtn-principles" onclick="showTab('principles')" style="background:#e8ecf0;color:#555" role="tab" aria-selected="false" aria-controls="pane-principles">Environment Principles<span class="tab-badge" id="tbadge-principles">0/16</span></button>
+</div>
+
+<div id="pane-permanent" role="tabpanel" aria-labelledby="tbtn-permanent"></div>
+<div id="pane-rotating" role="tabpanel" aria-labelledby="tbtn-rotating" style="display:none"></div>
+<div id="pane-principles" role="tabpanel" aria-labelledby="tbtn-principles" style="display:none">
+  <div class="tab-info" style="background:#eafaf1;color:#1e8449">
+    <strong>Environment Principles</strong> &mdash; These principles govern how the classroom space functions beyond what is on the walls. Check each principle that is observed during the visit.
+  </div>
+  <div class="card" id="prContainer"></div>
+</div>
 
 <button class="sum-btn" onclick="toggleSummary()">View Summary Report</button>
 <div id="sumReport"></div>
+</div>
 
 <!-- History Modal -->
-<div class="modal-overlay" id="historyModal" role="dialog" aria-modal="true" aria-label="Audit history">
-  <div class="modal" style="max-width:700px">
+<div class="modal-overlay" id="historyModal" role="dialog" aria-modal="true">
+  <div class="modal wide">
     <h3>Streamlined Audit History</h3>
     <div class="hist-filters">
       <input type="text" id="histFilterTeacher" placeholder="Filter by teacher..." oninput="renderHistory()"/>
       <select id="histFilterCampus" onchange="renderHistory()"><option value="">All Campuses</option></select>
     </div>
     <div class="hist-list" id="histList"></div>
-    <div class="modal-btns" style="margin-top:14px">
-      <button class="btn-cancel" onclick="closeHistoryModal()">Close</button>
-    </div>
+    <div class="modal-btns" style="margin-top:14px"><button class="btn-cancel" onclick="closeModal('historyModal')">Close</button></div>
   </div>
 </div>
 
 <!-- Reset Modal -->
-<div class="modal-overlay" id="resetModal" role="dialog" aria-modal="true" aria-label="Reset confirmation">
+<div class="modal-overlay" id="resetModal" role="dialog" aria-modal="true">
   <div class="modal">
     <h3>Reset Audit</h3>
     <p>This will clear all ratings, notes, and meta fields. This action cannot be undone.</p>
-    <div class="modal-btns">
-      <button class="btn-cancel" onclick="closeResetModal()">Cancel</button>
-      <button class="btn-confirm" onclick="doReset()">Reset</button>
-    </div>
+    <div class="modal-btns"><button class="btn-cancel" onclick="closeModal('resetModal')">Cancel</button><button class="btn-confirm" onclick="doReset()">Reset</button></div>
   </div>
 </div>
 
-<!-- Shortcuts overlay -->
-<div class="shortcuts-overlay" id="shortcutsOverlay" role="dialog" aria-modal="true" aria-label="Keyboard shortcuts">
+<!-- Shortcuts -->
+<div class="shortcuts-overlay" id="shortcutsOverlay" role="dialog" aria-modal="true">
   <div class="shortcuts-modal">
     <h3>Keyboard Shortcuts</h3>
     <table>
@@ -305,7 +290,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
       <tr><td><kbd>Esc</kbd></td><td>Close modal</td></tr>
       <tr><td><kbd>?</kbd></td><td>Toggle this help</td></tr>
       <tr><td><kbd>0</kbd>-<kbd>3</kbd></td><td>Rate focused item</td></tr>
-      <tr><td><kbd>&#8593;</kbd>/<kbd>&#8595;</kbd></td><td>Navigate items</td></tr>
+      <tr><td><kbd>&uarr;</kbd>/<kbd>&darr;</kbd></td><td>Navigate items</td></tr>
     </table>
     <div style="text-align:right;margin-top:14px"><button class="btn-cancel" onclick="toggleShortcutsHelp()">Close</button></div>
   </div>
@@ -313,7 +298,6 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <div class="last-saved-footer" id="lastSavedFooter"></div>
-</div>
 
 <script>
 /* ==============================
@@ -343,114 +327,71 @@ if (localStorage.getItem('esl_app_theme') === 'dark') document.body.classList.ad
 /* ==============================
    UTILITIES
    ============================== */
-function escHtml(s) {
-  var d = document.createElement("div");
-  d.appendChild(document.createTextNode(s));
-  return d.innerHTML;
-}
-
-function showToast(msg) {
-  var t = document.getElementById("toast");
-  t.textContent = msg;
-  t.classList.add("show");
-  setTimeout(function(){ t.classList.remove("show"); }, 2200);
-}
-
-function toggleDarkMode() {
-  var isDark = document.body.classList.toggle("dark-mode");
-  localStorage.setItem("esl_app_theme", isDark ? "dark" : "light");
-}
-
-function getCurrentUser() {
-  try {
-    var raw = localStorage.getItem("mlp_hub_config");
-    var cfg = raw ? JSON.parse(raw) : {};
-    return { id: cfg.userId || "", name: cfg.userName || "", role: cfg.userRole || "manager", orgId: cfg.orgId || "", orgName: cfg.orgName || "" };
-  } catch(e) { return { id:"", name:"", role:"manager", orgId:"", orgName:"" }; }
-}
-
-function teacherProfileLink(name) {
-  if (!name) return "";
-  return "<a class='teacher-link' href='../Teacher_360_Profile.html?teacher=" + encodeURIComponent(name) + "' style='color:var(--primary);text-decoration:underline;font-weight:600'>" + escHtml(name) + "</a>";
-}
+function escHtml(s){var d=document.createElement("div");d.appendChild(document.createTextNode(s));return d.innerHTML;}
+function showToast(msg){var t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(function(){t.classList.remove("show");},2200);}
+function toggleDarkMode(){var isDark=document.body.classList.toggle("dark-mode");localStorage.setItem("esl_app_theme",isDark?"dark":"light");}
+function getCurrentUser(){try{var raw=localStorage.getItem("mlp_hub_config");var cfg=raw?JSON.parse(raw):{};return{id:cfg.userId||"",name:cfg.userName||"",role:cfg.userRole||"manager",orgId:cfg.orgId||"",orgName:cfg.orgName||""};}catch(e){return{id:"",name:"",role:"manager",orgId:"",orgName:""};}}
+function teacherProfileLink(name){if(!name)return"";return"<a class='teacher-link' href='../Teacher_360_Profile.html?teacher="+encodeURIComponent(name)+"' style='color:var(--primary);text-decoration:underline;font-weight:600'>"+escHtml(name)+"</a>";}
+function closeModal(id){document.getElementById(id).classList.remove("active");}
 
 /* ==============================
    RATING SCALE
    ============================== */
 var R = {
-  0:{label:"Not Observed",level:0,color:"#2c3e6e",bg:"#e8ecf4"},
-  1:{label:"Approaching Expectations",level:1,color:"#4a90d9",bg:"#eaf3fb"},
-  2:{label:"Meets Expectations",level:2,color:"#f1c40f",bg:"#fefde7"},
-  3:{label:"Exceeds Expectations",level:3,color:"#27ae60",bg:"#eafaf1"}
+  0:{label:"Not Observed",color:"#2c3e6e",bg:"#e8ecf4"},
+  1:{label:"Approaching Expectations",color:"#4a90d9",bg:"#eaf3fb"},
+  2:{label:"Meets Expectations",color:"#f1c40f",bg:"#fefde7"},
+  3:{label:"Exceeds Expectations",color:"#27ae60",bg:"#eafaf1"}
 };
 
 /* ==============================
-   SECTIONS — STREAMLINED
+   ITEMS — 10 YEAR-LONG + 10 UNIT-SPECIFIC
    ============================== */
-var SECTIONS = [
-  {id:"s01",type:"permanent",color:"#d4a017",bg:"#fef9e7",title:"Language Production Supports",items:[
-    "Sentence Frames and Stems Wall \u2014 organized by language function, tiered by proficiency level, color-coded",
-    "Discourse Stems Anchor Chart \u2014 categories: Starting, Responding, Pushing Back, Building, Wrapping Up",
-    "Language Function Cards \u2014 individual/table sets for scholar use during discussions and writing",
-    "Question Stems by Depth of Knowledge (DOK 1\u20134) \u2014 teacher and scholars reference regularly",
-    "Transitional Words and Phrases Chart \u2014 organized by function (sequence, contrast, cause/effect, conclusion)"
-  ]},
-  {id:"s02",type:"permanent",color:"#d4a017",bg:"#fef9e7",title:"Vocabulary Systems",items:[
-    "Basic Interpersonal Vocabulary Wall \u2014 high-frequency conversational words with visuals and home language translations",
-    "Academic Content Vocabulary Wall \u2014 Tier 2 and Tier 3 words organized by content area, includes visuals and definitions"
-  ]},
-  {id:"s03",type:"permanent",color:"#d4a017",bg:"#fef9e7",title:"Writing Supports",items:[
-    "Writer\u2019s Checklist \u2014 laminated, scholar-facing, includes language and content criteria",
-    "Sentence Stems and Frames for Writing \u2014 tiered by proficiency level, accessible during writing tasks",
-    "Graphic Organizers for Writing \u2014 reusable organizers aligned to text structures and writing genres"
-  ]},
-  {id:"s04",type:"permanent",color:"#d4a017",bg:"#fef9e7",title:"Data and Goal Tracking",items:[
-    "Scholar Language Goal Tracker \u2014 scholar-friendly TELPAS domain labels, updated and referenced regularly",
-    "Scholar Academic Content Goal Tracker \u2014 content mastery targets visible, tracked, and referenced by scholars"
-  ]},
-  {id:"s05",type:"permanent",color:"#d4a017",bg:"#fef9e7",title:"Culture and Identity",items:[
-    "Visible Representation of Scholars\u2019 Home Languages and Cultures \u2014 multilingual welcome signs, heritage map, bilingual labels, flags, or library corner demonstrating the value of home languages"
-  ]},
-  {id:"s06",type:"permanent",color:"#d4a017",bg:"#fef9e7",title:"Classroom Structures and Routines",items:[
-    "Daily Agenda Display \u2014 activities posted consistently and updated daily",
-    "Content and Language Objectives \u2014 content objective and language objective posted, visible, and referenced during instruction",
-    "Discussion Norms and Expectations \u2014 co-created norms for academic conversations, includes behavioral and language expectations",
-    "Group Roles \u2014 Facilitator, Recorder, Reporter, Timekeeper, Language Monitor with stems for each role",
-    "Collaborative Protocol or Structure \u2014 visible steps for active discussion or group protocol (e.g., Socratic Seminar, Think-Pair-Share, Numbered Heads)",
-    "Individual Accountability in Group Work \u2014 clear mechanism ensuring each scholar has a defined role or product within collaborative tasks"
-  ]},
-  {id:"s07",type:"bonus",color:"#3498db",bg:"#ebf5fb",title:"Technology and Reference Tools",items:[
-    "QR Code Station \u2014 links to Google Translate, bilingual dictionaries, vocabulary lists, support tools",
-    "Bilingual Dictionary Station \u2014 physical dictionaries matching scholar home languages",
-    "Headphone Station \u2014 dedicated, accessible location for audio support and language tools"
-  ]},
-  {id:"s08",type:"rotating",color:"#8e44ad",bg:"#f5eefb",title:"Unit-Specific Vocabulary",items:[
-    "Unit Word Wall Section \u2014 current Tier 2 and Tier 3 vocabulary, updated at unit start, archived when done",
-    "Frayer Model Displays \u2014 teacher or scholar-completed models for 5\u20138 priority words posted during unit"
-  ]},
-  {id:"s09",type:"rotating",color:"#8e44ad",bg:"#f5eefb",title:"Content Comprehension Supports",items:[
-    "Unit-Specific Graphic Organizers \u2014 current text structure organizer posted and accessible",
-    "Background Knowledge Activation Display \u2014 KWL chart, anticipation guide, or brainstorm built and updated live"
-  ]},
-  {id:"s10",type:"rotating",color:"#8e44ad",bg:"#f5eefb",title:"Unit-Specific Writing Supports",items:[
-    "Current Unit Paragraph or Essay Frame \u2014 aligned to current writing task type and genre",
-    "Writing Exemplars for Current Genre \u2014 2\u20133 samples at varying proficiency levels"
-  ]},
-  {id:"s11",type:"rotating",color:"#8e44ad",bg:"#f5eefb",title:"Discussion and Interaction Supports",items:[
-    "Unit Essential Questions Display \u2014 driving questions posted and referenced throughout the unit",
-    "Current Discussion Protocol Reminder \u2014 visual steps and roles for active protocol"
-  ]},
-  {id:"s12",type:"rotating",color:"#8e44ad",bg:"#f5eefb",title:"Assessment and Progress Monitoring",items:[
-    "Unit Learning Targets Tracker \u2014 scholar self-assessment tracker for current unit goals",
-    "Exit Ticket Display \u2014 current exit ticket prompt posted and changed daily or every few days"
-  ]},
-  {id:"s13",type:"rotating",color:"#8e44ad",bg:"#f5eefb",title:"Culture and Content Connections",items:[
-    "Scholar Work Display (Unit-Specific) \u2014 current unit work at multiple proficiency levels, archived when unit ends"
-  ]}
+var ITEMS = [
+  {id:"p1",type:"permanent",title:"Content and Language Objectives",subs:["Both content objective and language objective posted and visible","Referenced during instruction, not just decorative","Daily agenda or schedule also posted","Scholars can restate the objective when asked"]},
+  {id:"p2",type:"permanent",title:"Sentence Frames and Stems",subs:["Tiered by proficiency level and accessible during speaking and writing","Includes discourse stems for academic discussion (starting, responding, building, wrapping up)","Question stems by DOK level available","Transitional words and phrases chart posted"]},
+  {id:"p3",type:"permanent",title:"BICS Vocabulary Wall",subs:["High-frequency conversational words displayed","Includes visuals and home language translations","Updated as new high-use words are taught"]},
+  {id:"p4",type:"permanent",title:"Academic Vocabulary Wall",subs:["Tier 2 and Tier 3 words organized by content area","Includes visuals, definitions, and example sentences","Personal vocabulary journals in use by scholars"]},
+  {id:"p5",type:"permanent",title:"Writing Supports",subs:["Graphic organizers aligned to text structures and genres","Paragraph or essay frames accessible and tiered by proficiency","Writer\u2019s checklist (laminated, scholar-facing)","Editing symbols or revision checklist available","Mentor text or writing samples visible for reference"]},
+  {id:"p6",type:"permanent",title:"Scholar Language Goal Tracker",subs:["Scholar-friendly TELPAS domain labels displayed","Updated and referenced regularly by scholars","Scholars can articulate their current language goal"]},
+  {id:"p7",type:"permanent",title:"Scholar Academic Content Goal Tracker",subs:["Content mastery targets visible and tracked","Referenced by scholars during independent and group work"]},
+  {id:"p8",type:"permanent",title:"Collaborative Structures",subs:["Discussion norms co-created and posted","Group roles with stems (Facilitator, Recorder, Reporter, etc.)","Visible protocol or structure for group work (Socratic Seminar, Think-Pair-Share, etc.)","Signal system for comprehension or help posted","Academic behavior expectations posted (listening, partner talk, independent work)"]},
+  {id:"p9",type:"permanent",title:"Cultural and Linguistic Representation",subs:["Multilingual welcome signs or bilingual labels visible","Heritage map, flags, or home language name cards displayed","Bilingual library corner or home language resources accessible","Scholars\u2019 names, work, or personal contributions visible in the space"]},
+  {id:"p10",type:"permanent",title:"Technology and Reference Tools",subs:["QR codes linking to translation tools, dictionaries, or vocabulary lists","Bilingual dictionaries matching scholar home languages available","Headphone station or audio support tools accessible","Tools are functioning and scholars know how to use them independently"]},
+
+  {id:"r1",type:"rotating",title:"Unit Word Wall",subs:["Current Tier 2 and Tier 3 vocabulary posted","Updated at unit start, archived when done"]},
+  {id:"r2",type:"rotating",title:"Frayer Models or Visual Vocabulary",subs:["5\u20138 priority words with completed models displayed","Teacher or scholar-generated"]},
+  {id:"r3",type:"rotating",title:"Unit Graphic Organizers",subs:["Current text structure organizer posted and accessible","Scholars can access and use independently"]},
+  {id:"r4",type:"rotating",title:"Background Knowledge Display",subs:["KWL chart, anticipation guide, or brainstorm visible","Built and updated collaboratively with scholars"]},
+  {id:"r5",type:"rotating",title:"Unit Writing Frame or Exemplars",subs:["Current paragraph or essay frame aligned to genre","Writing samples at varying proficiency levels posted"]},
+  {id:"r6",type:"rotating",title:"Unit Essential Questions",subs:["Driving questions posted and visible","Referenced throughout the unit during instruction"]},
+  {id:"r7",type:"rotating",title:"Discussion Protocol Reminder",subs:["Visual steps and roles for active protocol posted","Scholars follow with minimal teacher direction"]},
+  {id:"r8",type:"rotating",title:"Unit Learning Targets Tracker",subs:["Scholar self-assessment tracker for current unit goals","Scholars update independently"]},
+  {id:"r9",type:"rotating",title:"Exit Ticket Display",subs:["Current prompt posted and visible","Changed daily or every few days"]},
+  {id:"r10",type:"rotating",title:"Scholar Work Display",subs:["Current unit work at multiple proficiency levels","Archived when unit ends, replaced with new work"]}
+];
+
+var PRINCIPLES = [
+  "Materials are actively used by scholars \u2014 not just displayed for observers",
+  "All displays are readable from scholar seats and reachable without asking permission",
+  "At least half of displayed materials are scholar-generated",
+  "Rotating materials are updated before a unit begins, not weeks into it",
+  "Home language is honored visibly in both permanent and rotating displays",
+  "Outdated unit materials are removed when the unit ends",
+  "Scholars can articulate how to use posted materials",
+  "Materials reflect current unit content",
+  "Multiple proficiency levels are represented in displayed work and scaffolds",
+  "Scholar names, work, or contributions are visible in the classroom space",
+  "Materials are organized and labeled so scholars can locate them independently",
+  "Technology tools are accessible and functioning",
+  "Seating arrangement supports collaborative learning",
+  "Language objectives are referenced during instruction, not just posted",
+  "Print-rich environment includes both English and home languages",
+  "Anchor charts show evidence of co-construction with scholars"
 ];
 
 /* ==============================
-   KEYS & STATE
+   STATE
    ============================== */
 var STORAGE_KEY = "esl_streamlined_audit_data";
 var HISTORY_KEY = "esl_audit_history";
@@ -460,6 +401,7 @@ var LAST_SAVED_KEY = "esl_audit_history_lastSaved";
 var ratings = {};
 var notes = {};
 var itemComments = {};
+var prChecks = {};
 var sumVisible = false;
 var saveTimeout = null;
 var focusedKey = null;
@@ -468,45 +410,31 @@ var allItemKeys = [];
 /* ==============================
    SCORING
    ============================== */
-function getCol(pct){ return pct>=80?"#27ae60":pct>=55?"#f1c40f":"#4a90d9"; }
+function getCol(pct){return pct>=80?"#27ae60":pct>=55?"#f1c40f":"#4a90d9";}
 
 function totalScore(){
   var score=0,rated=0,total=0;
-  for(var i=0;i<SECTIONS.length;i++){
-    if(SECTIONS[i].type==="bonus") continue;
-    for(var j=0;j<SECTIONS[i].items.length;j++){
-      total++;
-      var k=SECTIONS[i].id+"-"+j;
-      if(ratings[k]!==undefined){rated++;score+=ratings[k];}
-    }
+  for(var i=0;i<ITEMS.length;i++){
+    total++;
+    if(ratings[ITEMS[i].id]!==undefined){rated++;score+=ratings[ITEMS[i].id];}
   }
-  return {score:score,max:total*3,rated:rated,total:total};
-}
-
-function secScore(s){
-  var score=0,rated=0;
-  for(var j=0;j<s.items.length;j++){
-    var k=s.id+"-"+j;
-    if(ratings[k]!==undefined){rated++;score+=ratings[k];}
-  }
-  return {score:score,max:s.items.length*3,rated:rated,total:s.items.length};
+  return{score:score,max:total*3,rated:rated,total:total};
 }
 
 function typeScore(type){
   var score=0,rated=0,total=0;
-  for(var i=0;i<SECTIONS.length;i++){
-    if(SECTIONS[i].type!==type)continue;
-    for(var j=0;j<SECTIONS[i].items.length;j++){
-      total++;
-      var k=SECTIONS[i].id+"-"+j;
-      if(ratings[k]!==undefined){rated++;score+=ratings[k];}
-    }
+  for(var i=0;i<ITEMS.length;i++){
+    if(ITEMS[i].type!==type) continue;
+    total++;
+    if(ratings[ITEMS[i].id]!==undefined){rated++;score+=ratings[ITEMS[i].id];}
   }
-  return {score:score,max:total*3,rated:rated,total:total};
+  return{score:score,max:total*3,rated:rated,total:total};
 }
 
+function prCount(){var c=0;for(var k in prChecks)if(prChecks[k])c++;return c;}
+
 /* ==============================
-   BANNER REFRESH
+   BANNER & TAB REFRESH
    ============================== */
 function refreshBanner(){
   var t=totalScore();
@@ -516,30 +444,38 @@ function refreshBanner(){
   document.getElementById("barFill").style.background=getCol(pct);
   document.getElementById("scoreMeta").textContent=t.rated+" of "+t.total+" items rated \u00b7 "+t.score+" of "+t.max+" points";
 
-  var perm=typeScore("permanent");
-  var rot=typeScore("rotating");
-  var bonus=typeScore("bonus");
+  var perm=typeScore("permanent"),rot=typeScore("rotating");
   var permPct=perm.max>0?Math.round((perm.score/perm.max)*100):0;
   var rotPct=rot.max>0?Math.round((rot.score/rot.max)*100):0;
-  var bonusPct=bonus.max>0?Math.round((bonus.score/bonus.max)*100):0;
+  var pc=prCount();
+  var prPct=Math.round((pc/PRINCIPLES.length)*100);
 
   document.getElementById("permVal").textContent=permPct+"%";
   document.getElementById("permFill").style.width=permPct+"%";
   document.getElementById("rotVal").textContent=rotPct+"%";
   document.getElementById("rotFill").style.width=rotPct+"%";
-  document.getElementById("bonusVal").textContent=bonusPct+"%";
-  document.getElementById("bonusFill").style.width=bonusPct+"%";
+  document.getElementById("prVal").textContent=pc+"/"+PRINCIPLES.length;
+  document.getElementById("prFill").style.width=prPct+"%";
 
-  // Update section badges
-  for(var i=0;i<SECTIONS.length;i++){
-    var s=SECTIONS[i];
-    var sc=secScore(s);
-    var sp=sc.max>0?Math.round((sc.score/sc.max)*100):0;
-    var badge=document.getElementById("badge-"+s.id);
-    if(badge){
-      badge.textContent=sp+"% ("+sc.rated+"/"+sc.total+")";
-      badge.style.background=getCol(sp);
-    }
+  // Tab badges
+  document.getElementById("tbadge-permanent").textContent=perm.rated+"/"+perm.total;
+  document.getElementById("tbadge-rotating").textContent=rot.rated+"/"+rot.total;
+  document.getElementById("tbadge-principles").textContent=pc+"/"+PRINCIPLES.length;
+}
+
+/* ==============================
+   TABS
+   ============================== */
+function showTab(tab){
+  var tabs=["permanent","rotating","principles"];
+  var colors={permanent:"#d4a017",rotating:"#8e44ad",principles:"#27ae60"};
+  for(var i=0;i<tabs.length;i++){
+    var t=tabs[i];
+    document.getElementById("pane-"+t).style.display=(t===tab)?"block":"none";
+    var btn=document.getElementById("tbtn-"+t);
+    btn.style.background=(t===tab)?colors[t]:"#e8ecf0";
+    btn.style.color=(t===tab)?"#fff":"#555";
+    btn.setAttribute("aria-selected",t===tab?"true":"false");
   }
 }
 
@@ -548,26 +484,20 @@ function refreshBanner(){
    ============================== */
 function rateItem(key,val){
   ratings[key]=val;
-  // Update button states
   var row=document.getElementById("rrow-"+key);
   if(row){
     var btns=row.querySelectorAll(".rbtn");
     for(var i=0;i<btns.length;i++){
       var bv=parseInt(btns[i].getAttribute("data-v"));
       if(bv===val){
-        btns[i].style.background=R[bv].bg;
-        btns[i].style.color=R[bv].color;
-        btns[i].style.borderColor=R[bv].color;
+        btns[i].style.background=R[bv].bg;btns[i].style.color=R[bv].color;btns[i].style.borderColor=R[bv].color;
         btns[i].setAttribute("aria-pressed","true");
       } else {
-        btns[i].style.background="";
-        btns[i].style.color="";
-        btns[i].style.borderColor="";
+        btns[i].style.background="";btns[i].style.color="";btns[i].style.borderColor="";
         btns[i].setAttribute("aria-pressed","false");
       }
     }
   }
-  // Update checkbox
   var cb=document.getElementById("cb-"+key);
   if(cb) cb.checked=true;
   refreshBanner();
@@ -575,111 +505,75 @@ function rateItem(key,val){
 }
 
 function setFocus(key){
-  if(focusedKey){
-    var prev=document.getElementById("item-"+focusedKey);
-    if(prev) prev.classList.remove("focused");
-  }
+  if(focusedKey){var prev=document.getElementById("item-"+focusedKey);if(prev)prev.classList.remove("focused");}
   focusedKey=key;
-  var el=document.getElementById("item-"+key);
-  if(el) el.classList.add("focused");
-}
-
-function quickRateSection(secId,val){
-  for(var i=0;i<SECTIONS.length;i++){
-    if(SECTIONS[i].id!==secId) continue;
-    for(var j=0;j<SECTIONS[i].items.length;j++){
-      rateItem(secId+"-"+j,val);
-    }
-  }
+  var el=document.getElementById("item-"+key);if(el)el.classList.add("focused");
 }
 
 /* ==============================
-   RENDER SECTIONS
+   RENDER
    ============================== */
-function renderSections(){
-  var container=document.getElementById("sectionsContainer");
+function buildItems(type){
+  var pane=document.getElementById("pane-"+type);
   var html="";
-  allItemKeys=[];
-
-  for(var i=0;i<SECTIONS.length;i++){
-    var s=SECTIONS[i];
-    var typeLabel=s.type==="permanent"?"PERMANENT":s.type==="rotating"?"ROTATING":"BONUS";
-    var typeColor=s.type==="permanent"?"#d4a017":s.type==="rotating"?"#8e44ad":"#3498db";
-    var bonusTag=s.type==="bonus"?" <span class='bonus-badge'>Does not count toward score</span>":"";
-
-    html+="<div class='sec-block' style='border-color:"+s.color+"' id='sec-"+s.id+"'>";
-    html+="<div class='sec-head' style='background:"+s.bg+"' onclick='toggleSection(\""+s.id+"\")'>";
-    html+="<div><span class='sec-title' style='color:"+s.color+"'>"+escHtml(s.title)+"</span>"+bonusTag+"<span class='sec-badge' id='badge-"+s.id+"' style='background:"+typeColor+"'>"+typeLabel+"</span></div>";
-    html+="</div>";
-    html+="<div class='sec-body' id='body-"+s.id+"'>";
-
-    // Quick rate
-    html+="<div class='sec-quickrate'><span>Quick rate all:</span>";
-    for(var qv=0;qv<4;qv++){
-      html+="<button class='qr-btn' onclick='quickRateSection(\""+s.id+"\","+qv+")'>"+R[qv].level+" \u2014 "+R[qv].label+"</button>";
+  for(var i=0;i<ITEMS.length;i++){
+    var it=ITEMS[i];
+    if(it.type!==type) continue;
+    var key=it.id;
+    allItemKeys.push(key);
+    html+="<div class='item-row' id='item-"+key+"' onclick='handleItemClick(event,\""+key+"\")'>";
+    html+="<div class='item-top'><input type='checkbox' class='item-cb' id='cb-"+key+"' readonly onclick='return false'/>";
+    html+="<span class='item-text'>"+escHtml(it.title)+"</span></div>";
+    if(it.subs&&it.subs.length){
+      html+="<ul class='sub-lookfors'>";
+      for(var s=0;s<it.subs.length;s++) html+="<li>"+escHtml(it.subs[s])+"</li>";
+      html+="</ul>";
+    }
+    html+="<div class='rating-row' id='rrow-"+key+"' role='group' aria-label='Rating for "+escHtml(it.title)+"'>";
+    for(var v=0;v<4;v++){
+      html+="<button class='rbtn' data-v='"+v+"' role='radio' aria-pressed='false' aria-label='"+v+" "+R[v].label+"' onclick='rateItem(\""+key+"\","+v+")'>"+v+" \u2014 "+R[v].label+"</button>";
     }
     html+="</div>";
-
-    // Items
-    for(var ii=0;ii<s.items.length;ii++){
-      var key=s.id+"-"+ii;
-      allItemKeys.push(key);
-      html+="<div class='item-row' id='item-"+key+"' onclick='handleItemClick(event,\""+key+"\")'>";
-      html+="<div class='item-top'>";
-      html+="<input type='checkbox' class='item-cb' id='cb-"+key+"' readonly onclick='return false'/>";
-      html+="<span class='item-text'>"+escHtml(s.items[ii])+"</span>";
-      html+="</div>";
-      html+="<div class='rating-row' id='rrow-"+key+"' role='group' aria-label='Rating for item "+(ii+1)+"'>";
-      for(var v=0;v<4;v++){
-        html+="<button class='rbtn' data-v='"+v+"' role='radio' aria-pressed='false' aria-label='Level "+R[v].level+": "+R[v].label+"' onclick='rateItem(\""+key+"\","+v+")'>"+R[v].level+" \u2014 "+R[v].label+"</button>";
-      }
-      html+="</div>";
-      html+="<div class='item-comment-toggle' onclick='toggleComment(\""+key+"\")'>+ Add note</div>";
-      html+="<div class='item-comment' id='comment-"+key+"'><textarea id='ctext-"+key+"' placeholder='Add observation note...' oninput='saveComment(\""+key+"\")'></textarea></div>";
-      html+="</div>";
-    }
-
-    // Section notes
-    html+="<div class='sec-notes'><label for='notes-"+s.id+"'>Section Notes</label><textarea id='notes-"+s.id+"' placeholder='General notes for this section...' oninput='saveNote(\""+s.id+"\")'></textarea></div>";
-    html+="</div></div>";
+    html+="<div class='item-comment-toggle' onclick='toggleComment(\""+key+"\")'>+ Add note</div>";
+    html+="<div class='item-comment' id='comment-"+key+"'><textarea id='ctext-"+key+"' placeholder='Observation note...' oninput='saveComment(\""+key+"\")'></textarea></div>";
+    html+="</div>";
   }
-  container.innerHTML=html;
+  // Section notes
+  html+="<div class='sec-notes'><label for='notes-"+type+"'>"+( type==="permanent"?"Year-Long Essentials":"Unit-Specific Materials")+" Notes</label>";
+  html+="<textarea id='notes-"+type+"' placeholder='General notes for this section...' oninput='saveNote(\""+type+"\")'></textarea></div>";
+  pane.innerHTML=html;
 }
 
-function handleItemClick(e,key){
-  var t=e.target.tagName;
-  if(t==="BUTTON"||t==="INPUT"||t==="TEXTAREA") return;
-  setFocus(key);
+function buildPrinciples(){
+  var c=document.getElementById("prContainer");
+  var html="";
+  for(var i=0;i<PRINCIPLES.length;i++){
+    html+="<div class='pr-row'><input type='checkbox' class='pr-cb' id='pr-cb-"+i+"' onchange='onPrChange("+i+",this.checked)'/>";
+    html+="<span class='pr-text'>"+escHtml(PRINCIPLES[i])+"</span></div>";
+  }
+  html+="<div class='pr-summary' id='prSum'><strong style='color:#1e8449'>0 of "+PRINCIPLES.length+"</strong> <span style='color:var(--text-secondary)'>environment principles observed</span></div>";
+  c.innerHTML=html;
 }
 
-function toggleSection(secId){
-  var body=document.getElementById("body-"+secId);
-  if(body) body.style.display=body.style.display==="none"?"block":"none";
-}
-
-function toggleComment(key){
-  var el=document.getElementById("comment-"+key);
-  if(el) el.classList.toggle("open");
-}
-
-function saveComment(key){
-  var el=document.getElementById("ctext-"+key);
-  if(el) itemComments[key]=el.value;
+function onPrChange(idx,checked){
+  prChecks[idx]=checked;
+  var pc=prCount();
+  document.getElementById("prSum").innerHTML="<strong style='color:#1e8449'>"+pc+" of "+PRINCIPLES.length+"</strong> <span style='color:var(--text-secondary)'>environment principles observed</span>";
+  refreshBanner();
   scheduleSave();
 }
 
-function saveNote(secId){
-  var el=document.getElementById("notes-"+secId);
-  if(el) notes[secId]=el.value;
-  scheduleSave();
-}
+function handleItemClick(e,key){var t=e.target.tagName;if(t==="BUTTON"||t==="INPUT"||t==="TEXTAREA"||t==="LI")return;setFocus(key);}
+function toggleComment(key){var el=document.getElementById("comment-"+key);if(el)el.classList.toggle("open");}
+function saveComment(key){var el=document.getElementById("ctext-"+key);if(el)itemComments[key]=el.value;scheduleSave();}
+function saveNote(type){var el=document.getElementById("notes-"+type);if(el)notes[type]=el.value;scheduleSave();}
 
 /* ==============================
    PERSISTENCE
    ============================== */
 function collectState(){
-  return {
-    version:1,
+  return{
+    version:2,
     formType:"streamlined",
     timestamp:new Date().toISOString(),
     meta:{
@@ -690,14 +584,12 @@ function collectState(){
     },
     ratings:ratings,
     notes:notes,
-    itemComments:itemComments
+    itemComments:itemComments,
+    prChecks:prChecks
   };
 }
 
-function scheduleSave(){
-  if(saveTimeout)clearTimeout(saveTimeout);
-  saveTimeout=setTimeout(saveToStorage,500);
-}
+function scheduleSave(){if(saveTimeout)clearTimeout(saveTimeout);saveTimeout=setTimeout(saveToStorage,500);}
 
 function saveToStorage(){
   try{
@@ -706,17 +598,12 @@ function saveToStorage(){
     var el=document.getElementById("saveStatus");
     el.textContent="Saved "+new Date().toLocaleTimeString();
     setTimeout(function(){el.textContent="Auto-save: active";},2000);
-    broadcastSync();
+    try{var bc=new BroadcastChannel("mlp_hub_sync");bc.postMessage({type:"data_update",key:STORAGE_KEY,timestamp:Date.now()});bc.close();}catch(e2){}
   }catch(e){document.getElementById("saveStatus").textContent="Auto-save: error";}
 }
 
 function loadFromStorage(){
-  try{
-    var raw=localStorage.getItem(STORAGE_KEY);
-    if(!raw)return false;
-    applyState(JSON.parse(raw));
-    return true;
-  }catch(e){return false;}
+  try{var raw=localStorage.getItem(STORAGE_KEY);if(!raw)return false;applyState(JSON.parse(raw));return true;}catch(e){return false;}
 }
 
 function applyState(state){
@@ -729,25 +616,21 @@ function applyState(state){
   ratings=state.ratings||{};
   notes=state.notes||{};
   itemComments=state.itemComments||{};
+  prChecks=state.prChecks||{};
 
-  // Restore ratings UI
   for(var key in ratings) rateItem(key,ratings[key]);
-  // Restore notes
-  for(var sid in notes){
-    var el=document.getElementById("notes-"+sid);
-    if(el) el.value=notes[sid];
-  }
-  // Restore item comments
+  for(var type in notes){var el=document.getElementById("notes-"+type);if(el)el.value=notes[type];}
   for(var ck in itemComments){
     var ct=document.getElementById("ctext-"+ck);
-    if(ct){
-      ct.value=itemComments[ck];
-      if(itemComments[ck]){
-        var wrap=document.getElementById("comment-"+ck);
-        if(wrap) wrap.classList.add("open");
-      }
-    }
+    if(ct){ct.value=itemComments[ck];if(itemComments[ck]){var wrap=document.getElementById("comment-"+ck);if(wrap)wrap.classList.add("open");}}
   }
+  for(var pi in prChecks){
+    var pcb=document.getElementById("pr-cb-"+pi);
+    if(pcb) pcb.checked=!!prChecks[pi];
+  }
+  var pc=prCount();
+  var prSumEl=document.getElementById("prSum");
+  if(prSumEl) prSumEl.innerHTML="<strong style='color:#1e8449'>"+pc+" of "+PRINCIPLES.length+"</strong> <span style='color:var(--text-secondary)'>environment principles observed</span>";
   refreshBanner();
 }
 
@@ -756,56 +639,19 @@ function applyState(state){
    ============================== */
 function saveCampus(name){
   if(!name) return;
-  try{
-    var raw=localStorage.getItem(CAMPUS_KEY);
-    var list=raw?JSON.parse(raw):[];
-    for(var i=0;i<list.length;i++) if(list[i]===name) return;
-    list.push(name);
-    list.sort();
-    localStorage.setItem(CAMPUS_KEY,JSON.stringify(list));
-    populateCampusList();
-  }catch(e){}
+  try{var raw=localStorage.getItem(CAMPUS_KEY);var list=raw?JSON.parse(raw):[];for(var i=0;i<list.length;i++)if(list[i]===name)return;list.push(name);list.sort();localStorage.setItem(CAMPUS_KEY,JSON.stringify(list));populateCampusList();}catch(e){}
 }
-
 function populateCampusList(){
-  try{
-    var raw=localStorage.getItem(CAMPUS_KEY);
-    var list=raw?JSON.parse(raw):[];
-    var dl=document.getElementById("campus-list");
-    if(!dl) return;
-    dl.innerHTML="";
-    for(var i=0;i<list.length;i++){
-      var o=document.createElement("option");
-      o.value=list[i];
-      dl.appendChild(o);
-    }
-  }catch(e){}
+  try{var raw=localStorage.getItem(CAMPUS_KEY);var list=raw?JSON.parse(raw):[];var dl=document.getElementById("campus-list");if(!dl)return;dl.innerHTML="";for(var i=0;i<list.length;i++){var o=document.createElement("option");o.value=list[i];dl.appendChild(o);}}catch(e){}
 }
-
 function populateHistoryCampusFilter(){
-  try{
-    var raw=localStorage.getItem(CAMPUS_KEY);
-    var list=raw?JSON.parse(raw):[];
-    var sel=document.getElementById("histFilterCampus");
-    if(!sel) return;
-    while(sel.options.length>1) sel.remove(1);
-    for(var i=0;i<list.length;i++){
-      var o=document.createElement("option");
-      o.value=list[i];o.textContent=list[i];
-      sel.appendChild(o);
-    }
-  }catch(e){}
+  try{var raw=localStorage.getItem(CAMPUS_KEY);var list=raw?JSON.parse(raw):[];var sel=document.getElementById("histFilterCampus");if(!sel)return;while(sel.options.length>1)sel.remove(1);for(var i=0;i<list.length;i++){var o=document.createElement("option");o.value=list[i];o.textContent=list[i];sel.appendChild(o);}}catch(e){}
 }
 
 /* ==============================
-   HISTORY — shared esl_audit_history
+   HISTORY
    ============================== */
-function getHistory(){
-  try{
-    var raw=localStorage.getItem(HISTORY_KEY);
-    return raw?JSON.parse(raw):[];
-  }catch(e){return [];}
-}
+function getHistory(){try{var raw=localStorage.getItem(HISTORY_KEY);return raw?JSON.parse(raw):[];}catch(e){return[];}}
 
 function saveToHistory(){
   var state=collectState();
@@ -816,121 +662,59 @@ function saveToHistory(){
   history.push(state);
   localStorage.setItem(HISTORY_KEY,JSON.stringify(history));
   stampLastSaved();
-  alert("Streamlined audit saved to history for "+(state.meta.teacher||"unnamed teacher")+" on "+(state.meta.date||"unknown date")+".");
   showToast("Saved to history");
+  alert("Streamlined audit saved for "+(state.meta.teacher||"unnamed teacher")+" on "+(state.meta.date||"unknown date")+".");
 }
 
-function showHistoryModal(){
-  populateHistoryCampusFilter();
-  renderHistory();
-  document.getElementById("historyModal").classList.add("active");
-}
-function closeHistoryModal(){ document.getElementById("historyModal").classList.remove("active"); }
+function showHistoryModal(){populateHistoryCampusFilter();renderHistory();document.getElementById("historyModal").classList.add("active");}
 
 function renderHistory(){
   var list=document.getElementById("histList");
   var history=getHistory();
-  var filterTeacher=document.getElementById("histFilterTeacher").value.toLowerCase();
-  var filterCampus=document.getElementById("histFilterCampus").value;
-
-  // Show only streamlined audits
+  var ft=document.getElementById("histFilterTeacher").value.toLowerCase();
+  var fc=document.getElementById("histFilterCampus").value;
   var filtered=history.filter(function(a){
     if(a.formType!=="streamlined") return false;
-    if(filterTeacher&&(!a.meta.teacher||a.meta.teacher.toLowerCase().indexOf(filterTeacher)===-1)) return false;
-    if(filterCampus&&a.meta.campus!==filterCampus) return false;
+    if(ft&&(!a.meta.teacher||a.meta.teacher.toLowerCase().indexOf(ft)===-1)) return false;
+    if(fc&&a.meta.campus!==fc) return false;
     return true;
   });
-
-  if(!filtered.length){
-    list.innerHTML="<div class='no-history'>No saved streamlined audits"+(filterTeacher||filterCampus?" match your filters":"")+".<br>Use \"Save to Audit History\" in the summary report to archive completed audits.</div>";
-    return;
-  }
-
+  if(!filtered.length){list.innerHTML="<div class='no-history'>No saved streamlined audits"+(ft||fc?" match your filters":"")+".</div>";return;}
   filtered.sort(function(a,b){return(b.timestamp||"").localeCompare(a.timestamp||"");});
-
   var html="";
   for(var i=0;i<filtered.length;i++){
-    var a=filtered[i];
-    var pct=a.scorePct||0;
-    var col=getCol(pct);
-    var date=a.meta.date||"No date";
-    html+="<div class='hist-item'>"+
-      "<div class='hist-info'>"+
-      "<div class='hist-teacher'>"+escHtml(a.meta.teacher||"Unnamed Teacher")+"</div>"+
-      "<div class='hist-detail'>"+escHtml(a.meta.campus||"No campus")+" &nbsp;|&nbsp; "+escHtml(date)+" &nbsp;|&nbsp; Observer: "+escHtml(a.meta.observer||"\u2014")+"</div>"+
-      "</div>"+
-      "<div class='hist-score' style='color:"+col+"'>"+pct+"%</div>"+
-      "<div class='hist-actions'>"+
-      "<button class='load' onclick='loadFromHistory(\""+a.id+"\")'>Load</button>"+
-      "<button class='delete' onclick='deleteFromHistory(\""+a.id+"\")'>Delete</button>"+
-      "</div></div>";
+    var a=filtered[i],pct=a.scorePct||0,col=getCol(pct);
+    html+="<div class='hist-item'><div class='hist-info'><div class='hist-teacher'>"+escHtml(a.meta.teacher||"Unnamed")+"</div><div class='hist-detail'>"+escHtml(a.meta.campus||"No campus")+" | "+escHtml(a.meta.date||"No date")+" | Observer: "+escHtml(a.meta.observer||"\u2014")+"</div></div><div class='hist-score' style='color:"+col+"'>"+pct+"%</div><div class='hist-actions'><button class='load' onclick='loadFromHistory(\""+a.id+"\")'>Load</button><button class='delete' onclick='deleteFromHistory(\""+a.id+"\")'>Delete</button></div></div>";
   }
   list.innerHTML=html;
 }
 
 function loadFromHistory(id){
   var history=getHistory();
-  for(var i=0;i<history.length;i++){
-    if(history[i].id===id){
-      applyState(history[i]);
-      saveToStorage();
-      closeHistoryModal();
-      showToast("Loaded from history");
-      return;
-    }
-  }
+  for(var i=0;i<history.length;i++){if(history[i].id===id){applyState(history[i]);saveToStorage();closeModal("historyModal");showToast("Loaded");return;}}
 }
-
 function deleteFromHistory(id){
-  if(!confirm("Delete this audit from history?")) return;
-  var history=getHistory();
-  var filtered=[];
-  for(var i=0;i<history.length;i++){
-    if(history[i].id!==id) filtered.push(history[i]);
-  }
-  localStorage.setItem(HISTORY_KEY,JSON.stringify(filtered));
-  renderHistory();
-  showToast("Deleted from history");
+  if(!confirm("Delete this audit?")) return;
+  var history=getHistory(),f=[];for(var i=0;i<history.length;i++){if(history[i].id!==id)f.push(history[i]);}
+  localStorage.setItem(HISTORY_KEY,JSON.stringify(f));renderHistory();showToast("Deleted");
 }
 
 /* ==============================
    RESET
    ============================== */
-function showResetModal(){ document.getElementById("resetModal").classList.add("active"); }
-function closeResetModal(){ document.getElementById("resetModal").classList.remove("active"); }
+function showResetModal(){document.getElementById("resetModal").classList.add("active");}
 
 function doReset(){
-  ratings={};
-  notes={};
-  itemComments={};
-  focusedKey=null;
-  document.getElementById("m-teacher").value="";
-  document.getElementById("m-campus").value="";
-  document.getElementById("m-observer").value="";
-  document.getElementById("m-date").value="";
-
-  // Reset all UI
-  var cbs=document.querySelectorAll(".item-cb");
-  for(var i=0;i<cbs.length;i++) cbs[i].checked=false;
-  var btns=document.querySelectorAll(".rbtn");
-  for(var i=0;i<btns.length;i++){
-    btns[i].style.background="";
-    btns[i].style.color="";
-    btns[i].style.borderColor="";
-    btns[i].setAttribute("aria-pressed","false");
-  }
-  var tas=document.querySelectorAll(".sec-notes textarea, .item-comment textarea");
-  for(var i=0;i<tas.length;i++) tas[i].value="";
-  var cms=document.querySelectorAll(".item-comment");
-  for(var i=0;i<cms.length;i++) cms[i].classList.remove("open");
-
-  document.getElementById("sumReport").style.display="none";
-  sumVisible=false;
-
-  refreshBanner();
-  saveToStorage();
-  closeResetModal();
-  showToast("Audit reset");
+  ratings={};notes={};itemComments={};prChecks={};focusedKey=null;
+  document.getElementById("m-teacher").value="";document.getElementById("m-campus").value="";
+  document.getElementById("m-observer").value="";document.getElementById("m-date").value="";
+  var cbs=document.querySelectorAll(".item-cb,.pr-cb");for(var i=0;i<cbs.length;i++)cbs[i].checked=false;
+  var btns=document.querySelectorAll(".rbtn");for(var i=0;i<btns.length;i++){btns[i].style.background="";btns[i].style.color="";btns[i].style.borderColor="";btns[i].setAttribute("aria-pressed","false");}
+  var tas=document.querySelectorAll("textarea");for(var i=0;i<tas.length;i++)tas[i].value="";
+  var cms=document.querySelectorAll(".item-comment");for(var i=0;i<cms.length;i++)cms[i].classList.remove("open");
+  document.getElementById("sumReport").style.display="none";sumVisible=false;
+  var prSumEl=document.getElementById("prSum");if(prSumEl)prSumEl.innerHTML="<strong style='color:#1e8449'>0 of "+PRINCIPLES.length+"</strong> <span style='color:var(--text-secondary)'>environment principles observed</span>";
+  refreshBanner();saveToStorage();closeModal("resetModal");showToast("Audit reset");
 }
 
 /* ==============================
@@ -954,450 +738,235 @@ function buildSummary(){
   var col=getCol(pct);
   var oBg=pct>=80?"#eafaf1":pct>=55?"#fefde7":"#fdecea";
   var lbl=pct>=80?"Strong Language-Forward Environment":pct>=55?"Developing Language-Forward Environment":"Beginning Language-Forward Environment";
-
-  var perm=typeScore("permanent"),rot=typeScore("rotating"),bonus=typeScore("bonus");
+  var perm=typeScore("permanent"),rot=typeScore("rotating");
   var permPct=perm.max>0?Math.round((perm.score/perm.max)*100):0;
   var rotPct=rot.max>0?Math.round((rot.score/rot.max)*100):0;
-  var bonusPct=bonus.max>0?Math.round((bonus.score/bonus.max)*100):0;
+  var pc=prCount();
 
-  // Flags (items rated 0 or 1)
+  // Flags
   var flagHTML="";
-  for(var si=0;si<SECTIONS.length;si++){
-    var s=SECTIONS[si];
-    for(var ji=0;ji<s.items.length;ji++){
-      var key=s.id+"-"+ji;
-      if(ratings[key]!==undefined&&ratings[key]<=1){
-        var r=R[ratings[key]],short=s.items[ji].split("\u2014")[0].trim();
-        var commentNote=itemComments[key]?" <em style='color:#888'>("+escHtml(itemComments[key])+")</em>":"";
-        var bonusNote=s.type==="bonus"?" <span class='bonus-badge'>Bonus</span>":"";
-        flagHTML+="<div class='flag-item'><span class='flag-badge' style='background:"+r.bg+";color:"+r.color+"'>"+r.label+"</span><span style='color:var(--text)'><strong style='color:var(--text-muted)'>"+escHtml(s.title)+":</strong> "+escHtml(short)+commentNote+bonusNote+"</span></div>";
-      }
+  for(var i=0;i<ITEMS.length;i++){
+    var it=ITEMS[i];
+    if(ratings[it.id]!==undefined&&ratings[it.id]<=1){
+      var r=R[ratings[it.id]];
+      var cmt=itemComments[it.id]?" <em style='color:var(--text-muted)'>("+escHtml(itemComments[it.id])+")</em>":"";
+      flagHTML+="<div class='flag-item'><span class='flag-badge' style='background:"+r.bg+";color:"+r.color+"'>"+r.label+"</span><span>"+escHtml(it.title)+cmt+"</span></div>";
     }
   }
-  if(!flagHTML)flagHTML="<p style='font-size:13px;color:var(--text-muted)'>No items rated Not Observed or Approaching Expectations.</p>";
+  if(!flagHTML) flagHTML="<p style='font-size:13px;color:var(--text-muted)'>No items rated Not Observed or Approaching.</p>";
 
-  // Strengths (items rated 3)
+  // Strengths
   var strengthHTML="";
-  for(var si=0;si<SECTIONS.length;si++){
-    var s=SECTIONS[si];
-    for(var ji=0;ji<s.items.length;ji++){
-      var key=s.id+"-"+ji;
-      if(ratings[key]!==undefined&&ratings[key]===3){
-        var short=s.items[ji].split("\u2014")[0].trim();
-        strengthHTML+="<div class='strength-item'><span class='flag-badge' style='background:#eafaf1;color:#27ae60'>Exceeds Expectations</span><span style='color:var(--text)'><strong style='color:var(--text-muted)'>"+escHtml(s.title)+":</strong> "+escHtml(short)+"</span></div>";
-      }
+  for(var i=0;i<ITEMS.length;i++){
+    var it=ITEMS[i];
+    if(ratings[it.id]===3){
+      strengthHTML+="<div class='strength-item'><span class='flag-badge' style='background:#eafaf1;color:#27ae60'>Exceeds</span><span>"+escHtml(it.title)+"</span></div>";
     }
   }
-  if(!strengthHTML)strengthHTML="<p style='font-size:13px;color:var(--text-muted)'>No items rated Exceeds Expectations yet.</p>";
+  if(!strengthHTML) strengthHTML="<p style='font-size:13px;color:var(--text-muted)'>No items rated Exceeds Expectations yet.</p>";
 
-  // Section bars
+  // Item bars
   var barsHTML="";
-  for(var si=0;si<SECTIONS.length;si++){
-    var s=SECTIONS[si],sc=secScore(s),sp=sc.max>0?Math.round((sc.score/sc.max)*100):0,sc2=getCol(sp);
-    var noteHTML=notes[s.id]?"<div class='snote'>Note: "+escHtml(notes[s.id])+"</div>":"";
-    var bonusLbl=s.type==="bonus"?" (Bonus)":"";
-    barsHTML+="<div class='sbar-row'><div class='sbar-lbl'><span style='color:"+s.color+";font-weight:600'>"+escHtml(s.title)+bonusLbl+"</span><span style='color:"+sc2+";font-weight:700'>"+sp+"% ("+sc.score+"/"+sc.max+")</span></div><div class='sbar-track'><div class='sbar-fill' style='width:"+sp+"%;background:"+sc2+"'></div></div>"+noteHTML+"</div>";
+  for(var i=0;i<ITEMS.length;i++){
+    var it=ITEMS[i],sc=ratings[it.id],sp=sc!==undefined?Math.round((sc/3)*100):0;
+    var sc2=sc!==undefined?getCol(sp):"var(--bar-track)";
+    var valTxt=sc!==undefined?sp+"% ("+sc+"/3)":"Not rated";
+    barsHTML+="<div class='sbar-row'><div class='sbar-lbl'><span style='font-weight:600;color:var(--text)'>"+escHtml(it.title)+"</span><span style='color:"+sc2+";font-weight:700'>"+valTxt+"</span></div><div class='sbar-track'><div class='sbar-fill' style='width:"+sp+"%;background:"+sc2+"'></div></div></div>";
   }
 
-  // Completion warning
+  // Principles summary
+  var prHTML="";
+  var prMissing=[];
+  for(var i=0;i<PRINCIPLES.length;i++){
+    if(!prChecks[i]) prMissing.push(PRINCIPLES[i]);
+  }
+  if(prMissing.length===0) prHTML="<p style='font-size:13px;color:#27ae60;font-weight:600'>All 16 environment principles observed.</p>";
+  else{
+    prHTML="<p style='font-size:13px;color:var(--text-muted);margin-bottom:8px'>"+prMissing.length+" principle(s) not observed:</p>";
+    for(var i=0;i<prMissing.length;i++) prHTML+="<div class='flag-item'><span class='flag-badge' style='background:#fdecea;color:#e74c3c'>Missing</span><span>"+escHtml(prMissing[i])+"</span></div>";
+  }
+
+  // Completion
   var completionHTML="";
-  if(t.rated<t.total)
-    completionHTML="<div style='background:var(--warn-bg);border:1px solid var(--warn-border);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--warn-text);margin-bottom:16px'><strong>Incomplete Audit:</strong> "+(t.total-t.rated)+" of "+t.total+" items have not been rated.</div>";
+  if(t.rated<t.total) completionHTML="<div style='background:var(--warn-bg);border:1px solid var(--warn-border);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--warn-text);margin-bottom:16px'><strong>Incomplete:</strong> "+(t.total-t.rated)+" of "+t.total+" items not yet rated.</div>";
 
-  // Next steps
-  var nextTxt=pct>=80
-    ?"This classroom demonstrates a strong language-forward environment. Focus coaching on deepening scholar interaction with materials."
-    :pct>=55
-    ?"Solid foundations are in place. Prioritize items scored 0\u20131 above, particularly Vocabulary and Writing Supports."
-    :"Begin with the highest-impact permanent materials: Vocabulary Walls, Content and Language Objectives, and Writing Supports. Schedule a follow-up audit in 6\u20138 weeks.";
-
-  var splitHTML=
-    "<div class='sum-split'>"+
-    "<div class='sum-split-card' style='background:#fef9e7'><div class='sum-split-val' style='color:#d4a017'>"+permPct+"%</div><div class='sum-split-lbl' style='color:#d4a017'>Permanent</div></div>"+
-    "<div class='sum-split-card' style='background:#f5eefb'><div class='sum-split-val' style='color:#8e44ad'>"+rotPct+"%</div><div class='sum-split-lbl' style='color:#8e44ad'>Rotating</div></div>"+
-    "<div class='sum-split-card' style='background:#ebf5fb'><div class='sum-split-val' style='color:#3498db'>"+bonusPct+"%</div><div class='sum-split-lbl' style='color:#3498db'>Bonus (Tech)</div></div>"+
-    "</div>";
+  var nextTxt=pct>=80?"Strong language-forward environment. Focus coaching on deepening scholar interaction with materials.":pct>=55?"Solid foundations in place. Prioritize items scored 0\u20131 above.":"Begin with highest-impact items: Objectives, Vocabulary Walls, and Writing Supports. Schedule follow-up in 6\u20138 weeks.";
 
   el.innerHTML=
-    "<div class='sum-meta'>"+teacherProfileLink(tn)+" &nbsp;|&nbsp; Campus: "+escHtml(cp)+" &nbsp;|&nbsp; Observer: "+escHtml(ob)+" &nbsp;|&nbsp; Date: "+escHtml(dt)+" &nbsp;|&nbsp; Form: Streamlined</div>"+
+    "<div class='sum-meta'>"+teacherProfileLink(tn)+" | Campus: "+escHtml(cp)+" | Observer: "+escHtml(ob)+" | Date: "+escHtml(dt)+" | Form: Streamlined</div>"+
     completionHTML+
-    "<div class='sum-overall' style='background:"+oBg+"'><div class='sum-big' style='color:"+col+"'>"+pct+"%</div><div><div class='sum-lbl'>"+lbl+"</div><div class='sum-sub'>"+t.score+" of "+t.max+" points &nbsp;\u00b7&nbsp; "+t.rated+"/"+t.total+" items rated</div></div></div>"+
-    splitHTML+
-    "<h3 class='sub-h'>Section Breakdown</h3>"+barsHTML+
+    "<div class='sum-overall' style='background:"+oBg+"'><div class='sum-big' style='color:"+col+"'>"+pct+"%</div><div><div class='sum-lbl'>"+lbl+"</div><div class='sum-sub'>"+t.score+"/"+t.max+" points \u00b7 "+t.rated+"/"+t.total+" items \u00b7 "+pc+"/"+PRINCIPLES.length+" principles</div></div></div>"+
+    "<div class='sum-split'><div class='sum-split-card' style='background:#fef9e7'><div class='sum-split-val' style='color:#d4a017'>"+permPct+"%</div><div class='sum-split-lbl' style='color:#d4a017'>Year-Long</div></div><div class='sum-split-card' style='background:#f5eefb'><div class='sum-split-val' style='color:#8e44ad'>"+rotPct+"%</div><div class='sum-split-lbl' style='color:#8e44ad'>Unit-Specific</div></div><div class='sum-split-card' style='background:#eafaf1'><div class='sum-split-val' style='color:#27ae60'>"+pc+"/"+PRINCIPLES.length+"</div><div class='sum-split-lbl' style='color:#27ae60'>Principles</div></div></div>"+
+    "<h3 class='sub-h'>Item Breakdown</h3>"+barsHTML+
     "<h3 class='sub-h' style='color:#27ae60'>Strengths (Exceeds Expectations)</h3>"+strengthHTML+
-    "<h3 class='sub-h' style='color:#e74c3c'>Items Needing Attention (Not Observed / Approaching)</h3>"+flagHTML+
+    "<h3 class='sub-h' style='color:#e74c3c'>Items Needing Attention</h3>"+flagHTML+
+    "<h3 class='sub-h' style='color:#27ae60'>Environment Principles</h3>"+prHTML+
     "<div class='next-box'><h3>Recommended Next Steps</h3><p>"+nextTxt+"</p></div>"+
-    "<div style='margin-top:14px;text-align:center'>"+
-    "<button class='start-cycle-btn' onclick='createCoachingCycleFromAudit()'>Start Coaching Cycle from This Audit</button>"+
-    "<div id='cycleCreatedMsg' style='margin-top:8px;font-size:12px;color:#27ae60;display:none'></div>"+
-    "</div>"+
-    "<div class='sum-actions'>"+
-    "<button class='print-btn' onclick='window.print()'>Print / PDF</button>"+
-    "<button class='copy-btn' onclick='copySummary()'>Copy as Text</button>"+
-    "<button class='save-history-btn' onclick='saveToHistory()'>Save to Audit History</button>"+
-    "</div>";
+    "<div style='margin-top:14px;text-align:center'><button class='start-cycle-btn' onclick='createCoachingCycleFromAudit()'>Start Coaching Cycle from This Audit</button><div id='cycleCreatedMsg' style='margin-top:8px;font-size:12px;color:#27ae60;display:none'></div></div>"+
+    "<div class='sum-actions'><button style='background:#2c3e6e' onclick='window.print()'>Print / PDF</button><button style='background:#27ae60' onclick='copySummary()'>Copy as Text</button><button style='background:#8e44ad' onclick='saveToHistory()'>Save to Audit History</button></div>";
 }
 
 /* ==============================
-   COPY SUMMARY AS TEXT
+   COPY SUMMARY
    ============================== */
 function copySummary(){
-  var t=totalScore();
-  var pct=t.max>0?Math.round((t.score/t.max)*100):0;
-  var perm=typeScore("permanent"),rot=typeScore("rotating"),bonus=typeScore("bonus");
+  var t=totalScore();var pct=t.max>0?Math.round((t.score/t.max)*100):0;
+  var perm=typeScore("permanent"),rot=typeScore("rotating");
   var permPct=perm.max>0?Math.round((perm.score/perm.max)*100):0;
   var rotPct=rot.max>0?Math.round((rot.score/rot.max)*100):0;
-  var bonusPct=bonus.max>0?Math.round((bonus.score/bonus.max)*100):0;
-
-  var lines=[];
-  lines.push("STREAMLINED CLASSROOM AUDIT REPORT");
-  lines.push("==================================");
-  lines.push("Teacher: "+(document.getElementById("m-teacher").value||"\u2014"));
-  lines.push("Campus: "+(document.getElementById("m-campus").value||"\u2014"));
-  lines.push("Observer: "+(document.getElementById("m-observer").value||"\u2014"));
-  lines.push("Date: "+(document.getElementById("m-date").value||"\u2014"));
-  lines.push("");
-  lines.push("OVERALL: "+pct+"% ("+t.score+"/"+t.max+")");
-  lines.push("Permanent: "+permPct+"% | Rotating: "+rotPct+"% | Bonus (Tech): "+bonusPct+"%");
-  lines.push("");
-
-  lines.push("SECTION BREAKDOWN:");
-  for(var i=0;i<SECTIONS.length;i++){
-    var s=SECTIONS[i],sc=secScore(s),sp=sc.max>0?Math.round((sc.score/sc.max)*100):0;
-    var bonusLbl=s.type==="bonus"?" (Bonus)":"";
-    lines.push("  "+s.title+bonusLbl+": "+sp+"% ("+sc.score+"/"+sc.max+")");
-    if(notes[s.id]) lines.push("    Note: "+notes[s.id]);
+  var pc=prCount();
+  var lines=["STREAMLINED CLASSROOM AUDIT","==========================",
+    "Teacher: "+(document.getElementById("m-teacher").value||"\u2014"),
+    "Campus: "+(document.getElementById("m-campus").value||"\u2014"),
+    "Observer: "+(document.getElementById("m-observer").value||"\u2014"),
+    "Date: "+(document.getElementById("m-date").value||"\u2014"),"",
+    "OVERALL: "+pct+"% ("+t.score+"/"+t.max+")",
+    "Year-Long: "+permPct+"% | Unit-Specific: "+rotPct+"% | Principles: "+pc+"/"+PRINCIPLES.length,""];
+  lines.push("ITEM SCORES:");
+  for(var i=0;i<ITEMS.length;i++){
+    var it=ITEMS[i],sc=ratings[it.id];
+    lines.push("  "+it.title+": "+(sc!==undefined?sc+"/3":"Not rated"));
   }
-  lines.push("");
-
-  lines.push("STRENGTHS (Exceeds Expectations):");
-  var hasStrength=false;
-  for(var i=0;i<SECTIONS.length;i++){
-    var s=SECTIONS[i];
-    for(var j=0;j<s.items.length;j++){
-      var k=s.id+"-"+j;
-      if(ratings[k]===3){
-        lines.push("  ["+s.title+"] "+s.items[j].split("\u2014")[0].trim());
-        hasStrength=true;
-      }
-    }
-  }
-  if(!hasStrength) lines.push("  None");
-  lines.push("");
-
-  lines.push("ITEMS NEEDING ATTENTION (Not Observed / Approaching):");
-  var hasFlag=false;
-  for(var i=0;i<SECTIONS.length;i++){
-    var s=SECTIONS[i];
-    for(var j=0;j<s.items.length;j++){
-      var k=s.id+"-"+j;
-      if(ratings[k]!==undefined&&ratings[k]<=1){
-        var cmt=itemComments[k]?" ("+itemComments[k]+")":"";
-        lines.push("  ["+R[ratings[k]].label+"] "+s.title+": "+s.items[j].split("\u2014")[0].trim()+cmt);
-        hasFlag=true;
-      }
-    }
-  }
-  if(!hasFlag) lines.push("  None");
-
-  var text=lines.join("\n");
-  if(navigator.clipboard){
-    navigator.clipboard.writeText(text).then(function(){showToast("Copied to clipboard");});
-  }
+  lines.push("");lines.push("PRINCIPLES NOT OBSERVED:");
+  var hasMissing=false;
+  for(var i=0;i<PRINCIPLES.length;i++){if(!prChecks[i]){lines.push("  - "+PRINCIPLES[i]);hasMissing=true;}}
+  if(!hasMissing) lines.push("  All observed");
+  if(navigator.clipboard){navigator.clipboard.writeText(lines.join("\n")).then(function(){showToast("Copied");});}
 }
 
 /* ==============================
-   AUDIT-TO-COACHING PIPELINE
+   COACHING CYCLE PIPELINE
    ============================== */
-function buildEvidenceSummary(){
-  var state=collectState();
-  var sectionData=[];
-  for(var i=0;i<SECTIONS.length;i++){
-    var s=SECTIONS[i];
-    if(s.type==="bonus") continue;
-    var sc=secScore(s);
-    var pct=sc.max>0?Math.round((sc.score/sc.max)*100):0;
-    var weakItems=[];
-    for(var j=0;j<s.items.length;j++){
-      var k=s.id+"-"+j;
-      if(ratings[k]!==undefined&&ratings[k]<=1){
-        weakItems.push({
-          itemKey:k,
-          itemText:s.items[j].split("\u2014")[0].trim(),
-          rating:ratings[k],
-          comment:itemComments[k]||""
-        });
-      }
-    }
-    sectionData.push({sectionId:s.id,sectionTitle:s.title,sectionType:s.type,scorePct:pct,weakItems:weakItems});
-  }
-  sectionData.sort(function(a,b){return a.scorePct-b.scorePct;});
-  var weakSections=sectionData.slice(0,3);
-
-  var auditDate=state.meta.date||new Date().toISOString().slice(0,10);
-  var t=totalScore();
-  var auditScorePct=t.max>0?Math.round((t.score/t.max)*100):0;
-
-  return {auditDate:auditDate,auditScorePct:auditScorePct,weakSections:weakSections};
-}
-
 function createCoachingCycleFromAudit(){
   var state=collectState();
-  var evidenceSummary=buildEvidenceSummary();
   var teacher=state.meta.teacher||"Unknown Teacher";
   var campus=state.meta.campus||"";
   var auditDate=state.meta.date||new Date().toISOString().slice(0,10);
 
+  // Find weakest items
+  var weakItems=[];
+  for(var i=0;i<ITEMS.length;i++){
+    var it=ITEMS[i];
+    if(ratings[it.id]!==undefined&&ratings[it.id]<=1){
+      weakItems.push({title:it.title,type:it.type,score:ratings[it.id]});
+    }
+  }
+  weakItems.sort(function(a,b){return a.score-b.score;});
+  var weakParts=[];
+  for(var w=0;w<Math.min(weakItems.length,3);w++) weakParts.push(weakItems[w].title+" ("+weakItems[w].score+"/3)");
+  var weakText=weakParts.join("; ")||"No weak items identified";
+
+  var recParts=[];
+  for(var w=0;w<Math.min(weakItems.length,3);w++){
+    if(weakItems[w].type==="permanent") recParts.push("- "+weakItems[w].title+": Co-create a plan to install or update materials.");
+    else recParts.push("- "+weakItems[w].title+": Review upcoming unit plans and prepare materials before the unit launches.");
+  }
+
+  var nextParts=[];
+  if(weakItems[0]) nextParts.push("Address "+weakItems[0].title+" in weeks 1-2");
+  if(weakItems[1]) nextParts.push(weakItems[1].title+" in weeks 3-4");
+  nextParts.push("follow-up audit weeks 6-8");
+
   var auditId="audit-"+Date.now();
   var history=getHistory();
   for(var i=history.length-1;i>=0;i--){
-    if(history[i].meta&&history[i].meta.teacher===teacher&&history[i].meta.date===auditDate){
-      auditId=history[i].id;
-      break;
-    }
+    if(history[i].meta&&history[i].meta.teacher===teacher&&history[i].meta.date===auditDate){auditId=history[i].id;break;}
   }
-
-  var weakParts=[];
-  for(var w=0;w<evidenceSummary.weakSections.length;w++){
-    var ws=evidenceSummary.weakSections[w];
-    weakParts.push(ws.sectionTitle+" ("+ws.scorePct+"%)");
-  }
-  var weakSummaryText=weakParts.join("; ");
-
-  var recommendationParts=[];
-  for(var r=0;r<evidenceSummary.weakSections.length;r++){
-    var rs=evidenceSummary.weakSections[r];
-    if(rs.sectionType==="permanent"){
-      recommendationParts.push("- "+rs.sectionTitle+": Co-create a plan to install or update materials. Schedule a working session to build materials together.");
-    } else {
-      recommendationParts.push("- "+rs.sectionTitle+": Review upcoming unit plans and identify where materials should be prepared before the unit launches.");
-    }
-  }
-  var recommendationText=recommendationParts.join("\n");
-
-  var nextStepsParts=[];
-  if(evidenceSummary.weakSections[0]) nextStepsParts.push("Address "+evidenceSummary.weakSections[0].sectionTitle+" in weeks 1-2");
-  if(evidenceSummary.weakSections[1]) nextStepsParts.push(evidenceSummary.weakSections[1].sectionTitle+" in weeks 3-4");
-  nextStepsParts.push("follow-up audit weeks 6-8");
-  var nextStepsText=nextStepsParts.join(", ");
 
   var cycle={
     id:"cyc"+Date.now()+Math.floor(Math.random()*10000),
-    teacher:teacher,
-    campus:campus,
-    createdAt:new Date().toISOString(),
+    teacher:teacher,campus:campus,createdAt:new Date().toISOString(),
     stages:[
-      {key:"observation",status:"complete",date:auditDate,notes:"Streamlined audit observation \u2014 "+weakSummaryText},
-      {key:"feedback",status:"in-progress",date:"",notes:"Coaching recommendations from streamlined audit:\n"+recommendationText},
-      {key:"actionStep",status:"not-started",date:"",notes:"Suggested next steps:\n"+nextStepsText},
+      {key:"observation",status:"complete",date:auditDate,notes:"Streamlined audit \u2014 "+weakText},
+      {key:"feedback",status:"in-progress",date:"",notes:"Recommendations:\n"+recParts.join("\n")},
+      {key:"actionStep",status:"not-started",date:"",notes:"Next steps: "+nextParts.join(", ")},
       {key:"followUp",status:"not-started",date:"",notes:""},
       {key:"growth",status:"not-started",date:"",notes:""}
     ],
-    sourceWalkthroughId:null,
-    sourceAuditId:auditId,
-    evidenceSummary:evidenceSummary
+    sourceWalkthroughId:null,sourceAuditId:auditId,
+    evidenceSummary:{auditDate:auditDate,auditScorePct:collectState().scorePct||0,weakSections:[]}
   };
 
   var cyclesData;
-  try{
-    var raw=localStorage.getItem("coaching_cycles_data");
-    cyclesData=raw?JSON.parse(raw):null;
-  }catch(e){cyclesData=null;}
-  if(!cyclesData||!cyclesData.cycles){
-    cyclesData={version:1,savedAt:new Date().toISOString(),cycles:[],settings:{}};
-  }
-  cyclesData.cycles.push(cycle);
-  cyclesData.savedAt=new Date().toISOString();
+  try{var raw=localStorage.getItem("coaching_cycles_data");cyclesData=raw?JSON.parse(raw):null;}catch(e){cyclesData=null;}
+  if(!cyclesData||!cyclesData.cycles) cyclesData={version:1,savedAt:new Date().toISOString(),cycles:[],settings:{}};
+  cyclesData.cycles.push(cycle);cyclesData.savedAt=new Date().toISOString();
   localStorage.setItem("coaching_cycles_data",JSON.stringify(cyclesData));
 
-  // Add teacher to shared roster
   var roster=[];
-  try{
-    var rosterRaw=localStorage.getItem("shared_teacher_roster");
-    roster=rosterRaw?JSON.parse(rosterRaw):[];
-  }catch(e){roster=[];}
-  var teacherLower=teacher.toLowerCase();
-  var found=false;
-  for(var ti=0;ti<roster.length;ti++){
-    if(roster[ti].toLowerCase()===teacherLower){found=true;break;}
-  }
-  if(!found&&teacher){
-    roster.push(teacher);
-    roster.sort();
-    localStorage.setItem("shared_teacher_roster",JSON.stringify(roster));
-  }
+  try{var rr=localStorage.getItem("shared_teacher_roster");roster=rr?JSON.parse(rr):[];}catch(e){roster=[];}
+  var tl=teacher.toLowerCase(),found=false;
+  for(var i=0;i<roster.length;i++){if(roster[i].toLowerCase()===tl){found=true;break;}}
+  if(!found&&teacher){roster.push(teacher);roster.sort();localStorage.setItem("shared_teacher_roster",JSON.stringify(roster));}
 
-  alert("Coaching cycle created for "+teacher+"!\nOpen the Coaching Cycle Tracker to view it.");
-
+  alert("Coaching cycle created for "+teacher+"!");
   var msgEl=document.getElementById("cycleCreatedMsg");
-  if(msgEl){
-    msgEl.style.display="block";
-    msgEl.innerHTML="Coaching cycle created. <a href='../Academic_Monitoring_Leader_Facing/Coaching_Cycle_Tracker.html' style='color:#27ae60;font-weight:700;text-decoration:underline'>Open Coaching Cycle Tracker</a>";
-  }
-}
-
-/* ==============================
-   BROADCAST SYNC
-   ============================== */
-function broadcastSync(){
-  try{
-    var bc=new BroadcastChannel("mlp_hub_sync");
-    bc.postMessage({type:"data_update",key:STORAGE_KEY,timestamp:Date.now()});
-    bc.close();
-  }catch(e){}
+  if(msgEl){msgEl.style.display="block";msgEl.innerHTML="Coaching cycle created. <a href='../Academic_Monitoring_Leader_Facing/Coaching_Cycle_Tracker.html' style='color:#27ae60;font-weight:700;text-decoration:underline'>Open Coaching Cycle Tracker</a>";}
 }
 
 /* ==============================
    KEYBOARD SHORTCUTS
    ============================== */
-function toggleShortcutsHelp(){
-  var el=document.getElementById("shortcutsOverlay");
-  el.classList.toggle("active");
-}
+function toggleShortcutsHelp(){document.getElementById("shortcutsOverlay").classList.toggle("active");}
 
 document.addEventListener("keydown",function(e){
-  // Close modals on Escape
-  if(e.key==="Escape"){
-    var modals=document.querySelectorAll(".modal-overlay.active,.shortcuts-overlay.active");
-    for(var i=0;i<modals.length;i++) modals[i].classList.remove("active");
-    return;
-  }
-  // Ctrl+S
+  if(e.key==="Escape"){var m=document.querySelectorAll(".modal-overlay.active,.shortcuts-overlay.active");for(var i=0;i<m.length;i++)m[i].classList.remove("active");return;}
   if(e.ctrlKey&&e.key==="s"){e.preventDefault();saveToStorage();showToast("Saved");return;}
-  // Ctrl+D
   if(e.ctrlKey&&e.key==="d"){e.preventDefault();toggleDarkMode();return;}
-  // ? for shortcuts
   if(e.key==="?"&&!e.ctrlKey&&e.target.tagName!=="INPUT"&&e.target.tagName!=="TEXTAREA"){toggleShortcutsHelp();return;}
-  // Number keys for rating focused item
-  if(focusedKey&&e.target.tagName!=="INPUT"&&e.target.tagName!=="TEXTAREA"){
-    if(e.key>="0"&&e.key<="3"){rateItem(focusedKey,parseInt(e.key));return;}
-  }
-  // Arrow keys for navigation
+  if(focusedKey&&e.target.tagName!=="INPUT"&&e.target.tagName!=="TEXTAREA"&&e.key>="0"&&e.key<="3"){rateItem(focusedKey,parseInt(e.key));return;}
   if(e.key==="ArrowDown"||e.key==="ArrowUp"){
-    if(e.target.tagName==="INPUT"||e.target.tagName==="TEXTAREA") return;
+    if(e.target.tagName==="INPUT"||e.target.tagName==="TEXTAREA")return;
     e.preventDefault();
     var idx=focusedKey?allItemKeys.indexOf(focusedKey):-1;
-    if(e.key==="ArrowDown") idx=Math.min(idx+1,allItemKeys.length-1);
-    else idx=Math.max(idx-1,0);
-    if(allItemKeys[idx]){
-      setFocus(allItemKeys[idx]);
-      var el=document.getElementById("item-"+allItemKeys[idx]);
-      if(el) el.scrollIntoView({block:"center",behavior:"smooth"});
-    }
+    if(e.key==="ArrowDown")idx=Math.min(idx+1,allItemKeys.length-1);else idx=Math.max(idx-1,0);
+    if(allItemKeys[idx]){setFocus(allItemKeys[idx]);var el=document.getElementById("item-"+allItemKeys[idx]);if(el)el.scrollIntoView({block:"center",behavior:"smooth"});}
   }
 });
 
 /* ==============================
-   NOTIFICATION BELL
+   NOTIFICATION BELL / LAST SAVED
    ============================== */
-function initNotifBell(){
-  try{
-    var count=parseInt(localStorage.getItem("notification_unread_count")||"0");
-    var badge=document.getElementById("notifBellBadge");
-    if(count>0){badge.textContent=count;badge.classList.remove("hidden");}
-    else{badge.classList.add("hidden");}
-  }catch(e){}
-}
-
-/* ==============================
-   LAST SAVED FOOTER
-   ============================== */
-function stampLastSaved(){
-  localStorage.setItem(LAST_SAVED_KEY,Date.now().toString());
-  renderLastSaved();
-}
-
-function renderLastSaved(){
-  var el=document.getElementById("lastSavedFooter");
-  try{
-    var ts=localStorage.getItem(LAST_SAVED_KEY);
-    if(ts){
-      el.textContent="Audit history last saved: "+new Date(parseInt(ts)).toLocaleString();
-    } else {
-      el.textContent="No audit history saved yet";
-    }
-  }catch(e){el.textContent="";}
-}
+function initNotifBell(){try{var c=parseInt(localStorage.getItem("notification_unread_count")||"0");var b=document.getElementById("notifBellBadge");if(c>0){b.textContent=c;b.classList.remove("hidden");}else b.classList.add("hidden");}catch(e){}}
+function stampLastSaved(){localStorage.setItem(LAST_SAVED_KEY,Date.now().toString());renderLastSaved();}
+function renderLastSaved(){var el=document.getElementById("lastSavedFooter");try{var ts=localStorage.getItem(LAST_SAVED_KEY);el.textContent=ts?"Audit history last saved: "+new Date(parseInt(ts)).toLocaleString():"No audit history saved yet";}catch(e){el.textContent="";}}
 
 /* ==============================
    INIT
    ============================== */
-renderSections();
+buildItems("permanent");
+buildItems("rotating");
+buildPrinciples();
 populateCampusList();
-if(!loadFromStorage()){
-  document.getElementById("m-date").value=new Date().toISOString().slice(0,10);
-}
+if(!loadFromStorage()) document.getElementById("m-date").value=new Date().toISOString().slice(0,10);
 refreshBanner();
 renderLastSaved();
-
-// PWA Service Worker registration
-if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("../service-worker.js").catch(function(){});
-}
+if("serviceWorker" in navigator) navigator.serviceWorker.register("../service-worker.js").catch(function(){});
 initNotifBell();
 
-// Walkthrough -> Audit handoff
-(function(){
-  try{
-    var raw=localStorage.getItem("walkthrough_audit_handoff");
-    if(!raw) return;
-    var handoff=JSON.parse(raw);
-    localStorage.removeItem("walkthrough_audit_handoff");
-    if(handoff.source!=="walkthrough") return;
-    if(handoff.campus){
-      var campusEl=document.getElementById("m-campus");
-      if(campusEl) campusEl.value=handoff.campus;
-    }
-    if(handoff.observer){
-      var obsEl=document.getElementById("m-observer");
-      if(obsEl) obsEl.value=handoff.observer;
-    }
-    if(handoff.date){
-      var dateEl=document.getElementById("m-date");
-      if(dateEl) dateEl.value=handoff.date;
-    }
-    var noteLines=[];
-    noteLines.push("=== WALKTHROUGH REFERENCE ===");
-    noteLines.push("Focus: "+(handoff.focusLabel||"N/A"));
-    noteLines.push("Fidelity: "+handoff.fidelityPct+"%");
-    noteLines.push("");
-    if(handoff.observations&&handoff.observations.length>0){
-      noteLines.push("Observations:");
-      for(var i=0;i<handoff.observations.length;i++){
-        var ob=handoff.observations[i];
-        noteLines.push("  "+(ob.code||"?")+" - "+(ob.teacher||"Unknown")+(ob.notes?": "+ob.notes:""));
-      }
-    }
-    var notesEl=document.getElementById("notes-s01");
-    if(notesEl){
-      notesEl.value=noteLines.join("\n");
-      notesEl.style.display="block";
-    }
-    if(typeof notes!=="undefined") notes["s01"]=noteLines.join("\n");
-    scheduleSave();
-    showToast("Walkthrough context loaded \u2014 see Section 1 notes");
-  }catch(e){}
-})();
+// Walkthrough handoff
+(function(){try{
+  var raw=localStorage.getItem("walkthrough_audit_handoff");if(!raw)return;
+  var h=JSON.parse(raw);localStorage.removeItem("walkthrough_audit_handoff");
+  if(h.source!=="walkthrough")return;
+  if(h.campus){var ce=document.getElementById("m-campus");if(ce)ce.value=h.campus;}
+  if(h.observer){var oe=document.getElementById("m-observer");if(oe)oe.value=h.observer;}
+  if(h.date){var de=document.getElementById("m-date");if(de)de.value=h.date;}
+  var nl=["=== WALKTHROUGH REFERENCE ===","Focus: "+(h.focusLabel||"N/A"),"Fidelity: "+h.fidelityPct+"%",""];
+  if(h.observations&&h.observations.length){nl.push("Observations:");for(var i=0;i<h.observations.length;i++){var ob=h.observations[i];nl.push("  "+(ob.code||"?")+" - "+(ob.teacher||"Unknown")+(ob.notes?": "+ob.notes:""));}}
+  var ne=document.getElementById("notes-permanent");if(ne)ne.value=nl.join("\n");
+  notes["permanent"]=nl.join("\n");
+  scheduleSave();showToast("Walkthrough context loaded");
+}catch(e){}})();
 
-// Audit view request (from Coaching Cycle Tracker)
-(function(){
-  try{
-    var raw=localStorage.getItem("audit_view_request");
-    if(!raw) return;
-    localStorage.removeItem("audit_view_request");
-    var auditId=raw;
-    var history=getHistory();
-    for(var i=0;i<history.length;i++){
-      if(history[i].id===auditId){
-        applyState(history[i]);
-        saveToStorage();
-        showToast("Loaded audit from history");
-        return;
-      }
-    }
-    alert("Could not find audit with ID: "+auditId+" in history.");
-  }catch(e){}
-})();
+// Audit view request
+(function(){try{
+  var raw=localStorage.getItem("audit_view_request");if(!raw)return;
+  localStorage.removeItem("audit_view_request");
+  var history=getHistory();
+  for(var i=0;i<history.length;i++){if(history[i].id===raw){applyState(history[i]);saveToStorage();showToast("Loaded from history");return;}}
+  alert("Could not find audit ID: "+raw);
+}catch(e){}})();
 </script>
 </body>
 </html>
