@@ -427,14 +427,12 @@ mark{background:#fef08a;color:#333;padding:0 2px;border-radius:2px}
 </div>
 
 <div class="card">
-  <div class="meta-grid">
-    <div><label for="m-teacher">Teacher Name</label><input type="text" id="m-teacher" placeholder="Enter teacher name"/></div>
-    <div>
-      <label for="m-campus">Campus</label>
-      <input type="text" id="m-campus" list="campus-list" placeholder="Select or type campus name"/>
-      <datalist id="campus-list"></datalist>
-    </div>
-    <div><label for="m-observer">Observer</label><input type="text" id="m-observer" placeholder="Enter observer name"/></div>
+  <div class="meta-grid" style="grid-template-columns:1fr 1fr 1fr">
+    <div><label for="m-teacher">Teacher Name</label><input type="text" id="m-teacher" list="teacher-list" placeholder="Select or type teacher name" oninput="onTeacherInput()" onchange="onTeacherSelect()"/><datalist id="teacher-list"></datalist></div>
+    <div><label for="m-campus">Campus</label><input type="text" id="m-campus" list="campus-list" placeholder="Select or type campus name"/><datalist id="campus-list"></datalist></div>
+    <div><label for="m-observer">Observer</label><input type="text" id="m-observer" list="observer-list" placeholder="Select or type observer name"/><datalist id="observer-list"></datalist></div>
+    <div><label for="m-grade">Grade Level</label><select id="m-grade" onchange="scheduleSave()"><option value="">Select Grade</option><option value="K">K</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option></select></div>
+    <div><label for="m-content">Content Area</label><select id="m-content" onchange="onContentChange()"><option value="">Select Content</option><option value="ELA">ELA</option><option value="Math">Math</option><option value="Science">Science</option><option value="Social Studies">Social Studies</option><option value="Bilingual">Bilingual</option><option value="ESL Self-Contained">ESL Self-Contained</option><option value="Newcomer">Newcomer</option><option value="Specials">Specials (Art, Music, PE)</option><option value="__other__">Other...</option></select></div>
     <div><label for="m-date">Date</label><input type="date" id="m-date"/></div>
   </div>
 </div>
@@ -1491,6 +1489,8 @@ function buildSummary(){
   var tn=document.getElementById("m-teacher").value||"—";
   var cp=document.getElementById("m-campus").value||"—";
   var ob=document.getElementById("m-observer").value||"—";
+  var gr=document.getElementById("m-grade").value||"";
+  var ct=document.getElementById("m-content").value||"";
   var dt=document.getElementById("m-date").value||"—";
   var t=totalScore();
   var pct=t.max>0?Math.round((t.score/t.max)*100):0;
@@ -1594,7 +1594,7 @@ function buildSummary(){
   el.innerHTML=
     "<h2 style='font-size:17px;color:#2c3e6e;margin-bottom:14px'>Audit Summary Report</h2>"+
     completionHTML+
-    "<div class='sum-meta'><strong>Teacher:</strong> "+tn+" &nbsp;|&nbsp; <strong>Campus:</strong> "+cp+" &nbsp;|&nbsp; <strong>Observer:</strong> "+ob+" &nbsp;|&nbsp; <strong>Date:</strong> "+dt+" &nbsp;|&nbsp; <strong>Duration:</strong> "+durStr+"</div>"+
+    "<div class='sum-meta'><strong>Teacher:</strong> "+tn+(gr?" &nbsp;|&nbsp; <strong>Grade:</strong> "+gr:"")+(ct?" &nbsp;|&nbsp; <strong>Content:</strong> "+ct:"")+" &nbsp;|&nbsp; <strong>Campus:</strong> "+cp+" &nbsp;|&nbsp; <strong>Observer:</strong> "+ob+" &nbsp;|&nbsp; <strong>Date:</strong> "+dt+" &nbsp;|&nbsp; <strong>Duration:</strong> "+durStr+"</div>"+
     "<div class='sum-overall' style='background:"+oBg+"'><div class='sum-big' style='color:"+col+"'>"+pct+"%</div><div><div class='sum-lbl' style='color:"+col+"'>"+lbl+"</div><div class='sum-sub'>"+t.score+" of "+t.max+" points  ·  "+t.rated+" of "+t.total+" items rated</div></div></div>"+
     splitHTML+
     "<h3 class='sub-h'>Section Breakdown</h3>"+barsHTML+
@@ -1643,6 +1643,8 @@ function copySummary(){
   lines.push("MLP CLASSROOM ENVIRONMENT AUDIT SUMMARY");
   lines.push("========================================");
   lines.push("Teacher: "+tn);
+  if(gr) lines.push("Grade: "+gr);
+  if(ct) lines.push("Content: "+ct);
   lines.push("Campus: "+cp);
   lines.push("Observer: "+ob);
   lines.push("Date: "+dt);
@@ -1722,6 +1724,8 @@ function collectState(){
       teacher:document.getElementById("m-teacher").value,
       campus:document.getElementById("m-campus").value,
       observer:document.getElementById("m-observer").value,
+      grade:document.getElementById("m-grade").value,
+      content:document.getElementById("m-content").value,
       date:document.getElementById("m-date").value
     },
     ratings:ratings,
@@ -1744,6 +1748,8 @@ function saveToStorage(){
   try{
     localStorage.setItem(STORAGE_KEY,JSON.stringify(collectState()));
     saveCampus(document.getElementById("m-campus").value);
+    saveProfile();
+    saveObserver(document.getElementById("m-observer").value);
     var el=document.getElementById("saveStatus");
     el.textContent="Saved "+new Date().toLocaleTimeString();
     setTimeout(function(){el.textContent="Auto-save: active";},2000);
@@ -1765,6 +1771,8 @@ function applyState(state){
     document.getElementById("m-teacher").value=state.meta.teacher||"";
     document.getElementById("m-campus").value=state.meta.campus||"";
     document.getElementById("m-observer").value=state.meta.observer||"";
+    document.getElementById("m-grade").value=state.meta.grade||"";
+    setContentValue(state.meta.content||"");
     document.getElementById("m-date").value=state.meta.date||"";
   }
   ratings=state.ratings||{};
@@ -1994,6 +2002,8 @@ function confirmReset(){
   document.getElementById("m-teacher").value="";
   document.getElementById("m-campus").value="";
   document.getElementById("m-observer").value="";
+  document.getElementById("m-grade").value="";
+  document.getElementById("m-content").value="";
   document.getElementById("m-date").value=new Date().toISOString().slice(0,10);
 
   var btns=document.getElementsByClassName("rbtn");
@@ -2054,6 +2064,108 @@ function populateHistoryCampusFilter(){
   for(var i=0;i<list.length;i++){
     var opt=document.createElement("option");opt.value=list[i];opt.textContent=list[i];sel.appendChild(opt);
   }
+}
+
+/* ==============================
+   SMART DROPDOWNS — TEACHER PROFILES, OBSERVERS, CUSTOM CONTENT
+   ============================== */
+var PROFILES_KEY = "esl_audit_teacher_profiles";
+var OBSERVERS_KEY = "esl_audit_observers";
+var CUSTOM_CONTENT_KEY = "esl_audit_custom_content";
+
+var DEFAULT_CONTENT = ["ELA","Math","Science","Social Studies","Bilingual","ESL Self-Contained","Newcomer","Specials (Art, Music, PE)"];
+
+function getProfiles(){try{var r=localStorage.getItem(PROFILES_KEY);return r?JSON.parse(r):{};}catch(e){return{};}}
+function saveProfile(){
+  var teacher=document.getElementById("m-teacher").value.trim();
+  if(!teacher) return;
+  var profiles=getProfiles();
+  profiles[teacher]={
+    grade:document.getElementById("m-grade").value,
+    content:document.getElementById("m-content").value,
+    campus:document.getElementById("m-campus").value
+  };
+  localStorage.setItem(PROFILES_KEY,JSON.stringify(profiles));
+  populateTeacherList();
+}
+function populateTeacherList(){
+  var profiles=getProfiles();
+  var dl=document.getElementById("teacher-list");
+  if(!dl) return;
+  dl.innerHTML="";
+  var names=[];
+  for(var n in profiles) names.push(n);
+  try{var rr=localStorage.getItem("shared_teacher_roster");var roster=rr?JSON.parse(rr):[];for(var i=0;i<roster.length;i++){if(names.indexOf(roster[i])===-1)names.push(roster[i]);}}catch(e){}
+  names.sort();
+  for(var i=0;i<names.length;i++){var o=document.createElement("option");o.value=names[i];dl.appendChild(o);}
+}
+function onTeacherInput(){scheduleSave();}
+function onTeacherSelect(){
+  var teacher=document.getElementById("m-teacher").value.trim();
+  if(!teacher) return;
+  var profiles=getProfiles();
+  if(profiles[teacher]){
+    var p=profiles[teacher];
+    if(p.grade) document.getElementById("m-grade").value=p.grade;
+    if(p.content) setContentValue(p.content);
+    if(p.campus) document.getElementById("m-campus").value=p.campus;
+  }
+  scheduleSave();
+}
+
+function getObservers(){try{var r=localStorage.getItem(OBSERVERS_KEY);return r?JSON.parse(r):[];}catch(e){return[];}}
+function saveObserver(name){
+  if(!name) return;
+  var list=getObservers();
+  for(var i=0;i<list.length;i++) if(list[i]===name) return;
+  list.push(name);list.sort();
+  localStorage.setItem(OBSERVERS_KEY,JSON.stringify(list));
+  populateObserverList();
+}
+function populateObserverList(){
+  var list=getObservers();
+  var dl=document.getElementById("observer-list");
+  if(!dl) return;
+  dl.innerHTML="";
+  for(var i=0;i<list.length;i++){var o=document.createElement("option");o.value=list[i];dl.appendChild(o);}
+}
+
+function getCustomContent(){try{var r=localStorage.getItem(CUSTOM_CONTENT_KEY);return r?JSON.parse(r):[];}catch(e){return[];}}
+function addCustomContent(name){
+  if(!name) return;
+  var list=getCustomContent();
+  for(var i=0;i<list.length;i++) if(list[i]===name) return;
+  list.push(name);
+  localStorage.setItem(CUSTOM_CONTENT_KEY,JSON.stringify(list));
+  rebuildContentDropdown();
+}
+function rebuildContentDropdown(){
+  var sel=document.getElementById("m-content");
+  var cur=sel.value;
+  while(sel.options.length>0) sel.remove(0);
+  var html='<option value="">Select Content</option>';
+  for(var i=0;i<DEFAULT_CONTENT.length;i++) html+='<option value="'+DEFAULT_CONTENT[i]+'">'+DEFAULT_CONTENT[i]+'</option>';
+  var custom=getCustomContent();
+  for(var i=0;i<custom.length;i++) html+='<option value="'+custom[i]+'">'+custom[i]+'</option>';
+  html+='<option value="__other__">Other...</option>';
+  sel.innerHTML=html;
+  if(cur) sel.value=cur;
+}
+function setContentValue(val){
+  if(!val) return;
+  var sel=document.getElementById("m-content");
+  for(var i=0;i<sel.options.length;i++){if(sel.options[i].value===val){sel.value=val;return;}}
+  addCustomContent(val);
+  sel.value=val;
+}
+function onContentChange(){
+  var sel=document.getElementById("m-content");
+  if(sel.value==="__other__"){
+    var custom=prompt("Enter custom content area:");
+    if(custom&&custom.trim()){custom=custom.trim();addCustomContent(custom);sel.value=custom;}
+    else{sel.value="";}
+  }
+  scheduleSave();
 }
 
 /* ==============================
@@ -3939,6 +4051,9 @@ buildSections("rotating");
 buildPrinciples();
 applyHiddenItems();
 populateCampusList();
+populateTeacherList();
+populateObserverList();
+rebuildContentDropdown();
 
 document.getElementById("m-date").value=new Date().toISOString().slice(0,10);
 

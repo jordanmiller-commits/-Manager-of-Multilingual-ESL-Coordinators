@@ -57,7 +57,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 .card{background:var(--card-bg);border-radius:10px;padding:20px;margin-bottom:18px;box-shadow:var(--shadow)}
 .meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .meta-grid label{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;display:block;margin-bottom:4px}
-.meta-grid input{width:100%;padding:8px 10px;border-radius:6px;border:1px solid var(--input-border);font-size:13px;font-family:inherit;background:var(--input-bg);color:var(--input-text)}
+.meta-grid input,.meta-grid select{width:100%;padding:8px 10px;border-radius:6px;border:1px solid var(--input-border);font-size:13px;font-family:inherit;background:var(--input-bg);color:var(--input-text)}
 .score-banner{display:flex;align-items:center;gap:20px}
 .score-num{font-size:42px;font-weight:900;min-width:80px;text-align:center;color:var(--primary)}
 .score-label{font-size:11px;color:var(--text-muted);font-weight:700;text-align:center}
@@ -188,6 +188,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
   .score-split{flex-direction:column;gap:8px}
   .tabs{gap:4px}
   .tab-btn{padding:8px 10px;font-size:11px;flex:1;text-align:center}
+  .meta-grid{grid-template-columns:1fr!important}
   .tool-btn,input,select,.rbtn{min-height:44px}
 }
 </style>
@@ -213,10 +214,12 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 </div>
 
 <div class="card">
-  <div class="meta-grid">
-    <div><label for="m-teacher">Teacher Name</label><input type="text" id="m-teacher" placeholder="Enter teacher name" oninput="scheduleSave()"/></div>
+  <div class="meta-grid" style="grid-template-columns:1fr 1fr 1fr">
+    <div><label for="m-teacher">Teacher Name</label><input type="text" id="m-teacher" list="teacher-list" placeholder="Select or type teacher name" oninput="onTeacherInput()" onchange="onTeacherSelect()"/><datalist id="teacher-list"></datalist></div>
     <div><label for="m-campus">Campus</label><input type="text" id="m-campus" list="campus-list" placeholder="Select or type campus name" oninput="scheduleSave()"/><datalist id="campus-list"></datalist></div>
-    <div><label for="m-observer">Observer</label><input type="text" id="m-observer" placeholder="Enter observer name" oninput="scheduleSave()"/></div>
+    <div><label for="m-observer">Observer</label><input type="text" id="m-observer" list="observer-list" placeholder="Select or type observer name" oninput="scheduleSave()"/><datalist id="observer-list"></datalist></div>
+    <div><label for="m-grade">Grade Level</label><select id="m-grade" onchange="scheduleSave()"><option value="">Select Grade</option><option value="K">K</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option></select></div>
+    <div><label for="m-content">Content Area</label><select id="m-content" onchange="onContentChange()"><option value="">Select Content</option><option value="ELA">ELA</option><option value="Math">Math</option><option value="Science">Science</option><option value="Social Studies">Social Studies</option><option value="Bilingual">Bilingual</option><option value="ESL Self-Contained">ESL Self-Contained</option><option value="Newcomer">Newcomer</option><option value="Specials">Specials (Art, Music, PE)</option><option value="__other__">Other...</option></select></div>
     <div><label for="m-date">Date</label><input type="date" id="m-date" oninput="scheduleSave()"/></div>
   </div>
 </div>
@@ -592,6 +595,8 @@ function collectState(){
       teacher:document.getElementById("m-teacher").value,
       campus:document.getElementById("m-campus").value,
       observer:document.getElementById("m-observer").value,
+      grade:document.getElementById("m-grade").value,
+      content:document.getElementById("m-content").value,
       date:document.getElementById("m-date").value
     },
     ratings:ratings,
@@ -607,6 +612,8 @@ function saveToStorage(){
   try{
     localStorage.setItem(STORAGE_KEY,JSON.stringify(collectState()));
     saveCampus(document.getElementById("m-campus").value);
+    saveProfile();
+    saveObserver(document.getElementById("m-observer").value);
     var el=document.getElementById("saveStatus");
     el.textContent="Saved "+new Date().toLocaleTimeString();
     setTimeout(function(){el.textContent="Auto-save: active";},2000);
@@ -623,6 +630,8 @@ function applyState(state){
     document.getElementById("m-teacher").value=state.meta.teacher||"";
     document.getElementById("m-campus").value=state.meta.campus||"";
     document.getElementById("m-observer").value=state.meta.observer||"";
+    document.getElementById("m-grade").value=state.meta.grade||"";
+    setContentValue(state.meta.content||"");
     document.getElementById("m-date").value=state.meta.date||"";
   }
   ratings=state.ratings||{};
@@ -658,6 +667,121 @@ function populateCampusList(){
 }
 function populateHistoryCampusFilter(){
   try{var raw=localStorage.getItem(CAMPUS_KEY);var list=raw?JSON.parse(raw):[];var sel=document.getElementById("histFilterCampus");if(!sel)return;while(sel.options.length>1)sel.remove(1);for(var i=0;i<list.length;i++){var o=document.createElement("option");o.value=list[i];o.textContent=list[i];sel.appendChild(o);}}catch(e){}
+}
+
+/* ==============================
+   SMART DROPDOWNS — TEACHER PROFILES, OBSERVERS, CUSTOM CONTENT
+   ============================== */
+var PROFILES_KEY = "esl_audit_teacher_profiles";
+var OBSERVERS_KEY = "esl_audit_observers";
+var CUSTOM_CONTENT_KEY = "esl_audit_custom_content";
+
+var DEFAULT_CONTENT = ["ELA","Math","Science","Social Studies","Bilingual","ESL Self-Contained","Newcomer","Specials (Art, Music, PE)"];
+
+function getProfiles(){try{var r=localStorage.getItem(PROFILES_KEY);return r?JSON.parse(r):{};}catch(e){return{};}}
+function saveProfile(){
+  var teacher=document.getElementById("m-teacher").value.trim();
+  if(!teacher) return;
+  var profiles=getProfiles();
+  profiles[teacher]={
+    grade:document.getElementById("m-grade").value,
+    content:document.getElementById("m-content").value,
+    campus:document.getElementById("m-campus").value
+  };
+  localStorage.setItem(PROFILES_KEY,JSON.stringify(profiles));
+  populateTeacherList();
+}
+
+function populateTeacherList(){
+  var profiles=getProfiles();
+  var dl=document.getElementById("teacher-list");
+  if(!dl) return;
+  dl.innerHTML="";
+  var names=[];
+  for(var n in profiles) names.push(n);
+  // Also pull from shared_teacher_roster
+  try{var rr=localStorage.getItem("shared_teacher_roster");var roster=rr?JSON.parse(rr):[];for(var i=0;i<roster.length;i++){if(names.indexOf(roster[i])===-1)names.push(roster[i]);}}catch(e){}
+  names.sort();
+  for(var i=0;i<names.length;i++){var o=document.createElement("option");o.value=names[i];dl.appendChild(o);}
+}
+
+function onTeacherInput(){scheduleSave();}
+function onTeacherSelect(){
+  var teacher=document.getElementById("m-teacher").value.trim();
+  if(!teacher) return;
+  var profiles=getProfiles();
+  if(profiles[teacher]){
+    var p=profiles[teacher];
+    if(p.grade) document.getElementById("m-grade").value=p.grade;
+    if(p.content) setContentValue(p.content);
+    if(p.campus) document.getElementById("m-campus").value=p.campus;
+  }
+  scheduleSave();
+}
+
+function getObservers(){try{var r=localStorage.getItem(OBSERVERS_KEY);return r?JSON.parse(r):[];}catch(e){return[];}}
+function saveObserver(name){
+  if(!name) return;
+  var list=getObservers();
+  for(var i=0;i<list.length;i++) if(list[i]===name) return;
+  list.push(name);list.sort();
+  localStorage.setItem(OBSERVERS_KEY,JSON.stringify(list));
+  populateObserverList();
+}
+function populateObserverList(){
+  var list=getObservers();
+  var dl=document.getElementById("observer-list");
+  if(!dl) return;
+  dl.innerHTML="";
+  for(var i=0;i<list.length;i++){var o=document.createElement("option");o.value=list[i];dl.appendChild(o);}
+}
+
+function getCustomContent(){try{var r=localStorage.getItem(CUSTOM_CONTENT_KEY);return r?JSON.parse(r):[];}catch(e){return[];}}
+function addCustomContent(name){
+  if(!name) return;
+  var list=getCustomContent();
+  for(var i=0;i<list.length;i++) if(list[i]===name) return;
+  list.push(name);
+  localStorage.setItem(CUSTOM_CONTENT_KEY,JSON.stringify(list));
+  rebuildContentDropdown();
+}
+function rebuildContentDropdown(){
+  var sel=document.getElementById("m-content");
+  var cur=sel.value;
+  // Remove custom options (after "Other...")
+  while(sel.options.length>0) sel.remove(0);
+  var html='<option value="">Select Content</option>';
+  for(var i=0;i<DEFAULT_CONTENT.length;i++) html+='<option value="'+DEFAULT_CONTENT[i]+'">'+DEFAULT_CONTENT[i]+'</option>';
+  var custom=getCustomContent();
+  for(var i=0;i<custom.length;i++) html+='<option value="'+escHtml(custom[i])+'">'+escHtml(custom[i])+'</option>';
+  html+='<option value="__other__">Other...</option>';
+  sel.innerHTML=html;
+  if(cur) sel.value=cur;
+}
+function setContentValue(val){
+  if(!val) return;
+  var sel=document.getElementById("m-content");
+  // Check if val exists in options
+  for(var i=0;i<sel.options.length;i++){
+    if(sel.options[i].value===val){sel.value=val;return;}
+  }
+  // Not found — add as custom
+  addCustomContent(val);
+  sel.value=val;
+}
+function onContentChange(){
+  var sel=document.getElementById("m-content");
+  if(sel.value==="__other__"){
+    var custom=prompt("Enter custom content area:");
+    if(custom&&custom.trim()){
+      custom=custom.trim();
+      addCustomContent(custom);
+      sel.value=custom;
+    } else {
+      sel.value="";
+    }
+  }
+  scheduleSave();
 }
 
 /* ==============================
@@ -719,7 +843,8 @@ function showResetModal(){document.getElementById("resetModal").classList.add("a
 function doReset(){
   ratings={};notes={};itemComments={};prChecks={};focusedKey=null;
   document.getElementById("m-teacher").value="";document.getElementById("m-campus").value="";
-  document.getElementById("m-observer").value="";document.getElementById("m-date").value="";
+  document.getElementById("m-observer").value="";document.getElementById("m-grade").value="";
+  document.getElementById("m-content").value="";document.getElementById("m-date").value="";
   var cbs=document.querySelectorAll(".item-cb,.pr-cb");for(var i=0;i<cbs.length;i++)cbs[i].checked=false;
   var btns=document.querySelectorAll(".rbtn");for(var i=0;i<btns.length;i++){btns[i].style.background="";btns[i].style.color="";btns[i].style.borderColor="";btns[i].setAttribute("aria-pressed","false");}
   var tas=document.querySelectorAll("textarea");for(var i=0;i<tas.length;i++)tas[i].value="";
@@ -744,6 +869,8 @@ function buildSummary(){
   var tn=document.getElementById("m-teacher").value||"\u2014";
   var cp=document.getElementById("m-campus").value||"\u2014";
   var ob=document.getElementById("m-observer").value||"\u2014";
+  var gr=document.getElementById("m-grade").value||"";
+  var ct=document.getElementById("m-content").value||"";
   var dt=document.getElementById("m-date").value||"\u2014";
   var t=totalScore();
   var pct=t.max>0?Math.round((t.score/t.max)*100):0;
@@ -805,7 +932,7 @@ function buildSummary(){
   var nextTxt=pct>=80?"Strong language-forward environment. Focus coaching on deepening scholar interaction with materials.":pct>=55?"Solid foundations in place. Prioritize items scored 0\u20131 above.":"Begin with highest-impact items: Objectives, Vocabulary Walls, and Writing Supports. Schedule follow-up in 6\u20138 weeks.";
 
   el.innerHTML=
-    "<div class='sum-meta'>"+teacherProfileLink(tn)+" | Campus: "+escHtml(cp)+" | Observer: "+escHtml(ob)+" | Date: "+escHtml(dt)+" | Form: Streamlined</div>"+
+    "<div class='sum-meta'>"+teacherProfileLink(tn)+(gr?" | Grade: "+escHtml(gr):"")+(ct?" | "+escHtml(ct):"")+" | Campus: "+escHtml(cp)+" | Observer: "+escHtml(ob)+" | Date: "+escHtml(dt)+" | Form: Streamlined</div>"+
     completionHTML+
     "<div class='sum-overall' style='background:"+oBg+"'><div class='sum-big' style='color:"+col+"'>"+pct+"%</div><div><div class='sum-lbl'>"+lbl+"</div><div class='sum-sub'>"+t.score+"/"+t.max+" points \u00b7 "+t.rated+"/"+t.total+" items \u00b7 "+pc+"/"+PRINCIPLES.length+" principles</div></div></div>"+
     "<div class='sum-split'><div class='sum-split-card' style='background:#fef9e7'><div class='sum-split-val' style='color:#d4a017'>"+permPct+"%</div><div class='sum-split-lbl' style='color:#d4a017'>Year-Long</div></div><div class='sum-split-card' style='background:#f5eefb'><div class='sum-split-val' style='color:#8e44ad'>"+rotPct+"%</div><div class='sum-split-lbl' style='color:#8e44ad'>Unit-Specific</div></div><div class='sum-split-card' style='background:#eafaf1'><div class='sum-split-val' style='color:#27ae60'>"+pc+"/"+PRINCIPLES.length+"</div><div class='sum-split-lbl' style='color:#27ae60'>Principles</div></div></div>"+
@@ -829,6 +956,8 @@ function copySummary(){
   var pc=prCount();
   var lines=["STREAMLINED CLASSROOM AUDIT","==========================",
     "Teacher: "+(document.getElementById("m-teacher").value||"\u2014"),
+    "Grade: "+(document.getElementById("m-grade").value||"\u2014"),
+    "Content: "+(document.getElementById("m-content").value||"\u2014"),
     "Campus: "+(document.getElementById("m-campus").value||"\u2014"),
     "Observer: "+(document.getElementById("m-observer").value||"\u2014"),
     "Date: "+(document.getElementById("m-date").value||"\u2014"),"",
@@ -950,6 +1079,9 @@ buildItems("permanent");
 buildItems("rotating");
 buildPrinciples();
 populateCampusList();
+populateTeacherList();
+populateObserverList();
+rebuildContentDropdown();
 if(!loadFromStorage()) document.getElementById("m-date").value=new Date().toISOString().slice(0,10);
 refreshBanner();
 renderLastSaved();
