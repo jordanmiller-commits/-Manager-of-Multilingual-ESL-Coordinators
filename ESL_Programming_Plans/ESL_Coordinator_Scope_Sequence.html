@@ -275,19 +275,38 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 .empty-state p{font-size:13px;line-height:1.6}
 .empty-state a{color:var(--primary);font-weight:600;text-decoration:none}
 .empty-state a:hover{text-decoration:underline}
+
+/* ============================
+   PHASE 5 — WCAG & ACCESSIBILITY
+   ============================ */
+.skip-link{position:absolute;top:-40px;left:0;background:var(--primary);color:#fff;padding:8px 16px;z-index:9999;font-size:13px;font-weight:600;border-radius:0 0 6px 0;transition:top .2s}
+.skip-link:focus{top:0}
+
+/* ============================
+   PHASE 6 — SHORTCUTS MODAL
+   ============================ */
+.shortcuts-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:var(--modal-overlay);z-index:1000;justify-content:center;align-items:center;padding:20px}
+.shortcuts-overlay.active{display:flex}
+.shortcuts-modal{background:var(--modal-bg);border-radius:12px;padding:24px 28px;max-width:460px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,.2)}
+.shortcuts-modal h3{font-size:16px;font-weight:800;color:var(--text-heading);margin-bottom:14px}
+.shortcuts-modal table{width:100%;border-collapse:collapse;font-size:12px}
+.shortcuts-modal td{padding:6px 8px;border-bottom:1px solid var(--border)}
+.shortcuts-modal kbd{display:inline-block;padding:2px 7px;border-radius:4px;background:var(--section-bg-light);border:1px solid var(--border);font-family:inherit;font-size:11px;font-weight:700;color:var(--text-heading)}
 </style>
 </head>
 <body>
+<a class="skip-link" href="#dashCard">Skip to content</a>
 <div class="wrap">
 
-<div class="header">
+<div class="header" role="banner">
   <h1>MLP Coordinator Scope &amp; Sequence</h1>
   <p>2026-2027 School Year &mdash; Secondary Campuses (Grades 6-12)</p>
   <div class="toolbar">
     <button class="tool-btn" onclick="exportData()" title="Download state as JSON">&#128190; Export</button>
     <button class="tool-btn" onclick="showImportModal()" title="Import saved state">&#128194; Import</button>
     <button class="tool-btn danger" onclick="showResetModal()" title="Clear all data">&#128260; Reset</button>
-    <button class="tool-btn" onclick="window.print()" title="Print current view">&#128424; Print</button>
+    <button class="tool-btn" onclick="window.print()" title="Print current view" aria-label="Print or save as PDF">&#128424; Print</button>
+    <button class="tool-btn" onclick="toggleShortcutsHelp()" aria-label="Keyboard shortcuts">&#9000; Keys</button>
     <a class="notif-bell-link" href="../index.html" title="Notifications" id="notifBellLink">&#128276;<span class="notif-bell-badge hidden" id="notifBellBadge">0</span></a>
     <button class="tool-btn" onclick="toggleDarkMode()" id="darkModeToggle" aria-label="Toggle dark mode">&#9789; Dark</button>
     <a class="tool-btn" href="../index.html" style="margin-left:auto" aria-label="Back to Home">&#127968; Home</a>
@@ -333,9 +352,9 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 <div id="interactiveView">
   <div class="month-strip" id="monthStrip"></div>
   <div class="filter-bar" id="filterBar">
-    <div><label>Type</label><br/><select id="filterType" onchange="renderInteractiveActions()"><option value="">All Types</option></select></div>
-    <div><label>Coordinator</label><br/><select id="filterCoord" onchange="renderInteractiveActions()"><option value="">All Coordinators</option></select></div>
-    <div><label>Frequency</label><br/><select id="filterFreq" onchange="renderInteractiveActions()"><option value="">All</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option><option value="quarterly">Quarterly</option><option value="milestone">Milestones</option></select></div>
+    <div><label for="filterType">Type</label><br/><select id="filterType" onchange="renderInteractiveActions()"><option value="">All Types</option></select></div>
+    <div><label for="filterCoord">Coordinator</label><br/><select id="filterCoord" onchange="renderInteractiveActions()"><option value="">All Coordinators</option></select></div>
+    <div><label for="filterFreq">Frequency</label><br/><select id="filterFreq" onchange="renderInteractiveActions()"><option value="">All</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option><option value="quarterly">Quarterly</option><option value="milestone">Milestones</option></select></div>
   </div>
   <div class="mode-toggle" id="modeToggle">
     <span>Team View</span>
@@ -356,7 +375,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 </div><!-- end .wrap -->
 
 <!-- Reset Modal -->
-<div class="modal-overlay" id="resetModal">
+<div class="modal-overlay" id="resetModal" role="dialog" aria-modal="true" aria-label="Reset confirmation">
   <div class="modal">
     <h3>Reset All Data</h3>
     <p>This will clear all check marks, notes, coordinator names, and PD topic edits. This action cannot be undone.</p>
@@ -368,12 +387,12 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 </div>
 
 <!-- Import Modal -->
-<div class="modal-overlay" id="importModal">
+<div class="modal-overlay" id="importModal" role="dialog" aria-modal="true" aria-label="Import data">
   <div class="modal">
     <h3>Import Data</h3>
     <p>Paste exported JSON below, or use the file picker to load a saved file.</p>
-    <input type="file" id="importFile" accept=".json" style="margin-bottom:10px;font-size:12px" onchange="loadImportFile(this)"/>
-    <textarea class="import-area" id="importData" placeholder="Paste JSON data here..."></textarea>
+    <input type="file" id="importFile" accept=".json" style="margin-bottom:10px;font-size:12px" onchange="loadImportFile(this)" aria-label="Choose import file"/>
+    <textarea class="import-area" id="importData" placeholder="Paste JSON data here..." aria-label="Paste JSON data"></textarea>
     <div class="modal-btns">
       <button class="btn-cancel" onclick="closeModal('importModal')">Cancel</button>
       <button class="btn-import" onclick="confirmImport()">Import</button>
@@ -382,7 +401,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 </div>
 
 <!-- SELF-ASSESSMENT MODAL -->
-<div class="modal-overlay" id="selfAssessModal">
+<div class="modal-overlay" id="selfAssessModal" role="dialog" aria-modal="true" aria-labelledby="selfAssessTitle">
   <div class="modal self-assess-modal">
     <h3 id="selfAssessTitle">Self-Assessment</h3>
     <p>Rate yourself 1-4 in each area. 1 = Beginning, 2 = Developing, 3 = Proficient, 4 = Distinguished.</p>
@@ -435,7 +454,21 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 </div>
 
 <div class="last-saved-footer" id="lastSavedFooter"></div>
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- Shortcuts Help Modal -->
+<div class="shortcuts-overlay" id="shortcutsOverlay" role="dialog" aria-modal="true" aria-label="Keyboard shortcuts">
+  <div class="shortcuts-modal">
+    <h3>Keyboard Shortcuts</h3>
+    <table>
+      <tr><td><kbd>Ctrl</kbd> + <kbd>S</kbd></td><td>Save data</td></tr>
+      <tr><td><kbd>Ctrl</kbd> + <kbd>D</kbd></td><td>Toggle dark mode</td></tr>
+      <tr><td><kbd>Esc</kbd></td><td>Close modals</td></tr>
+      <tr><td><kbd>?</kbd></td><td>Show this help</td></tr>
+    </table>
+    <div style="margin-top:14px;text-align:right"><button class="btn" onclick="toggleShortcutsHelp()">Close</button></div>
+  </div>
+</div>
 
 <script>
 function escHtml(str) {
@@ -454,6 +487,70 @@ function showToast(msg) {
   setTimeout(function() {
     toast.classList.remove('show');
   }, 3000);
+}
+
+/* ==============================
+   PHASE 5/6: getCurrentUser, Shortcuts, Cross-Tab
+   ============================== */
+function getCurrentUser() {
+  try {
+    var raw = localStorage.getItem("mlp_hub_config");
+    var cfg = raw ? JSON.parse(raw) : {};
+    if (cfg.currentUser) return cfg.currentUser;
+  } catch(e) {}
+  return {id:"c1",name:"Coordinator 1"};
+}
+
+function toggleShortcutsHelp() {
+  var ov = document.getElementById("shortcutsOverlay");
+  if (!ov) return;
+  var isOpen = ov.classList.toggle("active");
+  if (isOpen) {
+    var closeBtn = ov.querySelector(".btn");
+    if (closeBtn) closeBtn.focus();
+  }
+}
+
+document.addEventListener("keydown", function(e) {
+  var tag = (e.target.tagName || "").toUpperCase();
+  var isInput = tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
+
+  if (e.key === "Escape") {
+    var sov = document.getElementById("shortcutsOverlay");
+    if (sov && sov.classList.contains("active")) { sov.classList.remove("active"); return; }
+    var overlays = document.querySelectorAll(".modal-overlay.active");
+    if (overlays.length) overlays[overlays.length - 1].classList.remove("active");
+    return;
+  }
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
+    e.preventDefault();
+    saveToStorage();
+    showToast("Saved");
+  }
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "d") {
+    e.preventDefault();
+    toggleDarkMode();
+  }
+  if (e.key === "?" && !isInput && !e.ctrlKey && !e.metaKey) {
+    e.preventDefault();
+    toggleShortcutsHelp();
+  }
+});
+
+/* Cross-tab sync */
+var _scopeSyncChannel = null;
+try { _scopeSyncChannel = new BroadcastChannel("mlp_hub_sync"); } catch(e) {}
+if (_scopeSyncChannel) {
+  _scopeSyncChannel.onmessage = function(ev) {
+    if (ev.data && ev.data.source !== "scope") {
+      try { loadFromStorage(); rebuildAll(); } catch(e) {}
+    }
+  };
+}
+function broadcastScopeSync() {
+  if (_scopeSyncChannel) {
+    try { _scopeSyncChannel.postMessage({source:"scope",ts:Date.now()}); } catch(e) {}
+  }
 }
 
 /* ==============================
@@ -1305,6 +1402,7 @@ function saveToStorage(){
     var el=document.getElementById("saveStatus");
     el.textContent="Saved "+new Date().toLocaleTimeString();
     setTimeout(function(){el.textContent="Auto-save: ready";},3000);
+    broadcastScopeSync();
   }catch(e){}
 }
 
@@ -1612,6 +1710,11 @@ function toggleDarkMode(){var d=document.body.classList.toggle("dark-mode");loca
     if (cfg.orgName) {
       var h1 = document.querySelector(".header h1");
       if (h1) h1.textContent = cfg.orgName;
+    }
+    if (cfg.productName) {
+      document.title = cfg.productName + " - Scope & Sequence";
+    } else if (cfg.orgName) {
+      document.title = cfg.orgName + " - Scope & Sequence";
     }
   } catch(e){}
 })();

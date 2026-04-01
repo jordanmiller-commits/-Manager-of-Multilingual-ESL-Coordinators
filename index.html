@@ -333,9 +333,55 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 .tutorial-footer{display:flex;justify-content:space-between;align-items:center}
 .tutorial-progress{font-size:12px;color:var(--text-muted)}
 .tutorial-btn{padding:7px 14px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Segoe UI',Arial,sans-serif;transition:all .15s}
+
+/* ============================
+   SKIP LINK (WCAG)
+   ============================ */
+.skip-link{position:absolute;top:-40px;left:0;background:var(--primary);color:#fff;padding:8px 16px;z-index:100000;transition:top .2s;font-size:13px;font-weight:600;text-decoration:none;border-radius:0 0 6px 0}
+.skip-link:focus{top:0}
+
+/* ============================
+   KEYBOARD SHORTCUTS MODAL
+   ============================ */
+.shortcuts-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:var(--modal-overlay);z-index:5000;display:none;align-items:center;justify-content:center}
+.shortcuts-overlay.open{display:flex}
+.shortcuts-modal{background:var(--card-bg);border-radius:14px;width:380px;max-width:95vw;box-shadow:0 8px 30px rgba(0,0,0,.25);padding:0;overflow:hidden}
+.shortcuts-header{padding:16px 20px;background:linear-gradient(135deg,var(--header-gradient-1),var(--header-gradient-2));color:#fff;display:flex;align-items:center;justify-content:space-between;border-radius:14px 14px 0 0}
+.shortcuts-header h3{font-size:16px;font-weight:700;margin:0}
+.shortcuts-header button{background:none;border:none;color:#fff;font-size:22px;cursor:pointer;padding:2px 6px;opacity:.8}
+.shortcuts-header button:hover{opacity:1}
+.shortcuts-table{width:100%;border-collapse:collapse;margin:16px 0}
+.shortcuts-table td{padding:8px 20px;font-size:13px;color:var(--text-secondary);border-bottom:1px solid var(--border)}
+.shortcuts-table td:first-child{text-align:right;width:110px}
+kbd{display:inline-block;padding:2px 7px;font-size:11px;font-weight:600;line-height:1.4;color:var(--text-secondary);background:var(--section-bg-light);border:1px solid var(--border);border-radius:4px;box-shadow:0 1px 0 var(--border);font-family:inherit}
+.shortcuts-modal .btn-primary{display:block;margin:0 20px 16px;padding:8px 16px;border-radius:7px;border:none;background:var(--primary);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;text-align:center;width:calc(100% - 40px)}
+.shortcuts-modal .btn-primary:hover{opacity:.88}
+
+/* ============================
+   SEARCH ENHANCEMENTS
+   ============================ */
+.search-result-count{font-size:11px;color:var(--text-muted);margin:-10px 0 10px 2px}
+.search-show-more{display:block;text-align:center;padding:8px;font-size:12px;font-weight:600;color:var(--primary);cursor:pointer;border:none;background:none;font-family:inherit;width:100%}
+.search-show-more:hover{text-decoration:underline}
+.tool-card.search-highlighted{border-color:var(--primary)!important;box-shadow:var(--shadow-hover)!important;outline:2px solid var(--primary);outline-offset:2px}
+
+/* ============================
+   TOOL VISIBILITY SETTINGS
+   ============================ */
+.tool-visibility-list{max-height:280px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;margin-bottom:12px}
+.tool-vis-row{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--border-light);font-size:12px;color:var(--text-secondary)}
+.tool-vis-row:last-child{border-bottom:none}
+.tool-vis-row:hover{background:var(--hover-bg)}
+.tool-vis-toggle{position:relative;width:36px;height:20px;flex-shrink:0}
+.tool-vis-toggle input{opacity:0;width:0;height:0}
+.tool-vis-toggle .slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:var(--border);border-radius:20px;transition:.2s}
+.tool-vis-toggle .slider:before{content:'';position:absolute;height:14px;width:14px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s}
+.tool-vis-toggle input:checked+.slider{background:var(--primary)}
+.tool-vis-toggle input:checked+.slider:before{transform:translateX(16px)}
 </style>
 </head>
 <body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
 <div class="wrap">
 
   <!-- ===================== HEADER ===================== -->
@@ -347,10 +393,10 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
       <a class="tool-btn" href="Onboarding.html">&#9881; Setup Guide</a>
       <button class="notif-bell" onclick="toggleNotifDrawer()" aria-label="Notifications" id="notifBell">&#128276;<span class="notif-badge hidden" id="notifBadge">0</span></button>
       <button class="tool-btn" onclick="toggleDarkMode()" id="darkModeToggle" aria-label="Toggle dark mode">&#9789; Dark</button>
-      <button class="tool-btn" onclick="window.print()">&#128438; Print / PDF</button>
-      <button class="tool-btn" onclick="openSettings()">&#9881; Settings</button>
-      <button class="tool-btn demo-btn" onclick="openDemoModal()">&#9654; Try Demo</button>
-      <button class="tool-btn" onclick="startTutorial()" title="Take a Tour" style="font-weight:700">?</button>
+      <button class="tool-btn" onclick="window.print()" aria-label="Print or save as PDF">&#128438; Print / PDF</button>
+      <button class="tool-btn" onclick="openSettings()" aria-label="Settings">&#9881; Settings</button>
+      <button class="tool-btn demo-btn" onclick="openDemoModal()" aria-label="Try demo data">&#9654; Try Demo</button>
+      <button class="tool-btn" onclick="startTutorial()" title="Take a Tour" aria-label="Take a guided tour" style="font-weight:700">?</button>
     </div>
     <!-- Role tabs -->
     <div class="role-tabs-row">
@@ -398,7 +444,8 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 
   <!-- Tools -->
   <div class="section-title" id="sectionTitle">All Tools <span class="section-sub" id="sectionSub">19 tools available</span></div>
-  <div class="tool-grid">
+  <div class="search-result-count" id="searchResultCount" style="display:none"></div>
+  <div class="tool-grid" id="main-content">
 
     <!-- ===== MANAGER + COORDINATOR ===== -->
     <a class="tool-card" href="ESL_Classroom_Audit/ESL_Classroom_Audit.html" data-roles="manager,coordinator">
@@ -571,11 +618,11 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
   </div>
 
   <!-- Settings Modal -->
-  <div class="settings-overlay" id="settingsOverlay" onclick="if(event.target===this)closeSettings()">
+  <div class="settings-overlay" id="settingsOverlay" onclick="if(event.target===this)closeSettings()" role="dialog" aria-modal="true" aria-labelledby="settingsModalTitle">
     <div class="settings-modal">
       <div class="settings-modal-header">
-        <h3>&#9881; Hub Settings</h3>
-        <button class="settings-modal-close" onclick="closeSettings()">&times;</button>
+        <h3 id="settingsModalTitle">&#9881; Hub Settings</h3>
+        <button class="settings-modal-close" onclick="closeSettings()" aria-label="Close settings">&times;</button>
       </div>
 
       <div class="settings-section">
@@ -586,10 +633,10 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
       <div class="settings-section">
         <h4>Custom Colors</h4>
         <div class="settings-row">
-          <label>Primary</label>
-          <input type="color" id="customPrimary" value="#4a90d9" oninput="previewCustomColor()"/>
-          <label>Dark</label>
-          <input type="color" id="customDark" value="#2c3e6e" oninput="previewCustomColor()"/>
+          <label for="customPrimary">Primary</label>
+          <input type="color" id="customPrimary" value="#4a90d9" oninput="previewCustomColor()" aria-label="Primary color"/>
+          <label for="customDark">Dark</label>
+          <input type="color" id="customDark" value="#2c3e6e" oninput="previewCustomColor()" aria-label="Dark accent color"/>
         </div>
         <div style="display:flex;gap:8px;margin-top:8px">
           <button class="settings-btn" onclick="applyCustomColors()">Apply Custom Colors</button>
@@ -600,17 +647,31 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
       <div class="settings-section">
         <h4>Organization</h4>
         <div class="settings-row">
-          <label>Org Name</label>
+          <label for="orgNameInput">Org Name</label>
           <input type="text" id="orgNameInput" placeholder="e.g. Uplift Education" maxlength="60"/>
         </div>
         <div class="settings-row">
-          <label>Logo</label>
+          <label for="productNameInput">Product Name</label>
+          <input type="text" id="productNameInput" placeholder="e.g. ESL Coordinator Hub" maxlength="60"/>
+        </div>
+        <div class="settings-row">
+          <label for="logoUpload">Logo</label>
           <input type="file" id="logoUpload" accept="image/*" onchange="handleLogoUpload(event)"/>
           <img class="logo-preview" id="logoPreview" src="" alt="" style="display:none"/>
         </div>
         <div style="display:flex;gap:8px;margin-top:8px">
           <button class="settings-btn" onclick="saveOrgSettings()">Save Organization</button>
           <button class="settings-btn outline" onclick="clearLogo()">Clear Logo</button>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h4>Tool Visibility</h4>
+        <p style="font-size:11px;color:var(--text-muted);margin-bottom:12px">Toggle tools on/off. Hidden tools will not appear on the home page.</p>
+        <div class="tool-visibility-list" id="toolVisList"></div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="settings-btn" onclick="saveToolVisibility()">Save Visibility</button>
+          <button class="settings-btn outline" onclick="resetToolVisibility()">Show All</button>
         </div>
       </div>
 
@@ -635,11 +696,11 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
   </div>
 
   <!-- Demo Modal -->
-  <div class="demo-overlay" id="demoOverlay" onclick="if(event.target===this)closeDemoModal()">
+  <div class="demo-overlay" id="demoOverlay" onclick="if(event.target===this)closeDemoModal()" role="dialog" aria-modal="true" aria-labelledby="demoModalTitle">
     <div class="demo-modal">
       <div class="demo-modal-header">
-        <h3>&#127942; Try Demo Data</h3>
-        <button class="demo-modal-close" onclick="closeDemoModal()">&times;</button>
+        <h3 id="demoModalTitle">&#127942; Try Demo Data</h3>
+        <button class="demo-modal-close" onclick="closeDemoModal()" aria-label="Close demo modal">&times;</button>
       </div>
       <div class="demo-modal-body">
         <p>Load sample data across all tools to explore the full product. Your existing data is preserved &mdash; demo records are tagged and can be cleared anytime.</p>
@@ -652,12 +713,12 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
   </div>
 
   <!-- Tutorial Overlay -->
-  <div class="tutorial-overlay" id="tutorialOverlay" style="display:none">
+  <div class="tutorial-overlay" id="tutorialOverlay" style="display:none" role="dialog" aria-modal="true" aria-labelledby="tutorialTitle">
     <div class="tutorial-highlight" id="tutorialHighlight" style="display:none"></div>
     <div class="tutorial-tooltip" id="tutorialTooltip" style="display:none">
       <div class="tutorial-header">
         <span class="tutorial-step-label" id="tutorialStepLabel"></span>
-        <button class="tutorial-close-btn" onclick="closeTutorial()">&#10005;</button>
+        <button class="tutorial-close-btn" onclick="closeTutorial()" aria-label="Close tutorial">&#10005;</button>
       </div>
       <div class="tutorial-title" id="tutorialTitle"></div>
       <div class="tutorial-body" id="tutorialBody"></div>
@@ -671,13 +732,27 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
     </div>
   </div>
 
+  <!-- Keyboard Shortcuts Modal -->
+  <div class="shortcuts-overlay" id="shortcutsOverlay" style="display:none" onclick="toggleShortcutsHelp()" role="dialog" aria-modal="true" aria-labelledby="shortcutsModalTitle">
+    <div class="shortcuts-modal" onclick="event.stopPropagation()">
+      <div class="shortcuts-header"><h3 id="shortcutsModalTitle">Keyboard Shortcuts</h3><button onclick="toggleShortcutsHelp()" aria-label="Close keyboard shortcuts">&times;</button></div>
+      <table class="shortcuts-table">
+        <tr><td><kbd>Esc</kbd></td><td>Close any modal</td></tr>
+        <tr><td><kbd>Ctrl+S</kbd></td><td>Save data</td></tr>
+        <tr><td><kbd>Ctrl+D</kbd></td><td>Toggle dark mode</td></tr>
+        <tr><td><kbd>?</kbd></td><td>Show this help</td></tr>
+      </table>
+      <button class="btn-primary" onclick="toggleShortcutsHelp()">Got it</button>
+    </div>
+  </div>
+
   <div class="last-saved-footer" id="lastSavedFooter"></div>
-  <div class="toast" id="toast"></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <div class="notif-overlay" id="notifOverlay" onclick="toggleNotifDrawer()"></div>
-  <div class="notif-drawer" id="notifDrawer">
+  <div class="notif-drawer" id="notifDrawer" role="dialog" aria-modal="true" aria-labelledby="notifDrawerTitle">
     <div class="notif-drawer-header">
-      <h3>&#128276; Notifications</h3>
-      <button class="notif-close" onclick="toggleNotifDrawer()">&times;</button>
+      <h3 id="notifDrawerTitle">&#128276; Notifications</h3>
+      <button class="notif-close" onclick="toggleNotifDrawer()" aria-label="Close notifications">&times;</button>
     </div>
     <div class="notif-actions-bar">
       <button class="notif-action-btn" onclick="markAllRead()">Mark all read</button>
@@ -1384,7 +1459,7 @@ function runSearch(query) {
       teacherHits.push({text: roster[ti], context: "Teacher Roster"});
     }
   }
-  if (teacherHits.length) groups.push({title: "Teachers", items: teacherHits, link: "Teacher_360_Profile.html", isTeacher: true});
+  if (teacherHits.length) groups.push({title: "Teachers", items: teacherHits.slice(0, 8), allItems: teacherHits, link: "Teacher_360_Profile.html", isTeacher: true});
 
   // Walkthrough history
   var wh = safeGet("walkthrough_history") || [];
@@ -1415,7 +1490,7 @@ function runSearch(query) {
     }
     if (matched) walkHits.push({text: "Walkthrough " + (wmeta.date || "N/A") + " \u2014 " + (wmeta.campus || ""), context: mText});
   }
-  if (walkHits.length) groups.push({title: "Walkthroughs", items: walkHits.slice(0, 8), link: "Academic_Monitoring_Leader_Facing/Walkthrough_Dashboard.html"});
+  if (walkHits.length) groups.push({title: "Walkthroughs", items: walkHits.slice(0, 8), allItems: walkHits, link: "Academic_Monitoring_Leader_Facing/Walkthrough_Dashboard.html"});
 
   // Audit history
   var ah = safeGet("esl_audit_history") || [];
@@ -1426,7 +1501,7 @@ function runSearch(query) {
       auditHits.push({text: "Audit " + (am.date || "N/A") + " \u2014 " + (am.campus || ""), context: (am.teacher || "") + " " + (ah[ai].scorePct || 0) + "%"});
     }
   }
-  if (auditHits.length) groups.push({title: "Audits", items: auditHits.slice(0, 8), link: "ESL_Classroom_Audit/Audit_Dashboard.html"});
+  if (auditHits.length) groups.push({title: "Audits", items: auditHits.slice(0, 8), allItems: auditHits, link: "ESL_Classroom_Audit/Audit_Dashboard.html"});
 
   // Coaching cycles
   var cd = safeGet("coaching_cycles_data");
@@ -1450,7 +1525,7 @@ function runSearch(query) {
     }
     if (ccMatched) coachHits.push({text: (cycles[cci].teacher || "Unknown") + " (" + (cycles[cci].campus || "N/A") + ")", context: ccContext});
   }
-  if (coachHits.length) groups.push({title: "Coaching Cycles", items: coachHits.slice(0, 8), link: "Academic_Monitoring_Leader_Facing/Coaching_Cycle_Tracker.html"});
+  if (coachHits.length) groups.push({title: "Coaching Cycles", items: coachHits.slice(0, 8), allItems: coachHits, link: "Academic_Monitoring_Leader_Facing/Coaching_Cycle_Tracker.html"});
 
   // Audit notes
   var auditNoteHits = [];
@@ -1477,19 +1552,24 @@ function runSearch(query) {
       auditNoteHits.push({text: "Audit " + (anm.date || "N/A") + " \u2014 " + (anm.teacher || "Unknown"), context: anContext});
     }
   }
-  if (auditNoteHits.length) groups.push({title: "Audit Notes", items: auditNoteHits.slice(0, 8), link: "ESL_Classroom_Audit/ESL_Classroom_Audit.html"});
+  if (auditNoteHits.length) groups.push({title: "Audit Notes", items: auditNoteHits.slice(0, 8), allItems: auditNoteHits, link: "ESL_Classroom_Audit/ESL_Classroom_Audit.html"});
 
   var box = document.getElementById("searchResults");
+  var totalResults = 0;
+  for (var tc = 0; tc < groups.length; tc++) {
+    totalResults += (groups[tc].allItems || groups[tc].items).length;
+  }
   if (groups.length === 0) {
     box.innerHTML = '<div class="sr-none">No results for "' + escHtml(query) + '"</div>';
     box.className = "search-results open";
     return;
   }
-  var html = "";
+  var html = '<div style="padding:4px 18px 0;font-size:11px;color:var(--text-muted)">' + totalResults + ' result' + (totalResults !== 1 ? 's' : '') + ' found</div>';
   for (var gi = 0; gi < groups.length; gi++) {
     var g = groups[gi];
+    var allCount = (g.allItems || g.items).length;
     html += '<div class="sr-group">';
-    html += '<div class="sr-group-title">' + g.title + '</div>';
+    html += '<div class="sr-group-title">' + g.title + ' (' + allCount + ')</div>';
     for (var ii = 0; ii < g.items.length; ii++) {
       var itemLink = g.link;
       if (g.isTeacher) itemLink = "Teacher_360_Profile.html?teacher=" + encodeURIComponent(g.items[ii].text);
@@ -1498,10 +1578,15 @@ function runSearch(query) {
       if (g.items[ii].context) html += '<span class="sr-context">' + escHtml(g.items[ii].context) + '</span>';
       html += '</div>';
     }
+    if (allCount > g.items.length) {
+      html += '<button class="search-show-more" onclick="expandSearchGroup(' + gi + ')">Show ' + (allCount - g.items.length) + ' more ' + g.title.toLowerCase() + '</button>';
+    }
     html += '</div>';
   }
   box.innerHTML = html;
   box.className = "search-results open";
+  /* Store groups for expand */
+  window._searchGroups = groups;
 }
 
 document.addEventListener("click", function(e) {
@@ -1509,6 +1594,15 @@ document.addEventListener("click", function(e) {
   var input = document.getElementById("globalSearch");
   if (box && !box.contains(e.target) && e.target !== input) box.className = "search-results";
 });
+
+function expandSearchGroup(gi) {
+  if (!window._searchGroups || !window._searchGroups[gi]) return;
+  var g = window._searchGroups[gi];
+  g.items = g.allItems || g.items;
+  /* Re-render just by re-running search with same query */
+  var query = document.getElementById("globalSearch").value;
+  if (query) runSearch(query);
+}
 
 /* ======================================================
    EXTRA META BADGES
@@ -2735,11 +2829,463 @@ function nextTutorialStep() {
 }
 
 function closeTutorial() {
-  document.getElementById('tutorialOverlay').style.display = 'none';
+  var overlay = document.getElementById('tutorialOverlay');
+  releaseFocus(overlay);
+  overlay.style.display = 'none';
   document.getElementById('tutorialHighlight').style.display = 'none';
   document.getElementById('tutorialTooltip').style.display = 'none';
   tutorialCurrentStep = 0;
 }
+
+/* ======================================================
+   getCurrentUser() — PHASE 6
+   ====================================================== */
+function getCurrentUser() {
+  try {
+    var raw = localStorage.getItem('mlp_hub_config');
+    var cfg = raw ? JSON.parse(raw) : {};
+    return {
+      id: cfg.userId || 'default',
+      name: cfg.userName || 'Administrator',
+      role: cfg.userRole || 'manager',
+      orgId: cfg.orgId || 'default',
+      orgName: cfg.orgName || 'MLP Coordinator Hub'
+    };
+  } catch(e) {
+    return { id: 'default', name: 'Administrator', role: 'manager', orgId: 'default', orgName: 'MLP Coordinator Hub' };
+  }
+}
+
+/* ======================================================
+   FOCUS TRAPPING — PHASE 6 WCAG
+   ====================================================== */
+function trapFocus(modal) {
+  var focusable = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+  if (!focusable.length) return;
+  var first = focusable[0];
+  var last = focusable[focusable.length - 1];
+  function handler(e) {
+    if (e.key !== 'Tab') return;
+    if (e.shiftKey) {
+      if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+    } else {
+      if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+  }
+  modal._focusTrap = handler;
+  modal.addEventListener('keydown', handler);
+  first.focus();
+}
+
+function releaseFocus(modal) {
+  if (modal && modal._focusTrap) modal.removeEventListener('keydown', modal._focusTrap);
+}
+
+/* ======================================================
+   KEYBOARD SHORTCUTS — PHASE 5
+   ====================================================== */
+function toggleShortcutsHelp() {
+  var overlay = document.getElementById('shortcutsOverlay');
+  var isOpen = overlay.style.display === 'flex' || overlay.classList.contains('open');
+  if (isOpen) {
+    overlay.style.display = 'none';
+    overlay.classList.remove('open');
+    releaseFocus(overlay);
+  } else {
+    overlay.style.display = 'flex';
+    overlay.classList.add('open');
+    trapFocus(overlay);
+  }
+}
+
+document.addEventListener('keydown', function(e) {
+  /* Escape — close modals in priority order (topmost first) */
+  if (e.key === 'Escape') {
+    var shortcutsOvl = document.getElementById('shortcutsOverlay');
+    if (shortcutsOvl && (shortcutsOvl.style.display === 'flex' || shortcutsOvl.classList.contains('open'))) {
+      toggleShortcutsHelp(); return;
+    }
+    var tutOvl = document.getElementById('tutorialOverlay');
+    if (tutOvl && tutOvl.style.display !== 'none') {
+      closeTutorial(); return;
+    }
+    var demoOvl = document.getElementById('demoOverlay');
+    if (demoOvl && demoOvl.classList.contains('open')) {
+      closeDemoModal(); return;
+    }
+    var settingsOvl = document.getElementById('settingsOverlay');
+    if (settingsOvl && settingsOvl.classList.contains('open')) {
+      closeSettings(); return;
+    }
+    var notifDrawer = document.getElementById('notifDrawer');
+    if (notifDrawer && notifDrawer.classList.contains('open')) {
+      toggleNotifDrawer(); return;
+    }
+    /* Clear search highlights */
+    clearSearchHighlight();
+    var searchBox = document.getElementById('searchResults');
+    if (searchBox && searchBox.classList.contains('open')) {
+      searchBox.className = 'search-results';
+      document.getElementById('globalSearch').value = '';
+      filterToolCards('');
+      return;
+    }
+  }
+  /* Ctrl+S — save */
+  if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+    e.preventDefault();
+    showToast('All data is auto-saved to localStorage');
+  }
+  /* Ctrl+D — toggle dark mode */
+  if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
+    e.preventDefault();
+    if (typeof toggleDarkMode === 'function') toggleDarkMode();
+  }
+  /* ? — show shortcuts help (only when not in a text field) */
+  if (e.key === '?' && !e.ctrlKey && !e.metaKey && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'SELECT') {
+    toggleShortcutsHelp();
+  }
+});
+
+/* ======================================================
+   SEARCH ENHANCEMENTS — PHASE 5
+   ====================================================== */
+var searchHighlightIdx = -1;
+var searchVisibleCards = [];
+
+function filterToolCards(query) {
+  var cards = document.querySelectorAll('.tool-card');
+  var q = query.toLowerCase().trim();
+  var countEl = document.getElementById('searchResultCount');
+  var totalVisible = 0;
+  var totalForRole = 0;
+  var cfg = loadHubConfig();
+  var hiddenTools = cfg.hiddenTools || [];
+
+  for (var i = 0; i < cards.length; i++) {
+    var cardRoles = (cards[i].getAttribute('data-roles') || '').split(',');
+    var inRole = false;
+    for (var r = 0; r < cardRoles.length; r++) {
+      if (cardRoles[r].trim() === currentRole) { inRole = true; break; }
+    }
+    if (!inRole) { cards[i].style.display = 'none'; continue; }
+
+    /* Check if hidden by tool visibility */
+    var cardName = cards[i].querySelector('.tc-name');
+    var cardTitle = cardName ? cardName.textContent : '';
+    var isHidden = false;
+    for (var h = 0; h < hiddenTools.length; h++) {
+      if (hiddenTools[h] === cardTitle) { isHidden = true; break; }
+    }
+    if (isHidden) { cards[i].style.display = 'none'; continue; }
+
+    totalForRole++;
+
+    if (!q) {
+      cards[i].style.display = 'block';
+      totalVisible++;
+    } else {
+      var text = (cardTitle + ' ' + (cards[i].querySelector('.tc-desc') ? cards[i].querySelector('.tc-desc').textContent : '')).toLowerCase();
+      if (text.indexOf(q) !== -1) {
+        cards[i].style.display = 'block';
+        totalVisible++;
+      } else {
+        cards[i].style.display = 'none';
+      }
+    }
+  }
+
+  if (countEl) {
+    if (q) {
+      countEl.textContent = 'Showing ' + totalVisible + ' of ' + totalForRole + ' tools';
+      countEl.style.display = 'block';
+    } else {
+      countEl.style.display = 'none';
+    }
+  }
+
+  /* Update section subtitle */
+  var sectionSub = document.getElementById('sectionSub');
+  if (sectionSub) {
+    sectionSub.textContent = totalVisible + ' tool' + (totalVisible !== 1 ? 's' : '') + (q ? ' matching' : ' available');
+  }
+
+  /* Rebuild searchVisibleCards for keyboard nav */
+  searchVisibleCards = [];
+  for (var j = 0; j < cards.length; j++) {
+    if (cards[j].style.display !== 'none') searchVisibleCards.push(cards[j]);
+  }
+  searchHighlightIdx = -1;
+}
+
+function clearSearchHighlight() {
+  var cards = document.querySelectorAll('.tool-card.search-highlighted');
+  for (var i = 0; i < cards.length; i++) {
+    cards[i].classList.remove('search-highlighted');
+  }
+  searchHighlightIdx = -1;
+}
+
+/* Patch handleSearch to also filter tool cards */
+var originalHandleSearch = handleSearch;
+handleSearch = function(query) {
+  originalHandleSearch(query);
+  filterToolCards(query);
+};
+
+/* Search keyboard navigation */
+document.getElementById('globalSearch').addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    clearSearchHighlight();
+    if (searchVisibleCards.length === 0) return;
+    searchHighlightIdx = Math.min(searchHighlightIdx + 1, searchVisibleCards.length - 1);
+    searchVisibleCards[searchHighlightIdx].classList.add('search-highlighted');
+    searchVisibleCards[searchHighlightIdx].scrollIntoView({block: 'nearest'});
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    clearSearchHighlight();
+    if (searchVisibleCards.length === 0) return;
+    searchHighlightIdx = Math.max(searchHighlightIdx - 1, 0);
+    searchVisibleCards[searchHighlightIdx].classList.add('search-highlighted');
+    searchVisibleCards[searchHighlightIdx].scrollIntoView({block: 'nearest'});
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    if (searchHighlightIdx >= 0 && searchHighlightIdx < searchVisibleCards.length) {
+      var href = searchVisibleCards[searchHighlightIdx].getAttribute('href');
+      if (href) window.location.href = href;
+    }
+  } else if (e.key === 'Escape') {
+    clearSearchHighlight();
+    this.value = '';
+    filterToolCards('');
+    var searchBox = document.getElementById('searchResults');
+    if (searchBox) searchBox.className = 'search-results';
+    this.blur();
+  }
+});
+
+/* ======================================================
+   CROSS-TAB SYNC — PHASE 5
+   ====================================================== */
+var mlpChannel = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel('mlp_hub_sync') : null;
+if (mlpChannel) {
+  mlpChannel.onmessage = function(e) {
+    if (e.data && e.data.type === 'data_update') {
+      loadStats();
+      loadActivity();
+      loadExtraMeta();
+      loadAlerts();
+      renderNotifications();
+      renderLastSaved();
+    }
+  };
+}
+
+/* ======================================================
+   TOOL VISIBILITY — PHASE 6
+   ====================================================== */
+function renderToolVisList() {
+  var list = document.getElementById('toolVisList');
+  if (!list) return;
+  var cards = document.querySelectorAll('.tool-card');
+  var cfg = loadHubConfig();
+  var hiddenTools = cfg.hiddenTools || [];
+  var html = '';
+  var seen = {};
+  for (var i = 0; i < cards.length; i++) {
+    var nameEl = cards[i].querySelector('.tc-name');
+    var name = nameEl ? nameEl.textContent : 'Tool ' + (i + 1);
+    if (seen[name]) continue;
+    seen[name] = true;
+    var isVisible = true;
+    for (var h = 0; h < hiddenTools.length; h++) {
+      if (hiddenTools[h] === name) { isVisible = false; break; }
+    }
+    html += '<div class="tool-vis-row">';
+    html += '<span>' + escHtml(name) + '</span>';
+    html += '<label class="tool-vis-toggle"><input type="checkbox"' + (isVisible ? ' checked' : '') + ' data-tool-name="' + escHtml(name) + '" aria-label="Toggle visibility for ' + escHtml(name) + '"/><span class="slider"></span></label>';
+    html += '</div>';
+  }
+  list.innerHTML = html;
+}
+
+function saveToolVisibility() {
+  var checkboxes = document.querySelectorAll('#toolVisList input[type="checkbox"]');
+  var hidden = [];
+  for (var i = 0; i < checkboxes.length; i++) {
+    if (!checkboxes[i].checked) {
+      hidden.push(checkboxes[i].getAttribute('data-tool-name'));
+    }
+  }
+  var cfg = loadHubConfig();
+  cfg.hiddenTools = hidden;
+  saveHubConfig(cfg);
+  applyToolVisibility();
+  showToast('Tool visibility saved');
+}
+
+function resetToolVisibility() {
+  var cfg = loadHubConfig();
+  cfg.hiddenTools = [];
+  saveHubConfig(cfg);
+  renderToolVisList();
+  applyToolVisibility();
+  showToast('All tools visible');
+}
+
+function applyToolVisibility() {
+  var cfg = loadHubConfig();
+  var hiddenTools = cfg.hiddenTools || [];
+  var cards = document.querySelectorAll('.tool-card');
+  for (var i = 0; i < cards.length; i++) {
+    var nameEl = cards[i].querySelector('.tc-name');
+    var name = nameEl ? nameEl.textContent : '';
+    var isHidden = false;
+    for (var h = 0; h < hiddenTools.length; h++) {
+      if (hiddenTools[h] === name) { isHidden = true; break; }
+    }
+    if (isHidden) {
+      cards[i].style.display = 'none';
+    }
+    /* Don't force display:block here — let setRole handle role-based visibility */
+  }
+}
+
+/* ======================================================
+   PRODUCT NAME — PHASE 6
+   ====================================================== */
+/* Override initTheme to handle productName */
+var originalInitTheme = initTheme;
+initTheme = function() {
+  originalInitTheme();
+  var cfg = loadHubConfig();
+  if (cfg.productName) {
+    var h1 = document.querySelector('.header h1');
+    if (h1) h1.textContent = cfg.productName;
+    document.title = cfg.productName;
+  } else if (cfg.orgName) {
+    var h1b = document.querySelector('.header h1');
+    if (h1b) h1b.textContent = cfg.orgName;
+  }
+};
+
+/* Override saveOrgSettings to include productName */
+saveOrgSettings = function() {
+  var cfg = loadHubConfig();
+  var name = document.getElementById('orgNameInput').value.trim();
+  var productName = document.getElementById('productNameInput').value.trim();
+  cfg.orgName = name || '';
+  cfg.productName = productName || '';
+  saveHubConfig(cfg);
+  /* Apply immediately */
+  var h1 = document.querySelector('.header h1');
+  if (h1) {
+    if (productName) {
+      h1.textContent = productName;
+      document.title = productName;
+    } else if (name) {
+      h1.textContent = name;
+      document.title = name;
+    } else {
+      h1.textContent = 'MLP Coordinator Hub';
+      document.title = 'MLP Coordinator Hub';
+    }
+  }
+  showToast('Organization settings saved');
+};
+
+/* Override loadSettingsForm to include productName */
+var originalLoadSettingsForm = loadSettingsForm;
+loadSettingsForm = function() {
+  originalLoadSettingsForm();
+  var cfg = loadHubConfig();
+  var productInput = document.getElementById('productNameInput');
+  if (productInput) productInput.value = cfg.productName || '';
+};
+
+/* ======================================================
+   PATCH MODAL OPEN/CLOSE FOR FOCUS TRAPPING
+   ====================================================== */
+var originalOpenSettings = openSettings;
+openSettings = function() {
+  originalOpenSettings();
+  renderToolVisList();
+  var overlay = document.getElementById('settingsOverlay');
+  trapFocus(overlay);
+};
+
+var originalCloseSettings = closeSettings;
+closeSettings = function() {
+  var overlay = document.getElementById('settingsOverlay');
+  releaseFocus(overlay);
+  originalCloseSettings();
+};
+
+var originalOpenDemoModal = openDemoModal;
+openDemoModal = function() {
+  originalOpenDemoModal();
+  var overlay = document.getElementById('demoOverlay');
+  trapFocus(overlay);
+};
+
+var originalCloseDemoModal = closeDemoModal;
+closeDemoModal = function() {
+  var overlay = document.getElementById('demoOverlay');
+  releaseFocus(overlay);
+  originalCloseDemoModal();
+};
+
+var originalStartTutorial = startTutorial;
+startTutorial = function() {
+  originalStartTutorial();
+  var overlay = document.getElementById('tutorialOverlay');
+  trapFocus(overlay);
+};
+
+var originalToggleNotifDrawer = toggleNotifDrawer;
+toggleNotifDrawer = function() {
+  originalToggleNotifDrawer();
+  var drawer = document.getElementById('notifDrawer');
+  if (drawer.classList.contains('open')) {
+    trapFocus(drawer);
+  } else {
+    releaseFocus(drawer);
+  }
+};
+
+/* ======================================================
+   PATCH setRole TO RESPECT TOOL VISIBILITY
+   ====================================================== */
+var originalSetRole = setRole;
+setRole = function(role) {
+  originalSetRole(role);
+  applyToolVisibility();
+  /* Recount visible cards accounting for hidden tools */
+  var cards = document.querySelectorAll('.tool-card');
+  var vis = 0;
+  for (var i = 0; i < cards.length; i++) {
+    if (cards[i].style.display !== 'none') vis++;
+  }
+  var sub = document.getElementById('sectionSub');
+  if (sub) sub.textContent = vis + ' tool' + (vis !== 1 ? 's' : '') + ' available';
+};
+
+/* ======================================================
+   APPLY TOOL VISIBILITY + PRODUCT NAME ON LOAD
+   ====================================================== */
+(function() {
+  /* Re-init role to pick up hidden tools */
+  var savedRole = localStorage.getItem('esl_home_role') || 'manager';
+  setRole(savedRole);
+  /* Re-apply productName (initTheme already called, but may need refresh) */
+  var cfg = loadHubConfig();
+  if (cfg.productName) {
+    var h1 = document.querySelector('.header h1');
+    if (h1) h1.textContent = cfg.productName;
+    document.title = cfg.productName;
+  }
+})();
 </script>
 </body>
 </html>

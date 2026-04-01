@@ -162,6 +162,19 @@ tr:hover td{background:var(--item-hover)}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(30px);background:var(--toast-bg);color:var(--toast-text);padding:10px 22px;border-radius:24px;font-size:13px;font-weight:600;z-index:9999;opacity:0;transition:opacity .3s,transform .3s;pointer-events:none;white-space:nowrap}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
+/* SKIP LINK */
+.skip-link{position:absolute;top:-100%;left:8px;background:var(--primary);color:#fff;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;z-index:4000;text-decoration:none}
+.skip-link:focus{top:8px}
+
+/* SHORTCUTS HELP MODAL */
+.shortcuts-modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--modal-overlay);display:none;justify-content:center;align-items:flex-start;z-index:2000;padding:24px 14px;overflow-y:auto}
+.shortcuts-modal-overlay.open{display:flex}
+.shortcuts-modal{background:var(--modal-bg);border-radius:12px;padding:24px;max-width:440px;width:100%;box-shadow:0 8px 30px rgba(0,0,0,.2);margin:auto;color:var(--text);animation:modalFadeIn .2s ease both}
+.shortcuts-modal h3{font-size:17px;font-weight:800;color:var(--text-heading);margin-bottom:16px}
+.shortcuts-modal table{width:100%;border-collapse:collapse;font-size:13px}
+.shortcuts-modal td{padding:6px 4px;border-bottom:1px solid var(--border)}
+.shortcuts-modal kbd{display:inline-block;background:var(--section-bg-light);border:1px solid var(--input-border);border-radius:4px;padding:2px 7px;font-size:11px;font-family:'Segoe UI',monospace;font-weight:700;color:var(--text-secondary)}
+
 /* PRINT */
 @media print{
   .toolbar,.filter-bar,.tbl-actions,.ferpa-banner,.modal-overlay,.toast{display:none!important}
@@ -193,19 +206,21 @@ tr:hover td{background:var(--item-hover)}
 </style>
 </head>
 <body>
+<a class="skip-link" href="#studentTable">Skip to main content</a>
 <div class="wrap">
   <!-- HEADER -->
   <div class="header">
     <h1>&#128101; EB Student Roster</h1>
     <p>Emergent Bilingual student records — stored locally in this browser only</p>
     <div class="toolbar">
-      <button class="tool-btn" onclick="openStudentModal(null)">&#65291; Add Student</button>
-      <button class="tool-btn" onclick="triggerImport()">&#8679; Import CSV</button>
-      <button class="tool-btn" onclick="exportCsv()">&#8681; Export CSV</button>
-      <button class="tool-btn" onclick="window.print()">&#128438; Print / PDF</button>
-      <a class="notif-bell-link" href="index.html" title="Notifications" id="notifBellLink">&#128276;<span class="notif-bell-badge hidden" id="notifBellBadge">0</span></a>
-      <button class="tool-btn" onclick="toggleDark()">&#9790; Dark Mode</button>
-      <a class="tool-btn" href="index.html" style="margin-left:auto">&#127968; Home</a>
+      <button class="tool-btn" onclick="openStudentModal(null)" aria-label="Add student">&#65291; Add Student</button>
+      <button class="tool-btn" onclick="triggerImport()" aria-label="Import CSV file">&#8679; Import CSV</button>
+      <button class="tool-btn" onclick="exportCsv()" aria-label="Export CSV file">&#8681; Export CSV</button>
+      <button class="tool-btn" onclick="window.print()" aria-label="Print or save as PDF">&#128438; Print / PDF</button>
+      <a class="notif-bell-link" href="index.html" title="Notifications" id="notifBellLink" aria-label="Notifications">&#128276;<span class="notif-bell-badge hidden" id="notifBellBadge">0</span></a>
+      <button class="tool-btn" onclick="toggleDark()" aria-label="Toggle dark mode">&#9790; Dark Mode</button>
+      <button class="tool-btn" onclick="toggleShortcutsHelp()" aria-label="Keyboard shortcuts help">? Help</button>
+      <a class="tool-btn" href="index.html" style="margin-left:auto" aria-label="Go to home page">&#127968; Home</a>
     </div>
   </div>
 
@@ -322,7 +337,7 @@ tr:hover td{background:var(--item-hover)}
 </div>
 
 <!-- ADD/EDIT STUDENT MODAL -->
-<div class="modal-overlay" id="studentModal">
+<div class="modal-overlay" id="studentModal" role="dialog" aria-modal="true" aria-label="Student editor">
   <div class="modal">
     <div class="modal-header">
       <h3 id="modalTitle">Add Student</h3>
@@ -397,7 +412,7 @@ tr:hover td{background:var(--item-hover)}
 </div>
 
 <!-- IMPORT MODAL -->
-<div class="modal-overlay" id="importModal">
+<div class="modal-overlay" id="importModal" role="dialog" aria-modal="true" aria-label="Import CSV">
   <div class="modal confirm-modal">
     <div class="modal-header">
       <h3>Import CSV</h3>
@@ -420,7 +435,7 @@ tr:hover td{background:var(--item-hover)}
 </div>
 
 <!-- DELETE CONFIRM MODAL -->
-<div class="modal-overlay" id="deleteModal">
+<div class="modal-overlay" id="deleteModal" role="dialog" aria-modal="true" aria-label="Delete student confirmation">
   <div class="modal confirm-modal">
     <div class="modal-header" style="background:linear-gradient(135deg,#c0392b,#e74c3c)">
       <h3>Delete Student</h3>
@@ -439,12 +454,37 @@ tr:hover td{background:var(--item-hover)}
 <!-- HIDDEN FILE INPUT -->
 <input type="file" id="csvFileInput" accept=".csv" style="display:none" onchange="handleCsvFile(event)"/>
 
-<!-- TOAST -->
+<!-- SHORTCUTS HELP MODAL -->
+<div class="shortcuts-modal-overlay" id="shortcutsModal" role="dialog" aria-modal="true" aria-label="Keyboard shortcuts">
+  <div class="shortcuts-modal">
+    <h3>Keyboard Shortcuts <button class="modal-close" onclick="toggleShortcutsHelp()" aria-label="Close shortcuts help" style="float:right;background:none;border:none;font-size:18px;cursor:pointer;color:var(--text-muted)">&#10005;</button></h3>
+    <table>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>S</kbd></td><td>Save data</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>D</kbd></td><td>Toggle dark mode</td></tr>
+      <tr><td><kbd>Esc</kbd></td><td>Close modals</td></tr>
+      <tr><td><kbd>?</kbd></td><td>Show this help</td></tr>
+    </table>
+  </div>
+</div>
+
 <div class="last-saved-footer" id="lastSavedFooter"></div>
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
 function initNotifBell(){var c=localStorage.getItem('notification_unread_count');var n=parseInt(c)||0;var b=document.getElementById('notifBellBadge');if(b){b.textContent=n>9?'9+':String(n);b.className=n>0?'notif-bell-badge':'notif-bell-badge hidden';}}
+
+/* getCurrentUser */
+function getCurrentUser() {
+  try {
+    var raw = localStorage.getItem('mlp_hub_config');
+    var cfg = raw ? JSON.parse(raw) : {};
+    return cfg.currentUser || null;
+  } catch(e) { return null; }
+}
+
+/* Cross-tab sync */
+var mlpChannel = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel('mlp_hub_sync') : null;
+
 var DEFAULT_COORDINATORS = [
   {id:"jmiller",    name:"J. Miller",    email:"jmiller@uplifteducation.org",    color:"#8e44ad"},
   {id:"kpatterson", name:"K. Patterson", email:"kpatterson@uplifteducation.org", color:"#16a085"},
@@ -493,6 +533,7 @@ function init() {
   applyTheme();
   populateCoordDropdowns();
   loadData();
+  restoreFilterState();
   renderAll();
   renderLastSaved();
 }
@@ -539,6 +580,8 @@ function toggleDark() {
       var h1 = document.querySelector(".header h1");
       if (h1) h1.textContent = cfg.orgName;
     }
+    var pName = cfg.productName || cfg.orgName || '';
+    if (pName) { document.title = pName + ' \u2014 ' + document.title; }
   } catch(e){}
 })();
 
@@ -559,6 +602,7 @@ function saveData() {
   try {
     localStorage.setItem(DATA_KEY, JSON.stringify(data));
     stampLastSaved();
+    if (mlpChannel) mlpChannel.postMessage({type:'data_update',key:DATA_KEY,timestamp:Date.now()});
   } catch(e) {
     showToast("Error saving data — storage may be full.");
   }
@@ -598,6 +642,7 @@ function clearFilters() {
   document.getElementById("filterProf").value = "";
   document.getElementById("filterProg").value = "";
   document.getElementById("filterName").value = "";
+  try { sessionStorage.removeItem(FILTER_SESSION_KEY); } catch(e) {}
   renderAll();
 }
 
@@ -1073,6 +1118,102 @@ function showToast(msg) {
   setTimeout(function() { t.classList.remove("show"); }, 3000);
 }
 
+/* =====================
+   SHORTCUTS HELP
+   ===================== */
+function toggleShortcutsHelp() {
+  var m = document.getElementById('shortcutsModal');
+  var isOpen = m.classList.contains('open');
+  if (isOpen) {
+    m.classList.remove('open');
+  } else {
+    m.classList.add('open');
+  }
+}
+
+/* =====================
+   FILTER PERSISTENCE
+   ===================== */
+var FILTER_SESSION_KEY = 'student_roster_filters';
+function saveFilterState() {
+  var state = {
+    coord: document.getElementById('filterCoord').value,
+    campus: document.getElementById('filterCampus').value,
+    grade: document.getElementById('filterGrade').value,
+    prof: document.getElementById('filterProf').value,
+    prog: document.getElementById('filterProg').value,
+    name: document.getElementById('filterName').value
+  };
+  try { sessionStorage.setItem(FILTER_SESSION_KEY, JSON.stringify(state)); } catch(e) {}
+}
+
+function restoreFilterState() {
+  try {
+    var raw = sessionStorage.getItem(FILTER_SESSION_KEY);
+    if (!raw) return;
+    var s = JSON.parse(raw);
+    if (s.coord) document.getElementById('filterCoord').value = s.coord;
+    if (s.campus) document.getElementById('filterCampus').value = s.campus;
+    if (s.grade) document.getElementById('filterGrade').value = s.grade;
+    if (s.prof) document.getElementById('filterProf').value = s.prof;
+    if (s.prog) document.getElementById('filterProg').value = s.prog;
+    if (s.name) document.getElementById('filterName').value = s.name;
+  } catch(e) {}
+}
+
+(function() {
+  var ids = ['filterCoord','filterGrade','filterProf','filterProg'];
+  for (var i = 0; i < ids.length; i++) {
+    var el = document.getElementById(ids[i]);
+    if (el) el.addEventListener('change', function() { saveFilterState(); });
+  }
+  var inputIds = ['filterCampus','filterName'];
+  for (var j = 0; j < inputIds.length; j++) {
+    var el2 = document.getElementById(inputIds[j]);
+    if (el2) el2.addEventListener('input', function() { saveFilterState(); });
+  }
+})();
+
+/* =====================
+   KEYBOARD SHORTCUTS
+   ===================== */
+document.addEventListener('keydown', function(e) {
+  var tag = (e.target.tagName || '').toLowerCase();
+  var inInput = (tag === 'input' || tag === 'textarea' || tag === 'select');
+
+  if (e.key === 'Escape') {
+    if (document.getElementById('shortcutsModal').classList.contains('open')) {
+      toggleShortcutsHelp();
+    } else if (document.getElementById('studentModal').classList.contains('open')) {
+      closeStudentModal();
+    } else if (document.getElementById('importModal').classList.contains('open')) {
+      closeImportModal();
+    } else if (document.getElementById('deleteModal').classList.contains('open')) {
+      closeDeleteModal();
+    }
+    return;
+  }
+
+  if (e.ctrlKey && !e.altKey) {
+    if (e.key === 's' || e.key === 'S') {
+      e.preventDefault();
+      saveData();
+      showToast('Data saved');
+      return;
+    }
+    if (e.key === 'd' || e.key === 'D') {
+      e.preventDefault();
+      toggleDark();
+      return;
+    }
+  }
+
+  if (!inInput && e.key === '?') {
+    e.preventDefault();
+    toggleShortcutsHelp();
+  }
+});
+
 /* Close modals on overlay click */
 document.getElementById("studentModal").addEventListener("click", function(e) {
   if (e.target === this) closeStudentModal();
@@ -1083,6 +1224,19 @@ document.getElementById("importModal").addEventListener("click", function(e) {
 document.getElementById("deleteModal").addEventListener("click", function(e) {
   if (e.target === this) closeDeleteModal();
 });
+document.getElementById("shortcutsModal").addEventListener("click", function(e) {
+  if (e.target === this) toggleShortcutsHelp();
+});
+
+/* Cross-tab sync listener */
+if (mlpChannel) {
+  mlpChannel.onmessage = function(e) {
+    if (e.data && e.data.type === 'data_update') {
+      loadData();
+      renderAll();
+    }
+  };
+}
 
 /* PWA */
 if ("serviceWorker" in navigator) {

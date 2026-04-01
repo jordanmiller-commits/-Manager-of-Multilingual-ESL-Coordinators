@@ -133,6 +133,19 @@ body{animation:fadeIn .25s ease both}
 .history-row .hr-meta{font-size:.84rem;color:var(--text-muted);margin-top:2px}
 .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--toast-bg);color:var(--toast-text);padding:12px 28px;border-radius:8px;font-size:.92rem;opacity:0;transition:transform .35s,opacity .35s;z-index:9999;pointer-events:none}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* SKIP LINK */
+.skip-link{position:absolute;top:-100%;left:8px;background:var(--primary);color:#fff;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;z-index:4000;text-decoration:none}
+.skip-link:focus{top:8px}
+
+/* SHORTCUTS HELP MODAL */
+.shortcuts-modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--modal-overlay);display:none;justify-content:center;align-items:flex-start;z-index:2000;padding:24px 14px;overflow-y:auto}
+.shortcuts-modal-overlay.open{display:flex}
+.shortcuts-modal{background:var(--modal-bg);border-radius:12px;padding:24px;max-width:440px;width:100%;box-shadow:0 8px 30px rgba(0,0,0,.2);margin:auto;color:var(--text);animation:modalFadeIn .2s ease both}
+.shortcuts-modal h3{font-size:17px;font-weight:800;color:var(--text-heading);margin-bottom:16px}
+.shortcuts-modal table{width:100%;border-collapse:collapse;font-size:13px}
+.shortcuts-modal td{padding:6px 4px;border-bottom:1px solid var(--border)}
+.shortcuts-modal kbd{display:inline-block;background:var(--section-bg-light);border:1px solid var(--input-border);border-radius:4px;padding:2px 7px;font-size:11px;font-family:'Segoe UI',monospace;font-weight:700;color:var(--text-secondary)}
 .empty-state{text-align:center;padding:50px 20px;color:var(--text-muted)}
 .empty-state .es-icon{font-size:2.5rem;margin-bottom:10px}
 .coord-selector{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
@@ -155,6 +168,7 @@ body{animation:fadeIn .25s ease both}
 </style>
 </head>
 <body>
+<a class="skip-link" href="#viewSessions">Skip to main content</a>
 <div class="header">
   <div class="header-row">
     <div>
@@ -162,12 +176,15 @@ body{animation:fadeIn .25s ease both}
       <div class="subtitle">Build inter-rater reliability across the MLP coordinator team</div>
     </div>
     <div class="header-nav">
-      <a href="./index.html">Home</a>
-      <a href="./ESL_Classroom_Audit/index.html">Audit</a>
-      <button onclick="startNewSession()">+ New Session</button>
-      <button onclick="window.print()">&#128438; Print / PDF</button>
-      <a class="notif-bell-link" href="index.html" title="Notifications" id="notifBellLink">&#128276;<span class="notif-bell-badge hidden" id="notifBellBadge">0</span></a>
-      <button onclick="toggleDarkMode()">Dark Mode</button>
+      <a href="./index.html" aria-label="Go to home page">Home</a>
+      <a href="./ESL_Classroom_Audit/index.html" aria-label="Open audit tool">Audit</a>
+      <button onclick="startNewSession()" aria-label="Create new calibration session">+ New Session</button>
+      <button onclick="undoAction()" aria-label="Undo last action" id="undoBtn" disabled>&#8617; Undo</button>
+      <button onclick="redoAction()" aria-label="Redo last action" id="redoBtn" disabled>&#8618; Redo</button>
+      <button onclick="window.print()" aria-label="Print or save as PDF">&#128438; Print / PDF</button>
+      <a class="notif-bell-link" href="index.html" title="Notifications" id="notifBellLink" aria-label="Notifications">&#128276;<span class="notif-bell-badge hidden" id="notifBellBadge">0</span></a>
+      <button onclick="toggleDarkMode()" aria-label="Toggle dark mode">Dark Mode</button>
+      <button onclick="toggleShortcutsHelp()" aria-label="Keyboard shortcuts help">? Help</button>
     </div>
   </div>
 </div>
@@ -179,11 +196,69 @@ body{animation:fadeIn .25s ease both}
   <div id="viewSessions"></div>
   <div id="viewHistory" style="display:none"></div>
 </div>
+<!-- SHORTCUTS HELP MODAL -->
+<div class="shortcuts-modal-overlay" id="shortcutsModal" role="dialog" aria-modal="true" aria-label="Keyboard shortcuts">
+  <div class="shortcuts-modal">
+    <h3>Keyboard Shortcuts <button class="modal-close" onclick="toggleShortcutsHelp()" aria-label="Close shortcuts help" style="float:right;background:none;border:none;font-size:18px;cursor:pointer;color:var(--text-muted)">&#10005;</button></h3>
+    <table>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>S</kbd></td><td>Save data</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>D</kbd></td><td>Toggle dark mode</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd></td><td>Undo</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Z</kbd></td><td>Redo</td></tr>
+      <tr><td><kbd>Esc</kbd></td><td>Close modals</td></tr>
+      <tr><td><kbd>?</kbd></td><td>Show this help</td></tr>
+    </table>
+  </div>
+</div>
+
 <div class="last-saved-footer" id="lastSavedFooter"></div>
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
 function initNotifBell(){var c=localStorage.getItem('notification_unread_count');var n=parseInt(c)||0;var b=document.getElementById('notifBellBadge');if(b){b.textContent=n>9?'9+':String(n);b.className=n>0?'notif-bell-badge':'notif-bell-badge hidden';}}
+
+/* getCurrentUser */
+function getCurrentUser() {
+  try {
+    var raw = localStorage.getItem('mlp_hub_config');
+    var cfg = raw ? JSON.parse(raw) : {};
+    return cfg.currentUser || null;
+  } catch(e) { return null; }
+}
+
+/* Cross-tab sync */
+var mlpChannel = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel('mlp_hub_sync') : null;
+
+/* Shortcuts help */
+function toggleShortcutsHelp() {
+  var m = document.getElementById('shortcutsModal');
+  var isOpen = m.classList.contains('open');
+  if (isOpen) {
+    m.classList.remove('open');
+  } else {
+    m.classList.add('open');
+  }
+}
+
+/* Undo / Redo (global) */
+var undoStack = [];
+var redoStack = [];
+var MAX_UNDO = 30;
+
+function pushUndo(dataSnapshot) {
+  undoStack.push(dataSnapshot);
+  if (undoStack.length > MAX_UNDO) undoStack.shift();
+  redoStack = [];
+  updateUndoRedoBtns();
+}
+
+function updateUndoRedoBtns() {
+  var ub = document.getElementById('undoBtn');
+  var rb = document.getElementById('redoBtn');
+  if (ub) ub.disabled = !undoStack.length;
+  if (rb) rb.disabled = !redoStack.length;
+}
+
 var DEFAULT_COORDINATORS = [
   {id:"jmiller",    name:"J. Miller",    email:"jmiller@uplifteducation.org",    color:"#8e44ad"},
   {id:"kpatterson", name:"K. Patterson", email:"kpatterson@uplifteducation.org", color:"#16a085"},
@@ -261,6 +336,7 @@ function getCoordinators() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     stampLastSaved();
     updateSessionCount(data);
+    if (mlpChannel) mlpChannel.postMessage({type:'data_update',key:STORAGE_KEY,timestamp:Date.now()});
   }
 
   function updateSessionCount(data) {
@@ -323,9 +399,25 @@ function getCoordinators() {
 
   // --- Rendering ---
 
+  var FILTER_SESSION_KEY = 'calibration_filters';
+
+  function saveFilterState() {
+    try { sessionStorage.setItem(FILTER_SESSION_KEY, JSON.stringify({tab: state.currentTab})); } catch(e) {}
+  }
+
+  function restoreFilterState() {
+    try {
+      var raw = sessionStorage.getItem(FILTER_SESSION_KEY);
+      if (!raw) return;
+      var s = JSON.parse(raw);
+      if (s.tab) state.currentTab = s.tab;
+    } catch(e) {}
+  }
+
   function switchTab(tab) {
     state.currentTab = tab;
     state.openSessionId = null;
+    saveFilterState();
     document.getElementById("tabSessions").className = tab === "sessions" ? "tab-btn active" : "tab-btn";
     document.getElementById("tabHistory").className = tab === "history" ? "tab-btn active" : "tab-btn";
     document.getElementById("viewSessions").style.display = tab === "sessions" ? "" : "none";
@@ -369,6 +461,7 @@ function getCoordinators() {
 
   function startNewSession() {
     var data = loadData();
+    pushUndo(JSON.stringify(data));
     var session = {
       id: generateId(),
       title: "Calibration Session " + (data.sessions.length + 1),
@@ -499,6 +592,7 @@ function getCoordinators() {
   function lockItems() {
     var session = getSession(state.openSessionId);
     if (!session) return;
+    pushUndo(JSON.stringify(loadData()));
     var titleEl = document.getElementById("setupTitle");
     var dateEl = document.getElementById("setupDate");
     if (titleEl) session.title = titleEl.value || session.title;
@@ -655,6 +749,7 @@ function getCoordinators() {
   function revealResults() {
     var session = getSession(state.openSessionId);
     if (!session) return;
+    pushUndo(JSON.stringify(loadData()));
     session.revealed = true;
     updateSession(session);
     renderSessionDetail(session);
@@ -905,6 +1000,7 @@ function getCoordinators() {
   function deleteSession(id) {
     if (!confirm("Delete this session? This cannot be undone.")) return;
     var data = loadData();
+    pushUndo(JSON.stringify(data));
     data.sessions = data.sessions.filter(function(s) { return s.id !== id; });
     saveData(data);
     state.openSessionId = null;
@@ -1002,6 +1098,54 @@ function getCoordinators() {
   }
   window.exportAllCSV = exportAllCSV;
 
+  // --- Undo / Redo ---
+
+  function undoAction() {
+    if (!undoStack.length) return;
+    var current = loadData();
+    redoStack.push(JSON.stringify(current));
+    var prev = JSON.parse(undoStack.pop());
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(prev));
+    stampLastSaved();
+    updateSessionCount(prev);
+    if (state.openSessionId) {
+      var s = null;
+      for (var i = 0; i < prev.sessions.length; i++) {
+        if (prev.sessions[i].id === state.openSessionId) { s = prev.sessions[i]; break; }
+      }
+      if (s) renderSessionDetail(s);
+      else { state.openSessionId = null; renderSessionsList(); }
+    } else {
+      renderSessionsList();
+    }
+    updateUndoRedoBtns();
+    showToast('Undo');
+  }
+  window.undoAction = undoAction;
+
+  function redoAction() {
+    if (!redoStack.length) return;
+    var current = loadData();
+    undoStack.push(JSON.stringify(current));
+    var next = JSON.parse(redoStack.pop());
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    stampLastSaved();
+    updateSessionCount(next);
+    if (state.openSessionId) {
+      var s = null;
+      for (var i = 0; i < next.sessions.length; i++) {
+        if (next.sessions[i].id === state.openSessionId) { s = next.sessions[i]; break; }
+      }
+      if (s) renderSessionDetail(s);
+      else { state.openSessionId = null; renderSessionsList(); }
+    } else {
+      renderSessionsList();
+    }
+    updateUndoRedoBtns();
+    showToast('Redo');
+  }
+  window.redoAction = redoAction;
+
   // --- Dark Mode ---
 
   function toggleDarkMode() {
@@ -1048,6 +1192,8 @@ function getCoordinators() {
         var h1 = document.querySelector(".header h1");
         if (h1) h1.textContent = cfg.orgName;
       }
+      var pName = cfg.productName || cfg.orgName || '';
+      if (pName) { document.title = pName + ' \u2014 ' + document.title; }
     } catch(e){}
   })();
 
@@ -1059,15 +1205,87 @@ function getCoordinators() {
     }
   }
 
+  // --- Keyboard Shortcuts ---
+
+  document.addEventListener('keydown', function(e) {
+    var tag = (e.target.tagName || '').toLowerCase();
+    var inInput = (tag === 'input' || tag === 'textarea' || tag === 'select');
+
+    if (e.key === 'Escape') {
+      if (document.getElementById('shortcutsModal').classList.contains('open')) {
+        toggleShortcutsHelp();
+      }
+      return;
+    }
+
+    if (e.ctrlKey && !e.altKey) {
+      if (e.key === 's' || e.key === 'S') {
+        e.preventDefault();
+        showToast('Data saved');
+        return;
+      }
+      if (e.key === 'd' || e.key === 'D') {
+        e.preventDefault();
+        toggleDarkMode();
+        return;
+      }
+      if (e.shiftKey && (e.key === 'z' || e.key === 'Z')) {
+        e.preventDefault();
+        redoAction();
+        return;
+      }
+      if (e.key === 'z' || e.key === 'Z') {
+        e.preventDefault();
+        undoAction();
+        return;
+      }
+    }
+
+    if (!inInput && e.key === '?') {
+      e.preventDefault();
+      toggleShortcutsHelp();
+    }
+  });
+
+  // --- Cross-tab sync ---
+
+  if (mlpChannel) {
+    mlpChannel.onmessage = function(e) {
+      if (e.data && e.data.type === 'data_update') {
+        var data = loadData();
+        updateSessionCount(data);
+        if (state.openSessionId) {
+          var s = getSession(state.openSessionId);
+          if (s) renderSessionDetail(s);
+          else renderSessionsList();
+        } else {
+          renderSessionsList();
+        }
+      }
+    };
+  }
+
+  // --- Shortcuts modal overlay click ---
+
+  document.getElementById("shortcutsModal").addEventListener("click", function(e) {
+    if (e.target === this) toggleShortcutsHelp();
+  });
+
   // --- Init ---
 
   function init() {
     applyTheme();
     registerSW();
+    restoreFilterState();
     var data = loadData();
     updateSessionCount(data);
-    renderSessionsList();
+    if (state.currentTab === 'history') {
+      switchTab('history');
+    } else {
+      renderSessionsList();
+    }
     renderLastSaved();
+    updateUndoRedoBtns();
   }
 
   init();

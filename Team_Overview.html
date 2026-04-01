@@ -118,20 +118,31 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 .notif-bell-badge{position:absolute;top:-4px;right:-4px;background:#e74c3c;color:#fff;font-size:9px;font-weight:800;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 4px;line-height:1}
 .notif-bell-badge.hidden{display:none}
 @media print{.notif-bell-link{display:none!important}}
+.skip-link{position:absolute;top:-40px;left:0;background:var(--primary);color:#fff;padding:8px 16px;z-index:9999;font-size:13px;font-weight:600;border-radius:0 0 6px 0;transition:top .2s}
+.skip-link:focus{top:0}
+.shortcuts-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:var(--modal-overlay);z-index:1000;justify-content:center;align-items:center;padding:20px}
+.shortcuts-overlay.active{display:flex}
+.shortcuts-modal{background:var(--modal-bg);border-radius:12px;padding:24px 28px;max-width:400px;width:100%;box-shadow:0 8px 30px rgba(0,0,0,.25)}
+.shortcuts-modal h3{margin-bottom:12px;color:var(--text-heading);font-size:16px}
+.shortcuts-modal table{width:100%;font-size:13px}
+.shortcuts-modal td{padding:6px 4px;color:var(--text)}
+.shortcuts-modal kbd{display:inline-block;background:var(--section-bg-light);border:1px solid var(--border);border-radius:4px;padding:2px 7px;font-size:12px;font-family:inherit;color:var(--text-secondary)}
 </style>
 </head>
 <body>
+<a class="skip-link" href="#coordGrid">Skip to content</a>
 <div class="wrap">
   <div class="header">
     <h1>&#128202; Team Overview</h1>
     <p>Manager dashboard — aggregate view across all coordinators via Google Drive Sync</p>
     <div class="header-row">
-      <button class="tool-btn" onclick="fetchAll()" id="refreshBtn">&#8635; Refresh</button>
-      <button class="tool-btn" onclick="sendReminders()" style="border-color:rgba(155,89,182,.5)" title="Emails coordinators with overdue/stalled cycles. Requires COORDINATOR_EMAIL_MAP to be configured in Code.gs.">&#128140; Send Reminders</button>
-      <a class="notif-bell-link" href="index.html" title="Notifications" id="notifBellLink">&#128276;<span class="notif-bell-badge hidden" id="notifBellBadge">0</span></a>
-      <button class="tool-btn" onclick="toggleDarkMode()" id="darkModeToggle">&#9789; Dark</button>
-      <button class="tool-btn" onclick="window.print()">&#128438; Print / PDF</button>
-      <a class="tool-btn" href="index.html" style="margin-left:auto">&#127968; Home</a>
+      <button class="tool-btn" onclick="fetchAll()" id="refreshBtn" aria-label="Refresh data">&#8635; Refresh</button>
+      <button class="tool-btn" onclick="sendReminders()" style="border-color:rgba(155,89,182,.5)" title="Emails coordinators with overdue/stalled cycles. Requires COORDINATOR_EMAIL_MAP to be configured in Code.gs." aria-label="Send reminders">&#128140; Send Reminders</button>
+      <a class="notif-bell-link" href="index.html" title="Notifications" id="notifBellLink" aria-label="Notifications">&#128276;<span class="notif-bell-badge hidden" id="notifBellBadge">0</span></a>
+      <button class="tool-btn" onclick="toggleDarkMode()" id="darkModeToggle" aria-label="Toggle dark mode">&#9789; Dark</button>
+      <button class="tool-btn" onclick="window.print()" aria-label="Print or save as PDF">&#128438; Print / PDF</button>
+      <button class="tool-btn" onclick="toggleShortcutsHelp()" aria-label="Keyboard shortcuts">&#9000; Shortcuts</button>
+      <a class="tool-btn" href="index.html" style="margin-left:auto" aria-label="Go to home page">&#127968; Home</a>
     </div>
   </div>
 
@@ -139,6 +150,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
   <div class="card first-card">
     <div class="section-title">&#9881; Drive Sync Settings</div>
     <div class="settings-row">
+      <label for="gasUrl" class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Script URL</label>
       <input type="url" id="gasUrl" placeholder="Google Apps Script Web App URL (https://script.google.com/macros/s/...)" oninput="saveGasUrl()"/>
       <button class="tool-btn" onclick="fetchAll()" style="background:rgba(39,174,96,.2);border-color:rgba(39,174,96,.6);color:#27ae60;font-size:12px;padding:8px 16px">Load Data</button>
     </div>
@@ -177,14 +189,84 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
   </div>
 
   <div class="last-saved-footer" id="lastSavedFooter"></div>
-  <div class="toast" id="toast"></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</div>
+
+<!-- Shortcuts Help Modal -->
+<div class="shortcuts-overlay" id="shortcutsOverlay" role="dialog" aria-modal="true" aria-label="Keyboard shortcuts">
+  <div class="shortcuts-modal">
+    <h3>Keyboard Shortcuts</h3>
+    <table>
+      <tr><td><kbd>Ctrl</kbd> + <kbd>S</kbd></td><td>Refresh data</td></tr>
+      <tr><td><kbd>Ctrl</kbd> + <kbd>D</kbd></td><td>Toggle dark mode</td></tr>
+      <tr><td><kbd>Esc</kbd></td><td>Close modals</td></tr>
+      <tr><td><kbd>?</kbd></td><td>Show this help</td></tr>
+    </table>
+    <div style="margin-top:14px;text-align:right"><button class="btn tool-btn" onclick="toggleShortcutsHelp()" style="color:var(--text);border-color:var(--input-border);background:var(--card-bg)">Close</button></div>
+  </div>
 </div>
 
 <script>
 /* ============================================================
-   DARK MODE
+   NOTIFICATION BELL
    ============================================================ */
 function initNotifBell(){var c=localStorage.getItem('notification_unread_count');var n=parseInt(c)||0;var b=document.getElementById('notifBellBadge');if(b){b.textContent=n>9?'9+':String(n);b.className=n>0?'notif-bell-badge':'notif-bell-badge hidden';}}
+
+/* ============================================================
+   GET CURRENT USER
+   ============================================================ */
+function getCurrentUser(){
+  try{
+    var raw=localStorage.getItem('esl_gas_sync');
+    var s=raw?JSON.parse(raw):{};
+    return{id:s.coordinatorId||'',name:s.coordinatorName||''};
+  }catch(e){return{id:'',name:''};}
+}
+
+/* ============================================================
+   KEYBOARD SHORTCUTS + HELP MODAL
+   ============================================================ */
+function toggleShortcutsHelp(){
+  var ov=document.getElementById('shortcutsOverlay');
+  if(!ov)return;
+  var isOpen=ov.classList.contains('active');
+  if(isOpen){
+    ov.classList.remove('active');
+    if(window._shortcutsPrevFocus)window._shortcutsPrevFocus.focus();
+  }else{
+    window._shortcutsPrevFocus=document.activeElement;
+    ov.classList.add('active');
+    var closeBtn=ov.querySelector('button');
+    if(closeBtn)closeBtn.focus();
+  }
+}
+
+document.addEventListener('keydown',function(e){
+  var tag=e.target.tagName;
+  var isInput=tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT';
+  if(e.key==='Escape'){
+    var ov=document.getElementById('shortcutsOverlay');
+    if(ov&&ov.classList.contains('active')){toggleShortcutsHelp();e.preventDefault();return;}
+  }
+  if(e.ctrlKey&&e.key==='s'){e.preventDefault();fetchAll();return;}
+  if(e.ctrlKey&&e.key==='d'){e.preventDefault();toggleDarkMode();return;}
+  if(e.key==='?'&&!isInput){e.preventDefault();toggleShortcutsHelp();}
+});
+
+/* ============================================================
+   CROSS-TAB SYNC
+   ============================================================ */
+var _syncChannel=null;
+try{_syncChannel=new BroadcastChannel('mlp_hub_sync');}catch(e){}
+if(_syncChannel){
+  _syncChannel.onmessage=function(ev){
+    if(ev.data&&ev.data.type==='data_updated'){fetchAll();}
+  };
+}
+
+/* ============================================================
+   DARK MODE
+   ============================================================ */
 
 function toggleDarkMode() {
   var isDark = document.body.classList.toggle("dark-mode");
@@ -223,6 +305,9 @@ function toggleDarkMode() {
     if (cfg.orgName) {
       var h1 = document.querySelector(".header h1");
       if (h1) h1.textContent = cfg.orgName;
+    }
+    if (cfg.productName || cfg.orgName) {
+      document.title = 'Team Overview' + (cfg.productName ? ' — ' + cfg.productName : (cfg.orgName ? ' — ' + cfg.orgName : ''));
     }
   } catch(e){}
 })();

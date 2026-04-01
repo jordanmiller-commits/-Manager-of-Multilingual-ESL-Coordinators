@@ -396,9 +396,23 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 .notif-bell-badge{position:absolute;top:-4px;right:-4px;background:#e74c3c;color:#fff;font-size:9px;font-weight:800;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 4px;line-height:1}
 .notif-bell-badge.hidden{display:none}
 @media print{.notif-bell-link{display:none!important}}
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:var(--toast-bg);color:var(--toast-text);padding:10px 22px;border-radius:8px;font-size:13px;font-weight:600;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none}
+.toast.show{opacity:1}
+.skip-link{position:absolute;top:-40px;left:0;background:var(--primary);color:#fff;padding:8px 16px;z-index:100000;transition:top .2s}
+.skip-link:focus{top:0}
+.shortcuts-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:var(--modal-overlay);z-index:10000;justify-content:center;align-items:center}
+.shortcuts-overlay.active{display:flex}
+.shortcuts-modal{background:var(--modal-bg);border-radius:12px;padding:22px 26px;max-width:420px;width:92%;box-shadow:0 10px 40px rgba(0,0,0,.2)}
+.shortcuts-modal h3{font-size:15px;color:var(--text-heading);margin-bottom:12px}
+.shortcuts-modal table{width:100%;border-collapse:collapse;font-size:12px}
+.shortcuts-modal td{padding:6px 8px;border-bottom:1px solid var(--border)}
+.shortcuts-modal td:first-child{text-align:right;white-space:nowrap}
+kbd{display:inline-block;padding:2px 7px;border:1px solid var(--input-border);border-radius:4px;background:var(--section-bg-light);font-size:11px;font-family:inherit;font-weight:600;color:var(--text-secondary);box-shadow:0 1px 0 var(--input-border)}
+@media(max-width:600px){.tool-btn,button,input,select{min-height:44px}}
 </style>
 </head>
 <body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
 <div class="wrap">
 
   <!-- Header -->
@@ -416,15 +430,17 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
       <button class="tool-btn" onclick="openDashboard()">&#128202; Dashboard</button>
       <button class="tool-btn" onclick="exportCalendar()" style="border-color:rgba(155,89,182,.5)">&#128197; Calendar</button>
       <button class="tool-btn" id="qcToggle" onclick="toggleQuickCode()" style="border-color:rgba(39,174,96,.5)">&#9889; Quick Code</button>
-      <a class="notif-bell-link" href="../index.html" title="Notifications" id="notifBellLink">&#128276;<span class="notif-bell-badge hidden" id="notifBellBadge">0</span></a>
+      <a class="notif-bell-link" href="../index.html" title="Notifications" id="notifBellLink" aria-label="Notifications">&#128276;<span class="notif-bell-badge hidden" id="notifBellBadge">0</span></a>
       <button class="tool-btn" onclick="toggleDarkMode()" id="darkModeToggle" aria-label="Toggle dark mode">&#9789; Dark</button>
+      <button class="tool-btn" onclick="toggleShortcutsHelp()" aria-label="Keyboard shortcuts">? Help</button>
+      <button class="tool-btn" onclick="window.print()" aria-label="Print page">&#128438; Print</button>
       <a class="tool-btn" href="../index.html" style="margin-left:auto" aria-label="Back to Home">&#127968; Home</a>
       <span class="save-indicator" id="saveStatus">Auto-save: ready</span>
     </div>
   </div>
 
   <!-- Metadata -->
-  <div class="card first-card">
+  <div class="card first-card" id="main-content">
     <div class="meta-grid">
       <div>
         <label for="m-leader">Leader / Observer</label>
@@ -590,7 +606,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 </div>
 
 <!-- RESET MODAL -->
-<div class="modal-overlay" id="resetModal">
+<div class="modal-overlay" id="resetModal" role="dialog" aria-modal="true">
   <div class="modal">
     <h3>Reset All Data</h3>
     <p>This will clear all walkthrough rounds, observations, coaching actions, and saved data. This cannot be undone.</p>
@@ -602,7 +618,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 </div>
 
 <!-- IMPORT MODAL -->
-<div class="modal-overlay" id="importModal">
+<div class="modal-overlay" id="importModal" role="dialog" aria-modal="true">
   <div class="modal">
     <h3>Import Walkthrough Plan</h3>
     <p>Paste exported JSON below or select a file. This replaces all current data.</p>
@@ -618,7 +634,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 </div>
 
 <!-- SUGGESTION BANK MODAL -->
-<div class="modal-overlay" id="suggestModal">
+<div class="modal-overlay" id="suggestModal" role="dialog" aria-modal="true">
   <div class="modal modal-wide">
     <h3>Instructional Look-For Suggestion Bank</h3>
     <p>Click a suggestion to copy it into a round's Look-For field. Select the target round first.</p>
@@ -634,7 +650,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 </div>
 
 <!-- HISTORY MODAL -->
-<div class="modal-overlay" id="historyModal">
+<div class="modal-overlay" id="historyModal" role="dialog" aria-modal="true">
   <div class="modal modal-wide">
     <h3>&#128218; Walkthrough History</h3>
     <p>Previously saved walkthrough sessions. Load to restore or compare.</p>
@@ -655,6 +671,19 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
   </div>
 </div>
 
+<div class="toast" id="toastEl" role="status" aria-live="polite"></div>
+<div class="shortcuts-overlay" id="shortcutsOverlay" role="dialog" aria-modal="true">
+  <div class="shortcuts-modal">
+    <h3>Keyboard Shortcuts</h3>
+    <table>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>S</kbd></td><td>Save data</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>D</kbd></td><td>Toggle dark mode</td></tr>
+      <tr><td><kbd>Esc</kbd></td><td>Close modal / overlay</td></tr>
+      <tr><td><kbd>?</kbd></td><td>Show this help</td></tr>
+    </table>
+    <div style="text-align:right;margin-top:14px"><button class="btn" onclick="toggleShortcutsHelp()">Close</button></div>
+  </div>
+</div>
 <div class="last-saved-footer" id="lastSavedFooter"></div>
 <script>
 function toggleDarkMode(){var d=document.body.classList.toggle("dark-mode");localStorage.setItem("esl_app_theme",d?"dark":"light");var b=document.getElementById("darkModeToggle");if(b)b.innerHTML=d?"&#9788; Light":"&#9789; Dark";}
@@ -691,8 +720,63 @@ function toggleDarkMode(){var d=document.body.classList.toggle("dark-mode");loca
       var h1 = document.querySelector(".header h1");
       if (h1) h1.textContent = cfg.orgName;
     }
+    var pName = cfg.productName || cfg.orgName || '';
+    if (pName) { document.title = pName + ' \u2014 ' + document.title; }
   } catch(e){}
 })();
+
+function showToast(msg){
+  var el=document.getElementById("toastEl");
+  if(!el)return;
+  el.textContent=msg;
+  el.classList.add("show");
+  setTimeout(function(){el.classList.remove("show");},2500);
+}
+
+function getCurrentUser() {
+  try { var raw = localStorage.getItem('mlp_hub_config'); var cfg = raw ? JSON.parse(raw) : {};
+    return { id: cfg.userId || 'default', name: cfg.userName || 'Administrator', role: cfg.userRole || 'manager', orgId: cfg.orgId || 'default', orgName: cfg.orgName || 'MLP Coordinator Hub' };
+  } catch(e) { return { id: 'default', name: 'Administrator', role: 'manager', orgId: 'default', orgName: 'MLP Coordinator Hub' }; }
+}
+
+var mlpChannel = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel('mlp_hub_sync') : null;
+if (mlpChannel) {
+  mlpChannel.onmessage = function(e) {
+    if (e.data && e.data.type === 'data_update') {
+      loadFromStorage();
+    }
+  };
+}
+
+function trapFocus(modal) {
+  var focusable = modal.querySelectorAll('button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])');
+  if (!focusable.length) return;
+  var first = focusable[0], last = focusable[focusable.length - 1];
+  function handler(e) { if (e.key !== 'Tab') return; if (e.shiftKey) { if (document.activeElement === first) { e.preventDefault(); last.focus(); } } else { if (document.activeElement === last) { e.preventDefault(); first.focus(); } } }
+  modal._focusTrap = handler; modal.addEventListener('keydown', handler); first.focus();
+}
+function releaseFocus(modal) { if (modal._focusTrap) modal.removeEventListener('keydown', modal._focusTrap); }
+
+function toggleShortcutsHelp() {
+  var ov = document.getElementById('shortcutsOverlay');
+  if (ov.classList.contains('active')) { ov.classList.remove('active'); releaseFocus(ov.querySelector('.shortcuts-modal')); }
+  else { ov.classList.add('active'); trapFocus(ov.querySelector('.shortcuts-modal')); }
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape' || e.keyCode === 27) {
+    var sc = document.getElementById('shortcutsOverlay');
+    if (sc && sc.classList.contains('active')) { toggleShortcutsHelp(); return; }
+    var modals = document.querySelectorAll('.modal-overlay.active');
+    for (var i = 0; i < modals.length; i++) { modals[i].classList.remove('active'); }
+  }
+  if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) { e.preventDefault(); syncFromDOM(); saveToStorage(); showToast('Saved'); }
+  if ((e.ctrlKey || e.metaKey) && (e.key === 'd' || e.key === 'D')) { e.preventDefault(); toggleDarkMode(); }
+  if (e.key === '?' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    var tag = (e.target.tagName || '').toLowerCase();
+    if (tag !== 'input' && tag !== 'textarea' && tag !== 'select') { toggleShortcutsHelp(); }
+  }
+});
 
 function initNotifBell(){var c=localStorage.getItem('notification_unread_count');var n=parseInt(c)||0;var b=document.getElementById('notifBellBadge');if(b){b.textContent=n>9?'9+':String(n);b.className=n>0?'notif-bell-badge':'notif-bell-badge hidden';}}
 
@@ -1246,6 +1330,7 @@ function saveToStorage() {
   try {
     syncFromDOM();
     localStorage.setItem(STORAGE_KEY, JSON.stringify(collectState()));
+    if (mlpChannel) mlpChannel.postMessage({type:'data_update', key:STORAGE_KEY, timestamp:Date.now()});
     harvestTeachers();
     var el = document.getElementById("saveStatus");
     el.textContent = "Saved " + new Date().toLocaleTimeString();
@@ -1337,11 +1422,17 @@ function confirmReset() {
 function showModal(id) {
   if (id === "suggestModal") showSuggestionBank();
   if (id === "historyModal") renderHistoryList();
-  document.getElementById(id).classList.add("active");
+  var el = document.getElementById(id);
+  el.classList.add("active");
+  var inner = el.querySelector('.modal');
+  if (inner) trapFocus(inner);
 }
 
 function closeModal(id) {
-  document.getElementById(id).classList.remove("active");
+  var el = document.getElementById(id);
+  el.classList.remove("active");
+  var inner = el.querySelector('.modal');
+  if (inner) releaseFocus(inner);
 }
 
 /* ======================================================
@@ -1582,6 +1673,7 @@ function getWalkthroughHistory() {
 
 function setWalkthroughHistory(arr) {
   localStorage.setItem(HISTORY_KEY, JSON.stringify(arr));
+  if (mlpChannel) mlpChannel.postMessage({type:'data_update', key:HISTORY_KEY, timestamp:Date.now()});
   stampLastSaved();
 }
 
@@ -2117,6 +2209,41 @@ for (var oi = 0; oi < overlays.length; oi++) {
     o.addEventListener("click", function(e) { if (e.target === o) o.classList.remove("active"); });
   })(overlays[oi]);
 }
+
+// Filter persistence (sessionStorage)
+function saveFilterState() {
+  try {
+    sessionStorage.setItem('walkthrough_planner_filters', JSON.stringify({
+      leader: document.getElementById('m-leader').value,
+      campus: document.getElementById('m-campus').value,
+      date: document.getElementById('m-date').value,
+      focus: document.getElementById('m-focus').value
+    }));
+  } catch(e) {}
+}
+function restoreFilterState() {
+  try {
+    var raw = sessionStorage.getItem('walkthrough_planner_filters');
+    if (!raw) return;
+    var f = JSON.parse(raw);
+    if (f.leader) document.getElementById('m-leader').value = f.leader;
+    if (f.campus) document.getElementById('m-campus').value = f.campus;
+    if (f.date) document.getElementById('m-date').value = f.date;
+    if (f.focus) document.getElementById('m-focus').value = f.focus;
+  } catch(e) {}
+}
+// Hook into input events on meta fields
+(function() {
+  var ids = ['m-leader','m-campus','m-date','m-focus'];
+  for (var i = 0; i < ids.length; i++) {
+    var el = document.getElementById(ids[i]);
+    if (el) {
+      el.addEventListener('input', saveFilterState);
+      el.addEventListener('change', saveFilterState);
+    }
+  }
+})();
+restoreFilterState();
 
 // Safety net: build print preview on beforeprint
 window.addEventListener("beforeprint", function() {

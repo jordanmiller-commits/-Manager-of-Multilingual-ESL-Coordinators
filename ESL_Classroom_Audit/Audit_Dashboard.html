@@ -154,9 +154,21 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 .notif-bell-badge{position:absolute;top:-4px;right:-4px;background:#e74c3c;color:#fff;font-size:9px;font-weight:800;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 4px;line-height:1}
 .notif-bell-badge.hidden{display:none}
 @media print{.notif-bell-link{display:none!important}}
+.skip-link{position:absolute;top:-40px;left:0;background:var(--primary);color:#fff;padding:8px 16px;z-index:100000;transition:top .2s}
+.skip-link:focus{top:0}
+.shortcuts-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:var(--modal-overlay);z-index:10000;justify-content:center;align-items:center}
+.shortcuts-overlay.active{display:flex}
+.shortcuts-modal{background:var(--modal-bg);border-radius:12px;padding:22px 26px;max-width:420px;width:92%;box-shadow:0 10px 40px rgba(0,0,0,.2)}
+.shortcuts-modal h3{font-size:15px;color:var(--text-heading);margin-bottom:12px}
+.shortcuts-modal table{width:100%;border-collapse:collapse;font-size:12px}
+.shortcuts-modal td{padding:6px 8px;border-bottom:1px solid var(--border)}
+.shortcuts-modal td:first-child{text-align:right;white-space:nowrap}
+kbd{display:inline-block;padding:2px 7px;border:1px solid var(--input-border);border-radius:4px;background:var(--section-bg-light);font-size:11px;font-family:inherit;font-weight:600;color:var(--text-secondary);box-shadow:0 1px 0 var(--input-border)}
+@media(max-width:600px){.tool-btn,button,input,select{min-height:44px}}
 </style>
 </head>
 <body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
 <div class="wrap">
 
   <!-- Header -->
@@ -166,8 +178,10 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
     <div class="toolbar">
       <a class="tool-btn" href="ESL_Classroom_Audit.html">&larr; Back to Audit</a>
       <button class="tool-btn" onclick="refreshDashboard()" title="Reload data from localStorage">&#x21bb; Refresh</button>
-      <a class="notif-bell-link" href="../index.html" title="Notifications" id="notifBellLink">&#128276;<span class="notif-bell-badge hidden" id="notifBellBadge">0</span></a>
+      <a class="notif-bell-link" href="../index.html" title="Notifications" id="notifBellLink" aria-label="Notifications">&#128276;<span class="notif-bell-badge hidden" id="notifBellBadge">0</span></a>
       <button class="tool-btn" onclick="toggleDarkMode()" id="darkModeToggle" aria-label="Toggle dark mode">&#9789; Dark</button>
+      <button class="tool-btn" onclick="toggleShortcutsHelp()" aria-label="Keyboard shortcuts">? Help</button>
+      <button class="tool-btn" onclick="window.print()" aria-label="Print page">&#128438; Print</button>
       <a class="tool-btn" href="../index.html" style="margin-left:auto" aria-label="Back to Home">&#127968; Home</a>
       <span id="lastUpdated" style="font-size:10px;color:rgba(255,255,255,.6)"></span>
     </div>
@@ -194,9 +208,9 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
   </div>
 
   <!-- View selector + filter bar -->
-  <div class="card">
+  <div class="card" id="main-content">
     <div class="view-bar" id="viewBar">
-      <label>View</label>
+      <label for="viewSelect">View</label>
       <select id="viewSelect" onchange="switchView()">
         <option value="trends">Score Trends</option>
         <option value="sections">Section Breakdown</option>
@@ -242,8 +256,19 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
     <div class="audit-table-wrap"><div id="auditTableWrap"></div></div>
   </div>
 
+  <div class="shortcuts-overlay" id="shortcutsOverlay" role="dialog" aria-modal="true">
+    <div class="shortcuts-modal">
+      <h3>Keyboard Shortcuts</h3>
+      <table>
+        <tr><td><kbd>Ctrl</kbd>+<kbd>D</kbd></td><td>Toggle dark mode</td></tr>
+        <tr><td><kbd>Esc</kbd></td><td>Close modal / overlay</td></tr>
+        <tr><td><kbd>?</kbd></td><td>Show this help</td></tr>
+      </table>
+      <div style="text-align:right;margin-top:14px"><button class="btn" onclick="toggleShortcutsHelp()">Close</button></div>
+    </div>
+  </div>
   <div class="last-saved-footer" id="lastSavedFooter"></div>
-  <div class="toast" id="toast"></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
 </div>
 
 <script>
@@ -302,6 +327,48 @@ function showToast(msg) {
     toast.classList.remove('show');
   }, 3000);
 }
+
+function getCurrentUser() {
+  try { var raw = localStorage.getItem('mlp_hub_config'); var cfg = raw ? JSON.parse(raw) : {};
+    return { id: cfg.userId || 'default', name: cfg.userName || 'Administrator', role: cfg.userRole || 'manager', orgId: cfg.orgId || 'default', orgName: cfg.orgName || 'MLP Coordinator Hub' };
+  } catch(e) { return { id: 'default', name: 'Administrator', role: 'manager', orgId: 'default', orgName: 'MLP Coordinator Hub' }; }
+}
+
+var mlpChannel = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel('mlp_hub_sync') : null;
+if (mlpChannel) {
+  mlpChannel.onmessage = function(e) {
+    if (e.data && e.data.type === 'data_update') {
+      refreshDashboard();
+    }
+  };
+}
+
+function trapFocus(modal) {
+  var focusable = modal.querySelectorAll('button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])');
+  if (!focusable.length) return;
+  var first = focusable[0], last = focusable[focusable.length - 1];
+  function handler(e) { if (e.key !== 'Tab') return; if (e.shiftKey) { if (document.activeElement === first) { e.preventDefault(); last.focus(); } } else { if (document.activeElement === last) { e.preventDefault(); first.focus(); } } }
+  modal._focusTrap = handler; modal.addEventListener('keydown', handler); first.focus();
+}
+function releaseFocus(modal) { if (modal._focusTrap) modal.removeEventListener('keydown', modal._focusTrap); }
+
+function toggleShortcutsHelp() {
+  var ov = document.getElementById('shortcutsOverlay');
+  if (ov.classList.contains('active')) { ov.classList.remove('active'); releaseFocus(ov.querySelector('.shortcuts-modal')); }
+  else { ov.classList.add('active'); trapFocus(ov.querySelector('.shortcuts-modal')); }
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape' || e.keyCode === 27) {
+    var sc = document.getElementById('shortcutsOverlay');
+    if (sc && sc.classList.contains('active')) { toggleShortcutsHelp(); return; }
+  }
+  if ((e.ctrlKey || e.metaKey) && (e.key === 'd' || e.key === 'D')) { e.preventDefault(); toggleDarkMode(); }
+  if (e.key === '?' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    var tag = (e.target.tagName || '').toLowerCase();
+    if (tag !== 'input' && tag !== 'textarea' && tag !== 'select') { toggleShortcutsHelp(); }
+  }
+});
 
 function renderAuditTable(data) {
   var card = document.getElementById("auditTableCard");
@@ -577,6 +644,33 @@ function onFilterChange() {
   filterTeacher = tEl ? tEl.value : "";
 
   renderCurrentView();
+  saveAuditFilterState();
+}
+
+function saveAuditFilterState() {
+  try {
+    sessionStorage.setItem('audit_dashboard_filters', JSON.stringify({
+      view: currentView,
+      dateFrom: filterDateFrom,
+      dateTo: filterDateTo,
+      campus: filterCampus,
+      teacher: filterTeacher
+    }));
+  } catch(e) {}
+}
+
+function restoreAuditFilterState() {
+  try {
+    var raw = sessionStorage.getItem('audit_dashboard_filters');
+    if (!raw) return false;
+    var f = JSON.parse(raw);
+    if (f.view) { currentView = f.view; document.getElementById('viewSelect').value = f.view; }
+    if (f.dateFrom) filterDateFrom = f.dateFrom;
+    if (f.dateTo) filterDateTo = f.dateTo;
+    if (f.campus) filterCampus = f.campus;
+    if (f.teacher) filterTeacher = f.teacher;
+    return true;
+  } catch(e) { return false; }
 }
 
 /* ======================================================
@@ -593,6 +687,7 @@ function switchView() {
     filterCampus = "";
   }
   refreshDashboard();
+  saveAuditFilterState();
 }
 
 /* ======================================================
@@ -1127,9 +1222,12 @@ function toggleDarkMode(){var d=document.body.classList.toggle("dark-mode");loca
       var h1 = document.querySelector(".header h1");
       if (h1) h1.textContent = cfg.orgName;
     }
+    var pName = cfg.productName || cfg.orgName || '';
+    if (pName) { document.title = pName + ' \u2014 ' + document.title; }
   } catch(e){}
 })();
 
+restoreAuditFilterState();
 (function init() {
   refreshDashboard();
 })();

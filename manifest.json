@@ -1,6 +1,6 @@
 {
-  "name": "MLP Coordinator Hub",
-  "short_name": "MLP Hub",
+  "name": "Coordinator Hub",
+  "short_name": "CoordHub",
   "description": "Manager of Multilingual / MLP Coordinators — Full Tool Suite",
   "start_url": "./index.html",
   "display": "standalone",

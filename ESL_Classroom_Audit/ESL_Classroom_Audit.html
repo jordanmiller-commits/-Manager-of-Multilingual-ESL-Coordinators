@@ -338,6 +338,8 @@ mark{background:#fef08a;color:#333;padding:0 2px;border-radius:2px}
 .notif-bell-badge{position:absolute;top:-4px;right:-4px;background:#e74c3c;color:#fff;font-size:9px;font-weight:800;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 4px;line-height:1}
 .notif-bell-badge.hidden{display:none}
 @media print{.notif-bell-link{display:none!important}}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--toast-bg);color:var(--toast-text);padding:12px 20px;border-radius:8px;font-size:13px;font-weight:600;box-shadow:0 4px 15px rgba(0,0,0,.2);z-index:2000;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
 .template-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--modal-overlay);display:none;align-items:flex-start;justify-content:center;z-index:1000;padding:20px;overflow-y:auto}
 .template-overlay.active{display:flex}
 .template-modal{background:var(--modal-bg);border-radius:14px;padding:28px 28px 24px;max-width:680px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,.3);margin:auto}
@@ -382,9 +384,27 @@ mark{background:#fef08a;color:#333;padding:0 2px;border-radius:2px}
 /* Empty state (no-history) */
 .no-history{display:flex;flex-direction:column;align-items:center;gap:8px;padding:40px 24px;color:var(--text-faint);font-size:13px}
 .no-history::before{content:'\\1F4CB';font-size:38px;display:block}
+
+/* ============================
+   PHASE 5 — WCAG & ACCESSIBILITY
+   ============================ */
+.skip-link{position:absolute;top:-40px;left:0;background:var(--primary);color:#fff;padding:8px 16px;z-index:9999;font-size:13px;font-weight:600;border-radius:0 0 6px 0;transition:top .2s}
+.skip-link:focus{top:0}
+
+/* ============================
+   PHASE 6 — SHORTCUTS MODAL
+   ============================ */
+.shortcuts-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:var(--modal-overlay);z-index:1000;justify-content:center;align-items:center;padding:20px}
+.shortcuts-overlay.active{display:flex}
+.shortcuts-modal{background:var(--modal-bg);border-radius:12px;padding:24px 28px;max-width:460px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,.2)}
+.shortcuts-modal h3{font-size:16px;font-weight:800;color:var(--text-heading);margin-bottom:14px}
+.shortcuts-modal table{width:100%;border-collapse:collapse;font-size:12px}
+.shortcuts-modal td{padding:6px 8px;border-bottom:1px solid var(--border)}
+.shortcuts-modal kbd{display:inline-block;padding:2px 7px;border-radius:4px;background:var(--section-bg-light);border:1px solid var(--border);font-family:inherit;font-size:11px;font-weight:700;color:var(--text-heading)}
 </style>
 </head>
 <body>
+<a class="skip-link" href="#scoreCard">Skip to content</a>
 <div class="wrap">
 
 <div class="header" role="banner">
@@ -398,8 +418,9 @@ mark{background:#fef08a;color:#333;padding:0 2px;border-radius:2px}
     <button class="tool-btn" onclick="enableMultiObserver()" id="multiObsBtn" title="Enable multi-observer mode for calibration" style="border-color:rgba(52,152,219,.5);background:rgba(52,152,219,.15)">&#128101; Multi-Observer</button>
     <button class="tool-btn danger" onclick="showResetModal()" title="Clear all data and start fresh">&#128260; Reset</button>
     <a class="notif-bell-link" href="../index.html" title="Notifications" id="notifBellLink">&#128276;<span class="notif-bell-badge hidden" id="notifBellBadge">0</span></a>
-    <button class="tool-btn" onclick="showSettingsModal()" title="Settings: export, import, appearance">&#9881; Settings</button>
-    <button class="tool-btn" onclick="window.print()">&#128438; Print / PDF</button>
+    <button class="tool-btn" onclick="showSettingsModal()" title="Settings: export, import, appearance" aria-label="Settings">&#9881; Settings</button>
+    <button class="tool-btn" onclick="window.print()" aria-label="Print or save as PDF">&#128438; Print / PDF</button>
+    <button class="tool-btn" onclick="toggleShortcutsHelp()" aria-label="Keyboard shortcuts">&#9000; Keys</button>
     <a class="tool-btn" href="../index.html" style="margin-left:auto" aria-label="Back to Home">&#127968; Home</a>
     <span class="save-indicator" id="saveStatus">Auto-save: ready</span>
   </div>
@@ -407,18 +428,18 @@ mark{background:#fef08a;color:#333;padding:0 2px;border-radius:2px}
 
 <div class="card">
   <div class="meta-grid">
-    <div><label>Teacher Name</label><input type="text" id="m-teacher" placeholder="Enter teacher name"/></div>
+    <div><label for="m-teacher">Teacher Name</label><input type="text" id="m-teacher" placeholder="Enter teacher name"/></div>
     <div>
-      <label>Campus</label>
+      <label for="m-campus">Campus</label>
       <input type="text" id="m-campus" list="campus-list" placeholder="Select or type campus name"/>
       <datalist id="campus-list"></datalist>
     </div>
-    <div><label>Observer</label><input type="text" id="m-observer" placeholder="Enter observer name"/></div>
-    <div><label>Date</label><input type="date" id="m-date"/></div>
+    <div><label for="m-observer">Observer</label><input type="text" id="m-observer" placeholder="Enter observer name"/></div>
+    <div><label for="m-date">Date</label><input type="date" id="m-date"/></div>
   </div>
 </div>
 
-<div class="card">
+<div class="card" id="scoreCard">
   <div class="score-banner">
     <div>
       <div class="score-num" id="scorePct" role="status" aria-live="polite" aria-label="Overall score percentage">0%</div>
@@ -553,8 +574,8 @@ mark{background:#fef08a;color:#333;padding:0 2px;border-radius:2px}
     <h3 id="historyModalTitle">Audit History</h3>
     <p>Previously saved audits are stored in your browser. Use Compare to view growth over time.</p>
     <div class="hist-filters">
-      <input type="text" id="histFilterTeacher" placeholder="Filter by teacher..." oninput="renderHistory()"/>
-      <select id="histFilterCampus" onchange="renderHistory()"><option value="">All campuses</option></select>
+      <input type="text" id="histFilterTeacher" placeholder="Filter by teacher..." oninput="renderHistory()" aria-label="Filter by teacher name"/>
+      <select id="histFilterCampus" onchange="renderHistory()" aria-label="Filter by campus"><option value="">All campuses</option></select>
     </div>
     <div class="hist-list" id="histList"></div>
     <div class="modal-btns" style="margin-top:14px">
@@ -698,6 +719,26 @@ mark{background:#fef08a;color:#333;padding:0 2px;border-radius:2px}
 </div>
 
 <div class="last-saved-footer" id="lastSavedFooter"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- Shortcuts Help Modal -->
+<div class="shortcuts-overlay" id="shortcutsOverlay" role="dialog" aria-modal="true" aria-label="Keyboard shortcuts">
+  <div class="shortcuts-modal">
+    <h3>Keyboard Shortcuts</h3>
+    <table>
+      <tr><td><kbd>Ctrl</kbd> + <kbd>S</kbd></td><td>Save audit data</td></tr>
+      <tr><td><kbd>Ctrl</kbd> + <kbd>D</kbd></td><td>Toggle dark mode</td></tr>
+      <tr><td><kbd>Ctrl</kbd> + <kbd>Z</kbd></td><td>Undo</td></tr>
+      <tr><td><kbd>Ctrl</kbd> + <kbd>Y</kbd></td><td>Redo</td></tr>
+      <tr><td><kbd>1</kbd>-<kbd>4</kbd></td><td>Rate focused item</td></tr>
+      <tr><td><kbd>&uarr;</kbd> / <kbd>&darr;</kbd></td><td>Navigate items</td></tr>
+      <tr><td><kbd>Esc</kbd></td><td>Close modals</td></tr>
+      <tr><td><kbd>?</kbd></td><td>Show this help</td></tr>
+    </table>
+    <div style="margin-top:14px;text-align:right"><button class="btn" onclick="toggleShortcutsHelp()">Close</button></div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 <script>
@@ -712,6 +753,105 @@ function escHtml(str) {
   var d = document.createElement("div");
   d.appendChild(document.createTextNode(str));
   return d.innerHTML;
+}
+
+function showToast(msg) {
+  var t = document.getElementById("toast");
+  if (!t) return;
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(function() { t.classList.remove("show"); }, 3000);
+}
+
+/* ==============================
+   PHASE 5/6: getCurrentUser, Shortcuts, Cross-Tab, Filter Persistence
+   ============================== */
+var DEFAULT_COORDINATORS = [
+  {id:"jmiller",name:"J. Miller",email:"jmiller@uplifteducation.org",color:"#8e44ad"},
+  {id:"kpatterson",name:"K. Patterson",email:"kpatterson@uplifteducation.org",color:"#16a085"},
+  {id:"pokolo",name:"P. Okolo",email:"Pokolo@uplifteducation.org",color:"#c0392b"},
+  {id:"vpalencia",name:"V. Palencia",email:"vpalencia@uplifteducation.org",color:"#2980b9"}
+];
+function getCurrentUser() {
+  try {
+    var raw = localStorage.getItem("mlp_hub_config");
+    var cfg = raw ? JSON.parse(raw) : {};
+    if (cfg.currentUser) return cfg.currentUser;
+    if (cfg.coordinators && cfg.coordinators.length) return cfg.coordinators[0];
+  } catch(e) {}
+  return DEFAULT_COORDINATORS[0];
+}
+
+function toggleShortcutsHelp() {
+  var ov = document.getElementById("shortcutsOverlay");
+  if (!ov) return;
+  var isOpen = ov.classList.toggle("active");
+  if (isOpen) {
+    var closeBtn = ov.querySelector(".btn");
+    if (closeBtn) closeBtn.focus();
+  }
+}
+
+/* Keyboard shortcuts (Phase 6) — unified handler */
+document.addEventListener("keydown", function(e) {
+  var tag = (e.target.tagName || "").toUpperCase();
+  var isInput = tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
+
+  if (e.key === "Escape") {
+    var sov = document.getElementById("shortcutsOverlay");
+    if (sov && sov.classList.contains("active")) { sov.classList.remove("active"); return; }
+  }
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
+    e.preventDefault();
+    saveToStorage();
+    showToast("Saved");
+  }
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "d") {
+    e.preventDefault();
+    toggleDarkMode();
+  }
+  if (e.key === "?" && !isInput && !e.ctrlKey && !e.metaKey) {
+    e.preventDefault();
+    toggleShortcutsHelp();
+  }
+});
+
+/* Cross-tab sync (Phase 6) */
+var _auditSyncChannel = null;
+try { _auditSyncChannel = new BroadcastChannel("mlp_hub_sync"); } catch(e) {}
+if (_auditSyncChannel) {
+  _auditSyncChannel.onmessage = function(ev) {
+    if (ev.data && ev.data.source !== "audit") {
+      try { loadFromStorage(); refreshBanner(); } catch(e) {}
+    }
+  };
+}
+function broadcastAuditSync() {
+  if (_auditSyncChannel) {
+    try { _auditSyncChannel.postMessage({source:"audit",ts:Date.now()}); } catch(e) {}
+  }
+}
+
+/* Audit filter persistence via sessionStorage */
+function saveAuditFilters() {
+  try {
+    var filters = {
+      teacher: (document.getElementById("histFilterTeacher") || {}).value || "",
+      campus: (document.getElementById("histFilterCampus") || {}).value || ""
+    };
+    sessionStorage.setItem("audit_filters", JSON.stringify(filters));
+  } catch(e) {}
+}
+function restoreAuditFilters() {
+  try {
+    var raw = sessionStorage.getItem("audit_filters");
+    if (!raw) return;
+    var f = JSON.parse(raw);
+    var tf = document.getElementById("histFilterTeacher");
+    var cf = document.getElementById("histFilterCampus");
+    if (tf && f.teacher) tf.value = f.teacher;
+    if (cf && f.campus) cf.value = f.campus;
+  } catch(e) {}
 }
 
 var R = {
@@ -1606,6 +1746,7 @@ function saveToStorage(){
     var el=document.getElementById("saveStatus");
     el.textContent="Saved "+new Date().toLocaleTimeString();
     setTimeout(function(){el.textContent="Auto-save: active";},2000);
+    broadcastAuditSync();
   }catch(e){document.getElementById("saveStatus").textContent="Auto-save: error";}
 }
 
@@ -1937,11 +2078,13 @@ function saveToHistory(){
 
 function showHistoryModal(){
   populateHistoryCampusFilter();
+  restoreAuditFilters();
   renderHistory();
   document.getElementById("historyModal").classList.add("active");
 }
 
 function renderHistory(){
+  saveAuditFilters();
   var list=document.getElementById("histList");
   var history=getHistory();
   var filterTeacher=document.getElementById("histFilterTeacher").value.toLowerCase();
@@ -3759,6 +3902,11 @@ function initDarkMode() {
     if (cfg.orgName) {
       var h1 = document.querySelector(".header h1");
       if (h1) h1.textContent = cfg.orgName;
+    }
+    if (cfg.productName) {
+      document.title = cfg.productName + " - Classroom Audit";
+    } else if (cfg.orgName) {
+      document.title = cfg.orgName + " - Classroom Audit";
     }
   } catch(e){}
 })();

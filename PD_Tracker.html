@@ -199,9 +199,20 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 .notif-bell-badge{position:absolute;top:-4px;right:-4px;background:#e74c3c;color:#fff;font-size:9px;font-weight:800;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 4px;line-height:1}
 .notif-bell-badge.hidden{display:none}
 @media print{.notif-bell-link{display:none!important}}
+.skip-link{position:absolute;top:-40px;left:0;background:var(--primary);color:#fff;padding:8px 16px;z-index:9999;font-size:13px;font-weight:600;border-radius:0 0 6px 0;transition:top .2s}
+.skip-link:focus{top:0}
+.inline-edit-input{width:100%;padding:4px 6px;font:inherit;border:2px solid var(--primary);border-radius:4px;background:var(--input-bg);color:var(--input-text)}
+.shortcuts-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:var(--modal-overlay);z-index:1000;justify-content:center;align-items:center;padding:20px}
+.shortcuts-overlay.active{display:flex}
+.shortcuts-modal{background:var(--modal-bg);border-radius:12px;padding:24px 28px;max-width:460px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,.2)}
+.shortcuts-modal h3{font-size:16px;font-weight:800;color:var(--text-heading);margin-bottom:14px}
+.shortcuts-modal table{width:100%;border-collapse:collapse;font-size:12px}
+.shortcuts-modal td{padding:6px 8px;border-bottom:1px solid var(--border)}
+.shortcuts-modal kbd{display:inline-block;padding:2px 7px;border-radius:4px;background:var(--section-bg-light);border:1px solid var(--border);font-family:inherit;font-size:11px;font-weight:700;color:var(--text-heading)}
 </style>
 </head>
 <body>
+<a class="skip-link" href="#sessionsTable">Skip to content</a>
 <div class="wrap">
 
   <!-- Header -->
@@ -215,6 +226,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
       <button class="tool-btn" onclick="window.print()">&#128438; Print / PDF</button>
       <a class="notif-bell-link" href="index.html" title="Notifications" id="notifBellLink">&#128276;<span class="notif-bell-badge hidden" id="notifBellBadge">0</span></a>
       <button class="tool-btn" onclick="toggleDarkMode()" id="darkModeToggle" aria-label="Toggle dark mode">&#9789; Dark</button>
+      <button class="tool-btn" onclick="toggleShortcutsHelp()" aria-label="Keyboard shortcuts">&#9000; Keys</button>
       <a class="tool-btn" href="index.html" style="margin-left:auto">&#127968; Home</a>
     </div>
   </div>
@@ -329,7 +341,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 </div>
 
 <!-- Log Session Modal -->
-<div class="modal-overlay" id="logModal">
+<div class="modal-overlay" id="logModal" role="dialog" aria-modal="true" aria-label="Log PD Session">
   <div class="modal">
     <h3>&#128218; Log PD Session</h3>
     <div class="form-grid">
@@ -371,7 +383,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 </div>
 
 <!-- Import CSV Modal -->
-<div class="modal-overlay" id="importModal">
+<div class="modal-overlay" id="importModal" role="dialog" aria-modal="true" aria-label="Import CSV">
   <div class="modal">
     <h3>&#8679; Import PD Sessions CSV</h3>
     <div style="padding:0 20px 20px">
@@ -387,7 +399,21 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 </div>
 
 <div class="last-saved-footer" id="lastSavedFooter"></div>
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- Shortcuts Help Modal -->
+<div class="shortcuts-overlay" id="shortcutsOverlay" role="dialog" aria-modal="true" aria-label="Keyboard shortcuts">
+  <div class="shortcuts-modal">
+    <h3>Keyboard Shortcuts</h3>
+    <table>
+      <tr><td><kbd>Ctrl</kbd> + <kbd>S</kbd></td><td>Save data</td></tr>
+      <tr><td><kbd>Ctrl</kbd> + <kbd>D</kbd></td><td>Toggle dark mode</td></tr>
+      <tr><td><kbd>Esc</kbd></td><td>Close modals</td></tr>
+      <tr><td><kbd>?</kbd></td><td>Show this help</td></tr>
+    </table>
+    <div style="margin-top:14px;text-align:right"><button class="btn" onclick="toggleShortcutsHelp()">Close</button></div>
+  </div>
+</div>
 
 <input type="file" id="csvFileInput" accept=".csv" style="display:none" onchange="handleCsvFile(event)"/>
 
@@ -848,10 +874,10 @@ function renderTable(filtered) {
       '<td>' + escHtml(s.date) + '</td>' +
       '<td>' + escHtml(getCoordName(s.coordinatorId)) + '</td>' +
       '<td>' + catPill + '</td>' +
-      '<td>' + escHtml(s.title) + '</td>' +
-      '<td>' + escHtml(String(s.hours)) + '</td>' +
-      '<td>' + escHtml(s.facilitator || '') + '</td>' +
-      '<td class="notes-cell" title="' + escHtml(s.notes || '') + '">' + escHtml(notes) + '</td>' +
+      '<td ondblclick="enableInlineEdit(this,' + i + ',\'title\')" style="cursor:pointer" title="Double-click to edit">' + escHtml(s.title) + '</td>' +
+      '<td ondblclick="enableInlineEdit(this,' + i + ',\'hours\')" style="cursor:pointer" title="Double-click to edit">' + escHtml(String(s.hours)) + '</td>' +
+      '<td ondblclick="enableInlineEdit(this,' + i + ',\'facilitator\')" style="cursor:pointer" title="Double-click to edit">' + escHtml(s.facilitator || '') + '</td>' +
+      '<td class="notes-cell" title="' + escHtml(s.notes || '') + '" ondblclick="enableInlineEdit(this,' + i + ',\'notes\')" style="cursor:pointer">' + escHtml(notes) + '</td>' +
       '<td><button class="del-btn" onclick="deleteSession(\'' + escHtml(s.id) + '\')">&#10005;</button></td>' +
     '</tr>';
   }
@@ -1258,6 +1284,157 @@ document.getElementById('importModal').addEventListener('click', function(e) {
   renderLastSaved();
   initNotifBell();
 }());
+
+// =============================================
+// INLINE EDITING
+// =============================================
+function enableInlineEdit(td, recordIndex, fieldName) {
+  if (td.querySelector('input,textarea')) return;
+  var filtered = applyFilters();
+  if (!filtered[recordIndex]) return;
+  var orig = td.textContent.trim();
+  var input = document.createElement('input');
+  input.type = 'text';
+  input.value = orig;
+  input.className = 'inline-edit-input';
+  td.textContent = '';
+  td.appendChild(input);
+  input.focus();
+  input.select();
+  function commit() {
+    var val = input.value.trim();
+    td.textContent = val || orig;
+    updateInlineField(filtered[recordIndex].id, fieldName, val || orig);
+  }
+  input.addEventListener('blur', commit);
+  input.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+    if (e.key === 'Escape') { td.textContent = orig; }
+  });
+}
+
+function updateInlineField(sessionId, field, value) {
+  for (var i = 0; i < pdData.sessions.length; i++) {
+    if (pdData.sessions[i].id === sessionId) {
+      if (field === 'hours') {
+        var h = parseFloat(value);
+        pdData.sessions[i][field] = isNaN(h) ? pdData.sessions[i][field] : h;
+      } else {
+        pdData.sessions[i][field] = value;
+      }
+      break;
+    }
+  }
+  saveData();
+  showToast('Updated ' + field);
+}
+
+// =============================================
+// CROSS-TAB SYNC
+// =============================================
+var mlpChannel = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel('mlp_hub_sync') : null;
+if (mlpChannel) {
+  mlpChannel.onmessage = function(e) {
+    if (e.data && e.data.type === 'data_update') {
+      loadData();
+      renderAll();
+    }
+  };
+}
+var _origSaveData = saveData;
+saveData = function() {
+  _origSaveData();
+  if (mlpChannel) mlpChannel.postMessage({type:'data_update', key:'pd_tracker_data', timestamp:Date.now()});
+};
+
+// =============================================
+// FILTER PERSISTENCE
+// =============================================
+function saveFilters() {
+  var f = {};
+  var sels = document.querySelectorAll('.filter-bar select, .filter-group select, select[id*="filter"], select[id*="Filter"]');
+  for (var i = 0; i < sels.length; i++) { if (sels[i].id) f[sels[i].id] = sels[i].value; }
+  sessionStorage.setItem('pd_tracker_filters', JSON.stringify(f));
+}
+function restoreFilters() {
+  try {
+    var r = sessionStorage.getItem('pd_tracker_filters');
+    if (!r) return;
+    var f = JSON.parse(r);
+    for (var k in f) { var el = document.getElementById(k); if (el) el.value = f[k]; }
+  } catch(e){}
+}
+// Attach saveFilters to filter changes
+(function() {
+  var sels = document.querySelectorAll('#filterBar select, #filterBar input');
+  for (var i = 0; i < sels.length; i++) {
+    sels[i].addEventListener('change', saveFilters);
+  }
+})();
+
+// =============================================
+// getCurrentUser
+// =============================================
+function getCurrentUser() {
+  try {
+    var raw = localStorage.getItem('mlp_hub_config');
+    var cfg = raw ? JSON.parse(raw) : {};
+    return { id: cfg.userId || 'default', name: cfg.userName || 'Administrator', role: cfg.userRole || 'manager', orgId: cfg.orgId || 'default', orgName: cfg.orgName || 'MLP Coordinator Hub' };
+  } catch(e) {
+    return { id: 'default', name: 'Administrator', role: 'manager', orgId: 'default', orgName: 'MLP Coordinator Hub' };
+  }
+}
+
+// =============================================
+// CUSTOM PRODUCT NAME
+// =============================================
+(function() {
+  try {
+    var raw = localStorage.getItem('mlp_hub_config');
+    var cfg = raw ? JSON.parse(raw) : {};
+    var pName = cfg.productName || cfg.orgName || '';
+    if (pName) { document.title = pName + ' \u2014 ' + document.title; }
+  } catch(e){}
+})();
+
+// =============================================
+// KEYBOARD SHORTCUTS
+// =============================================
+function toggleShortcutsHelp() {
+  var ol = document.getElementById('shortcutsOverlay');
+  if (ol.classList.contains('active')) {
+    ol.classList.remove('active');
+  } else {
+    ol.classList.add('active');
+  }
+}
+document.getElementById('shortcutsOverlay').addEventListener('click', function(e) {
+  if (e.target === this) toggleShortcutsHelp();
+});
+document.addEventListener('keydown', function(e) {
+  // Escape closes modals
+  if (e.key === 'Escape') {
+    var so = document.getElementById('shortcutsOverlay');
+    if (so.classList.contains('active')) { toggleShortcutsHelp(); return; }
+    var lm = document.getElementById('logModal');
+    if (lm.classList.contains('active')) { closeLogModal(); return; }
+    var im = document.getElementById('importModal');
+    if (im.classList.contains('active')) { closeImportModal(); return; }
+  }
+  // Ctrl+S save
+  if (e.ctrlKey && e.key === 's') { e.preventDefault(); saveData(); showToast('Data saved'); }
+  // Ctrl+D dark mode
+  if (e.ctrlKey && e.key === 'd') { e.preventDefault(); toggleDarkMode(); }
+  // ? shortcuts help (not when in input)
+  var tag = (e.target.tagName || '').toLowerCase();
+  if (e.key === '?' && tag !== 'input' && tag !== 'textarea' && tag !== 'select') {
+    toggleShortcutsHelp();
+  }
+});
+
+// Restore filters on load
+restoreFilters();
+renderAll();
 
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("./service-worker.js").catch(function(){});

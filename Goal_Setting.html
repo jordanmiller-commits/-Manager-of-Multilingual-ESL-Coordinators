@@ -198,6 +198,19 @@ body{animation:fadeIn .25s ease both}
 .toast{position:fixed;bottom:24px;right:24px;background:var(--toast-bg);color:var(--toast-text);padding:12px 20px;border-radius:8px;font-size:13px;font-weight:600;box-shadow:0 4px 15px rgba(0,0,0,.2);z-index:3000;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none}
 .toast.show{opacity:1;transform:translateY(0)}
 
+/* SKIP LINK */
+.skip-link{position:absolute;top:-100%;left:8px;background:var(--primary);color:#fff;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;z-index:4000;text-decoration:none}
+.skip-link:focus{top:8px}
+
+/* SHORTCUTS HELP MODAL */
+.shortcuts-modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--modal-overlay);display:none;justify-content:center;align-items:flex-start;z-index:2000;padding:24px 14px;overflow-y:auto}
+.shortcuts-modal-overlay.open{display:flex}
+.shortcuts-modal{background:var(--modal-bg);border-radius:12px;padding:24px;max-width:440px;width:100%;box-shadow:0 8px 30px rgba(0,0,0,.2);margin:auto;color:var(--text);animation:modalFadeIn .2s ease both}
+.shortcuts-modal h3{font-size:17px;font-weight:800;color:var(--text-heading);margin-bottom:16px}
+.shortcuts-modal table{width:100%;border-collapse:collapse;font-size:13px}
+.shortcuts-modal td{padding:6px 4px;border-bottom:1px solid var(--border)}
+.shortcuts-modal kbd{display:inline-block;background:var(--section-bg-light);border:1px solid var(--input-border);border-radius:4px;padding:2px 7px;font-size:11px;font-family:'Segoe UI',monospace;font-weight:700;color:var(--text-secondary)}
+
 /* COORDINATOR COLORS */
 .coord-jmiller{background:#7e57c2}
 .coord-kpatterson{background:#26a69a}
@@ -237,6 +250,7 @@ body{animation:fadeIn .25s ease both}
 </style>
 </head>
 <body>
+<a class="skip-link" href="#goalsBoard">Skip to main content</a>
 <div class="wrap">
 
   <!-- HEADER -->
@@ -244,12 +258,15 @@ body{animation:fadeIn .25s ease both}
     <h1>&#127919; Goal-Setting &amp; Growth Planning</h1>
     <p>Set, track, and reflect on coordinator growth goals across semesters</p>
     <div class="toolbar">
-      <button class="tool-btn accent" onclick="openGoalModal(null)">&#65291; New Goal</button>
-      <button class="tool-btn" onclick="openGoalTemplateModal()" title="Start from a SMART goal template">&#128196; Templates</button>
-      <button class="tool-btn" onclick="window.print()">&#128438; Print / PDF</button>
-      <a class="notif-bell-link" href="index.html" title="Notifications" id="notifBellLink">&#128276;<span class="notif-bell-badge hidden" id="notifBellBadge">0</span></a>
-      <button class="tool-btn" onclick="toggleDarkMode()" id="darkModeToggle">&#9789; Dark</button>
-      <a class="tool-btn" href="index.html" style="margin-left:auto">&#127968; Home</a>
+      <button class="tool-btn accent" onclick="openGoalModal(null)" aria-label="Create new goal">&#65291; New Goal</button>
+      <button class="tool-btn" onclick="openGoalTemplateModal()" title="Start from a SMART goal template" aria-label="Goal templates">&#128196; Templates</button>
+      <button class="tool-btn" onclick="undoAction()" aria-label="Undo last action" id="undoBtn" disabled>&#8617; Undo</button>
+      <button class="tool-btn" onclick="redoAction()" aria-label="Redo last action" id="redoBtn" disabled>&#8618; Redo</button>
+      <button class="tool-btn" onclick="window.print()" aria-label="Print or save as PDF">&#128438; Print / PDF</button>
+      <a class="notif-bell-link" href="index.html" title="Notifications" id="notifBellLink" aria-label="Notifications">&#128276;<span class="notif-bell-badge hidden" id="notifBellBadge">0</span></a>
+      <button class="tool-btn" onclick="toggleDarkMode()" id="darkModeToggle" aria-label="Toggle dark mode">&#9789; Dark</button>
+      <button class="tool-btn" onclick="toggleShortcutsHelp()" aria-label="Keyboard shortcuts help">? Help</button>
+      <a class="tool-btn" href="index.html" style="margin-left:auto" aria-label="Go to home page">&#127968; Home</a>
     </div>
   </div>
 
@@ -300,7 +317,7 @@ body{animation:fadeIn .25s ease both}
 </div><!-- /wrap -->
 
 <!-- GOAL MODAL -->
-<div class="modal-overlay" id="goalModal">
+<div class="modal-overlay" id="goalModal" role="dialog" aria-modal="true" aria-label="Goal editor">
   <div class="modal">
     <h3 id="goalModalTitle">&#127919; New Goal <button class="modal-close" onclick="closeGoalModal()">&#10005;</button></h3>
     <input type="hidden" id="editGoalId"/>
@@ -359,7 +376,7 @@ body{animation:fadeIn .25s ease both}
 </div>
 
 <!-- CHECK-IN MODAL -->
-<div class="modal-overlay" id="checkinModal">
+<div class="modal-overlay" id="checkinModal" role="dialog" aria-modal="true" aria-label="Check-in editor">
   <div class="modal">
     <h3>&#128203; Add Check-In <button class="modal-close" onclick="closeCheckinModal()">&#10005;</button></h3>
     <input type="hidden" id="checkinGoalId"/>
@@ -422,7 +439,7 @@ body{animation:fadeIn .25s ease both}
 
 <!-- TOAST -->
 <!-- GOAL TEMPLATE PICKER MODAL -->
-<div class="modal-overlay template-modal-overlay" id="goalTemplateModal">
+<div class="modal-overlay template-modal-overlay" id="goalTemplateModal" role="dialog" aria-modal="true" aria-label="Goal template picker">
   <div class="modal">
     <h3>&#128196; Choose a Goal Template <button class="modal-close" onclick="closeGoalTemplateModal()">&#10005;</button></h3>
     <p style="font-size:12px;color:var(--text-secondary);margin-top:-8px;margin-bottom:0">Select a SMART goal framework to get started</p>
@@ -452,14 +469,83 @@ body{animation:fadeIn .25s ease both}
   </div>
 </div>
 
+<!-- SHORTCUTS HELP MODAL -->
+<div class="shortcuts-modal-overlay" id="shortcutsModal" role="dialog" aria-modal="true" aria-label="Keyboard shortcuts">
+  <div class="shortcuts-modal">
+    <h3>Keyboard Shortcuts <button class="modal-close" onclick="toggleShortcutsHelp()" aria-label="Close shortcuts help">&#10005;</button></h3>
+    <table>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>S</kbd></td><td>Save data</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>D</kbd></td><td>Toggle dark mode</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd></td><td>Undo</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Z</kbd></td><td>Redo</td></tr>
+      <tr><td><kbd>Esc</kbd></td><td>Close modals</td></tr>
+      <tr><td><kbd>?</kbd></td><td>Show this help</td></tr>
+    </table>
+  </div>
+</div>
+
 <div class="last-saved-footer" id="lastSavedFooter"></div>
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
 function initNotifBell(){var c=localStorage.getItem('notification_unread_count');var n=parseInt(c)||0;var b=document.getElementById('notifBellBadge');if(b){b.textContent=n>9?'9+':String(n);b.className=n>0?'notif-bell-badge':'notif-bell-badge hidden';}}
+
+/* getCurrentUser */
+function getCurrentUser() {
+  try {
+    var raw = localStorage.getItem('mlp_hub_config');
+    var cfg = raw ? JSON.parse(raw) : {};
+    return cfg.currentUser || null;
+  } catch(e) { return null; }
+}
+
+/* Cross-tab sync */
+var mlpChannel = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel('mlp_hub_sync') : null;
+
 var STORAGE_KEY = 'goal_setting_data';
 var appData = null;
 var _saveTimer = null;
+
+/* Undo / Redo */
+var undoStack = [];
+var redoStack = [];
+var MAX_UNDO = 30;
+
+function pushUndo() {
+  undoStack.push(JSON.stringify(appData));
+  if (undoStack.length > MAX_UNDO) undoStack.shift();
+  redoStack = [];
+  updateUndoRedoBtns();
+}
+
+function undoAction() {
+  if (!undoStack.length) return;
+  redoStack.push(JSON.stringify(appData));
+  appData = JSON.parse(undoStack.pop());
+  saveDataDirect();
+  renderGoals();
+  renderStats();
+  updateUndoRedoBtns();
+  showToast('Undo');
+}
+
+function redoAction() {
+  if (!redoStack.length) return;
+  undoStack.push(JSON.stringify(appData));
+  appData = JSON.parse(redoStack.pop());
+  saveDataDirect();
+  renderGoals();
+  renderStats();
+  updateUndoRedoBtns();
+  showToast('Redo');
+}
+
+function updateUndoRedoBtns() {
+  var ub = document.getElementById('undoBtn');
+  var rb = document.getElementById('redoBtn');
+  if (ub) ub.disabled = !undoStack.length;
+  if (rb) rb.disabled = !redoStack.length;
+}
 
 var LAST_SAVED_KEY = 'goal_setting_data_lastSaved';
 function stampLastSaved(){localStorage.setItem(LAST_SAVED_KEY,String(Date.now()));renderLastSaved();}
@@ -576,11 +662,16 @@ function loadData() {
   if (!appData.checkins) appData.checkins = [];
 }
 
+function saveDataDirect() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+  stampLastSaved();
+  if (mlpChannel) mlpChannel.postMessage({type:'data_update',key:STORAGE_KEY,timestamp:Date.now()});
+}
+
 function saveData() {
   clearTimeout(_saveTimer);
   _saveTimer = setTimeout(function() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
-    stampLastSaved();
+    saveDataDirect();
   }, 300);
 }
 
@@ -819,6 +910,7 @@ function buildGoalCard(goal) {
    TOGGLE STEP (on card)
    ===================== */
 function toggleStep(goalId, stepIdx, checked) {
+  pushUndo();
   for (var i = 0; i < appData.goals.length; i++) {
     if (appData.goals[i].id === goalId) {
       if (appData.goals[i].actionSteps && appData.goals[i].actionSteps[stepIdx] !== undefined) {
@@ -912,6 +1004,8 @@ function saveGoal() {
   }
   if (!steps.length) { showToast('At least one action step is required.'); return; }
 
+  pushUndo();
+
   if (id) {
     // Edit
     for (var j = 0; j < appData.goals.length; j++) {
@@ -965,6 +1059,7 @@ function saveGoal() {
 
 function deleteGoal(id) {
   if (!confirm('Delete this goal? All check-ins for this goal will also be removed.')) return;
+  pushUndo();
   appData.goals = appData.goals.filter(function(g) { return g.id !== id; });
   appData.checkins = appData.checkins.filter(function(c) { return c.goalId !== id; });
   saveData();
@@ -1071,6 +1166,8 @@ function saveCheckin() {
   if (!rating) { showToast('Please select a rating.'); return; }
   if (!date) { showToast('Please enter a date.'); return; }
 
+  pushUndo();
+
   var checkin = {
     id: genId(),
     goalId: goalId,
@@ -1109,7 +1206,7 @@ function applyTheme() {
   }
 }
 
-/* Theme config */
+/* Theme config + custom product name */
 (function(){
   try {
     var raw = localStorage.getItem("mlp_hub_config");
@@ -1141,8 +1238,108 @@ function applyTheme() {
       var h1 = document.querySelector(".header h1");
       if (h1) h1.textContent = cfg.orgName;
     }
+    var pName = cfg.productName || cfg.orgName || '';
+    if (pName) { document.title = pName + ' \u2014 ' + document.title; }
   } catch(e){}
 })();
+
+/* =====================
+   SHORTCUTS HELP
+   ===================== */
+function toggleShortcutsHelp() {
+  var m = document.getElementById('shortcutsModal');
+  var isOpen = m.classList.contains('open');
+  if (isOpen) {
+    m.classList.remove('open');
+  } else {
+    m.classList.add('open');
+  }
+}
+
+/* =====================
+   FILTER PERSISTENCE
+   ===================== */
+var FILTER_SESSION_KEY = 'goal_setting_filters';
+function saveFilterState() {
+  var state = {
+    coord: document.getElementById('filterCoord').value,
+    sem: document.getElementById('filterSem').value,
+    status: document.getElementById('filterStatus').value
+  };
+  try { sessionStorage.setItem(FILTER_SESSION_KEY, JSON.stringify(state)); } catch(e) {}
+}
+
+function restoreFilterState() {
+  try {
+    var raw = sessionStorage.getItem(FILTER_SESSION_KEY);
+    if (!raw) return;
+    var state = JSON.parse(raw);
+    if (state.coord) document.getElementById('filterCoord').value = state.coord;
+    if (state.sem) document.getElementById('filterSem').value = state.sem;
+    if (state.status) document.getElementById('filterStatus').value = state.status;
+  } catch(e) {}
+}
+
+/* Patch filter onchange to persist */
+(function() {
+  var ids = ['filterCoord','filterSem','filterStatus'];
+  for (var i = 0; i < ids.length; i++) {
+    var el = document.getElementById(ids[i]);
+    if (el) {
+      el.addEventListener('change', function() { saveFilterState(); });
+    }
+  }
+})();
+
+/* =====================
+   KEYBOARD SHORTCUTS
+   ===================== */
+document.addEventListener('keydown', function(e) {
+  var tag = (e.target.tagName || '').toLowerCase();
+  var inInput = (tag === 'input' || tag === 'textarea' || tag === 'select');
+
+  if (e.key === 'Escape') {
+    if (document.getElementById('shortcutsModal').classList.contains('open')) {
+      toggleShortcutsHelp();
+    } else if (document.getElementById('goalModal').classList.contains('open')) {
+      closeGoalModal();
+    } else if (document.getElementById('checkinModal').classList.contains('open')) {
+      closeCheckinModal();
+    } else if (document.getElementById('goalTemplateModal').classList.contains('open')) {
+      closeGoalTemplateModal();
+    }
+    return;
+  }
+
+  if (e.ctrlKey && !e.altKey) {
+    if (e.key === 's' || e.key === 'S') {
+      e.preventDefault();
+      saveDataDirect();
+      showToast('Data saved');
+      return;
+    }
+    if (e.key === 'd' || e.key === 'D') {
+      e.preventDefault();
+      toggleDarkMode();
+      return;
+    }
+    if (e.shiftKey && (e.key === 'z' || e.key === 'Z')) {
+      e.preventDefault();
+      redoAction();
+      return;
+    }
+    if (e.key === 'z' || e.key === 'Z') {
+      e.preventDefault();
+      undoAction();
+      return;
+    }
+  }
+
+  if (!inInput && e.key === '?') {
+    e.preventDefault();
+    toggleShortcutsHelp();
+  }
+});
 
 /* =====================
    INIT
@@ -1151,17 +1348,34 @@ function init() {
   applyTheme();
   refreshCoordMaps();
   populateCoordDropdowns();
+  restoreFilterState();
   loadData();
   renderStats();
   renderGoals();
   renderLastSaved();
+  updateUndoRedoBtns();
 }
 
 init();
 initNotifBell();
 
+/* Cross-tab sync listener */
+if (mlpChannel) {
+  mlpChannel.onmessage = function(e) {
+    if (e.data && e.data.type === 'data_update') {
+      loadData();
+      renderGoals();
+      renderStats();
+    }
+  };
+}
+
 document.getElementById("goalTemplateModal").addEventListener("click", function(e){
   if(e.target === this) closeGoalTemplateModal();
+});
+
+document.getElementById("shortcutsModal").addEventListener("click", function(e){
+  if(e.target === this) toggleShortcutsHelp();
 });
 
 if ('serviceWorker' in navigator) {

@@ -253,6 +253,15 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
   .stat-card{box-shadow:none;border:1px solid #ccc}
   .stats-row{display:grid!important}
 }
+.skip-link{position:absolute;top:-100%;left:8px;background:var(--primary);color:#fff;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;z-index:4000;text-decoration:none}
+.skip-link:focus{top:8px}
+.shortcuts-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:var(--modal-overlay);z-index:1000;justify-content:center;align-items:center;padding:20px}
+.shortcuts-overlay.active{display:flex}
+.shortcuts-modal{background:var(--modal-bg);border-radius:12px;padding:24px 28px;max-width:460px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,.2)}
+.shortcuts-modal h3{font-size:16px;font-weight:800;color:var(--text-heading);margin-bottom:14px}
+.shortcuts-modal table{width:100%;border-collapse:collapse;font-size:12px}
+.shortcuts-modal td{padding:6px 8px;border-bottom:1px solid var(--border)}
+.shortcuts-modal kbd{display:inline-block;padding:2px 7px;border-radius:4px;background:var(--section-bg-light);border:1px solid var(--border);font-family:inherit;font-size:11px;font-weight:700;color:var(--text-heading)}
 .last-saved-footer{position:fixed;bottom:0;left:0;width:100%;background:var(--footer-bg);border-top:1px solid var(--footer-border);padding:4px 16px;font-size:10px;color:var(--footer-text);text-align:right;z-index:50;font-family:inherit}
 @media print{.last-saved-footer{display:none}}
 .notif-bell-link{position:relative;display:inline-block;padding:6px 13px;border-radius:7px;border:2px solid rgba(255,255,255,.35);background:rgba(255,255,255,.13);color:#fff;font-size:14px;text-decoration:none;transition:all .15s;line-height:1;cursor:pointer}
@@ -263,6 +272,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 </style>
 </head>
 <body>
+<a class="skip-link" href="#teacherGrid">Skip to content</a>
 
 <div class="wrap">
 
@@ -275,11 +285,12 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
       </div>
       <div class="header-actions">
         <span class="sync-label" id="syncLabel"></span>
-        <button class="tool-btn" onclick="fetchData()" id="refreshBtn" title="Reload data from Google Drive">&#8635; Refresh</button>
-        <button class="tool-btn" onclick="openSetup()" title="Change settings">&#9881; Setup</button>
-        <a class="notif-bell-link" href="../index.html" title="Notifications" id="notifBellLink">&#128276;<span class="notif-bell-badge hidden" id="notifBellBadge">0</span></a>
-        <button class="tool-btn" onclick="toggleDark()" id="darkBtn">&#9790; Dark</button>
-        <button class="tool-btn" onclick="window.print()">&#128438; Print / PDF</button>
+        <button class="tool-btn" onclick="fetchData()" id="refreshBtn" title="Reload data from Google Drive" aria-label="Refresh data">&#8635; Refresh</button>
+        <button class="tool-btn" onclick="openSetup()" title="Change settings" aria-label="Change settings">&#9881; Setup</button>
+        <button class="tool-btn" onclick="toggleShortcutsHelp()" aria-label="Keyboard shortcuts help">? Help</button>
+        <a class="notif-bell-link" href="../index.html" title="Notifications" aria-label="Notifications" id="notifBellLink">&#128276;<span class="notif-bell-badge hidden" id="notifBellBadge">0</span></a>
+        <button class="tool-btn" onclick="toggleDark()" id="darkBtn" aria-label="Toggle dark mode">&#9790; Dark</button>
+        <button class="tool-btn" onclick="window.print()" aria-label="Print or save PDF">&#128438; Print / PDF</button>
       </div>
     </div>
     <div class="toolbar">
@@ -296,18 +307,18 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
     <p>Enter your Google Apps Script URL to load teacher progress. Your manager can share a pre-configured link that fills this in automatically.</p>
     <div class="setup-grid">
       <div class="setup-field">
-        <label>Google Apps Script URL</label>
-        <input type="url" id="gasUrlInput" placeholder="https://script.google.com/macros/s/.../exec"/>
+        <label for="gasUrlInput">Google Apps Script URL</label>
+        <input type="url" id="gasUrlInput" placeholder="https://script.google.com/macros/s/.../exec" aria-label="Google Apps Script URL"/>
         <div class="setup-hint">Provided by your MLP manager</div>
       </div>
       <div class="setup-field">
-        <label>Your Campus</label>
-        <input type="text" id="campusInput" placeholder="e.g. Highland, Crossroads"/>
+        <label for="campusInput">Your Campus</label>
+        <input type="text" id="campusInput" placeholder="e.g. Highland, Crossroads" aria-label="Campus name"/>
         <div class="setup-hint">Must match exactly as entered in the suite</div>
       </div>
       <div class="setup-field">
-        <label>Your Email (optional)</label>
-        <input type="email" id="principalEmailInput" placeholder="principal@school.org"/>
+        <label for="principalEmailInput">Your Email (optional)</label>
+        <input type="email" id="principalEmailInput" placeholder="principal@school.org" aria-label="Principal email"/>
         <div class="setup-hint">Used to CC you on meeting requests</div>
       </div>
     </div>
@@ -343,16 +354,16 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
   <!-- ===================== FILTER / CAMPUS BAR ===================== -->
   <div class="card filter-card" id="filterCard" style="display:none">
     <div class="filter-bar">
-      <label>Search</label>
-      <input type="text" id="searchInput" placeholder="Teacher name&hellip;" oninput="applyFilter()" style="width:170px"/>
-      <label>Show</label>
-      <select id="showFilter" onchange="applyFilter()">
+      <label for="searchInput">Search</label>
+      <input type="text" id="searchInput" placeholder="Teacher name&hellip;" oninput="applyFilter()" style="width:170px" aria-label="Search teacher name"/>
+      <label for="showFilter">Show</label>
+      <select id="showFilter" onchange="applyFilter()" aria-label="Filter teachers">
         <option value="all">All Teachers</option>
         <option value="unreviewed">Unreviewed Only</option>
         <option value="reviewed">Reviewed</option>
       </select>
-      <label>Sort</label>
-      <select id="sortFilter" onchange="applyFilter()">
+      <label for="sortFilter">Sort</label>
+      <select id="sortFilter" onchange="applyFilter()" aria-label="Sort teachers">
         <option value="name">Name A&rarr;Z</option>
         <option value="audit">Audit Score</option>
         <option value="observed">Last Observed</option>
@@ -390,7 +401,21 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 </div><!-- /wrap -->
 
 <div class="last-saved-footer" id="lastSavedFooter"></div>
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- Shortcuts Help Modal -->
+<div class="shortcuts-overlay" id="shortcutsOverlay" role="dialog" aria-modal="true" aria-label="Keyboard shortcuts">
+  <div class="shortcuts-modal">
+    <h3>Keyboard Shortcuts</h3>
+    <table>
+      <tr><td><kbd>Ctrl</kbd> + <kbd>S</kbd></td><td>Refresh data</td></tr>
+      <tr><td><kbd>Ctrl</kbd> + <kbd>D</kbd></td><td>Toggle dark mode</td></tr>
+      <tr><td><kbd>Esc</kbd></td><td>Close modals</td></tr>
+      <tr><td><kbd>?</kbd></td><td>Show this help</td></tr>
+    </table>
+    <div style="margin-top:14px;text-align:right"><button class="btn sm" onclick="toggleShortcutsHelp()">Close</button></div>
+  </div>
+</div>
 
 <script>
 function initNotifBell(){var c=localStorage.getItem('notification_unread_count');var n=parseInt(c)||0;var b=document.getElementById('notifBellBadge');if(b){b.textContent=n>9?'9+':String(n);b.className=n>0?'notif-bell-badge':'notif-bell-badge hidden';}}
@@ -1529,9 +1554,99 @@ function renderLastSaved(){
 }
 
 // ============================================================
+//  CROSS-TAB SYNC
+// ============================================================
+var mlpChannel = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel('mlp_hub_sync') : null;
+if (mlpChannel) {
+  mlpChannel.onmessage = function(ev) {
+    if (ev.data && ev.data.type === 'data_update') {
+      fetchData();
+    }
+  };
+}
+
+// ============================================================
+//  FILTER PERSISTENCE
+// ============================================================
+function saveFiltersPP() {
+  var f = {};
+  var sels = document.querySelectorAll('#filterCard select, #filterCard input[type=text]');
+  for (var i = 0; i < sels.length; i++) { if (sels[i].id) f[sels[i].id] = sels[i].value; }
+  sessionStorage.setItem('principal_portal_filters', JSON.stringify(f));
+}
+function restoreFiltersPP() {
+  try {
+    var r = sessionStorage.getItem('principal_portal_filters');
+    if (!r) return;
+    var f = JSON.parse(r);
+    for (var k in f) { var el = document.getElementById(k); if (el) el.value = f[k]; }
+  } catch(e){}
+}
+(function() {
+  var sels = document.querySelectorAll('#filterCard select, #filterCard input[type=text]');
+  for (var i = 0; i < sels.length; i++) {
+    sels[i].addEventListener('change', saveFiltersPP);
+    sels[i].addEventListener('input', saveFiltersPP);
+  }
+})();
+
+// ============================================================
+//  getCurrentUser
+// ============================================================
+function getCurrentUser() {
+  try {
+    var raw = localStorage.getItem('mlp_hub_config');
+    var cfg = raw ? JSON.parse(raw) : {};
+    return { id: cfg.userId || 'default', name: cfg.userName || 'Administrator', role: cfg.userRole || 'manager', orgId: cfg.orgId || 'default', orgName: cfg.orgName || 'Coordinator Hub' };
+  } catch(e) {
+    return { id: 'default', name: 'Administrator', role: 'manager', orgId: 'default', orgName: 'Coordinator Hub' };
+  }
+}
+
+// ============================================================
+//  CUSTOM PRODUCT NAME
+// ============================================================
+(function() {
+  try {
+    var raw = localStorage.getItem('mlp_hub_config');
+    var cfg = raw ? JSON.parse(raw) : {};
+    var pName = cfg.productName || cfg.orgName || '';
+    if (pName) { document.title = pName + ' \u2014 ' + document.title; }
+  } catch(e){}
+})();
+
+// ============================================================
+//  KEYBOARD SHORTCUTS
+// ============================================================
+function toggleShortcutsHelp() {
+  var ol = document.getElementById('shortcutsOverlay');
+  if (ol.classList.contains('active')) {
+    ol.classList.remove('active');
+  } else {
+    ol.classList.add('active');
+  }
+}
+document.getElementById('shortcutsOverlay').addEventListener('click', function(e) {
+  if (e.target === this) toggleShortcutsHelp();
+});
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    var so = document.getElementById('shortcutsOverlay');
+    if (so.classList.contains('active')) { toggleShortcutsHelp(); return; }
+  }
+  if (e.ctrlKey && e.key === 's') { e.preventDefault(); fetchData(); }
+  if (e.ctrlKey && e.key === 'd') { e.preventDefault(); toggleDark(); }
+  var tag = (e.target.tagName || '').toLowerCase();
+  if (e.key === '?' && tag !== 'input' && tag !== 'textarea' && tag !== 'select') {
+    toggleShortcutsHelp();
+  }
+});
+
+// ============================================================
 //  BOOT
 // ============================================================
 init();
+restoreFiltersPP();
 renderLastSaved();
 initNotifBell();
 </script>

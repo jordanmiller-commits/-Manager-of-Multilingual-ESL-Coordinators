@@ -216,23 +216,34 @@ body.dark-mode .recommended-banner .dismiss-rec{border-color:#664d03;color:#f0c2
 .notif-bell-badge{position:absolute;top:-4px;right:-4px;background:#e74c3c;color:#fff;font-size:9px;font-weight:800;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 4px;line-height:1}
 .notif-bell-badge.hidden{display:none}
 @media print{.notif-bell-link{display:none!important}}
+.skip-link{position:absolute;top:-100%;left:8px;background:var(--primary);color:#fff;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;z-index:4000;text-decoration:none}
+.skip-link:focus{top:8px}
+.shortcuts-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:var(--modal-overlay);z-index:1000;justify-content:center;align-items:center;padding:20px}
+.shortcuts-overlay.active{display:flex}
+.shortcuts-modal{background:var(--modal-bg);border-radius:12px;padding:24px 28px;max-width:460px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,.2)}
+.shortcuts-modal h3{font-size:16px;font-weight:800;color:var(--text-heading);margin-bottom:14px}
+.shortcuts-modal table{width:100%;border-collapse:collapse;font-size:12px}
+.shortcuts-modal td{padding:6px 8px;border-bottom:1px solid var(--border)}
+.shortcuts-modal kbd{display:inline-block;padding:2px 7px;border-radius:4px;background:var(--section-bg-light);border:1px solid var(--border);font-family:inherit;font-size:11px;font-weight:700;color:var(--text-heading)}
 </style>
 </head>
 <body>
+<a class="skip-link" href="#chatArea">Skip to content</a>
 <div class="wrap">
 <div class="header">
 <h1>ELPS Knowledge Base Agent</h1>
 <p class="subtitle">English Language Proficiency Standards &mdash; Document Q&amp;A Tool</p>
 <div class="toolbar">
-<button class="tool-btn" onclick="exportData()">Export</button>
-<button class="tool-btn" onclick="showModal('importModal')">Import</button>
-<button class="tool-btn" onclick="showSettingsModal()">Settings</button>
-<button class="tool-btn" onclick="showModal('coverageModal')">Coverage</button>
-<button class="tool-btn" onclick="showPopularQueries()">Popular</button>
-<a class="notif-bell-link" href="../index.html" title="Notifications" id="notifBellLink">&#128276;<span class="notif-bell-badge hidden" id="notifBellBadge">0</span></a>
-<button class="tool-btn" id="darkBtn" onclick="toggleDarkMode()">Dark</button>
-<button class="tool-btn danger" onclick="showModal('resetModal')">Reset</button>
-<button class="tool-btn" onclick="window.print()">&#128438; Print / PDF</button>
+<button class="tool-btn" onclick="exportData()" aria-label="Export knowledge base">Export</button>
+<button class="tool-btn" onclick="showModal('importModal')" aria-label="Import knowledge base">Import</button>
+<button class="tool-btn" onclick="showSettingsModal()" aria-label="Settings">Settings</button>
+<button class="tool-btn" onclick="showModal('coverageModal')" aria-label="ELPS coverage map">Coverage</button>
+<button class="tool-btn" onclick="showPopularQueries()" aria-label="Popular queries">Popular</button>
+<button class="tool-btn" onclick="toggleShortcutsHelp()" aria-label="Keyboard shortcuts help">? Help</button>
+<a class="notif-bell-link" href="../index.html" title="Notifications" aria-label="Notifications" id="notifBellLink">&#128276;<span class="notif-bell-badge hidden" id="notifBellBadge">0</span></a>
+<button class="tool-btn" id="darkBtn" onclick="toggleDarkMode()" aria-label="Toggle dark mode">Dark</button>
+<button class="tool-btn danger" onclick="showModal('resetModal')" aria-label="Reset knowledge base">Reset</button>
+<button class="tool-btn" onclick="window.print()" aria-label="Print or save PDF">&#128438; Print / PDF</button>
 <a class="tool-btn" href="../index.html" style="margin-left:auto" aria-label="Back to Home">&#127968; Home</a>
 <span class="save-indicator" id="saveStatus">Auto-save: ready</span>
 </div>
@@ -270,7 +281,7 @@ body.dark-mode .recommended-banner .dismiss-rec{border-color:#664d03;color:#f0c2
 <div class="card-title">Chat</div>
 <div class="chat-area" id="chatArea"><div id="chatWelcome" class="chat-empty-state"><span class="empty-icon">&#128218;</span><p>Ask a question about ELPS standards, proficiency levels, accommodations, or strategies.</p><p style="font-size:11px;color:var(--text-faint)">Your knowledge base is pre-loaded and ready to search.</p><div class="empty-chips"><button class="empty-chip" onclick="window.quickAsk('What are the ELPS proficiency levels?')">ELPS proficiency levels</button><button class="empty-chip" onclick="window.quickAsk('What accommodations support beginning ELs?')">Accommodations for beginners</button><button class="empty-chip" onclick="window.quickAsk('What does ELPS say about listening strategies?')">Listening strategies</button></div></div></div>
 <div class="ask-row">
-<input type="text" class="ask-input" id="askInput" placeholder="Ask about ELPS standards, proficiency levels, accommodations..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();handleAskQuestion()}"/>
+<input type="text" class="ask-input" id="askInput" aria-label="Search or ask about ELPS" placeholder="Ask about ELPS standards, proficiency levels, accommodations..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();handleAskQuestion()}"/>
 <button class="ask-btn" id="askBtn" onclick="handleAskQuestion()">Search</button>
 </div>
 <div class="mode-row">
@@ -294,11 +305,11 @@ body.dark-mode .recommended-banner .dismiss-rec{border-color:#664d03;color:#f0c2
 <button class="onboard-skip" onclick="closeOnboarding()">Skip tour</button>
 </div>
 </div>
-<div class="modal-overlay" id="settingsModal">
+<div class="modal-overlay" id="settingsModal" role="dialog" aria-modal="true" aria-label="Settings">
 <div class="modal">
 <h3>Settings</h3>
-<label>AI Provider</label>
-<select id="settingsProvider" onchange="onProviderChange()">
+<label for="settingsProvider">AI Provider</label>
+<select id="settingsProvider" onchange="onProviderChange()" aria-label="AI provider">
 <option value="ollama">Ollama (Local)</option>
 <option value="anthropic">Anthropic (Claude)</option>
 <option value="openai">OpenAI</option>
@@ -333,7 +344,7 @@ body.dark-mode .recommended-banner .dismiss-rec{border-color:#664d03;color:#f0c2
 </div>
 </div>
 </div>
-<div class="modal-overlay" id="importModal">
+<div class="modal-overlay" id="importModal" role="dialog" aria-modal="true" aria-label="Import knowledge base">
 <div class="modal">
 <h3>Import Knowledge Base</h3>
 <p>Paste exported JSON or choose a file to restore your knowledge base.</p>
@@ -345,7 +356,7 @@ body.dark-mode .recommended-banner .dismiss-rec{border-color:#664d03;color:#f0c2
 </div>
 </div>
 </div>
-<div class="modal-overlay" id="resetModal">
+<div class="modal-overlay" id="resetModal" role="dialog" aria-modal="true" aria-label="Reset knowledge base">
 <div class="modal">
 <h3>Reset Knowledge Base</h3>
 <p>This will permanently delete all uploaded documents, settings, and chat history. Pre-loaded documents will be restored on next load.</p>
@@ -355,7 +366,7 @@ body.dark-mode .recommended-banner .dismiss-rec{border-color:#664d03;color:#f0c2
 </div>
 </div>
 </div>
-<div class="modal-overlay" id="chunkModal">
+<div class="modal-overlay" id="chunkModal" role="dialog" aria-modal="true" aria-label="Chunk editor">
 <div class="modal wide">
 <h3>Chunk Editor — <span id="chunkDocName"></span></h3>
 <p>View and edit how document text was chunked. Changes affect search results.</p>
@@ -366,7 +377,7 @@ body.dark-mode .recommended-banner .dismiss-rec{border-color:#664d03;color:#f0c2
 </div>
 </div>
 </div>
-<div class="modal-overlay" id="coverageModal">
+<div class="modal-overlay" id="coverageModal" role="dialog" aria-modal="true" aria-label="ELPS coverage map">
 <div class="modal wide">
 <h3>ELPS Coverage Map</h3>
 <p>Shows which ELPS codes are covered in your knowledge base. Darker = more chunks mention that code. Click a cell to search for it.</p>
@@ -374,7 +385,7 @@ body.dark-mode .recommended-banner .dismiss-rec{border-color:#664d03;color:#f0c2
 <div class="modal-btns"><button class="btn-cancel" onclick="closeModal('coverageModal')">Close</button></div>
 </div>
 </div>
-<div class="modal-overlay" id="popularModal">
+<div class="modal-overlay" id="popularModal" role="dialog" aria-modal="true" aria-label="Popular queries">
 <div class="modal">
 <h3>Popular Queries</h3>
 <p>Most frequently asked questions across your sessions.</p>
@@ -382,7 +393,7 @@ body.dark-mode .recommended-banner .dismiss-rec{border-color:#664d03;color:#f0c2
 <div class="modal-btns"><button class="btn-cancel" onclick="closeModal('popularModal')">Close</button></div>
 </div>
 </div>
-<div class="modal-overlay" id="tagModal">
+<div class="modal-overlay" id="tagModal" role="dialog" aria-modal="true" aria-label="Add tag">
 <div class="modal">
 <h3>Add Tag</h3>
 <p>Enter a category tag for this document (e.g., Proficiency Levels, Accommodations, Strategies).</p>
@@ -394,6 +405,23 @@ body.dark-mode .recommended-banner .dismiss-rec{border-color:#664d03;color:#f0c2
 </div>
 </div>
 <div class="last-saved-footer" id="lastSavedFooter"></div>
+
+<!-- Shortcuts Help Modal -->
+<div class="shortcuts-overlay" id="shortcutsOverlay" role="dialog" aria-modal="true" aria-label="Keyboard shortcuts">
+  <div class="shortcuts-modal">
+    <h3>Keyboard Shortcuts</h3>
+    <table>
+      <tr><td><kbd>Ctrl</kbd> + <kbd>K</kbd></td><td>Focus search bar</td></tr>
+      <tr><td><kbd>Ctrl</kbd> + <kbd>Enter</kbd></td><td>Toggle AI mode</td></tr>
+      <tr><td><kbd>Ctrl</kbd> + <kbd>S</kbd></td><td>Save data</td></tr>
+      <tr><td><kbd>Ctrl</kbd> + <kbd>D</kbd></td><td>Toggle dark mode</td></tr>
+      <tr><td><kbd>Esc</kbd></td><td>Close modals</td></tr>
+      <tr><td><kbd>?</kbd></td><td>Show this help</td></tr>
+    </table>
+    <div style="margin-top:14px;text-align:right"><button class="btn-cancel" onclick="toggleShortcutsHelp()">Close</button></div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.min.mjs" type="module"></script>
 <script type="module">
 import * as pdfjsModule from "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.min.mjs";
@@ -597,7 +625,36 @@ function escapeAttr(s){return s.replace(/'/g,"\\'").replace(/"/g,"&quot;");}
 function formatNumber(n){return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g,",");}
 
 /* ============ KEYBOARD SHORTCUTS ============ */
-function setupKeyboard(){document.addEventListener("keydown",function(e){if(e.ctrlKey&&e.key==="k"){e.preventDefault();document.getElementById("askInput").focus();}if(e.ctrlKey&&e.key==="Enter"){e.preventDefault();setMode(searchMode==="search"?"ai":"search");var sr=document.querySelector('input[name="mode"][value="'+searchMode+'"]');if(sr)sr.checked=true;}if(e.key==="Escape"){var modals=document.querySelectorAll(".modal-overlay.show");for(var i=0;i<modals.length;i++)modals[i].classList.remove("show");closeOnboarding();}});}
+function toggleShortcutsHelp() {
+  var ol = document.getElementById('shortcutsOverlay');
+  if (ol.classList.contains('active')) {
+    ol.classList.remove('active');
+  } else {
+    ol.classList.add('active');
+  }
+}
+window.toggleShortcutsHelp = toggleShortcutsHelp;
+
+function setupKeyboard(){
+  document.getElementById('shortcutsOverlay').addEventListener('click', function(e) {
+    if (e.target === this) toggleShortcutsHelp();
+  });
+  document.addEventListener("keydown",function(e){
+    if(e.ctrlKey&&e.key==="k"){e.preventDefault();document.getElementById("askInput").focus();}
+    if(e.ctrlKey&&e.key==="Enter"){e.preventDefault();setMode(searchMode==="search"?"ai":"search");var sr=document.querySelector('input[name="mode"][value="'+searchMode+'"]');if(sr)sr.checked=true;}
+    if(e.key==="Escape"){
+      var so = document.getElementById('shortcutsOverlay');
+      if (so.classList.contains('active')) { toggleShortcutsHelp(); return; }
+      var modals=document.querySelectorAll(".modal-overlay.show");for(var i=0;i<modals.length;i++)modals[i].classList.remove("show");closeOnboarding();
+    }
+    if(e.ctrlKey&&e.key==="s"){e.preventDefault();saveToStorage();}
+    if(e.ctrlKey&&e.key==="d"){e.preventDefault();toggleDarkMode();}
+    var tag = (e.target.tagName || '').toLowerCase();
+    if (e.key === '?' && tag !== 'input' && tag !== 'textarea' && tag !== 'select') {
+      toggleShortcutsHelp();
+    }
+  });
+}
 
 /* ============ DRAG AND DROP ============ */
 function setupDragDrop(){var zone=document.getElementById("uploadZone");zone.addEventListener("dragover",function(e){e.preventDefault();zone.classList.add("dragover");});zone.addEventListener("dragleave",function(){zone.classList.remove("dragover");});zone.addEventListener("drop",function(e){e.preventDefault();zone.classList.remove("dragover");if(e.dataTransfer.files.length>0)handleFileUpload(e.dataTransfer.files);});}
@@ -676,6 +733,45 @@ renderLastSaved();
 })();
 if("serviceWorker" in navigator){navigator.serviceWorker.register("../service-worker.js").catch(function(){});}
 initNotifBell();
+
+/* ============ CROSS-TAB SYNC ============ */
+var mlpChannel = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel('mlp_hub_sync') : null;
+if (mlpChannel) {
+  mlpChannel.onmessage = function(ev) {
+    if (ev.data && ev.data.type === 'data_update') {
+      loadFromStorage();
+      renderStats();
+      renderDocList();
+      renderChat();
+    }
+  };
+}
+var _origSaveToStorage = saveToStorage;
+saveToStorage = function() {
+  _origSaveToStorage();
+  if (mlpChannel) mlpChannel.postMessage({type:'data_update', key:'elps_agent_docs', timestamp:Date.now()});
+};
+
+/* ============ getCurrentUser ============ */
+function getCurrentUser() {
+  try {
+    var raw = localStorage.getItem('mlp_hub_config');
+    var cfg = raw ? JSON.parse(raw) : {};
+    return { id: cfg.userId || 'default', name: cfg.userName || 'Administrator', role: cfg.userRole || 'manager', orgId: cfg.orgId || 'default', orgName: cfg.orgName || 'Coordinator Hub' };
+  } catch(e) {
+    return { id: 'default', name: 'Administrator', role: 'manager', orgId: 'default', orgName: 'Coordinator Hub' };
+  }
+}
+
+/* ============ CUSTOM PRODUCT NAME ============ */
+(function() {
+  try {
+    var raw = localStorage.getItem('mlp_hub_config');
+    var cfg = raw ? JSON.parse(raw) : {};
+    var pName = cfg.productName || cfg.orgName || '';
+    if (pName) { document.title = pName + ' \u2014 ' + document.title; }
+  } catch(e){}
+})();
 </script>
 </body>
 </html>

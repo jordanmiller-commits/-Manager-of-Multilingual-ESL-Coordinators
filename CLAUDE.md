@@ -123,7 +123,11 @@ All tools use CSS custom properties (`:root` variables) — do **not** hardcode 
     r.setProperty("--header-gradient-1", colors.headerGrad1);
     r.setProperty("--header-gradient-2", colors.headerGrad2);
     r.setProperty("--text-heading", colors.primaryDark);
-    if (cfg.orgName) { var h1 = document.querySelector(".header h1"); if (h1) h1.textContent = cfg.orgName; }
+    var pName = cfg.productName || cfg.orgName || '';
+    if (pName) {
+      var h1 = document.querySelector(".header h1"); if (h1) h1.textContent = pName;
+      document.title = pName + ' \u2014 ' + document.title;
+    }
   } catch(e){}
 })();
 ```
@@ -158,6 +162,12 @@ Every HTML tool must include:
 8. **"Last saved" footer** — `<div class="last-saved-footer" id="lastSavedFooter"></div>` + `renderLastSaved()` on load; tools with save functions also call `stampLastSaved()` after `localStorage.setItem`
 9. **Print / PDF button** — `<button class="tool-btn" onclick="window.print()">` in toolbar
 10. **Notification bell** — `<a class="notif-bell-link" href="index.html">` in toolbar; reads `notification_unread_count` from localStorage; use `../index.html` for subdirectory tools
+11. **Keyboard shortcuts** — `keydown` listener for Escape (close modals), Ctrl+S (save), Ctrl+D (dark mode), `?` (shortcuts help modal). `toggleShortcutsHelp()` function + shortcuts overlay HTML.
+12. **Cross-tab sync** — `BroadcastChannel('mlp_hub_sync')`: post `{type:'data_update',key:'...',timestamp:Date.now()}` after save; listen and reload on receive. Falls back gracefully if BroadcastChannel is unsupported.
+13. **`getCurrentUser()`** — returns `{id, name, role, orgId, orgName}` from `mlp_hub_config`. Currently reads from config; future: plugs into auth.
+14. **Skip-to-content link** — `<a href="#main-content" class="skip-link">Skip to main content</a>` as first child of `<body>`. Main content area has `id="main-content"`.
+15. **ARIA attributes** — `aria-label` on icon-only buttons, `role="status" aria-live="polite"` on toast, `role="dialog" aria-modal="true"` on modals, focus trapping via `trapFocus()`/`releaseFocus()`
+16. **Custom product name** — theme IIFE also reads `cfg.productName` and updates `document.title` and header `<h1>`
 
 ---
 
@@ -239,7 +249,7 @@ Tools share data through localStorage keys. **Before renaming or restructuring a
 ├── Calibration_Tool.html               # Scoring calibration — inter-rater reliability for audit items
 ├── Reports_Hub.html                    # Cross-tool reporting — semester overview, coordinator/campus/coaching reports
 ├── manifest.json                       # PWA manifest ("MLP Coordinator Hub")
-├── service-worker.js                   # PWA service worker — cache-first, CACHE_NAME = "mlp-suite-v7"
+├── service-worker.js                   # PWA service worker — cache-first, CACHE_NAME = "mlp-suite-v9"
 ├── Principal_Checkpoint_Portal/
 │   ├── Principal_Checkpoint_Portal.html  # Campus leader view — coaching, audit scores, notes sync to GAS
 │   └── Campus_Report_Card.html           # One-page weekly campus snapshot — health score, pipeline, action items
@@ -343,7 +353,7 @@ No npm, no node_modules, no build step.
 
 ## PWA & Caching
 
-- **Cache name**: `mlp-suite-v7` in root `service-worker.js` — bump whenever HTML files are added or significant changes are deployed
+- **Cache name**: `mlp-suite-v9` in root `service-worker.js` — bump whenever HTML files are added or significant changes are deployed
 - Strategy: cache-first with network fallback
 - All 24 HTML files + Chart.js CDN listed in `ASSETS` array
 - **When adding files**: add to `ASSETS` and bump `CACHE_NAME`
@@ -371,9 +381,8 @@ No npm, no node_modules, no build step.
 
 ## Security Notes
 
-**Completed**: API secret in GAS, input sanitization, Drive folder permissions, CSP headers added to all HTML files
+**Completed**: API secret in GAS, input sanitization, Drive folder permissions, CSP headers, "Clear PAT" button in Data Backup Hub
 **Open items**:
-- GitHub PAT stored in plaintext in `esl_gist_sync` — needs "Clear PAT" button
 - GAS audit logging not yet implemented
 - Sensitive localStorage keys not encrypted
 
