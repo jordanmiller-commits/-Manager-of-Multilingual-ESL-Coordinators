@@ -171,6 +171,17 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 .type-opt{display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:var(--text-secondary)}
 .type-opt input{cursor:pointer;accent-color:var(--primary)}
 
+/* TEMPLATE PICKER */
+.template-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:16px}
+.template-card{background:var(--section-bg-light);border:2px solid var(--border);border-radius:8px;padding:16px;cursor:pointer;transition:border-color .15s,transform .15s;text-align:left;font-family:inherit;width:100%}
+.template-card:hover{border-color:var(--primary);transform:translateY(-2px);box-shadow:0 4px 12px rgba(74,144,217,.15)}
+.template-card h4{margin:0 0 6px;color:var(--text-heading);font-size:13px;font-weight:700;line-height:1.3}
+.template-card p{margin:0;font-size:12px;color:var(--text-muted);line-height:1.4}
+.template-card .tc-icon{font-size:22px;margin-bottom:8px;display:block}
+.template-modal-overlay .modal{max-width:700px}
+.modal-cancel{display:block;margin-top:14px;text-align:center;font-size:11px;color:var(--text-faint);cursor:pointer;padding:6px}
+.modal-cancel:hover{color:var(--text-secondary)}
+
 /* TOAST */
 .toast{position:fixed;bottom:24px;right:24px;background:var(--toast-bg);color:var(--toast-text);padding:12px 20px;border-radius:8px;font-size:13px;font-weight:600;box-shadow:0 4px 15px rgba(0,0,0,.2);z-index:3000;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none}
 .toast.show{opacity:1;transform:translateY(0)}
@@ -222,6 +233,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
     <p>Set, track, and reflect on coordinator growth goals across semesters</p>
     <div class="toolbar">
       <button class="tool-btn accent" onclick="openGoalModal(null)">&#65291; New Goal</button>
+      <button class="tool-btn" onclick="openGoalTemplateModal()" title="Start from a SMART goal template">&#128196; Templates</button>
       <button class="tool-btn" onclick="window.print()">&#128438; Print / PDF</button>
       <a class="notif-bell-link" href="index.html" title="Notifications" id="notifBellLink">&#128276;<span class="notif-bell-badge hidden" id="notifBellBadge">0</span></a>
       <button class="tool-btn" onclick="toggleDarkMode()" id="darkModeToggle">&#9789; Dark</button>
@@ -397,6 +409,37 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 </div>
 
 <!-- TOAST -->
+<!-- GOAL TEMPLATE PICKER MODAL -->
+<div class="modal-overlay template-modal-overlay" id="goalTemplateModal">
+  <div class="modal">
+    <h3>&#128196; Choose a Goal Template <button class="modal-close" onclick="closeGoalTemplateModal()">&#10005;</button></h3>
+    <p style="font-size:12px;color:var(--text-secondary);margin-top:-8px;margin-bottom:0">Select a SMART goal framework to get started</p>
+    <div class="template-grid">
+      <button class="template-card" onclick="applyGoalTemplate('walkthrough-freq')">
+        <span class="tc-icon">&#128269;</span>
+        <h4>Increase Walkthrough Frequency</h4>
+        <p>Build a consistent observation schedule across all campuses</p>
+      </button>
+      <button class="template-card" onclick="applyGoalTemplate('coaching-completion')">
+        <span class="tc-icon">&#128101;</span>
+        <h4>Coaching Cycle Completion Rate</h4>
+        <p>Ensure all coaching cycles reach the Growth stage</p>
+      </button>
+      <button class="template-card" onclick="applyGoalTemplate('telpas-growth')">
+        <span class="tc-icon">&#127919;</span>
+        <h4>TELPAS Growth Target</h4>
+        <p>Drive measurable student language proficiency growth</p>
+      </button>
+      <button class="template-card" onclick="applyGoalTemplate('parent-comm')">
+        <span class="tc-icon">&#128221;</span>
+        <h4>Parent Communication Consistency</h4>
+        <p>Build relationships with EB families across all campuses</p>
+      </button>
+    </div>
+    <div class="modal-cancel" onclick="closeGoalTemplateModal()">Cancel</div>
+  </div>
+</div>
+
 <div class="last-saved-footer" id="lastSavedFooter"></div>
 <div class="toast" id="toast"></div>
 
@@ -919,6 +962,61 @@ function deleteGoal(id) {
 }
 
 /* =====================
+   GOAL TEMPLATE MODAL
+   ===================== */
+var GOAL_TEMPLATES = {
+  "walkthrough-freq": {
+    title: "Complete [X] walkthroughs per campus per month",
+    category: "Instructional Leadership",
+    description: "Establish a regular walkthrough schedule to provide consistent feedback to ESL teachers and monitor ELPS implementation fidelity."
+  },
+  "coaching-completion": {
+    title: "Complete full coaching cycles with [X]% of teachers by end of semester",
+    category: "Teacher Development",
+    description: "Launch and complete coaching cycles with priority teachers, documenting action steps and growth evidence at each stage."
+  },
+  "telpas-growth": {
+    title: "[X]% of EB students advance at least one TELPAS proficiency level",
+    category: "Student Achievement",
+    description: "Implement targeted language instruction strategies and monitor TELPAS progress indicators throughout the year."
+  },
+  "parent-comm": {
+    title: "Conduct [X] parent contacts per month across all assigned campuses",
+    category: "Family Engagement",
+    description: "Establish regular parent communication to inform families of student progress and available ESL supports."
+  }
+};
+
+function openGoalTemplateModal(){
+  document.getElementById("goalTemplateModal").classList.add("open");
+}
+
+function closeGoalTemplateModal(){
+  document.getElementById("goalTemplateModal").classList.remove("open");
+}
+
+function applyGoalTemplate(templateId){
+  var tpl = GOAL_TEMPLATES[templateId];
+  if(!tpl) return;
+  closeGoalTemplateModal();
+
+  // Open new goal modal
+  openGoalModal(null);
+
+  // Pre-fill fields
+  var titleEl = document.getElementById("goalTitle");
+  var descEl = document.getElementById("goalDesc");
+
+  if(titleEl) titleEl.value = tpl.title;
+  if(descEl) descEl.value = tpl.description;
+
+  // Focus title field so user can immediately edit the [X] placeholder
+  if(titleEl) titleEl.focus();
+
+  showToast("Template loaded \u2014 fill in your specific targets and save");
+}
+
+/* =====================
    CHECK-IN MODAL
    ===================== */
 function openCheckinModal(goalId) {
@@ -1049,6 +1147,10 @@ function init() {
 
 init();
 initNotifBell();
+
+document.getElementById("goalTemplateModal").addEventListener("click", function(e){
+  if(e.target === this) closeGoalTemplateModal();
+});
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./service-worker.js').catch(function(){});

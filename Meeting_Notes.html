@@ -184,6 +184,15 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
   .action-row{grid-template-columns:1fr 30px 30px}
 }
 
+/* TEMPLATE PICKER */
+.template-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:16px}
+.template-card{background:var(--section-bg-light);border:2px solid var(--border);border-radius:8px;padding:16px;cursor:pointer;transition:border-color .15s,transform .15s;text-align:left;font-family:inherit;width:100%}
+.template-card:hover{border-color:var(--primary);transform:translateY(-2px);box-shadow:0 4px 12px rgba(74,144,217,.15)}
+.template-card h4{margin:0 0 6px;color:var(--text-heading);font-size:13px;font-weight:700;line-height:1.3}
+.template-card p{margin:0;font-size:12px;color:var(--text-muted);line-height:1.4}
+.template-card .tc-type{display:inline-block;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:700;margin-bottom:8px}
+.template-modal .modal{max-width:680px}
+
 /* TOAST */
 .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:var(--toast-bg);color:var(--toast-text);padding:10px 22px;border-radius:8px;font-size:13px;font-weight:600;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
 .toast.show{opacity:1}
@@ -206,6 +215,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
     <p>Create, track, and archive meeting agendas, action items, and notes</p>
     <div class="toolbar">
       <button class="tool-btn" onclick="openTypeModal()">&#43; New Meeting</button>
+      <button class="tool-btn" onclick="openTemplateModal()" title="Start from a meeting template">&#128196; Templates</button>
       <button class="tool-btn" onclick="window.print()">&#128438; Print</button>
       <a class="notif-bell-link" href="index.html" title="Notifications" id="notifBellLink">&#128276;<span class="notif-bell-badge hidden" id="notifBellBadge">0</span></a>
       <button class="tool-btn" onclick="toggleDarkMode()" id="darkModeToggle">&#9789; Dark</button>
@@ -322,6 +332,52 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
       </button>
     </div>
     <div class="modal-cancel" onclick="closeTypeModal()">Cancel</div>
+  </div>
+</div>
+
+<!-- Template Picker Modal -->
+<div class="modal-overlay template-modal" id="templateModal">
+  <div class="modal">
+    <h3>&#128196; Choose a Meeting Template</h3>
+    <p>Select a template to create a new meeting with pre-filled agenda items</p>
+    <div class="template-grid">
+      <button class="template-card" onclick="applyMeetingTemplate('weekly-sync')">
+        <span class="tc-type type-weekly">Weekly Team</span>
+        <h4>&#128101; Weekly Coordinator Sync</h4>
+        <p>Standard agenda for weekly coordinator team meetings with standing items</p>
+      </button>
+      <button class="template-card" onclick="applyMeetingTemplate('campus-checkin')">
+        <span class="tc-type type-campus">Campus</span>
+        <h4>&#127891; Campus Check-In</h4>
+        <p>Structured check-in between coordinator and campus principal</p>
+      </button>
+      <button class="template-card" onclick="applyMeetingTemplate('dept-plc')">
+        <span class="tc-type type-dept">Department</span>
+        <h4>&#128104;&#8205;&#127979; MLP Department Meeting</h4>
+        <p>Coordinator-led meeting with campus ESL teachers</p>
+      </button>
+      <button class="template-card" onclick="applyMeetingTemplate('district-review')">
+        <span class="tc-type type-district">District</span>
+        <h4>&#127970; District / Manager Review</h4>
+        <p>Manager-led review of coordinator performance and priorities</p>
+      </button>
+      <button class="template-card" onclick="applyMeetingTemplate('campus-visit-debrief')">
+        <span class="tc-type type-campus">Campus Visit</span>
+        <h4>&#128269; Campus Visit Debrief</h4>
+        <p>Post-campus-visit structured debrief with observation notes and priority actions</p>
+      </button>
+      <button class="template-card" onclick="applyMeetingTemplate('data-review')">
+        <span class="tc-type type-district">Data Review</span>
+        <h4>&#128202; Data Review Meeting</h4>
+        <p>Structured review of TELPAS scores, progress monitoring, and intervention strategies</p>
+      </button>
+      <button class="template-card" onclick="applyMeetingTemplate('plc')">
+        <span class="tc-type type-dept">Prof. Learning</span>
+        <h4>&#127775; Professional Learning Community</h4>
+        <p>PLC structure with celebrations, ELPS strategy sharing, and action commitments</p>
+      </button>
+    </div>
+    <div class="modal-cancel" onclick="closeTemplateModal()">Cancel</div>
   </div>
 </div>
 
@@ -794,9 +850,132 @@ function closeTypeModal(){
   document.getElementById("typeModal").classList.remove("active");
 }
 
+/* ======================================================
+   TEMPLATE MODAL
+   ====================================================== */
+var MEETING_TEMPLATES = {
+  "weekly-sync": {
+    type: "weekly",
+    agendaItems: [
+      "Attendance and role call",
+      "Updates from each coordinator (5 min each)",
+      "Shared challenges and solutions",
+      "Upcoming campus visits and scheduling",
+      "Manager priorities and announcements",
+      "Action items review from last meeting"
+    ]
+  },
+  "campus-checkin": {
+    type: "campus",
+    agendaItems: [
+      "Student data snapshot review",
+      "ESL classroom observation debrief",
+      "ELPS implementation fidelity update",
+      "Support needs and resource requests",
+      "Action items and next steps"
+    ]
+  },
+  "dept-plc": {
+    type: "dept",
+    agendaItems: [
+      "Celebration of student progress",
+      "ELPS strategy focus and modeling",
+      "Data review: current EB student performance",
+      "Collaboration and resource sharing",
+      "Upcoming campus events and calendar items",
+      "Action items and commitments"
+    ]
+  },
+  "district-review": {
+    type: "district",
+    agendaItems: [
+      "Coordinator walkthrough summary",
+      "Coaching cycle progress report",
+      "TELPAS and progress monitoring data",
+      "Compliance status by campus",
+      "Professional development updates",
+      "Priority action items for next period"
+    ]
+  },
+  "campus-visit-debrief": {
+    type: "campus",
+    agendaItems: [
+      "Campus arrival and context review",
+      "Classroom observation notes",
+      "Data review with campus coordinator",
+      "Priority action items identified",
+      "Follow-up timeline"
+    ]
+  },
+  "data-review": {
+    type: "district",
+    agendaItems: [
+      "TELPAS score analysis",
+      "Progress monitoring data review",
+      "Students requiring additional support",
+      "Intervention strategies",
+      "Next data checkpoint"
+    ]
+  },
+  "plc": {
+    type: "dept",
+    agendaItems: [
+      "Celebration of student successes",
+      "ELPS strategy share-out",
+      "Common challenge discussion",
+      "Resource sharing",
+      "Action commitments"
+    ]
+  }
+};
+
+function openTemplateModal(){
+  document.getElementById("templateModal").classList.add("active");
+}
+
+function closeTemplateModal(){
+  document.getElementById("templateModal").classList.remove("active");
+}
+
+function applyMeetingTemplate(templateId){
+  var tpl = MEETING_TEMPLATES[templateId];
+  if(!tpl) return;
+  closeTemplateModal();
+
+  // Create the new meeting using the template type
+  var typeInfo = MEETING_TYPES[tpl.type] || MEETING_TYPES.weekly;
+  var today = todayStr();
+  var mtg = {
+    id: genId(),
+    type: tpl.type,
+    date: today,
+    attendees: (tpl.type === "weekly") ? getDefaultWeeklyAttendees() : (typeInfo.defaultAttendees || ""),
+    agendaItems: [],
+    actionItems: [],
+    notes: "",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+
+  // Pre-fill agenda items from template
+  for(var i = 0; i < tpl.agendaItems.length; i++){
+    mtg.agendaItems.push({ text: tpl.agendaItems[i], done: false });
+  }
+
+  _data.meetings.push(mtg);
+  saveData();
+  renderArchive("");
+  document.getElementById("searchBox").value = "";
+  openMeeting(mtg.id);
+  showToast("Template loaded \u2014 add your details and save");
+}
+
 // Close modal on overlay click
 document.getElementById("typeModal").addEventListener("click", function(e){
   if(e.target === this) closeTypeModal();
+});
+document.getElementById("templateModal").addEventListener("click", function(e){
+  if(e.target === this) closeTemplateModal();
 });
 
 /* ======================================================

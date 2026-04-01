@@ -284,6 +284,55 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 .coord-mgmt-header .ch-email{flex:2}
 .coord-mgmt-header .ch-color{width:32px}
 .coord-mgmt-header .ch-del{width:32px}
+
+/* ============================
+   DEMO BUTTON
+   ============================ */
+.demo-btn{background:rgba(39,174,96,.25)!important;border-color:rgba(39,174,96,.6)!important}
+.demo-btn:hover{background:rgba(39,174,96,.45)!important;border-color:rgba(39,174,96,.9)!important}
+
+/* ============================
+   DEMO BANNER
+   ============================ */
+.demo-banner{background:linear-gradient(135deg,#1a5c35,#27ae60);color:#fff;padding:10px 20px;display:flex;justify-content:space-between;align-items:center;font-size:14px;font-family:'Segoe UI',Arial,sans-serif}
+.demo-banner button{background:transparent;color:#fff;border:2px solid rgba(255,255,255,.6);padding:4px 12px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.demo-banner button:hover{background:rgba(255,255,255,.2);border-color:#fff}
+@media print{.demo-banner{display:none!important}}
+
+/* ============================
+   DEMO MODAL
+   ============================ */
+.demo-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:var(--modal-overlay);z-index:4000;display:none;align-items:center;justify-content:center}
+.demo-overlay.open{display:flex}
+.demo-modal{background:var(--card-bg);border-radius:14px;width:460px;max-width:95vw;box-shadow:0 8px 30px rgba(0,0,0,.25);padding:0;overflow:hidden}
+.demo-modal-header{padding:20px 24px;background:linear-gradient(135deg,#1a5c35,#27ae60);color:#fff;display:flex;align-items:center;justify-content:space-between;border-radius:14px 14px 0 0}
+.demo-modal-header h3{font-size:18px;font-weight:700;margin:0}
+.demo-modal-close{background:none;border:none;color:#fff;font-size:24px;cursor:pointer;padding:4px 8px;opacity:.8}
+.demo-modal-close:hover{opacity:1}
+.demo-modal-body{padding:24px}
+.demo-modal-body p{font-size:13px;color:var(--text-secondary);line-height:1.6;margin-bottom:20px}
+.demo-modal-footer{display:flex;gap:10px;justify-content:flex-end}
+
+/* ============================
+   TUTORIAL OVERLAY
+   ============================ */
+@keyframes tutorialPulse{
+  0%{box-shadow:0 0 0 4px #4a90d9,0 0 0 9999px rgba(0,0,0,.4)}
+  50%{box-shadow:0 0 0 7px #4a90d9,0 0 0 9999px rgba(0,0,0,.4)}
+  100%{box-shadow:0 0 0 4px #4a90d9,0 0 0 9999px rgba(0,0,0,.4)}
+}
+.tutorial-overlay{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999}
+.tutorial-highlight{position:fixed;border-radius:8px;box-shadow:0 0 0 4px #4a90d9,0 0 0 9999px rgba(0,0,0,.4);transition:all .3s ease;pointer-events:none;z-index:9998;animation:tutorialPulse 2s ease-in-out infinite}
+.tutorial-tooltip{position:fixed;background:var(--card-bg);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.25);padding:20px 24px;max-width:320px;pointer-events:all;z-index:10000}
+.tutorial-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.tutorial-step-label{font-size:12px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.tutorial-close-btn{background:transparent;border:none;color:var(--text-muted);font-size:16px;cursor:pointer;padding:2px 6px;line-height:1}
+.tutorial-close-btn:hover{color:var(--text)}
+.tutorial-title{font-size:16px;font-weight:700;color:var(--text-heading);margin-bottom:8px}
+.tutorial-body{font-size:14px;line-height:1.6;color:var(--text-secondary);margin-bottom:16px}
+.tutorial-footer{display:flex;justify-content:space-between;align-items:center}
+.tutorial-progress{font-size:12px;color:var(--text-muted)}
+.tutorial-btn{padding:7px 14px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Segoe UI',Arial,sans-serif;transition:all .15s}
 </style>
 </head>
 <body>
@@ -300,6 +349,8 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
       <button class="tool-btn" onclick="toggleDarkMode()" id="darkModeToggle" aria-label="Toggle dark mode">&#9789; Dark</button>
       <button class="tool-btn" onclick="window.print()">&#128438; Print / PDF</button>
       <button class="tool-btn" onclick="openSettings()">&#9881; Settings</button>
+      <button class="tool-btn demo-btn" onclick="openDemoModal()">&#9654; Try Demo</button>
+      <button class="tool-btn" onclick="startTutorial()" title="Take a Tour" style="font-weight:700">?</button>
     </div>
     <!-- Role tabs -->
     <div class="role-tabs-row">
@@ -308,6 +359,12 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
       <button class="role-tab"        data-role="campus-leader" onclick="setRole('campus-leader')">&#127983; Campus Leader</button>
       <span class="role-label" id="roleLabel">Showing all tools</span>
     </div>
+  </div>
+
+  <!-- Demo Banner -->
+  <div class="demo-banner" id="demoBanner" style="display:none">
+    <span>&#127942; Demo mode &mdash; exploring MLP Coordinator Hub with sample data</span>
+    <button onclick="clearDemoData()">Clear Demo Data</button>
   </div>
 
   <!-- Alerts -->
@@ -573,6 +630,43 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
           <button class="settings-btn" onclick="saveCoordinators()">Save Coordinators</button>
         </div>
         <p style="font-size:10px;color:var(--text-faint);margin-top:8px">&#9888; Changing coordinator IDs may affect existing data filters. Names and emails can be updated freely.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Demo Modal -->
+  <div class="demo-overlay" id="demoOverlay" onclick="if(event.target===this)closeDemoModal()">
+    <div class="demo-modal">
+      <div class="demo-modal-header">
+        <h3>&#127942; Try Demo Data</h3>
+        <button class="demo-modal-close" onclick="closeDemoModal()">&times;</button>
+      </div>
+      <div class="demo-modal-body">
+        <p>Load sample data across all tools to explore the full product. Your existing data is preserved &mdash; demo records are tagged and can be cleared anytime.</p>
+        <div class="demo-modal-footer">
+          <button class="settings-btn outline" onclick="closeDemoModal()">Cancel</button>
+          <button class="settings-btn" style="background:#27ae60;border-color:#27ae60" onclick="confirmLoadDemo()">Load Demo Data</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tutorial Overlay -->
+  <div class="tutorial-overlay" id="tutorialOverlay" style="display:none">
+    <div class="tutorial-highlight" id="tutorialHighlight" style="display:none"></div>
+    <div class="tutorial-tooltip" id="tutorialTooltip" style="display:none">
+      <div class="tutorial-header">
+        <span class="tutorial-step-label" id="tutorialStepLabel"></span>
+        <button class="tutorial-close-btn" onclick="closeTutorial()">&#10005;</button>
+      </div>
+      <div class="tutorial-title" id="tutorialTitle"></div>
+      <div class="tutorial-body" id="tutorialBody"></div>
+      <div class="tutorial-footer">
+        <span class="tutorial-progress" id="tutorialProgress"></span>
+        <div>
+          <button class="tutorial-btn" onclick="closeTutorial()" style="margin-right:8px;background:transparent;border:1px solid var(--border);color:var(--text-secondary)">Skip</button>
+          <button class="tutorial-btn" id="tutorialNextBtn" onclick="nextTutorialStep()" style="background:var(--primary);color:#fff;border:none">Next</button>
+        </div>
       </div>
     </div>
   </div>
@@ -1881,9 +1975,771 @@ loadExtraMeta();
 initRole(); // sets role + triggers loadAlerts internally
 renderLastSaved();
 renderNotifications();
+checkDemoStatus();
 
 // PWA
 if ("serviceWorker" in navigator) { navigator.serviceWorker.register("./service-worker.js").catch(function(){}); }
+
+/* ======================================================
+   DEMO DATA SYSTEM
+   ====================================================== */
+var DEMO_TEACHERS = ['Teacher A','Teacher B','Teacher C','Teacher D','Teacher E','Teacher F','Teacher G','Teacher H'];
+var DEMO_CAMPUSES = ['Campus 1','Campus 2','Campus 3','Campus 4'];
+
+function demoDaysAgo(n) {
+  var d = new Date(2026, 2, 31); // 2026-03-31
+  d.setDate(d.getDate() - n);
+  var mm = d.getMonth() + 1;
+  var dd = d.getDate();
+  return d.getFullYear() + '-' + (mm < 10 ? '0' + mm : mm) + '-' + (dd < 10 ? '0' + dd : dd);
+}
+
+function demoGenId() {
+  return 'demo-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7);
+}
+
+function loadDemoData() {
+  var coords = getCoordinators();
+
+  // --- shared_teacher_roster ---
+  var existingRoster = safeGet('shared_teacher_roster') || [];
+  for (var tr = 0; tr < DEMO_TEACHERS.length; tr++) {
+    var found = false;
+    for (var er = 0; er < existingRoster.length; er++) {
+      if (existingRoster[er] === DEMO_TEACHERS[tr]) { found = true; break; }
+    }
+    if (!found) existingRoster.push(DEMO_TEACHERS[tr]);
+  }
+  localStorage.setItem('shared_teacher_roster', JSON.stringify(existingRoster));
+
+  // --- esl_audit_campuses ---
+  var existingCampuses = safeGet('esl_audit_campuses') || [];
+  for (var dc = 0; dc < DEMO_CAMPUSES.length; dc++) {
+    var fc = false;
+    for (var ec = 0; ec < existingCampuses.length; ec++) {
+      if (existingCampuses[ec] === DEMO_CAMPUSES[dc]) { fc = true; break; }
+    }
+    if (!fc) existingCampuses.push(DEMO_CAMPUSES[dc]);
+  }
+  localStorage.setItem('esl_audit_campuses', JSON.stringify(existingCampuses));
+
+  // --- esl_audit_history ---
+  var auditHistory = safeGet('esl_audit_history') || [];
+  var demoAuditRatings = {};
+  var itemKeys = ['s01-0','s01-1','s01-2','s01-3','s01-4','s02-0','s02-1','s02-2','s02-3','s02-4','s03-0','s03-1','s03-2','s03-3','s03-4','s04-0','s04-1','s04-2','s05-0','s05-1','s05-2','s05-3','s06-0','s06-1','s06-2','s06-3','s07-0','s07-1','s07-2','s07-3','s08-0','s08-1','s08-2','s08-3','s08-4','s09-0','s09-1','s09-2','s09-3','s10-0','s10-1','s10-2','s10-3','s11-0','s11-1','s11-2','s11-3','s12-0','s12-1','s12-2','s12-3','s13-0','s13-1','s13-2','s13-3'];
+  for (var ki = 0; ki < itemKeys.length; ki++) {
+    demoAuditRatings[itemKeys[ki]] = Math.floor(Math.random() * 3) + 1;
+  }
+  var demoAudits = [
+    {
+      id: demoGenId(), version: 3, _isDemo: true,
+      timestamp: new Date(2026, 2, 20).toISOString(),
+      meta: {teacher: 'Teacher A', campus: 'Campus 1', observer: coords[0] ? coords[0].name : 'J. Miller', date: demoDaysAgo(11)},
+      ratings: demoAuditRatings, notes: {}, prChecks: {0: true, 1: true, 2: false}, itemComments: {}, itemTags: {}, itemPhotos: {}, timerElapsed: 1800, sectionTimers: {},
+      scorePct: 72
+    },
+    {
+      id: demoGenId(), version: 3, _isDemo: true,
+      timestamp: new Date(2026, 2, 15).toISOString(),
+      meta: {teacher: 'Teacher C', campus: 'Campus 2', observer: coords[1] ? coords[1].name : 'K. Patterson', date: demoDaysAgo(16)},
+      ratings: demoAuditRatings, notes: {}, prChecks: {0: true, 1: false, 2: true}, itemComments: {}, itemTags: {}, itemPhotos: {}, timerElapsed: 2100, sectionTimers: {},
+      scorePct: 85
+    },
+    {
+      id: demoGenId(), version: 3, _isDemo: true,
+      timestamp: new Date(2026, 2, 10).toISOString(),
+      meta: {teacher: 'Teacher E', campus: 'Campus 3', observer: coords[2] ? coords[2].name : 'P. Okolo', date: demoDaysAgo(21)},
+      ratings: demoAuditRatings, notes: {}, prChecks: {0: false, 1: true, 2: true}, itemComments: {}, itemTags: {}, itemPhotos: {}, timerElapsed: 1560, sectionTimers: {},
+      scorePct: 61
+    },
+    {
+      id: demoGenId(), version: 3, _isDemo: true,
+      timestamp: new Date(2026, 2, 5).toISOString(),
+      meta: {teacher: 'Teacher G', campus: 'Campus 4', observer: coords[3] ? coords[3].name : 'V. Palencia', date: demoDaysAgo(26)},
+      ratings: demoAuditRatings, notes: {}, prChecks: {0: true, 1: true, 2: true}, itemComments: {}, itemTags: {}, itemPhotos: {}, timerElapsed: 2400, sectionTimers: {},
+      scorePct: 78
+    }
+  ];
+  for (var ai = 0; ai < demoAudits.length; ai++) {
+    auditHistory.push(demoAudits[ai]);
+  }
+  localStorage.setItem('esl_audit_history', JSON.stringify(auditHistory));
+
+  // --- walkthrough_history ---
+  var walkthroughHistory = safeGet('walkthrough_history') || [];
+  var demoWalkthroughs = [
+    {
+      id: Date.now() + 1, _isDemo: true, savedAt: new Date(2026, 2, 22).toISOString(),
+      meta: {leader: coords[0] ? coords[0].name : 'J. Miller', campus: 'Campus 1', date: demoDaysAgo(9), focus: 'elps3', focusLabel: 'ELPS 3: Speaking'},
+      metrics: {codeCounts: {'\u2713': 8, 'O': 3, 'P': 4, 'NA': 1}, fidelityPct: 76, coachingCounts: {pending: 2, scheduled: 1, completed: 1}, teacherCodes: {}},
+      rounds: [{id: 'r1', type: 'Procedural', lookFor: 'Sentence frames visible and in use', targetTeachers: 'Teacher A, Teacher B'}],
+      observations: [
+        {id: 'obs1', teacher: 'Teacher A', code: '\u2713', notes: 'Sentence frames posted and referenced during lesson', roundIdx: 0, _isDemo: true},
+        {id: 'obs2', teacher: 'Teacher B', code: 'P', notes: 'Frames posted but students not using them consistently', roundIdx: 0, _isDemo: true},
+        {id: 'obs3', teacher: 'Teacher C', code: 'O', notes: 'No sentence frames visible in the room', roundIdx: 0, _isDemo: true}
+      ],
+      coachingActions: [
+        {id: 'ca1', teacher: 'Teacher B', observation: 'Students not using sentence frames', feedback: 'Model how to use frames during transitions', nextStep: 'Practice frames during morning meeting', deadline: demoDaysAgo(-5), status: 'pending', _isDemo: true},
+        {id: 'ca2', teacher: 'Teacher C', observation: 'No frames visible', feedback: 'Create and post language production supports', nextStep: 'Set up sentence frame wall before next observation', deadline: demoDaysAgo(-3), status: 'scheduled', _isDemo: true}
+      ],
+      reflection: {patterns: 'Inconsistent use of sentence frames across classrooms', actions: 'PLC focus on sentence frame implementation', observer: coords[0] ? coords[0].name : 'J. Miller', date: demoDaysAgo(9)}
+    },
+    {
+      id: Date.now() + 2, _isDemo: true, savedAt: new Date(2026, 2, 17).toISOString(),
+      meta: {leader: coords[1] ? coords[1].name : 'K. Patterson', campus: 'Campus 2', date: demoDaysAgo(14), focus: 'vocabulary', focusLabel: 'Vocabulary Systems'},
+      metrics: {codeCounts: {'\u2713': 10, 'O': 2, 'P': 3, 'NA': 0}, fidelityPct: 83, coachingCounts: {pending: 1, scheduled: 0, completed: 2}, teacherCodes: {}},
+      rounds: [{id: 'r2', type: 'Conceptual', lookFor: 'Word wall with academic vocabulary', targetTeachers: 'Teacher C, Teacher D'}],
+      observations: [
+        {id: 'obs4', teacher: 'Teacher C', code: '\u2713', notes: 'Robust word wall with content and academic vocabulary', roundIdx: 0, _isDemo: true},
+        {id: 'obs5', teacher: 'Teacher D', code: '\u2713', notes: 'Word wall organized by unit with student-created definitions', roundIdx: 0, _isDemo: true}
+      ],
+      coachingActions: [
+        {id: 'ca3', teacher: 'Teacher D', observation: 'Strong vocabulary systems', feedback: 'Add cognate corner for bilingual students', nextStep: 'Research and add cognate examples next week', deadline: demoDaysAgo(-7), status: 'completed', _isDemo: true}
+      ],
+      reflection: {patterns: 'Strong vocabulary systems at Campus 2', actions: 'Share Campus 2 models at next PLC', observer: coords[1] ? coords[1].name : 'K. Patterson', date: demoDaysAgo(14)}
+    },
+    {
+      id: Date.now() + 3, _isDemo: true, savedAt: new Date(2026, 2, 10).toISOString(),
+      meta: {leader: coords[2] ? coords[2].name : 'P. Okolo', campus: 'Campus 3', date: demoDaysAgo(21), focus: 'writing', focusLabel: 'Writing Supports'},
+      metrics: {codeCounts: {'\u2713': 6, 'O': 5, 'P': 3, 'NA': 1}, fidelityPct: 60, coachingCounts: {pending: 3, scheduled: 0, completed: 0}, teacherCodes: {}},
+      rounds: [{id: 'r3', type: 'Engagement', lookFor: 'Writing frames and structured supports', targetTeachers: 'Teacher E, Teacher F'}],
+      observations: [
+        {id: 'obs6', teacher: 'Teacher E', code: 'P', notes: 'Some writing frames available but not scaffolded for proficiency levels', roundIdx: 0, _isDemo: true},
+        {id: 'obs7', teacher: 'Teacher F', code: 'O', notes: 'Students writing without structured supports', roundIdx: 0, _isDemo: true}
+      ],
+      coachingActions: [
+        {id: 'ca4', teacher: 'Teacher E', observation: 'Unsupported writing', feedback: 'Differentiate frames by proficiency level', nextStep: 'Create tiered writing frames for TELPAS levels', deadline: demoDaysAgo(-10), status: 'pending', _isDemo: true},
+        {id: 'ca5', teacher: 'Teacher F', observation: 'No writing supports', feedback: 'Introduce paragraph frames immediately', nextStep: 'Download and post writing frames this week', deadline: demoDaysAgo(-8), status: 'pending', _isDemo: true}
+      ],
+      reflection: {patterns: 'Writing supports underdeveloped at Campus 3', actions: 'Schedule writing workshop for Campus 3 team', observer: coords[2] ? coords[2].name : 'P. Okolo', date: demoDaysAgo(21)}
+    },
+    {
+      id: Date.now() + 4, _isDemo: true, savedAt: new Date(2026, 2, 3).toISOString(),
+      meta: {leader: coords[3] ? coords[3].name : 'V. Palencia', campus: 'Campus 4', date: demoDaysAgo(28), focus: 'culture', focusLabel: 'Culture and Identity'},
+      metrics: {codeCounts: {'\u2713': 11, 'O': 1, 'P': 2, 'NA': 1}, fidelityPct: 88, coachingCounts: {pending: 0, scheduled: 1, completed: 2}, teacherCodes: {}},
+      rounds: [{id: 'r4', type: 'Procedural', lookFor: 'Home language and heritage displays', targetTeachers: 'Teacher G, Teacher H'}],
+      observations: [
+        {id: 'obs8', teacher: 'Teacher G', code: '\u2713', notes: 'Heritage map and home language wall prominently displayed', roundIdx: 0, _isDemo: true},
+        {id: 'obs9', teacher: 'Teacher H', code: '\u2713', notes: 'Multilingual welcome display and bilingual library corner', roundIdx: 0, _isDemo: true}
+      ],
+      coachingActions: [
+        {id: 'ca6', teacher: 'Teacher G', observation: 'Excellent cultural displays', feedback: 'Add student-authored content to heritage wall', nextStep: 'Have students contribute writing samples to wall', deadline: demoDaysAgo(-14), status: 'scheduled', _isDemo: true}
+      ],
+      reflection: {patterns: 'Campus 4 excelling in culture and identity supports', actions: 'Invite Campus 4 teachers to present at district PD', observer: coords[3] ? coords[3].name : 'V. Palencia', date: demoDaysAgo(28)}
+    }
+  ];
+  for (var wi = 0; wi < demoWalkthroughs.length; wi++) {
+    walkthroughHistory.push(demoWalkthroughs[wi]);
+  }
+  localStorage.setItem('walkthrough_history', JSON.stringify(walkthroughHistory));
+
+  // --- coaching_cycles_data ---
+  var cyclesData = safeGet('coaching_cycles_data') || {version: 1, cycles: [], settings: {}};
+  if (!cyclesData.cycles) cyclesData.cycles = [];
+  var blankStages = function(status1, status2, status3, status4, status5) {
+    return [
+      {key: 'observation', status: status1 || 'not-started', date: '', notes: ''},
+      {key: 'feedback', status: status2 || 'not-started', date: '', notes: ''},
+      {key: 'actionStep', status: status3 || 'not-started', date: '', notes: ''},
+      {key: 'followUp', status: status4 || 'not-started', date: '', notes: ''},
+      {key: 'growth', status: status5 || 'not-started', date: '', notes: ''}
+    ];
+  };
+  var demoCycles = [
+    {
+      id: demoGenId(), _isDemo: true, teacher: 'Teacher A', campus: 'Campus 1',
+      createdAt: new Date(2026, 2, 18).toISOString(), sourceWalkthroughId: null, templateId: null,
+      stages: [
+        {key: 'observation', status: 'complete', date: demoDaysAgo(13), notes: 'Observed sentence frame usage — partial implementation observed. Students referenced frames during structured talk but not independently.'},
+        {key: 'feedback', status: 'complete', date: demoDaysAgo(11), notes: 'Discussed the importance of modeling frame usage daily. Teacher receptive and eager to improve.'},
+        {key: 'actionStep', status: 'in_progress', date: demoDaysAgo(9), notes: 'Teacher will post new frames aligned to current unit vocabulary and model usage every morning.'},
+        {key: 'followUp', status: 'not-started', date: '', notes: ''},
+        {key: 'growth', status: 'not-started', date: '', notes: ''}
+      ]
+    },
+    {
+      id: demoGenId(), _isDemo: true, teacher: 'Teacher C', campus: 'Campus 2',
+      createdAt: new Date(2026, 2, 10).toISOString(), sourceWalkthroughId: null, templateId: null,
+      stages: [
+        {key: 'observation', status: 'complete', date: demoDaysAgo(21), notes: 'Observation of vocabulary instruction during science unit. Strong word wall but limited student interaction with it.'},
+        {key: 'feedback', status: 'complete', date: demoDaysAgo(19), notes: 'Coached on interactive vocabulary strategies — word sorts, vocabulary notebooks, and Frayer models.'},
+        {key: 'actionStep', status: 'complete', date: demoDaysAgo(17), notes: 'Implement weekly vocabulary rotation with Frayer models and personal vocabulary journals.'},
+        {key: 'followUp', status: 'complete', date: demoDaysAgo(10), notes: 'Returned for follow-up — students actively using Frayer models and vocabulary journals. Great progress!'},
+        {key: 'growth', status: 'in_progress', date: demoDaysAgo(7), notes: 'Teacher documenting growth through student vocabulary journal artifacts. Planning to share at next PLC.'}
+      ]
+    },
+    {
+      id: demoGenId(), _isDemo: true, teacher: 'Teacher F', campus: 'Campus 3',
+      createdAt: new Date(2026, 2, 5).toISOString(), sourceWalkthroughId: null, templateId: null,
+      stages: [
+        {key: 'observation', status: 'complete', date: demoDaysAgo(26), notes: 'Initial observation revealed minimal writing scaffolds. Students struggling with extended writing tasks.'},
+        {key: 'feedback', status: 'not-started', date: '', notes: ''},
+        {key: 'actionStep', status: 'not-started', date: '', notes: ''},
+        {key: 'followUp', status: 'not-started', date: '', notes: ''},
+        {key: 'growth', status: 'not-started', date: '', notes: ''}
+      ]
+    }
+  ];
+  for (var cci = 0; cci < demoCycles.length; cci++) {
+    cyclesData.cycles.unshift(demoCycles[cci]);
+  }
+  localStorage.setItem('coaching_cycles_data', JSON.stringify(cyclesData));
+
+  // --- pd_tracker_data ---
+  var pdData = safeGet('pd_tracker_data') || {version: 1, sessions: [], settings: {hourTargets: {}}};
+  if (!pdData.sessions) pdData.sessions = [];
+  var PD_CATS = ['ELPS / Language Acquisition','Sheltered Instruction','Dual Language','Assessment & Data','Family Engagement','Leadership & Coaching','Curriculum & Planning','SEL & Trauma-Informed'];
+  var demoPD = [
+    {id: demoGenId(), _isDemo: true, date: demoDaysAgo(5), coordinatorId: coords[0] ? coords[0].id : 'jmiller', coordinatorName: coords[0] ? coords[0].name : 'J. Miller', category: PD_CATS[0], title: 'ELPS Implementation Deep Dive', hours: 3, facilitator: 'Region 10 ESC', notes: 'Focus on ELPS 3 speaking standards and classroom implementation strategies.', createdAt: new Date(2026, 2, 26).toISOString()},
+    {id: demoGenId(), _isDemo: true, date: demoDaysAgo(12), coordinatorId: coords[1] ? coords[1].id : 'kpatterson', coordinatorName: coords[1] ? coords[1].name : 'K. Patterson', category: PD_CATS[1], title: 'Sheltered Instruction Workshop', hours: 6, facilitator: 'Dr. Amy Thompson', notes: 'SIOP model training for coordinators. Hands-on practice with sheltered lesson planning.', createdAt: new Date(2026, 2, 19).toISOString()},
+    {id: demoGenId(), _isDemo: true, date: demoDaysAgo(18), coordinatorId: coords[2] ? coords[2].id : 'pokolo', coordinatorName: coords[2] ? coords[2].name : 'P. Okolo', category: PD_CATS[4], title: 'Family Engagement Strategies for EBs', hours: 2, facilitator: 'District Parent Liaison', notes: 'Strategies for engaging families of English Learners including home visits and translated communications.', createdAt: new Date(2026, 2, 13).toISOString()},
+    {id: demoGenId(), _isDemo: true, date: demoDaysAgo(25), coordinatorId: coords[3] ? coords[3].id : 'vpalencia', coordinatorName: coords[3] ? coords[3].name : 'V. Palencia', category: PD_CATS[5], title: 'Instructional Coaching Practicum', hours: 4, facilitator: 'Elena Rodriguez, Ed.D.', notes: 'Practice coaching conversations with peer coordinators. Focus on growth mindset feedback.', createdAt: new Date(2026, 2, 6).toISOString()},
+    {id: demoGenId(), _isDemo: true, date: demoDaysAgo(35), coordinatorId: coords[0] ? coords[0].id : 'jmiller', coordinatorName: coords[0] ? coords[0].name : 'J. Miller', category: PD_CATS[2], title: 'Dual Language Program Design', hours: 8, facilitator: 'UT Austin Extension', notes: 'Full-day workshop on designing and implementing dual language programs. Allocation models and staffing.', createdAt: new Date(2026, 1, 24).toISOString()}
+  ];
+  for (var pi = 0; pi < demoPD.length; pi++) {
+    pdData.sessions.push(demoPD[pi]);
+  }
+  localStorage.setItem('pd_tracker_data', JSON.stringify(pdData));
+
+  // --- meeting_notes_data ---
+  var meetingData = safeGet('meeting_notes_data') || {version: 1, meetings: []};
+  if (!meetingData.meetings) meetingData.meetings = [];
+  var demoMeetings = [
+    {
+      id: demoGenId(), _isDemo: true, type: 'weekly', date: demoDaysAgo(7),
+      attendees: (coords[0] ? coords[0].name : 'J. Miller') + ', ' + (coords[1] ? coords[1].name : 'K. Patterson') + ', ' + (coords[2] ? coords[2].name : 'P. Okolo') + ', ' + (coords[3] ? coords[3].name : 'V. Palencia'),
+      agendaItems: [{id: 'a1', text: 'Review walkthrough data from past two weeks'}, {id: 'a2', text: 'Discuss Campus 3 writing support implementation'}, {id: 'a3', text: 'Plan upcoming ELPS PD session'}],
+      actionItems: [{id: 'ac1', text: 'P. Okolo to schedule Campus 3 writing workshop', assignee: coords[2] ? coords[2].name : 'P. Okolo', dueDate: demoDaysAgo(-7), done: false}],
+      notes: 'Team reviewed walkthrough trends. Campus 2 showing strong progress. Campus 3 needs targeted support for writing scaffolds. Agreed to dedicate next PLC to writing supports.',
+      createdAt: new Date(2026, 2, 24).toISOString(), updatedAt: new Date(2026, 2, 24).toISOString()
+    },
+    {
+      id: demoGenId(), _isDemo: true, type: 'campus', date: demoDaysAgo(14),
+      attendees: 'Campus 1 Principal, ' + (coords[0] ? coords[0].name : 'J. Miller') + ', Department Chairs',
+      agendaItems: [{id: 'a4', text: 'Audit results debrief'}, {id: 'a5', text: 'Goal setting for Q4'}, {id: 'a6', text: 'TELPAS preparation review'}],
+      actionItems: [{id: 'ac2', text: 'Share audit results with all teachers by next Friday', assignee: coords[0] ? coords[0].name : 'J. Miller', dueDate: demoDaysAgo(-5), done: true}],
+      notes: 'Campus 1 audit results shared. Teachers receptive to feedback. Principal requesting bi-weekly updates on coaching progress.',
+      createdAt: new Date(2026, 2, 17).toISOString(), updatedAt: new Date(2026, 2, 17).toISOString()
+    },
+    {
+      id: demoGenId(), _isDemo: true, type: 'district', date: demoDaysAgo(22),
+      attendees: 'All MLP Coordinators, Executive Director, ESL Department Heads',
+      agendaItems: [{id: 'a7', text: 'Mid-year data review'}, {id: 'a8', text: 'TELPAS timeline and preparation'}, {id: 'a9', text: 'Budget review for Q4 PD'}],
+      actionItems: [{id: 'ac3', text: 'Submit Q4 PD budget requests by March 31', assignee: 'All Coordinators', dueDate: demoDaysAgo(0), done: false}],
+      notes: 'District-wide mid-year data reviewed. Overall progress on track. TELPAS administration window confirmed. Additional PD funds available for Q4.',
+      createdAt: new Date(2026, 2, 9).toISOString(), updatedAt: new Date(2026, 2, 9).toISOString()
+    }
+  ];
+  for (var mi = 0; mi < demoMeetings.length; mi++) {
+    meetingData.meetings.push(demoMeetings[mi]);
+  }
+  localStorage.setItem('meeting_notes_data', JSON.stringify(meetingData));
+
+  // --- parent_comm_log ---
+  var pcData = safeGet('parent_comm_log') || {version: 1, entries: [], settings: {contactTypes: ['Phone Call','Email','Conference','Home Visit','Letter / Flyer'], languages: ['Spanish','English','Vietnamese','Arabic','Somali']}};
+  if (!pcData.entries) pcData.entries = [];
+  if (!pcData.settings) pcData.settings = {contactTypes: ['Phone Call','Email','Conference'], languages: ['Spanish','English']};
+  var demoEntries = [
+    {id: demoGenId(), _isDemo: true, date: demoDaysAgo(3), teacher: 'Teacher A', campus: 'Campus 1', coordinator: coords[0] ? coords[0].id : 'jmiller', contactType: 'Phone Call', language: 'Spanish', outcome: 'Discussed EB program placement and goals for the semester', materialsShared: 'Parent guide in Spanish', notes: 'Parent very engaged. Will attend next bilingual parent night.', createdAt: new Date(2026, 2, 28).toISOString()},
+    {id: demoGenId(), _isDemo: true, date: demoDaysAgo(7), teacher: 'Teacher B', campus: 'Campus 1', coordinator: coords[0] ? coords[0].id : 'jmiller', contactType: 'Email', language: 'English', outcome: 'Sent home language survey and consent form for bilingual assessment', materialsShared: 'Home language survey, TELPAS parent guide', notes: 'No response received yet. Will follow up by phone next week.', createdAt: new Date(2026, 2, 24).toISOString()},
+    {id: demoGenId(), _isDemo: true, date: demoDaysAgo(11), teacher: 'Teacher D', campus: 'Campus 2', coordinator: coords[1] ? coords[1].id : 'kpatterson', contactType: 'Conference', language: 'Vietnamese', outcome: 'Parent-teacher conference about TELPAS scores and academic progress', materialsShared: 'TELPAS score report, progress monitoring data', notes: 'Interpreter provided. Family satisfied with progress. Discussed home literacy strategies.', createdAt: new Date(2026, 2, 20).toISOString()},
+    {id: demoGenId(), _isDemo: true, date: demoDaysAgo(16), teacher: 'Teacher E', campus: 'Campus 3', coordinator: coords[2] ? coords[2].id : 'pokolo', contactType: 'Home Visit', language: 'Spanish', outcome: 'Conducted home visit to support family with reading resources', materialsShared: 'Bilingual books, read-aloud guide in Spanish', notes: 'Three-generation household. Grandmother primary caregiver. Very receptive to resources.', createdAt: new Date(2026, 2, 15).toISOString()},
+    {id: demoGenId(), _isDemo: true, date: demoDaysAgo(20), teacher: 'Teacher H', campus: 'Campus 4', coordinator: coords[3] ? coords[3].id : 'vpalencia', contactType: 'Phone Call', language: 'Arabic', outcome: 'Discussed newcomer student transition and language support services', materialsShared: 'Newcomer family guide in Arabic', notes: 'Family recently arrived. Connected them with community liaison.', createdAt: new Date(2026, 2, 11).toISOString()}
+  ];
+  for (var pci = 0; pci < demoEntries.length; pci++) {
+    pcData.entries.push(demoEntries[pci]);
+  }
+  localStorage.setItem('parent_comm_log', JSON.stringify(pcData));
+
+  // --- compliance_checklist_data ---
+  var ccData = safeGet('compliance_checklist_data') || {version: 1, items: [], completions: {}, settings: {semesters: ['Fall 2024-25','Spring 2024-25','Fall 2025-26','Spring 2025-26','Fall 2026-27','Spring 2026-27'], campuses: []}};
+  if (!ccData.items) ccData.items = [];
+  if (!ccData.completions) ccData.completions = {};
+  if (!ccData.settings) ccData.settings = {semesters: ['Spring 2025-26'], campuses: []};
+  if (!ccData.settings.campuses) ccData.settings.campuses = [];
+  // Add demo campuses to settings if not present
+  var demoCampusList = ['Campus 1', 'Campus 2'];
+  for (var dci = 0; dci < demoCampusList.length; dci++) {
+    var dcFound = false;
+    for (var dce = 0; dce < ccData.settings.campuses.length; dce++) {
+      if (ccData.settings.campuses[dce] === demoCampusList[dci]) { dcFound = true; break; }
+    }
+    if (!dcFound) ccData.settings.campuses.push(demoCampusList[dci]);
+  }
+  // Add demo items if none exist
+  var demoCompItems = [
+    {id: 'comp-demo-1', _isDemo: true, text: 'LPAC committee properly convened and documented', category: 'LPAC', required: true},
+    {id: 'comp-demo-2', _isDemo: true, text: 'All EB students have current language proficiency assessment on file', category: 'Assessment', required: true},
+    {id: 'comp-demo-3', _isDemo: true, text: 'ESL service minutes documented in student records', category: 'Services', required: true},
+    {id: 'comp-demo-4', _isDemo: true, text: 'Parent notification letters sent within 30 days of enrollment', category: 'Parent Notification', required: true},
+    {id: 'comp-demo-5', _isDemo: true, text: 'Annual parent meetings scheduled and documented', category: 'Parent Notification', required: false},
+    {id: 'comp-demo-6', _isDemo: true, text: 'ELPS standards posted in ESL classrooms', category: 'Instruction', required: false},
+    {id: 'comp-demo-7', _isDemo: true, text: 'Sheltered instruction strategies evident in lesson plans', category: 'Instruction', required: false},
+    {id: 'comp-demo-8', _isDemo: true, text: 'TELPAS preparation materials distributed to all EB teachers', category: 'Assessment', required: true},
+    {id: 'comp-demo-9', _isDemo: true, text: 'Bilingual program campus coordinator assigned', category: 'Staffing', required: true},
+    {id: 'comp-demo-10', _isDemo: true, text: 'ESL teacher certifications current and on file', category: 'Staffing', required: true}
+  ];
+  for (var ci3 = 0; ci3 < demoCompItems.length; ci3++) {
+    var compExists = false;
+    for (var ci4 = 0; ci4 < ccData.items.length; ci4++) {
+      if (ccData.items[ci4].id === demoCompItems[ci3].id) { compExists = true; break; }
+    }
+    if (!compExists) ccData.items.push(demoCompItems[ci3]);
+  }
+  // Mark ~60% of demo items complete for Campus 1 and Campus 2, Spring 2025-26
+  var demoSem = 'Spring 2025-26';
+  var allItems = ccData.items;
+  for (var cix = 0; cix < allItems.length; cix++) {
+    var item = allItems[cix];
+    for (var demoCampIdx = 0; demoCampIdx < demoCampusList.length; demoCampIdx++) {
+      var compKey = demoSem + '_' + demoCampusList[demoCampIdx] + '_' + item.id;
+      if (!ccData.completions[compKey]) {
+        // mark ~60% complete
+        if (cix % 10 < 6) {
+          ccData.completions[compKey] = {checked: true, notes: 'Verified during spring audit', date: demoDaysAgo(5 + cix), completedBy: coords[0] ? coords[0].name : 'J. Miller', _isDemo: true};
+        }
+      }
+    }
+  }
+  localStorage.setItem('compliance_checklist_data', JSON.stringify(ccData));
+
+  // --- goal_setting_data ---
+  var gsData = safeGet('goal_setting_data') || {version: 1, goals: [], checkins: []};
+  if (!gsData.goals) gsData.goals = [];
+  if (!gsData.checkins) gsData.checkins = [];
+  var demoGoalId1 = demoGenId();
+  var demoGoalId2 = demoGenId();
+  var demoGoalId3 = demoGenId();
+  var demoGoals = [
+    {
+      id: demoGoalId1, _isDemo: true, coordinatorId: coords[0] ? coords[0].id : 'jmiller', coordinatorName: coords[0] ? coords[0].name : 'J. Miller',
+      semester: 'Spring 2025-26', title: 'Increase ELPS 3 Implementation Fidelity at Campus 1',
+      description: 'Through targeted coaching and walkthroughs, increase the percentage of teachers at Campus 1 demonstrating ELPS 3 speaking standards with fidelity from 60% to 85% by end of semester.',
+      successMetric: '85% of observed teachers rated Observed on ELPS 3 items in spring audit cycle',
+      managerTarget: '85% fidelity rate by May 15',
+      actionSteps: [{text: 'Conduct bi-weekly walkthroughs with ELPS 3 focus', done: true}, {text: 'Facilitate PLC on sentence frame implementation', done: true}, {text: 'Provide individualized coaching to bottom-quartile teachers', done: false}, {text: 'Conduct final audit cycle in May', done: false}],
+      status: 'active', createdAt: new Date(2026, 1, 1).toISOString(), createdBy: 'manager'
+    },
+    {
+      id: demoGoalId2, _isDemo: true, coordinatorId: coords[1] ? coords[1].id : 'kpatterson', coordinatorName: coords[1] ? coords[1].name : 'K. Patterson',
+      semester: 'Spring 2025-26', title: 'Expand Vocabulary Systems Across Campus 2',
+      description: 'Support all Campus 2 teachers in implementing robust vocabulary systems including word walls, personal vocabulary journals, and Frayer models.',
+      successMetric: 'All observed classrooms rated at 2+ on vocabulary section of classroom audit',
+      managerTarget: 'Average vocabulary section score of 2.5/3.0 by April 30',
+      actionSteps: [{text: 'Model vocabulary instruction in 3 target classrooms', done: true}, {text: 'Create shared vocabulary resources folder', done: true}, {text: 'Facilitate vocabulary workshop during PLC', done: true}, {text: 'Conduct spring audit with vocabulary focus', done: false}],
+      status: 'active', createdAt: new Date(2026, 1, 1).toISOString(), createdBy: 'manager'
+    },
+    {
+      id: demoGoalId3, _isDemo: true, coordinatorId: coords[2] ? coords[2].id : 'pokolo', coordinatorName: coords[2] ? coords[2].name : 'P. Okolo',
+      semester: 'Fall 2024-25', title: 'Improve Writing Scaffold Implementation at Campus 3',
+      description: 'Address the gap in structured writing supports through targeted professional development and coaching at Campus 3.',
+      successMetric: '75% of teachers implementing writing frames rated Observed on writing section items',
+      managerTarget: 'Baseline audit complete with improvement plan by November 30',
+      actionSteps: [{text: 'Conduct baseline writing audit', done: true}, {text: 'Identify and share model classrooms', done: true}, {text: 'Deliver writing workshop to Campus 3 team', done: true}, {text: 'Follow-up audit to measure growth', done: true}],
+      status: 'achieved', createdAt: new Date(2025, 8, 15).toISOString(), createdBy: 'manager'
+    }
+  ];
+  for (var gi2 = 0; gi2 < demoGoals.length; gi2++) {
+    gsData.goals.push(demoGoals[gi2]);
+  }
+  var demoCheckins = [
+    {id: demoGenId(), _isDemo: true, goalId: demoGoalId1, type: 'mid', date: demoDaysAgo(20), evidence: 'Walkthrough data shows improvement from 60% to 72% fidelity on ELPS 3 items', rating: 3, managerNotes: 'Strong progress. Keep momentum going into final stretch.', coordinatorNotes: 'Teachers responding well to coaching. Need more time for bottom-quartile support.', createdAt: new Date(2026, 2, 11).toISOString()},
+    {id: demoGenId(), _isDemo: true, goalId: demoGoalId2, type: 'mid', date: demoDaysAgo(15), evidence: 'Spring audit shows average vocabulary score of 2.3 — approaching target', rating: 4, managerNotes: 'On track. Vocabulary workshop had strong impact.', coordinatorNotes: 'Two classrooms still need support. Scheduling individual coaching sessions.', createdAt: new Date(2026, 2, 16).toISOString()},
+    {id: demoGenId(), _isDemo: true, goalId: demoGoalId3, type: 'mid', date: new Date(2025, 10, 1).toISOString().slice(0, 10), evidence: 'Baseline audit complete. Improvement plan drafted and shared with principal.', rating: 3, managerNotes: 'Good start. Workshop scheduled.', coordinatorNotes: 'Campus very engaged. Teachers motivated to improve.', createdAt: new Date(2025, 10, 1).toISOString()},
+    {id: demoGenId(), _isDemo: true, goalId: demoGoalId3, type: 'end', date: new Date(2025, 11, 15).toISOString().slice(0, 10), evidence: 'Follow-up audit: 80% of teachers now rated Observed on writing section — goal exceeded!', rating: 5, managerNotes: 'Excellent outcome. P. Okolo did outstanding work at Campus 3.', coordinatorNotes: 'Very proud of the team. Writing instruction transformed this semester.', createdAt: new Date(2025, 11, 15).toISOString()}
+  ];
+  for (var chi = 0; chi < demoCheckins.length; chi++) {
+    gsData.checkins.push(demoCheckins[chi]);
+  }
+  localStorage.setItem('goal_setting_data', JSON.stringify(gsData));
+
+  // --- calibration_sessions ---
+  var calData = safeGet('calibration_sessions') || {version: 1, sessions: []};
+  if (!calData.sessions) calData.sessions = [];
+  var demoCalSessions = [
+    {
+      id: demoGenId(), _isDemo: true,
+      title: 'Spring 2026 Calibration Session 1',
+      date: demoDaysAgo(10),
+      items: [
+        {id: 'cal-item-1', section: 'Language Production Supports', text: 'Sentence Frames and Stems Wall'},
+        {id: 'cal-item-2', section: 'Vocabulary Systems', text: 'Permanent Word Wall'},
+        {id: 'cal-item-3', section: 'Writing Supports', text: 'Writing Process Anchor Chart'}
+      ],
+      scores: {
+        'cal-item-1': {jmiller: 2, kpatterson: 2, pokolo: 3, vpalencia: 2},
+        'cal-item-2': {jmiller: 3, kpatterson: 3, pokolo: 3, vpalencia: 2},
+        'cal-item-3': {jmiller: 1, kpatterson: 2, pokolo: 1, vpalencia: 1}
+      },
+      revealed: true,
+      notes: 'Good alignment on vocabulary. Some disagreement on writing supports — discussed criteria for score 1 vs 2.',
+      createdAt: new Date(2026, 2, 21).toISOString()
+    },
+    {
+      id: demoGenId(), _isDemo: true,
+      title: 'Spring 2026 Calibration Session 2',
+      date: demoDaysAgo(3),
+      items: [
+        {id: 'cal-item-4', section: 'Culture and Identity', text: 'Home Language Wall and Heritage Map'},
+        {id: 'cal-item-5', section: 'Classroom Discussion Norms', text: 'Discussion Protocols Posted and Used'},
+        {id: 'cal-item-6', section: 'Formative Assessment', text: 'Exit Ticket with Language Objective'}
+      ],
+      scores: {
+        'cal-item-4': {jmiller: 3, kpatterson: 3, pokolo: 2, vpalencia: 3},
+        'cal-item-5': {jmiller: 2, kpatterson: 1, pokolo: 2, vpalencia: 2},
+        'cal-item-6': {jmiller: 2, kpatterson: 2, pokolo: 2, vpalencia: 3}
+      },
+      revealed: false,
+      notes: '',
+      createdAt: new Date(2026, 2, 28).toISOString()
+    }
+  ];
+  for (var csi = 0; csi < demoCalSessions.length; csi++) {
+    calData.sessions.push(demoCalSessions[csi]);
+  }
+  localStorage.setItem('calibration_sessions', JSON.stringify(calData));
+
+  // Mark demo as loaded
+  localStorage.setItem('mlp_hub_demo_loaded', '1');
+  checkDemoStatus();
+  closeDemoModal();
+  // Refresh stats and activity
+  loadStats();
+  loadActivity();
+  loadExtraMeta();
+  loadAlerts();
+  showToast('Demo data loaded \u2014 explore all tools!');
+}
+
+function clearDemoData() {
+  // shared_teacher_roster — array of strings (no _isDemo, filter by name)
+  var roster = safeGet('shared_teacher_roster') || [];
+  var cleanRoster = [];
+  for (var ri = 0; ri < roster.length; ri++) {
+    var isDemoTeacher = false;
+    for (var dti = 0; dti < DEMO_TEACHERS.length; dti++) {
+      if (roster[ri] === DEMO_TEACHERS[dti]) { isDemoTeacher = true; break; }
+    }
+    if (!isDemoTeacher) cleanRoster.push(roster[ri]);
+  }
+  localStorage.setItem('shared_teacher_roster', JSON.stringify(cleanRoster));
+
+  // esl_audit_campuses — array of strings
+  var auditCampuses = safeGet('esl_audit_campuses') || [];
+  var cleanAuditCampuses = [];
+  for (var aci = 0; aci < auditCampuses.length; aci++) {
+    var isDemoCampus = false;
+    for (var dci2 = 0; dci2 < DEMO_CAMPUSES.length; dci2++) {
+      if (auditCampuses[aci] === DEMO_CAMPUSES[dci2]) { isDemoCampus = true; break; }
+    }
+    if (!isDemoCampus) cleanAuditCampuses.push(auditCampuses[aci]);
+  }
+  localStorage.setItem('esl_audit_campuses', JSON.stringify(cleanAuditCampuses));
+
+  // esl_audit_history
+  var auditHistory = safeGet('esl_audit_history') || [];
+  var cleanAudit = [];
+  for (var ah = 0; ah < auditHistory.length; ah++) {
+    if (!auditHistory[ah]._isDemo) cleanAudit.push(auditHistory[ah]);
+  }
+  localStorage.setItem('esl_audit_history', JSON.stringify(cleanAudit));
+
+  // walkthrough_history
+  var wth = safeGet('walkthrough_history') || [];
+  var cleanWth = [];
+  for (var wh2 = 0; wh2 < wth.length; wh2++) {
+    if (!wth[wh2]._isDemo) cleanWth.push(wth[wh2]);
+  }
+  localStorage.setItem('walkthrough_history', JSON.stringify(cleanWth));
+
+  // coaching_cycles_data
+  var ccd = safeGet('coaching_cycles_data') || {version: 1, cycles: [], settings: {}};
+  if (ccd.cycles) {
+    var cleanCycles = [];
+    for (var ccc = 0; ccc < ccd.cycles.length; ccc++) {
+      if (!ccd.cycles[ccc]._isDemo) cleanCycles.push(ccd.cycles[ccc]);
+    }
+    ccd.cycles = cleanCycles;
+    localStorage.setItem('coaching_cycles_data', JSON.stringify(ccd));
+  }
+
+  // pd_tracker_data
+  var pdd = safeGet('pd_tracker_data') || {version: 1, sessions: [], settings: {hourTargets: {}}};
+  if (pdd.sessions) {
+    var cleanPD = [];
+    for (var pd2 = 0; pd2 < pdd.sessions.length; pd2++) {
+      if (!pdd.sessions[pd2]._isDemo) cleanPD.push(pdd.sessions[pd2]);
+    }
+    pdd.sessions = cleanPD;
+    localStorage.setItem('pd_tracker_data', JSON.stringify(pdd));
+  }
+
+  // meeting_notes_data
+  var mnd = safeGet('meeting_notes_data') || {version: 1, meetings: []};
+  if (mnd.meetings) {
+    var cleanMtg = [];
+    for (var m2 = 0; m2 < mnd.meetings.length; m2++) {
+      if (!mnd.meetings[m2]._isDemo) cleanMtg.push(mnd.meetings[m2]);
+    }
+    mnd.meetings = cleanMtg;
+    localStorage.setItem('meeting_notes_data', JSON.stringify(mnd));
+  }
+
+  // parent_comm_log
+  var pcl = safeGet('parent_comm_log') || {version: 1, entries: [], settings: {}};
+  if (pcl.entries) {
+    var cleanPC = [];
+    for (var pc2 = 0; pc2 < pcl.entries.length; pc2++) {
+      if (!pcl.entries[pc2]._isDemo) cleanPC.push(pcl.entries[pc2]);
+    }
+    pcl.entries = cleanPC;
+    localStorage.setItem('parent_comm_log', JSON.stringify(pcl));
+  }
+
+  // compliance_checklist_data
+  var compD = safeGet('compliance_checklist_data') || {version: 1, items: [], completions: {}, settings: {semesters: [], campuses: []}};
+  if (compD.items) {
+    var cleanItems = [];
+    for (var ci5 = 0; ci5 < compD.items.length; ci5++) {
+      if (!compD.items[ci5]._isDemo) cleanItems.push(compD.items[ci5]);
+    }
+    compD.items = cleanItems;
+  }
+  // Remove demo campus completions
+  if (compD.completions) {
+    var cleanCompletions = {};
+    for (var compKey2 in compD.completions) {
+      if (compD.completions.hasOwnProperty(compKey2)) {
+        var isFromDemoCampus = false;
+        for (var dcc = 0; dcc < DEMO_CAMPUSES.length; dcc++) {
+          if (compKey2.indexOf('_' + DEMO_CAMPUSES[dcc] + '_') !== -1 && compD.completions[compKey2]._isDemo) {
+            isFromDemoCampus = true; break;
+          }
+        }
+        if (!isFromDemoCampus) cleanCompletions[compKey2] = compD.completions[compKey2];
+      }
+    }
+    compD.completions = cleanCompletions;
+  }
+  // Remove demo campuses from settings
+  if (compD.settings && compD.settings.campuses) {
+    var cleanSettingsCampuses = [];
+    for (var sc = 0; sc < compD.settings.campuses.length; sc++) {
+      var isDCamp = false;
+      for (var dc3 = 0; dc3 < DEMO_CAMPUSES.length; dc3++) {
+        if (compD.settings.campuses[sc] === DEMO_CAMPUSES[dc3]) { isDCamp = true; break; }
+      }
+      if (!isDCamp) cleanSettingsCampuses.push(compD.settings.campuses[sc]);
+    }
+    compD.settings.campuses = cleanSettingsCampuses;
+  }
+  localStorage.setItem('compliance_checklist_data', JSON.stringify(compD));
+
+  // goal_setting_data
+  var gsd = safeGet('goal_setting_data') || {version: 1, goals: [], checkins: []};
+  if (gsd.goals) {
+    var cleanGoals = [];
+    for (var g2 = 0; g2 < gsd.goals.length; g2++) {
+      if (!gsd.goals[g2]._isDemo) cleanGoals.push(gsd.goals[g2]);
+    }
+    gsd.goals = cleanGoals;
+  }
+  if (gsd.checkins) {
+    var cleanCheckins = [];
+    for (var ch2 = 0; ch2 < gsd.checkins.length; ch2++) {
+      if (!gsd.checkins[ch2]._isDemo) cleanCheckins.push(gsd.checkins[ch2]);
+    }
+    gsd.checkins = cleanCheckins;
+  }
+  localStorage.setItem('goal_setting_data', JSON.stringify(gsd));
+
+  // calibration_sessions
+  var cals = safeGet('calibration_sessions') || {version: 1, sessions: []};
+  if (cals.sessions) {
+    var cleanCal = [];
+    for (var cs2 = 0; cs2 < cals.sessions.length; cs2++) {
+      if (!cals.sessions[cs2]._isDemo) cleanCal.push(cals.sessions[cs2]);
+    }
+    cals.sessions = cleanCal;
+    localStorage.setItem('calibration_sessions', JSON.stringify(cals));
+  }
+
+  localStorage.removeItem('mlp_hub_demo_loaded');
+  checkDemoStatus();
+  loadStats();
+  loadActivity();
+  loadExtraMeta();
+  loadAlerts();
+  showToast('Demo data cleared');
+}
+
+/* ======================================================
+   DEMO MODAL CONTROLS
+   ====================================================== */
+function checkDemoStatus() {
+  var loaded = localStorage.getItem('mlp_hub_demo_loaded');
+  var banner = document.getElementById('demoBanner');
+  if (banner) banner.style.display = (loaded === '1') ? 'flex' : 'none';
+}
+
+function openDemoModal() {
+  document.getElementById('demoOverlay').classList.add('open');
+}
+
+function closeDemoModal() {
+  document.getElementById('demoOverlay').classList.remove('open');
+}
+
+function confirmLoadDemo() {
+  loadDemoData();
+}
+
+/* ======================================================
+   TUTORIAL SYSTEM
+   ====================================================== */
+var tutorialCurrentStep = 0;
+
+var TUTORIAL_STEPS = [
+  {
+    target: null,
+    title: 'Welcome to MLP Coordinator Hub',
+    body: 'This is your all-in-one platform for managing ESL/MLP coordinators across your district. Let\'s take a quick tour of what you\'re looking at.',
+    position: 'center'
+  },
+  {
+    target: '.role-tabs-row',
+    title: 'Switch Between Roles',
+    body: 'Toggle between Manager, MLP Coordinator, and Campus Leader views. Each role sees the tools relevant to their work.',
+    position: 'bottom'
+  },
+  {
+    target: '.stats-row',
+    title: 'At-a-Glance Metrics',
+    body: 'See key numbers at a glance: audits saved, walkthroughs completed, teachers in roster, and coaching cycles \u2014 all updated in real time.',
+    position: 'bottom'
+  },
+  {
+    target: '.tool-grid',
+    title: '19+ Specialized Tools',
+    body: 'Each card opens a dedicated tool \u2014 from classroom audits to parent communication logs. Click any card to jump right in.',
+    position: 'top'
+  },
+  {
+    target: '#alertsArea',
+    title: 'Smart Alerts',
+    body: 'The hub surfaces overdue coaching cycles, stalled walkthroughs, and other items needing attention \u2014 so nothing slips through the cracks.',
+    position: 'bottom'
+  },
+  {
+    target: null,
+    title: 'Brand It Your Way',
+    body: 'Click the \u2699 Settings button to customize the theme, colors, org name, logo, and coordinator roster for your district.',
+    position: 'center'
+  },
+  {
+    target: '.demo-btn',
+    title: 'Explore With Sample Data',
+    body: 'Click "Try Demo" to populate all tools with realistic sample data \u2014 perfect for evaluating the product before committing. Clear it anytime with one click.',
+    position: 'bottom'
+  }
+];
+
+function startTutorial() {
+  if (localStorage.getItem('mlp_hub_demo_loaded') !== '1') {
+    showToast('Tip: Load demo data first for the best experience!');
+  }
+  tutorialCurrentStep = 0;
+  document.getElementById('tutorialOverlay').style.display = 'block';
+  showTutorialStep(0);
+}
+
+function showTutorialStep(n) {
+  var step = TUTORIAL_STEPS[n];
+  if (!step) { closeTutorial(); return; }
+
+  document.getElementById('tutorialTitle').textContent = step.title;
+  document.getElementById('tutorialBody').textContent = step.body;
+  document.getElementById('tutorialProgress').textContent = 'Step ' + (n + 1) + ' of ' + TUTORIAL_STEPS.length;
+  document.getElementById('tutorialStepLabel').textContent = 'Tour';
+
+  var nextBtn = document.getElementById('tutorialNextBtn');
+  if (nextBtn) {
+    nextBtn.textContent = (n === TUTORIAL_STEPS.length - 1) ? 'Finish' : 'Next';
+  }
+
+  var highlight = document.getElementById('tutorialHighlight');
+  var tooltip = document.getElementById('tutorialTooltip');
+  tooltip.style.display = 'block';
+
+  if (step.target) {
+    var el = document.querySelector(step.target);
+    if (el) {
+      var rect = el.getBoundingClientRect();
+      var pad = 4;
+      highlight.style.top = (rect.top - pad) + 'px';
+      highlight.style.left = (rect.left - pad) + 'px';
+      highlight.style.width = (rect.width + pad * 2) + 'px';
+      highlight.style.height = (rect.height + pad * 2) + 'px';
+      highlight.style.display = 'block';
+
+      // Position tooltip
+      var tooltipW = 320;
+      var tooltipH = 200; // estimated
+      var vpW = window.innerWidth;
+      var vpH = window.innerHeight;
+      var tipTop, tipLeft;
+
+      if (step.position === 'bottom') {
+        tipTop = rect.bottom + 16;
+        tipLeft = rect.left;
+      } else if (step.position === 'top') {
+        tipTop = rect.top - tooltipH - 16;
+        tipLeft = rect.left;
+      } else {
+        tipTop = vpH / 2 - tooltipH / 2;
+        tipLeft = vpW / 2 - tooltipW / 2;
+      }
+
+      // Clamp within viewport
+      if (tipLeft + tooltipW > vpW - 10) tipLeft = vpW - tooltipW - 10;
+      if (tipLeft < 10) tipLeft = 10;
+      if (tipTop + tooltipH > vpH - 10) tipTop = vpH - tooltipH - 10;
+      if (tipTop < 10) tipTop = 10;
+
+      tooltip.style.top = tipTop + 'px';
+      tooltip.style.left = tipLeft + 'px';
+      tooltip.style.transform = '';
+    } else {
+      // Element not found — center tooltip
+      highlight.style.display = 'none';
+      tooltip.style.top = '50%';
+      tooltip.style.left = '50%';
+      tooltip.style.transform = 'translate(-50%,-50%)';
+    }
+  } else {
+    // No target — center tooltip, no highlight
+    highlight.style.display = 'none';
+    tooltip.style.top = '50%';
+    tooltip.style.left = '50%';
+    tooltip.style.transform = 'translate(-50%,-50%)';
+  }
+}
+
+function nextTutorialStep() {
+  tutorialCurrentStep++;
+  if (tutorialCurrentStep >= TUTORIAL_STEPS.length) {
+    closeTutorial();
+  } else {
+    showTutorialStep(tutorialCurrentStep);
+  }
+}
+
+function closeTutorial() {
+  document.getElementById('tutorialOverlay').style.display = 'none';
+  document.getElementById('tutorialHighlight').style.display = 'none';
+  document.getElementById('tutorialTooltip').style.display = 'none';
+  tutorialCurrentStep = 0;
+}
 </script>
 </body>
 </html>

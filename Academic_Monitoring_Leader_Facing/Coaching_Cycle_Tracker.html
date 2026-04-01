@@ -303,6 +303,18 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 .notif-bell-badge{position:absolute;top:-4px;right:-4px;background:#e74c3c;color:#fff;font-size:9px;font-weight:800;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 4px;line-height:1}
 .notif-bell-badge.hidden{display:none}
 @media print{.notif-bell-link{display:none!important}}
+.template-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--modal-overlay);display:none;align-items:flex-start;justify-content:center;z-index:1000;padding:20px;overflow-y:auto}
+.template-overlay.active{display:flex}
+.template-modal{background:var(--modal-bg);border-radius:14px;padding:28px 28px 24px;max-width:700px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,.3);margin:auto}
+.template-modal h3{font-size:17px;color:#2c3e6e;margin-bottom:6px;font-weight:800}
+.template-modal .template-subtitle{font-size:12px;color:#555;margin-bottom:4px;line-height:1.5}
+.template-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:16px}
+.template-card{background:var(--section-bg-light);border:2px solid var(--input-border);border-radius:8px;padding:16px;cursor:pointer;transition:border-color .15s,transform .15s}
+.template-card:hover{border-color:#4a90d9;transform:translateY(-2px)}
+.template-card h4{margin:0 0 6px;color:#2c3e6e;font-size:13px;font-weight:700}
+.template-card p{margin:0;font-size:12px;color:#555;line-height:1.5}
+.template-card .template-icon{font-size:22px;margin-bottom:8px;display:block}
+.template-modal-close{display:flex;justify-content:flex-end;margin-top:18px}
 </style>
 </head>
 <body>
@@ -315,6 +327,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
     <div class="toolbar">
       <button class="tool-btn success" onclick="showModal('importWTModal')">&#128229; Import from Walkthroughs</button>
       <button class="tool-btn" onclick="showModal('newCycleModal')">&#10010; New Cycle</button>
+      <button class="tool-btn" onclick="openCoachingTemplateModal()" title="Choose a coaching framework template" style="border-color:rgba(142,68,173,.5);background:rgba(142,68,173,.15)">&#128203; Templates</button>
       <button class="tool-btn" onclick="exportData()">&#128190; Export</button>
       <button class="tool-btn" onclick="showModal('importDataModal')">&#128194; Import</button>
       <button class="tool-btn danger" onclick="showModal('resetModal')">&#128260; Reset</button>
@@ -392,6 +405,39 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
   </div>
 
 </div><!-- /wrap -->
+
+<!-- COACHING TEMPLATE PICKER MODAL -->
+<div class="template-overlay" id="coachingTemplateModal" role="dialog" aria-modal="true" aria-labelledby="coachingTemplateModalTitle">
+  <div class="template-modal">
+    <h3 id="coachingTemplateModalTitle">&#128203; Choose a Coaching Template</h3>
+    <p class="template-subtitle">Select a starting framework for this coaching cycle. The template will pre-fill stage notes &mdash; customize and save to create the cycle.</p>
+    <div class="template-grid">
+      <div class="template-card" onclick="applyCoachingTemplate('acad-lang-dev')">
+        <span class="template-icon">&#128172;</span>
+        <h4>Academic Language Development</h4>
+        <p>Focus on content-specific vocabulary and academic discourse structures</p>
+      </div>
+      <div class="template-card" onclick="applyCoachingTemplate('newcomer-integration')">
+        <span class="template-icon">&#127758;</span>
+        <h4>Newcomer Integration</h4>
+        <p>Support for teachers with recently arrived EB students at proficiency levels 1&ndash;2</p>
+      </div>
+      <div class="template-card" onclick="applyCoachingTemplate('telpas-prep')">
+        <span class="template-icon">&#9999;</span>
+        <h4>TELPAS Preparation</h4>
+        <p>Preparing students for TELPAS writing and speaking assessment</p>
+      </div>
+      <div class="template-card" onclick="applyCoachingTemplate('co-teaching')">
+        <span class="template-icon">&#128101;</span>
+        <h4>Co-Teaching Model</h4>
+        <p>Collaborative teaching strategies for ESL/content teacher partnerships</p>
+      </div>
+    </div>
+    <div class="template-modal-close">
+      <button class="btn-cancel" onclick="closeCoachingTemplateModal()">Cancel</button>
+    </div>
+  </div>
+</div>
 
 <!-- IMPORT FROM WALKTHROUGHS MODAL -->
 <div class="modal-overlay" id="importWTModal">
@@ -570,7 +616,11 @@ var CYCLE_TEMPLATES = [
   {id:"writing-support",name:"Writing Support Systems",sections:["s03","s10"],stages:{observation:"Look for: writing process chart posted, tiered writing frames available, writer's checklist in use, mentor texts accessible.",feedback:"Discussion starters: How do scholars know where they are in the writing process? Are frames scaffolding independence or creating dependence?",actionStep:"Recommended: Create tiered frames for current writing task (3 levels). Select and annotate a mentor text at target level. Post revision focus.",followUp:"Check: Are scholars self-selecting frame levels? Is the mentor text annotated and referenced? Are scholars using the revision focus?",growth:"Indicators: Scholars transition to less scaffolded frames over time, writing quality improves across drafts."}},
   {id:"discussion",name:"Academic Discussion Quality",sections:["s06","s11"],stages:{observation:"Look for: discussion norms posted, group role cards available, essential questions displayed, protocol steps visible.",feedback:"Discussion starters: What discussion structures are in place? How do scholars know their role in a discussion?",actionStep:"Recommended: Co-create discussion norms with scholars. Assign and rotate group roles weekly. Post current discussion protocol steps.",followUp:"Check: Do scholars reference norms during discussions? Are roles being followed? Can scholars lead protocol steps independently?",growth:"Indicators: Scholar-led discussions with minimal teacher intervention, all scholars participating actively."}},
   {id:"data-goals",name:"Data-Driven Goal Setting",sections:["s04","s12"],stages:{observation:"Look for: language goal trackers on desks, class participation visible, I Can statements posted, unit learning targets displayed.",feedback:"Discussion starters: Can scholars state their language goals? How is progress tracked and shared?",actionStep:"Recommended: Create scholar-friendly goal tracker with TELPAS domain labels. Implement weekly goal conference routine.",followUp:"Check: Can 80% of scholars state their goal? Are conferences happening weekly? Is the progress display current?",growth:"Indicators: Scholars independently track and discuss progress, goal-setting conversations are scholar-led."}},
-  {id:"culture-identity",name:"Culture and Identity Integration",sections:["s05","s13"],stages:{observation:"Look for: home language wall, multilingual welcome, bilingual library, cultural connection display, scholar work at multiple levels.",feedback:"Discussion starters: How are scholars' home languages and cultures visible in the classroom?",actionStep:"Recommended: Create heritage spotlight rotation schedule. Add home language labels to word wall. Connect unit content to cultural backgrounds.",followUp:"Check: Is the heritage spotlight rotation happening? Are scholars contributing home language connections?",growth:"Indicators: Scholars voluntarily share cultural connections, home language is referenced positively during instruction."}}
+  {id:"culture-identity",name:"Culture and Identity Integration",sections:["s05","s13"],stages:{observation:"Look for: home language wall, multilingual welcome, bilingual library, cultural connection display, scholar work at multiple levels.",feedback:"Discussion starters: How are scholars' home languages and cultures visible in the classroom?",actionStep:"Recommended: Create heritage spotlight rotation schedule. Add home language labels to word wall. Connect unit content to cultural backgrounds.",followUp:"Check: Is the heritage spotlight rotation happening? Are scholars contributing home language connections?",growth:"Indicators: Scholars voluntarily share cultural connections, home language is referenced positively during instruction."}},
+  {id:"acad-lang-dev",name:"Academic Language Development",sections:["s01","s02"],stages:{observation:"Look for: sentence frames and academic discourse stems posted and tiered by proficiency level, scholars actively using language frames during discussion and writing, content-specific vocabulary anchored to unit concepts.",feedback:"Discussion starters: How are scholars accessing and producing academic language during instruction? When do you observe scholars using language frames independently vs. with prompting?",actionStep:"Recommended: Increase use of academic language frames during content instruction. Introduce two new sentence frames per week aligned to unit language function. Require frame usage during partner discussions and written responses.",followUp:"Check: Are scholars using academic language frames without prompting during partner and group tasks? Has the quality of academic discourse increased? Are frames updated to reflect current unit language functions?",growth:"Indicators: Scholars independently select and use academic language frames, discourse complexity increases across the semester, language production is visible in both oral and written formats."}},
+  {id:"newcomer-integration",name:"Newcomer Integration",sections:["s05","s07"],stages:{observation:"Look for: bilingual supports, home language materials, newcomer-friendly visuals, multilingual welcome display, simplified and scaffolded task directions, technology supports for translation and comprehension.",feedback:"Discussion starters: How are newcomer students accessing content alongside grade-level peers? What scaffolds are in place to support students at proficiency levels 1-2?",actionStep:"Recommended: Implement structured newcomer support strategies for EB students at proficiency level 1-2. Add visual and bilingual task directions. Establish a peer buddy system and use translation tools at the technology station.",followUp:"Check: Are newcomers participating in structured activities with appropriate scaffolds? Are bilingual supports visible and accessible? Has newcomer engagement during instruction increased?",growth:"Indicators: Newcomer students independently use available supports, participate in partner and group tasks, and demonstrate growth in English proficiency markers over the coaching cycle."}},
+  {id:"telpas-prep",name:"TELPAS Preparation",sections:["s03","s10"],stages:{observation:"Look for: academic writing frames posted and tiered, writing mentor texts visible and annotated, revision focus charts for current writing task, vocabulary explicitly connected to TELPAS domains, student writing samples at multiple proficiency levels.",feedback:"Discussion starters: How are students building writing complexity over time? What opportunities exist for students to produce extended academic writing in preparation for TELPAS?",actionStep:"Recommended: Increase student writing complexity and academic language use in preparation for TELPAS. Add tiered sentence frames for persuasive and expository writing. Use mentor texts from TELPAS-aligned genres. Build in daily extended writing practice with revision focus.",followUp:"Check: Are students producing extended written responses with academic language? Are mentor texts referenced during writing tasks? Has the quality of written academic language improved?",growth:"Indicators: Student writing shows increased complexity and use of academic language structures, TELPAS writing scores improve, students independently apply revision strategies."}},
+  {id:"co-teaching",name:"Co-Teaching Model",sections:["s06","s11"],stages:{observation:"Look for: co-teaching structure is visible in classroom setup, both teachers have defined instructional roles, discussion protocols support both co-teachers, ESL teacher provides language scaffolds during content instruction, student grouping reflects co-teaching model.",feedback:"Discussion starters: How are the ESL and content teacher roles defined during instruction? How does the co-teaching structure maximize language support for EB students?",actionStep:"Recommended: Implement effective co-teaching structures using SIOP strategies. Establish clear role differentiation between content and ESL teacher. Use station teaching or parallel teaching to provide small-group language support. Post language objectives alongside content objectives.",followUp:"Check: Are both teachers using defined roles consistently? Are EB students receiving differentiated language support during co-taught lessons? Has the co-teaching model been refined based on student needs?",growth:"Indicators: Co-teaching partnership is collaborative and fluid, EB students receive consistent language scaffolding during content instruction, co-teaching model is sustainable and expands across units."}}
 ];
 
 /* ======================================================
@@ -1554,6 +1604,38 @@ function init() {
   }
 
   checkHandoff();
+}
+
+/* ======================================================
+   COACHING TEMPLATE PICKER
+   ====================================================== */
+
+function openCoachingTemplateModal() {
+  document.getElementById("coachingTemplateModal").classList.add("active");
+}
+
+function closeCoachingTemplateModal() {
+  document.getElementById("coachingTemplateModal").classList.remove("active");
+}
+
+function applyCoachingTemplate(templateId) {
+  closeCoachingTemplateModal();
+
+  // Set the template select in the new cycle modal
+  var sel = document.getElementById("newTemplate");
+  if (sel) {
+    sel.value = templateId;
+    // If the option isn't found yet (dropdown not yet populated), store for later
+    if (sel.value !== templateId) {
+      populateTemplateDropdown();
+      sel.value = templateId;
+    }
+  }
+
+  // Open the new cycle modal
+  showModal("newCycleModal");
+
+  showToast("Template loaded \u2014 customize and save");
 }
 
 init();

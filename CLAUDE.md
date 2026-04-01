@@ -8,13 +8,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Live URL**: `https://jordanmiller-commits.github.io/-Manager-of-Multilingual-ESL-Coordinators/`
 
-**Coordinators** (hardcoded in several tools):
+**Coordinators** — now dynamic via `mlp_hub_config` localStorage key (Phase 2). Default fallback:
 | ID | Name | Email |
 |---|---|---|
 | `jmiller` | J. Miller | jmiller@uplifteducation.org |
 | `kpatterson` | K. Patterson | kpatterson@uplifteducation.org |
 | `pokolo` | P. Okolo | Pokolo@uplifteducation.org |
 | `vpalencia` | V. Palencia | vpalencia@uplifteducation.org |
+
+All coordinator dropdowns are populated via `getCoordinators()` → reads `mlp_hub_config.coordinators`, falls back to `DEFAULT_COORDINATORS`. No HTML needs editing to change coordinators — use the Settings modal (⚙ gear icon) in `index.html`.
 
 ---
 
@@ -23,7 +25,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Adding a new HTML tool
 1. Create the `.html` file following the conventions below (copy header/dark mode/toast pattern from an existing tool)
 2. Add the file path to `ASSETS` array in root `service-worker.js`
-3. Bump `CACHE_NAME` in `service-worker.js` (e.g., `mlp-suite-v5` → `mlp-suite-v2`)
+3. Bump `CACHE_NAME` in `service-worker.js` (e.g., `mlp-suite-v7` → `mlp-suite-v8`)
 4. Add a tool card in `index.html` with appropriate `data-roles` attribute
 5. If it uses localStorage, add its key(s) to the Cross-Tool Data Sharing table below
 6. If the data should sync to Drive, add the key to `SYNC_KEYS` in `google_apps_script/Code.gs`
@@ -41,8 +43,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - See `google_apps_script/README.md` for full deployment guide
 
 ### Adding a coordinator
-- Update `COORDINATOR_EMAIL_MAP` in `Code.gs`
-- Update coordinator dropdowns/lists in affected HTML tools (search for existing coordinator names)
+- Open `index.html` → click ⚙ Settings → Coordinators section → "Add Coordinator" (no HTML editing needed)
+- Also update `COORDINATOR_EMAIL_MAP` in `Code.gs` for GAS email reminders
 - Generate onboarding link with `?gasUrl=...&coordId=...&coordName=...&secret=...`
 
 ---
@@ -92,19 +94,53 @@ For tools in subdirectories, use `href="../manifest.json"` and register `../serv
 
 ## Visual Design System
 
-All tools share this design language — maintain consistency:
+All tools use CSS custom properties (`:root` variables) — do **not** hardcode color values. The theme engine sets these at runtime via `mlp_hub_config`.
 
-| Element | Value |
+**Canonical `:root` variable set** (every tool must declare these):
+```
+--bg, --card-bg, --card-border, --card-shadow, --text, --text-secondary,
+--text-muted, --text-faint, --text-heading, --input-bg, --input-border,
+--input-text, --border, --border-light, --hover-bg, --item-hover,
+--section-bg-light, --primary, --primary-dark, --primary-light,
+--success, --danger, --warn, --header-gradient-1, --header-gradient-2,
+--shadow, --modal-bg, --modal-overlay, --toast-bg, --toast-text,
+--footer-bg, --footer-border, --footer-text
+```
+
+`body.dark-mode { }` block overrides these variables — **all tools now use a single dark-mode override block** (not per-selector overrides).
+
+**Theme application snippet** — every tool's `<script>` must open with this IIFE (reads `mlp_hub_config` and applies dynamic theme colors before the page renders):
+```javascript
+(function(){
+  try {
+    var raw = localStorage.getItem("mlp_hub_config");
+    var cfg = raw ? JSON.parse(raw) : {};
+    var THEMES = {"default":{primary:"#4a90d9",primaryDark:"#2c3e6e",headerGrad1:"#2c3e6e",headerGrad2:"#4a90d9"},...};
+    var colors = cfg.customColors || THEMES[cfg.theme || "default"] || THEMES["default"];
+    var r = document.documentElement.style;
+    r.setProperty("--primary", colors.primary);
+    r.setProperty("--primary-dark", colors.primaryDark);
+    r.setProperty("--header-gradient-1", colors.headerGrad1);
+    r.setProperty("--header-gradient-2", colors.headerGrad2);
+    r.setProperty("--text-heading", colors.primaryDark);
+    if (cfg.orgName) { var h1 = document.querySelector(".header h1"); if (h1) h1.textContent = cfg.orgName; }
+  } catch(e){}
+})();
+```
+
+**8 built-in themes**: default (Ocean Blue), forest, sunset, ruby, slate, royal, teal, charcoal — selectable in the Settings modal.
+
+| Element | CSS Variable |
 |---|---|
-| Header gradient | `linear-gradient(135deg, #2c3e6e, #4a90d9)` |
+| Header gradient | `linear-gradient(135deg, var(--header-gradient-1), var(--header-gradient-2))` |
 | Font | `'Segoe UI', Arial, sans-serif` |
-| Background | `#f0f2f7` |
-| Card style | `background:#fff; border-radius:10px; box-shadow:0 1px 5px rgba(0,0,0,.07); padding:16px 20px` |
-| Primary blue | `#4a90d9` / `#2c3e6e` (dark blue) |
+| Background | `var(--bg)` |
+| Card style | `background:var(--card-bg); border-radius:10px; box-shadow:var(--shadow); padding:16px 20px` |
+| Primary color | `var(--primary)` / `var(--primary-dark)` |
 | Header buttons | `.tool-btn` class — semi-transparent white on gradient |
 | Content buttons | `.btn` / `.btn.primary` / `.btn.danger` classes |
-| Table header bg | `#f8f9fb` |
-| Coordinator colors | J. Miller=purple, K. Patterson=teal, P. Okolo=red, V. Palencia=blue |
+| Table header bg | `var(--section-bg-light)` |
+| Coordinator colors | Stored in `mlp_hub_config.coordinators[].color`; default: purple/teal/red/blue |
 
 ---
 
@@ -157,6 +193,7 @@ Tools share data through localStorage keys. **Before renaming or restructuring a
 | `elps_agent_index` | ELPS Agent | ELPS Agent | Inverted search index |
 | `elps_agent_settings` | ELPS Agent | ELPS Agent | API key, model preference |
 | `elps_agent_history` | ELPS Agent | ELPS Agent | Recent query history |
+| `mlp_hub_config` | index.html Settings modal | All tools (theme snippet) | `{version, orgName, theme, customColors, logoDataUrl, coordinators[]}` |
 | `esl_app_theme` | All tools | All tools | `"dark"` / `"light"` |
 | `esl_gist_sync` | Backup Hub | Backup Hub | GitHub Gist PAT + Gist ID |
 | `esl_gas_sync` | Backup Hub, Onboarding | Backup Hub, Team Overview, Onboarding, Workload, Principal Portal | Drive sync URL, coordinator ID/name, secret |
@@ -202,7 +239,7 @@ Tools share data through localStorage keys. **Before renaming or restructuring a
 ├── Calibration_Tool.html               # Scoring calibration — inter-rater reliability for audit items
 ├── Reports_Hub.html                    # Cross-tool reporting — semester overview, coordinator/campus/coaching reports
 ├── manifest.json                       # PWA manifest ("MLP Coordinator Hub")
-├── service-worker.js                   # PWA service worker — cache-first, CACHE_NAME = "mlp-suite-v5"
+├── service-worker.js                   # PWA service worker — cache-first, CACHE_NAME = "mlp-suite-v7"
 ├── Principal_Checkpoint_Portal/
 │   ├── Principal_Checkpoint_Portal.html  # Campus leader view — coaching, audit scores, notes sync to GAS
 │   └── Campus_Report_Card.html           # One-page weekly campus snapshot — health score, pipeline, action items
@@ -306,9 +343,9 @@ No npm, no node_modules, no build step.
 
 ## PWA & Caching
 
-- **Cache name**: `mlp-suite-v5` in root `service-worker.js`
+- **Cache name**: `mlp-suite-v7` in root `service-worker.js` — bump whenever HTML files are added or significant changes are deployed
 - Strategy: cache-first with network fallback
-- All 21 HTML files + Chart.js CDN listed in `ASSETS` array
+- All 24 HTML files + Chart.js CDN listed in `ASSETS` array
 - **When adding files**: add to `ASSETS` and bump `CACHE_NAME`
 - Legacy audit-only PWA files exist in `ESL_Classroom_Audit/` (can be ignored)
 
@@ -316,10 +353,11 @@ No npm, no node_modules, no build step.
 
 ## Dark Mode
 
-- Class: `body.dark-mode` (most tools) or `body.dark` (Audit, ELPS Agent)
+- Class: `body.dark-mode` — **unified across all tools** (Phase 1 migration complete)
 - Key: `esl_app_theme` (`"dark"` / `"light"`) — read on load, written on toggle
 - Audit also uses `esl_audit_dark_mode` but syncs with `esl_app_theme`
-- ELPS Agent has its own system (`elps_agent_dark`)
+- ELPS Agent previously used `body.dark` + `elps_agent_dark` — now migrated to `body.dark-mode` + `esl_app_theme`
+- Dark mode works by overriding CSS variables in `body.dark-mode { }` — do not add per-selector dark rules
 
 ---
 
@@ -331,12 +369,11 @@ No npm, no node_modules, no build step.
 
 ---
 
-## Security Notes (from TODO.md)
+## Security Notes
 
-**Completed**: API secret in GAS, input sanitization, Drive folder permissions
+**Completed**: API secret in GAS, input sanitization, Drive folder permissions, CSP headers added to all HTML files
 **Open items**:
 - GitHub PAT stored in plaintext in `esl_gist_sync` — needs "Clear PAT" button
-- Content Security Policy headers not yet added to HTML files
 - GAS audit logging not yet implemented
 - Sensitive localStorage keys not encrypted
 
@@ -344,18 +381,34 @@ No npm, no node_modules, no build step.
 
 ## Common Patterns for Reference
 
-### Adding a filter bar
+### Adding a filter bar with dynamic coordinators
 ```html
 <div class="filter-bar">
   <div class="filter-group">
     <label>Coordinator</label>
     <select id="filterCoord" onchange="applyFilters()">
       <option value="">All</option>
-      <option value="jmiller">J. Miller</option>
-      <!-- etc -->
+      <!-- populated by populateCoordDropdowns() on load -->
     </select>
   </div>
 </div>
+```
+```javascript
+function populateCoordDropdowns() {
+    var coords = getCoordinators();
+    var selects = [document.getElementById('filterCoord')];
+    selects.forEach(function(sel) {
+        if (!sel) return;
+        var cur = sel.value;
+        while (sel.options.length > 1) sel.remove(1);
+        coords.forEach(function(c) {
+            var o = document.createElement('option');
+            o.value = c.id; o.textContent = c.name;
+            sel.appendChild(o);
+        });
+        if (cur) sel.value = cur;
+    });
+}
 ```
 
 ### Adding a Chart.js visualization
@@ -395,3 +448,22 @@ function toggleDarkMode() {
 // On load:
 if (localStorage.getItem('esl_app_theme') === 'dark') document.body.classList.add('dark-mode');
 ```
+
+### Dynamic coordinator list
+```javascript
+var DEFAULT_COORDINATORS = [
+    {id:'jmiller', name:'J. Miller', email:'jmiller@uplifteducation.org', color:'#8e44ad'},
+    {id:'kpatterson', name:'K. Patterson', email:'kpatterson@uplifteducation.org', color:'#0097a7'},
+    {id:'pokolo', name:'P. Okolo', email:'Pokolo@uplifteducation.org', color:'#c0392b'},
+    {id:'vpalencia', name:'V. Palencia', email:'vpalencia@uplifteducation.org', color:'#2980b9'}
+];
+function getCoordinators() {
+    try {
+        var raw = localStorage.getItem('mlp_hub_config');
+        var cfg = raw ? JSON.parse(raw) : {};
+        if (cfg.coordinators && cfg.coordinators.length) return cfg.coordinators;
+    } catch(e) {}
+    return DEFAULT_COORDINATORS;
+}
+```
+Call `getCoordinators()` wherever coordinator lists, dropdowns, or color maps were previously hardcoded arrays.

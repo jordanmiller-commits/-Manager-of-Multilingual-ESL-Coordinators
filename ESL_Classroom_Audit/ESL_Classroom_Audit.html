@@ -338,6 +338,18 @@ mark{background:#fef08a;color:#333;padding:0 2px;border-radius:2px}
 .notif-bell-badge{position:absolute;top:-4px;right:-4px;background:#e74c3c;color:#fff;font-size:9px;font-weight:800;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 4px;line-height:1}
 .notif-bell-badge.hidden{display:none}
 @media print{.notif-bell-link{display:none!important}}
+.template-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--modal-overlay);display:none;align-items:flex-start;justify-content:center;z-index:1000;padding:20px;overflow-y:auto}
+.template-overlay.active{display:flex}
+.template-modal{background:var(--modal-bg);border-radius:14px;padding:28px 28px 24px;max-width:680px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,.3);margin:auto}
+.template-modal h3{font-size:17px;color:var(--text-heading);margin-bottom:6px;font-weight:800}
+.template-modal .template-subtitle{font-size:13px;color:var(--text-muted);margin-bottom:4px;line-height:1.5}
+.template-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:16px}
+.template-card{background:var(--section-bg-light);border:2px solid var(--border);border-radius:8px;padding:16px;cursor:pointer;transition:border-color .15s,transform .15s}
+.template-card:hover{border-color:var(--primary);transform:translateY(-2px)}
+.template-card h4{margin:0 0 6px;color:var(--text-heading);font-size:14px;font-weight:700}
+.template-card p{margin:0;font-size:13px;color:var(--text-muted);line-height:1.5}
+.template-card .template-icon{font-size:22px;margin-bottom:8px;display:block}
+.template-modal-close{display:flex;justify-content:flex-end;margin-top:18px}
 </style>
 </head>
 <body>
@@ -347,6 +359,7 @@ mark{background:#fef08a;color:#333;padding:0 2px;border-radius:2px}
   <h1>MLP Classroom Environment Audit</h1>
   <p>Interactive Checklist &amp; Mastery Level Tool — Aligned to MLP Observation &amp; Walkthrough Indicators</p>
   <div class="toolbar" role="toolbar" aria-label="Audit tools">
+    <button class="tool-btn" onclick="openAuditTemplateModal()" title="Load a pre-configured audit template" style="border-color:rgba(74,144,217,.5);background:rgba(74,144,217,.15)">&#128203; Templates</button>
     <button class="tool-btn history-btn" onclick="showHistoryModal()" title="View saved audit history">&#128202; History</button>
     <button class="tool-btn viz-btn" onclick="showVizModal()" title="Interactive data visualizations">&#128200; Visualize</button>
     <button class="tool-btn" onclick="showCampusDash()" title="Campus-level aggregate data" style="border-color:rgba(44,62,110,.5);background:rgba(44,62,110,.2)">&#127979; Campus</button>
@@ -446,6 +459,34 @@ mark{background:#fef08a;color:#333;padding:0 2px;border-radius:2px}
 <button class="sum-btn" onclick="toggleSummary()">View Summary Report</button>
 <div id="sumReport"></div>
 
+</div>
+
+<!-- Audit Template Picker Modal -->
+<div class="template-overlay" id="auditTemplateModal" role="dialog" aria-modal="true" aria-labelledby="auditTemplateModalTitle">
+  <div class="template-modal">
+    <h3 id="auditTemplateModalTitle">&#128203; Choose an Audit Template</h3>
+    <p class="template-subtitle">Select a template to pre-fill the audit form. You can customize all fields before saving.</p>
+    <div class="template-grid">
+      <div class="template-card" onclick="applyAuditTemplate('quick')">
+        <span class="template-icon">&#9889;</span>
+        <h4>Quick Observation</h4>
+        <p>5&ndash;10 minute drop-in &mdash; covers language objectives, student engagement, and ELPS posting</p>
+      </div>
+      <div class="template-card" onclick="applyAuditTemplate('full')">
+        <span class="template-icon">&#128196;</span>
+        <h4>Full Classroom Audit</h4>
+        <p>Comprehensive 45-minute audit covering all 13 sections across permanent and rotating materials</p>
+      </div>
+      <div class="template-card" onclick="applyAuditTemplate('newcomer')">
+        <span class="template-icon">&#127758;</span>
+        <h4>Newcomer Classroom Focus</h4>
+        <p>Tailored for newcomer EB students &mdash; emphasizes language acquisition and scaffolding supports</p>
+      </div>
+    </div>
+    <div class="template-modal-close">
+      <button class="btn-cancel" onclick="closeAuditTemplateModal()">Cancel</button>
+    </div>
+  </div>
 </div>
 
 <!-- Reset Modal -->
@@ -1687,6 +1728,83 @@ function confirmImport(){
 /* ==============================
    RESET
    ============================== */
+
+/* ==============================
+   AUDIT TEMPLATE SYSTEM
+   ============================== */
+
+var AUDIT_TEMPLATES = {
+  quick: {
+    label: "Quick Observation",
+    observer: "",
+    noteSuffix: "[Quick Observation — 5-10 min drop-in]",
+    focusSections: ["s01","s04","s06"],
+    description: "Covers language objectives, student engagement, and ELPS posting."
+  },
+  full: {
+    label: "Full Classroom Audit",
+    observer: "",
+    noteSuffix: "[Full Classroom Audit — all 13 sections]",
+    focusSections: [],
+    description: "Comprehensive 45-minute audit covering all 13 sections."
+  },
+  newcomer: {
+    label: "Newcomer Classroom Focus",
+    observer: "",
+    noteSuffix: "[Newcomer Focus — language acquisition and scaffolding]",
+    focusSections: ["s01","s02","s03","s05","s07","s08","s09"],
+    description: "Tailored for newcomer EB students emphasizing language acquisition."
+  }
+};
+
+function openAuditTemplateModal() {
+  document.getElementById("auditTemplateModal").classList.add("active");
+}
+
+function closeAuditTemplateModal() {
+  document.getElementById("auditTemplateModal").classList.remove("active");
+}
+
+function applyAuditTemplate(templateId) {
+  var tmpl = AUDIT_TEMPLATES[templateId];
+  if (!tmpl) return;
+
+  var today = new Date().toISOString().slice(0, 10);
+  var dateEl = document.getElementById("m-date");
+  var observerEl = document.getElementById("m-observer");
+
+  if (dateEl && !dateEl.value) {
+    dateEl.value = today;
+  }
+
+  // Pre-fill the section notes on focus sections to highlight priority areas
+  if (tmpl.focusSections && tmpl.focusSections.length > 0) {
+    var priorityMsg = "PRIORITY SECTION for " + tmpl.label + " template. Review all items carefully.";
+    for (var fi = 0; fi < tmpl.focusSections.length; fi++) {
+      var secId = tmpl.focusSections[fi];
+      var notesEl = document.getElementById("notes-" + secId);
+      if (notesEl && !notesEl.value) {
+        notesEl.value = priorityMsg;
+        if (!notes[secId]) notes[secId] = priorityMsg;
+      }
+    }
+  }
+
+  // Store template label in observer field only if observer is blank
+  if (observerEl && !observerEl.value) {
+    observerEl.value = "";
+  }
+
+  closeAuditTemplateModal();
+
+  // Scroll to audit form
+  var formCard = document.querySelector(".meta-grid");
+  if (formCard) {
+    formCard.scrollIntoView({behavior: "smooth", block: "start"});
+  }
+
+  showToast("Template loaded \u2014 fill in the remaining details");
+}
 
 function showResetModal(){document.getElementById("resetModal").classList.add("active");}
 function closeModal(id){document.getElementById(id).classList.remove("active");}
