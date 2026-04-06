@@ -1,24 +1,126 @@
 // ============================================================
-// MLP Auto-Sync Engine — Cross-Device Data Persistence
-// Reads credentials from esl_gas_sync localStorage key
+// MLP Auto-Sync Engine v2 — Zero-Config Cross-Device Persistence
+// Hardcoded GAS endpoint — no coordinator setup required.
+// Identity resolved from mlp_hub_config or one-time prompt.
 // Include via <script src="./sync-engine.js"></script> before tool script
 // ============================================================
 (function(){
   "use strict";
-  var SETTINGS_KEY = "esl_gas_sync";
+
+  // ---- HARDCODED BACKEND CONFIG ----
+  var GAS_URL = "https://script.google.com/macros/s/AKfycbz2gob9qMfrPTb_zgMy-LAt1HoZQfO_jzNSvLqqVok3DzWnPESD4VhQ5PN0uDL0NgHJxA/exec";
+  var GAS_SECRET = "fe50135497f480b9dfa7e3f4cc79c6e6e5383236";
+
+  // ---- TIMING ----
   var DEBOUNCE_MS = 3000;
   var POLL_MS = 120000; // 2 minutes
+
+  // ---- STATE ----
   var pushTimers = {};
   var pollInterval = null;
   var syncIndicator = null;
+  var identityPromptShown = false;
   var lastPollTs = 0;
 
-  function getSettings(){
+  // ---- IDENTITY RESOLUTION ----
+  // Priority: 1) mlp_hub_config userId  2) esl_gas_sync coordinatorId  3) one-time prompt
+
+  function getIdentity(){
+    var id = "", name = "";
+
+    // Try mlp_hub_config first
     try{
-      var raw = localStorage.getItem(SETTINGS_KEY);
-      return raw ? JSON.parse(raw) : null;
-    }catch(e){ return null; }
+      var cfg = JSON.parse(localStorage.getItem("mlp_hub_config") || "{}");
+      if(cfg.userId && cfg.userId !== "default") id = cfg.userId;
+      if(cfg.userName && cfg.userName !== "Administrator") name = cfg.userName;
+    }catch(e){}
+
+    // Fallback to esl_gas_sync (legacy manual config)
+    if(!id){
+      try{
+        var gas = JSON.parse(localStorage.getItem("esl_gas_sync") || "{}");
+        if(gas.coordinatorId) id = gas.coordinatorId;
+        if(gas.coordinatorName) name = name || gas.coordinatorName;
+      }catch(e2){}
+    }
+
+    if(id) return {id: id, name: name || id};
+    return null;
   }
+
+  function saveIdentity(id, name){
+    // Save to mlp_hub_config
+    try{
+      var cfg = JSON.parse(localStorage.getItem("mlp_hub_config") || "{}");
+      cfg.userId = id;
+      cfg.userName = name;
+      localStorage.setItem("mlp_hub_config", JSON.stringify(cfg));
+    }catch(e){}
+
+    // Also save to esl_gas_sync for backward compat
+    try{
+      var gas = JSON.parse(localStorage.getItem("esl_gas_sync") || "{}");
+      gas.gasUrl = GAS_URL;
+      gas.coordinatorId = id;
+      gas.coordinatorName = name;
+      gas.secret = GAS_SECRET;
+      localStorage.setItem("esl_gas_sync", JSON.stringify(gas));
+    }catch(e2){}
+  }
+
+  function promptForIdentity(){
+    if(identityPromptShown) return null;
+    identityPromptShown = true;
+
+    // Create a simple overlay prompt
+    var overlay = document.createElement("div");
+    overlay.id = "mlpSyncIdentityOverlay";
+    overlay.style.cssText = "position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:99999;display:flex;align-items:center;justify-content:center;font-family:'Segoe UI',Arial,sans-serif";
+
+    var modal = document.createElement("div");
+    modal.style.cssText = "background:#fff;border-radius:12px;padding:28px 32px;max-width:400px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.2)";
+    modal.innerHTML =
+      "<div style='font-size:18px;font-weight:800;color:#2c3e6e;margin-bottom:4px'>Welcome to Coordinator Hub</div>" +
+      "<p style='font-size:13px;color:#666;margin-bottom:18px;line-height:1.5'>Enter your name to enable cloud sync. Your data will automatically stay in sync across all your devices. This only needs to be done once per device.</p>" +
+      "<label style='font-size:11px;font-weight:700;color:#888;text-transform:uppercase;display:block;margin-bottom:4px'>Your Full Name</label>" +
+      "<input type='text' id='mlpSyncNameInput' placeholder='e.g., J. Miller' style='width:100%;padding:10px 12px;border-radius:6px;border:1px solid #ddd;font-size:14px;font-family:inherit;margin-bottom:14px;box-sizing:border-box'/>" +
+      "<div style='display:flex;gap:8px;justify-content:flex-end'>" +
+      "<button id='mlpSyncSkipBtn' style='padding:8px 18px;border-radius:6px;border:1px solid #ddd;background:#fff;color:#888;font-size:13px;cursor:pointer;font-family:inherit'>Skip</button>" +
+      "<button id='mlpSyncSaveBtn' style='padding:8px 18px;border-radius:6px;border:none;background:#2c3e6e;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit'>Enable Sync</button>" +
+      "</div>";
+
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+    document.getElementById("mlpSyncSaveBtn").onclick = function(){
+      var nameVal = document.getElementById("mlpSyncNameInput").value.trim();
+      if(!nameVal){
+        document.getElementById("mlpSyncNameInput").style.borderColor = "#e74c3c";
+        return;
+      }
+      // Generate ID from name: lowercase, dots to empty, spaces to empty
+      var idVal = nameVal.toLowerCase().replace(/[^a-z0-9]/g, "");
+      if(!idVal) idVal = "user" + Date.now();
+      saveIdentity(idVal, nameVal);
+      document.body.removeChild(overlay);
+      showStatus("\u2713 Sync enabled for " + nameVal, "ok");
+      // Start syncing now that we have identity
+      if(window.mlpSync && window.mlpSync._pendingPoll){
+        window.mlpSync.startPolling(window.mlpSync._pendingPoll.keys, window.mlpSync._pendingPoll.callback);
+      }
+    };
+
+    document.getElementById("mlpSyncSkipBtn").onclick = function(){
+      document.body.removeChild(overlay);
+    };
+
+    // Focus the input
+    setTimeout(function(){ document.getElementById("mlpSyncNameInput").focus(); }, 100);
+
+    return null; // identity not yet available
+  }
+
+  // ---- SYNC INDICATOR ----
 
   function createIndicator(){
     if(syncIndicator) return syncIndicator;
@@ -40,9 +142,11 @@
     setTimeout(function(){ ind.style.opacity = "0"; ind.style.pointerEvents = "none"; }, 4000);
   }
 
+  // ---- PUSH (to Google Drive via GAS) ----
+
   function pushKey(key){
-    var settings = getSettings();
-    if(!settings || !settings.gasUrl || !settings.coordinatorId) return;
+    var identity = getIdentity();
+    if(!identity) return;
 
     var value = localStorage.getItem(key);
     if(!value) return;
@@ -51,15 +155,15 @@
 
     var body = JSON.stringify({
       action: "syncKey",
-      coordinatorId: settings.coordinatorId,
-      coordinatorName: settings.coordinatorName || settings.coordinatorId,
-      secret: settings.secret || "",
+      coordinatorId: identity.id,
+      coordinatorName: identity.name,
+      secret: GAS_SECRET,
       key: key,
       value: value
     });
 
     var xhr = new XMLHttpRequest();
-    xhr.open("POST", settings.gasUrl, true);
+    xhr.open("POST", GAS_URL, true);
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.onload = function(){
       if(xhr.status === 200){
@@ -72,19 +176,21 @@
             showStatus("\u26A0 Sync error", "err");
           }
         }catch(e){ showStatus("\u26A0 Sync error", "err"); }
-      } else { showStatus("\u26A0 Sync failed (HTTP " + xhr.status + ")", "err"); }
+      } else { showStatus("\u26A0 Sync failed", "err"); }
     };
     xhr.onerror = function(){ showStatus("\u26A0 Offline", "err"); };
     xhr.send(body);
   }
 
-  function pullKeys(keys, callback){
-    var settings = getSettings();
-    if(!settings || !settings.gasUrl || !settings.coordinatorId) return;
+  // ---- PULL (from Google Drive via GAS) ----
 
-    var url = settings.gasUrl
-      + "?action=read&coordinatorId=" + encodeURIComponent(settings.coordinatorId)
-      + "&secret=" + encodeURIComponent(settings.secret || "");
+  function pullKeys(keys, callback){
+    var identity = getIdentity();
+    if(!identity) return;
+
+    var url = GAS_URL
+      + "?action=read&coordinatorId=" + encodeURIComponent(identity.id)
+      + "&secret=" + encodeURIComponent(GAS_SECRET);
 
     var xhr = new XMLHttpRequest();
     xhr.open("GET", url, true);
@@ -103,13 +209,11 @@
 
           if(remoteVal === localVal) continue;
 
-          // Merge strategy: compare timestamps, newer wins
           var remoteTs = 0;
           try{
             var rParsed = typeof remote[k] === "string" ? JSON.parse(remote[k]) : remote[k];
             if(rParsed && rParsed.timestamp) remoteTs = new Date(rParsed.timestamp).getTime();
           }catch(e2){}
-          // Also check envelope lastSync
           if(!remoteTs && resp.data.lastSync){
             remoteTs = new Date(resp.data.lastSync).getTime();
           }
@@ -118,7 +222,6 @@
           var lastPush = parseInt(localStorage.getItem("mlp_last_push_" + k) || "0", 10);
           if(lastPush > localTs) localTs = lastPush;
 
-          // Accept remote if newer or if no local data
           if(remoteTs > localTs || !localVal){
             localStorage.setItem(k, remoteVal);
             updated.push(k);
@@ -128,7 +231,6 @@
         if(updated.length > 0){
           showStatus("\u2193 Updated " + updated.length + " key(s) from cloud", "ok");
           if(callback) callback(updated);
-          // Broadcast to other tabs
           try{
             var bc = new BroadcastChannel("mlp_hub_sync");
             for(var j = 0; j < updated.length; j++){
@@ -143,45 +245,109 @@
     xhr.send();
   }
 
-  // Expose global API
+  // ---- SHEETS LOGGING (Option B) ----
+  // Appends a row to a Google Sheet for every save — for manager tracking/visualization
+  // Uses the same GAS endpoint with action "logToSheet"
+
+  function logToSheet(key, toolName){
+    var identity = getIdentity();
+    if(!identity) return;
+
+    var value = localStorage.getItem(key);
+    if(!value) return;
+
+    // Extract summary metadata from the value
+    var meta = {};
+    try{
+      var parsed = JSON.parse(value);
+      if(parsed.timestamp) meta.timestamp = parsed.timestamp;
+      if(parsed.meta){
+        if(parsed.meta.teacher) meta.teacher = parsed.meta.teacher;
+        if(parsed.meta.campus) meta.campus = parsed.meta.campus;
+        if(parsed.meta.date) meta.date = parsed.meta.date;
+      }
+      // Count items for array-based data
+      if(parsed.meetings) meta.itemCount = parsed.meetings.length;
+      else if(parsed.sessions) meta.itemCount = parsed.sessions.length;
+      else if(parsed.entries) meta.itemCount = parsed.entries.length;
+      else if(parsed.items) meta.itemCount = parsed.items.length;
+      else if(parsed.goals) meta.itemCount = parsed.goals.length;
+      if(parsed.scorePct !== undefined) meta.scorePct = parsed.scorePct;
+    }catch(e){}
+
+    var body = JSON.stringify({
+      action: "logToSheet",
+      coordinatorId: identity.id,
+      coordinatorName: identity.name,
+      secret: GAS_SECRET,
+      key: key,
+      toolName: toolName || key,
+      meta: meta,
+      dataSize: value.length
+    });
+
+    // Fire and forget — don't show indicator for sheet logging
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", GAS_URL, true);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.send(body);
+  }
+
+  // ---- PUBLIC API ----
+
   window.mlpSync = {
-    // Push a localStorage key to GAS (debounced)
-    push: function(key){
+    _pendingPoll: null,
+
+    push: function(key, toolName){
       if(pushTimers[key]) clearTimeout(pushTimers[key]);
-      pushTimers[key] = setTimeout(function(){ pushKey(key); }, DEBOUNCE_MS);
+      pushTimers[key] = setTimeout(function(){
+        pushKey(key);
+        logToSheet(key, toolName);
+      }, DEBOUNCE_MS);
     },
 
-    // Push immediately (no debounce) — use for explicit saves like saveToHistory
-    pushNow: function(key){
+    pushNow: function(key, toolName){
       if(pushTimers[key]) clearTimeout(pushTimers[key]);
       pushKey(key);
+      logToSheet(key, toolName);
     },
 
-    // Pull specific keys and call back with list of updated keys
     pull: function(keys, callback){
+      var identity = getIdentity();
+      if(!identity){
+        // Prompt for identity, then pull after setup
+        window.mlpSync._pendingPoll = {keys: keys, callback: callback};
+        promptForIdentity();
+        return;
+      }
       pullKeys(keys, callback);
     },
 
-    // Start periodic polling
     startPolling: function(keys, callback){
+      var identity = getIdentity();
+      if(!identity){
+        // Store pending poll config and prompt
+        window.mlpSync._pendingPoll = {keys: keys, callback: callback};
+        promptForIdentity();
+        return;
+      }
       if(pollInterval) clearInterval(pollInterval);
-      // Initial pull after short delay (let page load first)
       setTimeout(function(){ pullKeys(keys, callback); }, 2000);
       pollInterval = setInterval(function(){ pullKeys(keys, callback); }, POLL_MS);
     },
 
-    // Stop polling
     stopPolling: function(){
       if(pollInterval){ clearInterval(pollInterval); pollInterval = null; }
     },
 
-    // Check if GAS sync is configured
     isConfigured: function(){
-      var s = getSettings();
-      return !!(s && s.gasUrl && s.coordinatorId);
+      return !!getIdentity();
     },
 
-    // Get last poll timestamp
+    getIdentity: function(){
+      return getIdentity();
+    },
+
     lastPoll: function(){ return lastPollTs; }
   };
 })();

@@ -1745,7 +1745,7 @@ if("serviceWorker" in navigator){navigator.serviceWorker.register("../service-wo
 initNotifBell();
 
 /* Sync engine: pull on load + polling */
-if(window.mlpSync && mlpSync.isConfigured()){
+if(window.mlpSync){
   mlpSync.startPolling([STORAGE_KEY], function(updated){
     loadFromStorage();
     rebuildAll();

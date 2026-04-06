@@ -144,6 +144,20 @@ function doPost(e) {
       return jsonResponse({ success: deleted, message: deleted ? 'Deleted' : 'Not found' });
     }
 
+    if (action === 'logToSheet') {
+      var coordId4 = sanitizeCoordId(body.coordinatorId);
+      var coordName4 = body.coordinatorName || coordId4;
+      var logKey = body.key || '';
+      var toolName = body.toolName || logKey;
+      var meta = body.meta || {};
+      var dataSize = body.dataSize || 0;
+
+      if (!coordId4 || !logKey) return jsonResponse({ error: 'Missing coordinatorId or key' });
+
+      var logResult = appendToActivityLog(coordId4, coordName4, logKey, toolName, meta, dataSize);
+      return jsonResponse({ success: true, message: 'Logged to sheet', row: logResult.row });
+    }
+
     if (action === 'sendReminders') {
       var coordsParam = body.coordinators || [];
       var reminderResult = sendReminderEmails(coordsParam);
@@ -500,5 +514,173 @@ function testStatus() {
   while (files.hasNext()) {
     var f = files.next();
     Logger.log('  ' + f.getName() + ' (' + f.getSize() + ' bytes)');
+  }
+}
+
+// ============================================================
+// GOOGLE SHEETS ACTIVITY LOG (Option B)
+// Logs every save to a spreadsheet for manager tracking
+// ============================================================
+
+var SHEET_NAME = 'MLP Activity Log';
+
+/**
+ * Gets or creates the activity log spreadsheet in the sync folder.
+ * Returns the Sheet object.
+ */
+function getOrCreateActivitySheet() {
+  var folder = DriveApp.getFolderById(FOLDER_ID);
+  var fileName = SHEET_NAME + '.gsheet';
+
+  // Look for existing spreadsheet in folder
+  var files = folder.getFilesByType(MimeType.GOOGLE_SHEETS);
+  while (files.hasNext()) {
+    var file = files.next();
+    if (file.getName() === SHEET_NAME) {
+      return SpreadsheetApp.openById(file.getId()).getSheetByName('Activity Log')
+        || SpreadsheetApp.openById(file.getId()).getSheets()[0];
+    }
+  }
+
+  // Create new spreadsheet
+  var ss = SpreadsheetApp.create(SHEET_NAME);
+  var sheet = ss.getSheets()[0];
+  sheet.setName('Activity Log');
+
+  // Set up headers
+  var headers = [
+    'Timestamp',
+    'Coordinator ID',
+    'Coordinator Name',
+    'Tool',
+    'Storage Key',
+    'Teacher',
+    'Campus',
+    'Date',
+    'Score %',
+    'Item Count',
+    'Data Size (bytes)',
+    'Sync Type'
+  ];
+  sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+  sheet.getRange(1, 1, 1, headers.length)
+    .setFontWeight('bold')
+    .setBackground('#2c3e6e')
+    .setFontColor('#ffffff');
+  sheet.setFrozenRows(1);
+
+  // Auto-resize columns
+  for (var i = 1; i <= headers.length; i++) {
+    sheet.autoResizeColumn(i);
+  }
+
+  // Set column widths for readability
+  sheet.setColumnWidth(1, 170); // Timestamp
+  sheet.setColumnWidth(4, 200); // Tool
+  sheet.setColumnWidth(5, 200); // Storage Key
+
+  // Move the spreadsheet to the sync folder
+  var ssFile = DriveApp.getFileById(ss.getId());
+  folder.addFile(ssFile);
+  DriveApp.getRootFolder().removeFile(ssFile);
+
+  // Create Summary sheet
+  var summarySheet = ss.insertSheet('Summary');
+  var summaryHeaders = ['Coordinator', 'Total Syncs', 'Last Active', 'Tools Used', 'Most Recent Tool'];
+  summarySheet.getRange(1, 1, 1, summaryHeaders.length).setValues([summaryHeaders]);
+  summarySheet.getRange(1, 1, 1, summaryHeaders.length)
+    .setFontWeight('bold')
+    .setBackground('#2c3e6e')
+    .setFontColor('#ffffff');
+  summarySheet.setFrozenRows(1);
+
+  return sheet;
+}
+
+/**
+ * Appends a row to the activity log spreadsheet.
+ */
+function appendToActivityLog(coordId, coordName, key, toolName, meta, dataSize) {
+  var sheet = getOrCreateActivitySheet();
+  var now = new Date();
+
+  // Friendly tool name mapping
+  var TOOL_NAMES = {
+    'esl_audit_data': 'Full Observation (working)',
+    'esl_audit_history': 'Full Observation (history)',
+    'esl_streamlined_audit_data': 'Targeted Walkthrough (working)',
+    'walkthrough_plan_data_v2': 'Walkthrough Planner (working)',
+    'walkthrough_history': 'Walkthrough Planner (history)',
+    'coaching_cycles_data': 'Coaching Cycle Tracker',
+    'meeting_notes_data': 'Meeting Notes',
+    'pd_tracker_data': 'PD Tracker',
+    'parent_comm_log': 'Parent Communication Log',
+    'compliance_checklist_data': 'Compliance Checklist',
+    'goal_setting_data': 'Goal Setting',
+    'esl_scope_data': 'Scope & Sequence',
+    'calibration_sessions': 'Calibration Tool',
+    'shared_teacher_roster': 'Teacher Roster (shared)',
+    'esl_audit_campuses': 'Campus List'
+  };
+
+  var friendlyTool = TOOL_NAMES[key] || toolName || key;
+
+  var row = [
+    now,                              // Timestamp
+    coordId,                          // Coordinator ID
+    coordName,                        // Coordinator Name
+    friendlyTool,                     // Tool (friendly name)
+    key,                              // Storage Key (raw)
+    (meta && meta.teacher) || '',     // Teacher
+    (meta && meta.campus) || '',      // Campus
+    (meta && meta.date) || '',        // Date
+    (meta && meta.scorePct !== undefined) ? meta.scorePct : '',  // Score %
+    (meta && meta.itemCount) || '',   // Item Count
+    dataSize || '',                   // Data Size
+    'auto-sync'                       // Sync Type
+  ];
+
+  sheet.appendRow(row);
+
+  // Update summary sheet
+  updateSummarySheet(sheet.getParent(), coordId, coordName, friendlyTool);
+
+  return { row: sheet.getLastRow() };
+}
+
+/**
+ * Updates the Summary sheet with aggregated coordinator stats.
+ */
+function updateSummarySheet(spreadsheet, coordId, coordName, toolName) {
+  var summary = spreadsheet.getSheetByName('Summary');
+  if (!summary) return;
+
+  var data = summary.getDataRange().getValues();
+  var rowIdx = -1;
+
+  // Find existing row for this coordinator
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][0] === coordId) {
+      rowIdx = i + 1; // 1-based row number
+      break;
+    }
+  }
+
+  var now = new Date();
+
+  if (rowIdx > 0) {
+    // Update existing row
+    var currentCount = summary.getRange(rowIdx, 2).getValue() || 0;
+    var currentTools = String(summary.getRange(rowIdx, 4).getValue() || '');
+    var toolSet = currentTools ? currentTools.split(', ') : [];
+    if (toolSet.indexOf(toolName) === -1) toolSet.push(toolName);
+
+    summary.getRange(rowIdx, 2).setValue(currentCount + 1);         // Total Syncs
+    summary.getRange(rowIdx, 3).setValue(now);                       // Last Active
+    summary.getRange(rowIdx, 4).setValue(toolSet.join(', '));        // Tools Used
+    summary.getRange(rowIdx, 5).setValue(toolName);                  // Most Recent Tool
+  } else {
+    // Add new row
+    summary.appendRow([coordId, 1, now, toolName, toolName]);
   }
 }

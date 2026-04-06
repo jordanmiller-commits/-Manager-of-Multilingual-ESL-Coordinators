@@ -1443,7 +1443,7 @@ if ("serviceWorker" in navigator) {
 }
 
 /* Sync engine: pull on load + polling */
-if(window.mlpSync && mlpSync.isConfigured()){
+if(window.mlpSync){
   mlpSync.startPolling(['pd_tracker_data'], function(updated){
     loadData();
     renderAll();
