@@ -26,6 +26,7 @@ var SYNC_KEYS = [
   'esl_audit_data',
   'esl_audit_history',
   'esl_audit_campuses',
+  'esl_streamlined_audit_data',
   'walkthrough_plan_data_v2',
   'walkthrough_history',
   'esl_scope_data',
@@ -34,7 +35,12 @@ var SYNC_KEYS = [
   'coordinator_self_assessments',
   'calibration_sessions',
   'elps_agent_docs',
-  'elps_agent_history'
+  'elps_agent_history',
+  'meeting_notes_data',
+  'pd_tracker_data',
+  'parent_comm_log',
+  'compliance_checklist_data',
+  'goal_setting_data'
 ];
 
 // ---- GET handler (reads) ----

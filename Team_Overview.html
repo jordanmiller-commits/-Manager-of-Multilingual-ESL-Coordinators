@@ -136,13 +136,13 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
     <h1>&#128202; Team Overview</h1>
     <p>Manager dashboard — aggregate view across all coordinators via Google Drive Sync</p>
     <div class="header-row">
+      <a class="tool-btn" href="index.html" aria-label="Go to home page">&#127968; Home</a>
       <button class="tool-btn" onclick="fetchAll()" id="refreshBtn" aria-label="Refresh data">&#8635; Refresh</button>
       <button class="tool-btn" onclick="sendReminders()" style="border-color:rgba(155,89,182,.5)" title="Emails coordinators with overdue/stalled cycles. Requires COORDINATOR_EMAIL_MAP to be configured in Code.gs." aria-label="Send reminders">&#128140; Send Reminders</button>
       <a class="notif-bell-link" href="index.html" title="Notifications" id="notifBellLink" aria-label="Notifications">&#128276;<span class="notif-bell-badge hidden" id="notifBellBadge">0</span></a>
       <button class="tool-btn" onclick="toggleDarkMode()" id="darkModeToggle" aria-label="Toggle dark mode">&#9789; Dark</button>
       <button class="tool-btn" onclick="window.print()" aria-label="Print or save as PDF">&#128438; Print / PDF</button>
       <button class="tool-btn" onclick="toggleShortcutsHelp()" aria-label="Keyboard shortcuts">&#9000; Shortcuts</button>
-      <a class="tool-btn" href="index.html" style="margin-left:auto" aria-label="Go to home page">&#127968; Home</a>
     </div>
   </div>
 

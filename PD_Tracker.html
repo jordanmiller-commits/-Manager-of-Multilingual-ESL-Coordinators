@@ -220,6 +220,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
     <h1>&#128218; Professional Development Tracker</h1>
     <p>Log, track, and analyze PD hours across the MLP coordinator team</p>
     <div class="toolbar">
+      <a class="tool-btn" href="index.html">&#127968; Home</a>
       <button class="tool-btn accent" onclick="openLogModal()">&#xff0b; Log Session</button>
       <button class="tool-btn" onclick="exportCsv()">&#128190; Export CSV</button>
       <button class="tool-btn" onclick="triggerImport()">&#8679; Import CSV</button>
@@ -227,7 +228,6 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
       <a class="notif-bell-link" href="index.html" title="Notifications" id="notifBellLink">&#128276;<span class="notif-bell-badge hidden" id="notifBellBadge">0</span></a>
       <button class="tool-btn" onclick="toggleDarkMode()" id="darkModeToggle" aria-label="Toggle dark mode">&#9789; Dark</button>
       <button class="tool-btn" onclick="toggleShortcutsHelp()" aria-label="Keyboard shortcuts">&#9000; Keys</button>
-      <a class="tool-btn" href="index.html" style="margin-left:auto">&#127968; Home</a>
     </div>
   </div>
 
@@ -417,6 +417,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 
 <input type="file" id="csvFileInput" accept=".csv" style="display:none" onchange="handleCsvFile(event)"/>
 
+<script src="./sync-engine.js"></script>
 <script>
 function initNotifBell(){var c=localStorage.getItem('notification_unread_count');var n=parseInt(c)||0;var b=document.getElementById('notifBellBadge');if(b){b.textContent=n>9?'9+':String(n);b.className=n>0?'notif-bell-badge':'notif-bell-badge hidden';}}
 // =============================================
@@ -587,6 +588,7 @@ function loadData() {
 function saveData() {
   localStorage.setItem('pd_tracker_data', JSON.stringify(pdData));
   stampLastSaved();
+  if(window.mlpSync) mlpSync.push('pd_tracker_data');
 }
 
 // =============================================
@@ -1438,6 +1440,14 @@ renderAll();
 
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("./service-worker.js").catch(function(){});
+}
+
+/* Sync engine: pull on load + polling */
+if(window.mlpSync && mlpSync.isConfigured()){
+  mlpSync.startPolling(['pd_tracker_data'], function(updated){
+    loadData();
+    renderAll();
+  });
 }
 </script>
 </body>

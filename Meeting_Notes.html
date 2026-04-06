@@ -244,13 +244,13 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
     <h1>&#128221; Meeting Notes &amp; Agenda Builder</h1>
     <p>Create, track, and archive meeting agendas, action items, and notes</p>
     <div class="toolbar">
+      <a class="tool-btn" href="index.html">&#127968; Home</a>
       <button class="tool-btn" onclick="openTypeModal()">&#43; New Meeting</button>
       <button class="tool-btn" onclick="openTemplateModal()" title="Start from a meeting template">&#128196; Templates</button>
       <button class="tool-btn" onclick="window.print()">&#128438; Print</button>
       <a class="notif-bell-link" href="index.html" title="Notifications" id="notifBellLink">&#128276;<span class="notif-bell-badge hidden" id="notifBellBadge">0</span></a>
       <button class="tool-btn" onclick="toggleDarkMode()" id="darkModeToggle" aria-label="Toggle dark mode">&#9789; Dark</button>
       <button class="tool-btn" onclick="toggleShortcutsHelp()" aria-label="Keyboard shortcuts">&#9000; Keys</button>
-      <a class="tool-btn" href="index.html" style="margin-left:auto">&#127968; Home</a>
     </div>
   </div>
 
@@ -332,10 +332,17 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
             <div id="actionList"></div>
           </div>
 
-          <!-- Notes -->
-          <div class="print-section field-group" style="margin-bottom:0">
-            <label>Notes</label>
-            <textarea id="edNotes" rows="5" placeholder="Freeform meeting notes..." oninput="schedSave()"></textarea>
+          <!-- Meeting Notes -->
+          <div class="print-section" style="margin-bottom:0;background:var(--section-bg-light);border-radius:10px;padding:16px 18px;border:1.5px solid var(--border)">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+              <span class="sec-label" style="font-size:13px">&#128221; Meeting Notes</span>
+              <span id="notesTimestamp" style="font-size:10px;color:var(--text-faint);font-style:italic"></span>
+            </div>
+            <div style="font-size:10px;color:var(--text-faint);margin-bottom:8px">Tip: Use **text** for bold, - for bullet points, 1. for numbered lists when reviewing later.</div>
+            <textarea id="edNotes" rows="10" placeholder="Type your meeting notes here...&#10;&#10;Key discussion points, decisions made, follow-ups needed..." oninput="onNotesInput()" style="min-height:200px;font-size:13px;line-height:1.6;padding:12px 14px"></textarea>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
+              <span id="notesCharCount" style="font-size:10px;color:var(--text-faint)"></span>
+            </div>
           </div>
         </div>
       </div>
@@ -434,6 +441,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
   </div>
 </div>
 
+<script src="./sync-engine.js"></script>
 <script>
 function initNotifBell(){var c=localStorage.getItem('notification_unread_count');var n=parseInt(c)||0;var b=document.getElementById('notifBellBadge');if(b){b.textContent=n>9?'9+':String(n);b.className=n>0?'notif-bell-badge':'notif-bell-badge hidden';}}
 /* ======================================================
@@ -571,6 +579,7 @@ function saveData(){
   stampLastSaved();
   var ind = document.getElementById("saveInd");
   if(ind){ ind.classList.add("show"); setTimeout(function(){ ind.classList.remove("show"); }, 1800); }
+  if(window.mlpSync) mlpSync.push(STORAGE_KEY);
 }
 
 /* ======================================================
@@ -643,6 +652,9 @@ function renderArchive(filterQuery){
     html += '<div class="ai-date" ondblclick="enableMeetingInlineEdit(event,\'' + escHtml(m.id) + '\',\'date\')" title="Double-click to edit date">' + escHtml(displayDate) + '</div>';
     html += '<div class="ai-meta" ondblclick="enableMeetingInlineEdit(event,\'' + escHtml(m.id) + '\',\'attendees\')" title="Double-click to edit attendees">';
     html += '<span>&#128101; ' + attendeeCount + ' attendee' + (attendeeCount === 1 ? "" : "s") + '</span>';
+    if(m.notes && m.notes.trim().length > 0){
+      html += '<span style="color:var(--primary);font-weight:600">&#128221; Notes</span>';
+    }
     if(openCount > 0){
       html += '<span style="color:#e65100;font-weight:700">&#9888; ' + openCount + ' open action' + (openCount === 1 ? "" : "s") + '</span>';
     }
@@ -681,6 +693,8 @@ function openMeeting(id){
   document.getElementById("edDate").value = mtg.date || "";
   document.getElementById("edAttendees").value = mtg.attendees || "";
   document.getElementById("edNotes").value = mtg.notes || "";
+  updateNotesTimestamp(mtg);
+  updateNotesCharCount(mtg);
 
   renderAgendaItems(mtg);
   renderActionItems(mtg);
@@ -820,6 +834,46 @@ function updateActionField(idx, field, val){
 }
 
 /* ======================================================
+   NOTES HELPERS
+   ====================================================== */
+function onNotesInput(){
+  var mtg = getMtgById(_activeMtgId);
+  if(mtg){
+    mtg.notesUpdatedAt = new Date().toISOString();
+    updateNotesTimestamp(mtg);
+    updateNotesCharCount(mtg);
+  }
+  schedSave();
+}
+
+function updateNotesTimestamp(mtg){
+  var el = document.getElementById("notesTimestamp");
+  if(!el) return;
+  if(mtg && mtg.notesUpdatedAt){
+    var d = new Date(mtg.notesUpdatedAt);
+    el.textContent = "Notes last edited: " + d.toLocaleString();
+  } else if(mtg && mtg.notes && mtg.notes.length > 0 && mtg.updatedAt){
+    var d2 = new Date(mtg.updatedAt);
+    el.textContent = "Updated: " + d2.toLocaleString();
+  } else {
+    el.textContent = "";
+  }
+}
+
+function updateNotesCharCount(mtg){
+  var el = document.getElementById("notesCharCount");
+  if(!el) return;
+  var notes = mtg ? (mtg.notes || "") : "";
+  if(!notes && document.getElementById("edNotes")) notes = document.getElementById("edNotes").value || "";
+  if(notes.length > 0){
+    var words = notes.trim().split(/\s+/).filter(function(w){return w.length > 0;}).length;
+    el.textContent = notes.length + " characters, " + words + " words";
+  } else {
+    el.textContent = "";
+  }
+}
+
+/* ======================================================
    DEBOUNCED SAVE
    ====================================================== */
 function schedSave(){
@@ -833,7 +887,11 @@ function saveMeeting(){
   if(!mtg) return;
   mtg.date = document.getElementById("edDate").value;
   mtg.attendees = document.getElementById("edAttendees").value;
-  mtg.notes = document.getElementById("edNotes").value;
+  var newNotes = document.getElementById("edNotes").value;
+  if(newNotes !== mtg.notes){
+    mtg.notesUpdatedAt = new Date().toISOString();
+  }
+  mtg.notes = newNotes;
   // agendaItems and actionItems updated inline via updateAgenda/updateAction
   mtg.updatedAt = new Date().toISOString();
   saveData();
@@ -1216,6 +1274,14 @@ restoreFilters();
    ====================================================== */
 if("serviceWorker" in navigator){
   navigator.serviceWorker.register("./service-worker.js").catch(function(){});
+}
+
+/* Sync engine: pull on load + polling */
+if(window.mlpSync && mlpSync.isConfigured()){
+  mlpSync.startPolling([STORAGE_KEY], function(updated){
+    loadData();
+    renderArchive();
+  });
 }
 </script>
 </body>

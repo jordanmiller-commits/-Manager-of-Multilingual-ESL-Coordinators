@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#2c3e6e"/>
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://api.github.com; font-src 'self'; frame-src 'none'"/>
 <link rel="manifest" href="../manifest.json"/>
-<title>MLP Classroom Environment Audit</title>
+<title>Full Observation</title>
 <style>
 :root{
   --bg:#f0f2f7;--card-bg:#fff;--card-border:transparent;--card-shadow:rgba(0,0,0,.07);
@@ -66,6 +66,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 .meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .meta-grid label{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;display:block;margin-bottom:4px}
 .meta-grid input,.meta-grid select{width:100%;padding:8px 10px;border-radius:6px;border:1px solid var(--input-border);font-size:13px;font-family:inherit;background:var(--input-bg);color:var(--input-text)}
+.meta-grid input:required:invalid,.meta-grid select:required:invalid{border-color:var(--warn)}
 .score-banner{display:flex;align-items:center;gap:20px}
 .score-num{font-size:42px;font-weight:900;min-width:80px;text-align:center;color:#4a90d9}
 .score-label{font-size:11px;color:var(--text-muted);font-weight:700;text-align:center}
@@ -85,6 +86,16 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 .timer-display span{font-weight:700;font-size:14px;color:var(--header-gradient-1);font-variant-numeric:tabular-nums}
 .timer-btn{padding:2px 10px;border-radius:5px;border:1px solid var(--input-border);background:var(--input-bg);font-size:11px;cursor:pointer;color:var(--text-secondary)}
 .timer-btn:hover{background:var(--section-bg-light)}
+.timer-btn-stop{border-color:#e74c3c;color:#e74c3c}
+.timer-btn-stop:hover{background:#fdecea}
+.timer-label-input{border:1px solid transparent;background:transparent;font-size:12px;font-weight:600;color:var(--text);padding:2px 6px;border-radius:4px;width:120px;font-family:inherit}
+.timer-label-input:hover,.timer-label-input:focus{border-color:var(--input-border);background:var(--input-bg);outline:none}
+.completed-timer{display:flex;align-items:center;gap:6px;padding:4px 8px;margin-bottom:4px;border-radius:6px;background:var(--section-bg-light);font-size:12px;color:var(--text-secondary);border:1px solid var(--border)}
+.completed-timer .ct-time{font-weight:700;font-variant-numeric:tabular-nums;color:var(--text);min-width:50px}
+.completed-timer .ct-label{border:1px solid transparent;background:transparent;font-size:12px;color:var(--text);padding:2px 6px;border-radius:4px;flex:1;font-family:inherit;font-weight:600}
+.completed-timer .ct-label:hover,.completed-timer .ct-label:focus{border-color:var(--input-border);background:var(--input-bg);outline:none}
+.ct-delete{background:none;border:none;color:var(--text-faint);cursor:pointer;font-size:14px;padding:2px 4px}
+.ct-delete:hover{color:var(--danger)}
 .completion-warn{background:#fef5ec;border:1px solid #f0c27a;border-radius:8px;padding:10px 14px;font-size:12px;color:#b7791f;margin-top:10px;display:none}
 .kb-hint{font-size:11px;color:var(--text-faint);margin-top:8px;font-style:italic}
 .tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
@@ -408,9 +419,10 @@ mark{background:#fef08a;color:#333;padding:0 2px;border-radius:2px}
 <div class="wrap">
 
 <div class="header" role="banner">
-  <h1>MLP Classroom Environment Audit</h1>
-  <p>Interactive Checklist &amp; Mastery Level Tool — Aligned to MLP Observation &amp; Walkthrough Indicators</p>
+  <h1>Full Observation</h1>
+  <p>Full 58-Item Classroom Observation &mdash; Aligned to MLP Observation &amp; Walkthrough Indicators</p>
   <div class="toolbar" role="toolbar" aria-label="Audit tools">
+    <a class="tool-btn" href="../index.html" aria-label="Back to Home">&#127968; Home</a>
     <button class="tool-btn" onclick="openAuditTemplateModal()" title="Load a pre-configured audit template" style="border-color:rgba(74,144,217,.5);background:rgba(74,144,217,.15)">&#128203; Templates</button>
     <button class="tool-btn history-btn" onclick="showHistoryModal()" title="View saved audit history">&#128202; History</button>
     <button class="tool-btn viz-btn" onclick="showVizModal()" title="Interactive data visualizations">&#128200; Visualize</button>
@@ -421,19 +433,18 @@ mark{background:#fef08a;color:#333;padding:0 2px;border-radius:2px}
     <button class="tool-btn" onclick="showSettingsModal()" title="Settings: export, import, appearance" aria-label="Settings">&#9881; Settings</button>
     <button class="tool-btn" onclick="window.print()" aria-label="Print or save as PDF">&#128438; Print / PDF</button>
     <button class="tool-btn" onclick="toggleShortcutsHelp()" aria-label="Keyboard shortcuts">&#9000; Keys</button>
-    <a class="tool-btn" href="../index.html" style="margin-left:auto" aria-label="Back to Home">&#127968; Home</a>
-    <span class="save-indicator" id="saveStatus">Auto-save: ready</span>
+    <span class="save-indicator" id="saveStatus" style="margin-left:auto">Auto-save: ready</span>
   </div>
 </div>
 
 <div class="card">
   <div class="meta-grid" style="grid-template-columns:1fr 1fr 1fr">
-    <div><label for="m-teacher">Teacher Name</label><input type="text" id="m-teacher" list="teacher-list" placeholder="Select or type teacher name" oninput="onTeacherInput()" onchange="onTeacherSelect()"/><datalist id="teacher-list"></datalist></div>
-    <div><label for="m-campus">Campus</label><input type="text" id="m-campus" list="campus-list" placeholder="Select or type campus name"/><datalist id="campus-list"></datalist></div>
-    <div><label for="m-observer">Observer</label><input type="text" id="m-observer" list="observer-list" placeholder="Select or type observer name"/><datalist id="observer-list"></datalist></div>
-    <div><label for="m-grade">Grade Level</label><select id="m-grade" onchange="scheduleSave()"><option value="">Select Grade</option><option value="K">K</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option></select></div>
-    <div><label for="m-content">Content Area</label><select id="m-content" onchange="onContentChange()"><option value="">Select Content</option><option value="ELA">ELA</option><option value="Math">Math</option><option value="Science">Science</option><option value="Social Studies">Social Studies</option><option value="Bilingual">Bilingual</option><option value="ESL Self-Contained">ESL Self-Contained</option><option value="Newcomer">Newcomer</option><option value="Specials">Specials (Art, Music, PE)</option><option value="__other__">Other...</option></select></div>
-    <div><label for="m-date">Date</label><input type="date" id="m-date"/></div>
+    <div><label for="m-teacher">Teacher Name *</label><input type="text" id="m-teacher" list="teacher-list" placeholder="Select or type teacher name" oninput="onTeacherInput()" onchange="onTeacherSelect()" required/><datalist id="teacher-list"></datalist></div>
+    <div><label for="m-campus">Campus *</label><input type="text" id="m-campus" list="campus-list" placeholder="Select or type campus name" required/><datalist id="campus-list"></datalist></div>
+    <div><label for="m-observer">Observer *</label><input type="text" id="m-observer" list="observer-list" placeholder="Select or type observer name" required/><datalist id="observer-list"></datalist></div>
+    <div><label for="m-grade">Grade Level *</label><select id="m-grade" onchange="scheduleSave()" required><option value="">Select Grade</option><option value="K">K</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option><option value="6-8">6-8</option><option value="9-12">9-12</option></select></div>
+    <div><label for="m-content">Content Area *</label><select id="m-content" onchange="onContentChange()" required><option value="">Select Content</option><option value="ELA">ELA</option><option value="Math">Math</option><option value="Science">Science</option><option value="Social Studies">Social Studies</option><option value="Bilingual">Bilingual</option><option value="ESL Self-Contained">ESL Self-Contained</option><option value="Newcomer">Newcomer</option><option value="Specials">Specials (Art, Music, PE)</option><option value="__other__">Other...</option></select></div>
+    <div><label for="m-date">Date *</label><input type="date" id="m-date" required/></div>
   </div>
 </div>
 
@@ -446,8 +457,9 @@ mark{background:#fef08a;color:#333;padding:0 2px;border-radius:2px}
     <div style="flex:1">
       <div class="bar-wrap"><div class="bar-fill" id="barFill"></div></div>
       <div class="legend">
-        <div class="legend-item"><span class="ldot" style="background:#2c3e6e"></span>0 = Not Observed</div>
-        <div class="legend-item"><span class="ldot" style="background:#4a90d9"></span>1 = Approaching Expectations</div>
+        <div class="legend-item"><span class="ldot" style="background:#95a5a6"></span>NO = Not Observed</div>
+        <div class="legend-item"><span class="ldot" style="background:#2c3e6e"></span>0 = Does Not Meet</div>
+        <div class="legend-item"><span class="ldot" style="background:#4a90d9"></span>1 = Approaches Expectations</div>
         <div class="legend-item"><span class="ldot" style="background:#f1c40f"></span>2 = Meets Expectations</div>
         <div class="legend-item"><span class="ldot" style="background:#27ae60"></span>3 = Exceeds Expectations</div>
       </div>
@@ -469,12 +481,18 @@ mark{background:#fef08a;color:#333;padding:0 2px;border-radius:2px}
           <div class="split-bar"><div class="split-fill" id="splitPrBar" style="background:#27ae60;width:0%"></div></div>
         </div>
       </div>
-      <div class="timer-display" id="timerArea">
-        <span id="timerIcon">&#9201;</span> Duration: <span id="timerDisplay">00:00</span>
-        <button class="timer-btn" id="timerToggle" onclick="toggleTimer()">Pause</button>
+      <div id="timerArea" style="margin-top:10px">
+        <div id="completedTimers"></div>
+        <div class="timer-display">
+          <span id="timerIcon">&#9201;</span>
+          <input type="text" id="timerLabel" class="timer-label-input" value="Timer 1" placeholder="Timer name..."/>
+          <span id="timerDisplay">00:00</span>
+          <button class="timer-btn" id="timerPause" onclick="pauseTimer()">Pause</button>
+          <button class="timer-btn timer-btn-stop" id="timerStop" onclick="stopTimer()">Stop</button>
+        </div>
       </div>
       <div class="completion-warn" id="completionWarn"></div>
-      <div class="kb-hint">Tip: Click any item to focus it, then press 1-4 to rate mastery level. Arrow keys to navigate.</div>
+      <div class="kb-hint">Tip: Click any item to focus it, then press 0-3 to rate or N for Not Observed. Arrow keys to navigate.</div>
     </div>
   </div>
 </div>
@@ -739,6 +757,7 @@ mark{background:#fef08a;color:#333;padding:0 2px;border-radius:2px}
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+<script src="../sync-engine.js"></script>
 <script>
 /* ==============================
    CONSTANTS & DATA
@@ -853,8 +872,9 @@ function restoreAuditFilters() {
 }
 
 var R = {
-  0:{label:"Not Observed",level:0,color:"#2c3e6e",bg:"#e8ecf4"},
-  1:{label:"Approaching Expectations",level:1,color:"#4a90d9",bg:"#eaf3fb"},
+  "-1":{label:"Not Observed",level:"NO",color:"#95a5a6",bg:"#f0f0f0"},
+  0:{label:"Does Not Meet",level:0,color:"#2c3e6e",bg:"#e8ecf4"},
+  1:{label:"Approaches Expectations",level:1,color:"#4a90d9",bg:"#eaf3fb"},
   2:{label:"Meets Expectations",level:2,color:"#f1c40f",bg:"#fefde7"},
   3:{label:"Exceeds Expectations",level:3,color:"#27ae60",bg:"#eafaf1"}
 };
@@ -876,12 +896,12 @@ var SECTIONS = [
 ];
 
 var PRINCIPLES = [
-  "Materials are actively used by scholars — not just displayed for observers",
   "All displays are readable from scholar seats and reachable without asking permission",
   "At least half of displayed materials are scholar-generated",
-  "Rotating materials are updated before a unit begins, not weeks into it",
   "Home language is honored visibly in both permanent and rotating displays",
-  "Outdated unit materials are removed when the unit ends"
+  "Materials are actively used by scholars — not just displayed for observers",
+  "Outdated unit materials are removed when the unit ends",
+  "Rotating materials are updated before a unit begins, not weeks into it"
 ];
 
 var EVIDENCE_TAGS = ["Photo Taken","Scholar-Generated","Needs Replacement","Bilingual","Recently Updated","Teacher-Created"];
@@ -982,6 +1002,8 @@ var timerStart = null;
 var timerElapsed = 0;
 var timerRunning = false;
 var timerInterval = null;
+var completedTimers = [];
+var timerCount = 1;
 var compareAudit = null;
 var undoStack = [];
 var redoStack = [];
@@ -997,36 +1019,45 @@ var sectionTimerStart = null;
 function getCol(pct){ return pct>=80?"#27ae60":pct>=55?"#f1c40f":"#4a90d9"; }
 
 function totalScore(){
-  var score=0,rated=0,total=0;
+  var score=0,rated=0,observed=0,total=0;
   for(var i=0;i<SECTIONS.length;i++)
     for(var j=0;j<SECTIONS[i].items.length;j++){
       total++;
       var k=SECTIONS[i].id+"-"+j;
-      if(ratings[k]!==undefined){rated++;score+=ratings[k];}
+      if(ratings[k]!==undefined){
+        rated++;
+        if(ratings[k]>=0){observed++;score+=ratings[k];}
+      }
     }
-  return {score:score,max:total*3,rated:rated,total:total};
+  return {score:score,max:observed*3,rated:rated,total:total,observed:observed};
 }
 
 function secScore(s){
-  var score=0,rated=0;
+  var score=0,rated=0,observed=0;
   for(var j=0;j<s.items.length;j++){
     var k=s.id+"-"+j;
-    if(ratings[k]!==undefined){rated++;score+=ratings[k];}
+    if(ratings[k]!==undefined){
+      rated++;
+      if(ratings[k]>=0){observed++;score+=ratings[k];}
+    }
   }
-  return {score:score,max:s.items.length*3,rated:rated,total:s.items.length};
+  return {score:score,max:observed*3,rated:rated,total:s.items.length,observed:observed};
 }
 
 function typeScore(type){
-  var score=0,rated=0,total=0;
+  var score=0,rated=0,observed=0,total=0;
   for(var i=0;i<SECTIONS.length;i++){
     if(SECTIONS[i].type!==type)continue;
     for(var j=0;j<SECTIONS[i].items.length;j++){
       total++;
       var k=SECTIONS[i].id+"-"+j;
-      if(ratings[k]!==undefined){rated++;score+=ratings[k];}
+      if(ratings[k]!==undefined){
+        rated++;
+        if(ratings[k]>=0){observed++;score+=ratings[k];}
+      }
     }
   }
-  return {score:score,max:total*3,rated:rated,total:total};
+  return {score:score,max:observed*3,rated:rated,total:total,observed:observed};
 }
 
 function prCount(){
@@ -1045,7 +1076,7 @@ function refreshBanner(){
   document.getElementById("scorePct").style.color=col;
   document.getElementById("barFill").style.width=pct+"%";
   document.getElementById("barFill").style.background=col;
-  document.getElementById("scoreMeta").textContent=t.rated+" of "+t.total+" items rated  ·  "+t.score+" of "+t.max+" points";
+  document.getElementById("scoreMeta").textContent=t.rated+" of "+t.total+" items rated  ·  "+t.observed+" observed  ·  "+t.score+" of "+t.max+" points";
 
   var warn=document.getElementById("completionWarn");
   if(t.rated>0&&t.rated<t.total){
@@ -1149,9 +1180,10 @@ document.addEventListener("keydown",function(e){
   var tag=e.target.tagName;
   if(tag==="INPUT"||tag==="TEXTAREA"||tag==="SELECT")return;
   if(!focusedKey)return;
-  if(e.key>="1"&&e.key<="4"){
+  if((e.key==="n"||e.key==="N")&&focusedKey){rateItem(focusedKey,-1);e.preventDefault();moveToNextItem();return;}
+  if(e.key>="0"&&e.key<="3"){
     e.preventDefault();
-    rateItem(focusedKey,parseInt(e.key)-1);
+    rateItem(focusedKey,parseInt(e.key));
     moveToNextItem();
   }
   if(e.key==="ArrowDown"){e.preventDefault();moveToNextItem();}
@@ -1265,9 +1297,9 @@ function buildSections(type){
     var qr=document.createElement("div");qr.className="sec-quickrate";
     var qrLabel=document.createElement("span");qrLabel.textContent="Quick-rate unrated:";
     qr.appendChild(qrLabel);
-    for(var qv=0;qv<4;qv++){
+    for(var qv=-1;qv<4;qv++){
       var qb=document.createElement("button");qb.className="qr-btn";
-      qb.textContent="All → "+R[qv].level+" ("+R[qv].label+")";
+      qb.textContent="All \u2192 "+(qv===-1?"NO":R[qv].level)+" ("+R[qv].label+")";
       qb.style.borderColor=R[qv].color;qb.style.color=R[qv].color;
       (function(sid,val){qb.onclick=function(e){e.stopPropagation();quickRateSection(sid,val);};})(s.id,qv);
       qr.appendChild(qb);
@@ -1297,10 +1329,11 @@ function buildSections(type){
 
       var rrow=document.createElement("div");rrow.className="rating-row";rrow.id="rrow-"+key;
       rrow.setAttribute("role","group");rrow.setAttribute("aria-label","Mastery level for item "+(ii+1));
-      for(var v=0;v<4;v++){
+      for(var v=-1;v<4;v++){
         var btn=document.createElement("button");btn.className="rbtn";btn.setAttribute("data-v",v);
-        btn.setAttribute("role","radio");btn.setAttribute("aria-pressed","false");btn.setAttribute("aria-label","Level "+R[v].level+": "+R[v].label);
-        btn.textContent=R[v].level+" — "+R[v].label;
+        btn.setAttribute("role","radio");btn.setAttribute("aria-pressed","false");
+        btn.setAttribute("aria-label",(v===-1?"Not Observed":"Level "+R[v].level+": "+R[v].label));
+        btn.textContent=(v===-1?"NO":""+R[v].level)+" \u2014 "+R[v].label;
         (function(k2,val){btn.onclick=function(){rateItem(k2,val);};})(key,v);
         rrow.appendChild(btn);
       }
@@ -1326,7 +1359,7 @@ function buildSections(type){
 
       var fbList=document.createElement("div");fbList.className="fb-bank-list";fbList.id="fbbank-"+key;
       var categories=["low","developing","strong"];
-      var catLabels={"low":"Not Observed / Approaching","developing":"Meets Expectations","strong":"Exceeds Expectations"};
+      var catLabels={"low":"Does Not Meet / Approaches","developing":"Meets Expectations","strong":"Exceeds Expectations"};
       for(var ci=0;ci<categories.length;ci++){
         var catDiv=document.createElement("div");
         catDiv.style.cssText="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-top:6px;margin-bottom:2px";
@@ -1443,17 +1476,70 @@ function startTimer(){
   timerStart=Date.now()-(timerElapsed*1000);
   timerRunning=true;
   timerInterval=setInterval(updateTimerDisplay,1000);
-  document.getElementById("timerToggle").textContent="Pause";
+  document.getElementById("timerPause").textContent="Pause";
 }
 
-function toggleTimer(){
+function pauseTimer(){
   if(timerRunning){
     clearInterval(timerInterval);
+    timerElapsed=Math.floor((Date.now()-timerStart)/1000);
     timerRunning=false;
-    document.getElementById("timerToggle").textContent="Resume";
+    document.getElementById("timerPause").textContent="Resume";
   } else {
     startTimer();
   }
+}
+
+function stopTimer(){
+  if(timerRunning){
+    clearInterval(timerInterval);
+    timerElapsed=Math.floor((Date.now()-timerStart)/1000);
+    timerRunning=false;
+  }
+  if(timerElapsed===0) return;
+  var label=document.getElementById("timerLabel").value||("Timer "+timerCount);
+  completedTimers.push({label:label,elapsed:timerElapsed});
+  renderCompletedTimers();
+  timerCount++;
+  timerElapsed=0;
+  timerStart=null;
+  document.getElementById("timerDisplay").textContent="00:00";
+  document.getElementById("timerLabel").value="Timer "+timerCount;
+  document.getElementById("timerPause").textContent="Pause";
+  scheduleSave();
+}
+
+function renderCompletedTimers(){
+  var c=document.getElementById("completedTimers");
+  var html="";
+  for(var i=0;i<completedTimers.length;i++){
+    var t=completedTimers[i];
+    var m=Math.floor(t.elapsed/60),s=t.elapsed%60;
+    var timeStr=(m<10?"0":"")+m+":"+(s<10?"0":"")+s;
+    html+="<div class='completed-timer'>"
+      +"<span class='ct-time'>"+timeStr+"</span>"
+      +"<input type='text' class='ct-label' value='"+escHtml(t.label)+"' onchange='renameCompletedTimer("+i+",this.value)'/>"
+      +"<button class='ct-delete' onclick='deleteCompletedTimer("+i+")' title='Remove'>&times;</button>"
+      +"</div>";
+  }
+  c.innerHTML=html;
+}
+
+function renameCompletedTimer(idx,name){
+  if(completedTimers[idx]) completedTimers[idx].label=name;
+  scheduleSave();
+}
+
+function deleteCompletedTimer(idx){
+  completedTimers.splice(idx,1);
+  renderCompletedTimers();
+  scheduleSave();
+}
+
+function getTotalTimerElapsed(){
+  var total=timerElapsed;
+  for(var i=0;i<completedTimers.length;i++) total+=completedTimers[i].elapsed;
+  return total;
 }
 
 function updateTimerDisplay(){
@@ -1500,7 +1586,8 @@ function buildSummary(){
   var pc=prCount();
 
   // Duration
-  var durMin=Math.floor(timerElapsed/60),durSec=timerElapsed%60;
+  var totalDur=getTotalTimerElapsed();
+  var durMin=Math.floor(totalDur/60),durSec=totalDur%60;
   var durStr=durMin+"m "+durSec+"s";
 
   // Score splits
@@ -1520,7 +1607,7 @@ function buildSummary(){
     var s=SECTIONS[si];
     for(var ji=0;ji<s.items.length;ji++){
       var key=s.id+"-"+ji;
-      if(ratings[key]!==undefined&&ratings[key]<=1){
+      if(ratings[key]!==undefined&&ratings[key]>=0&&ratings[key]<=1){
         var r=R[ratings[key]],short=s.items[ji].split("—")[0].trim();
         var commentNote=itemComments[key]?" <em style='color:#888'>("+itemComments[key]+")</em>":"";
         var tagNote=itemTags[key]&&itemTags[key].length?" <span style='color:#3498db;font-size:11px'>["+itemTags[key].join(", ")+"]</span>":"";
@@ -1528,7 +1615,7 @@ function buildSummary(){
       }
     }
   }
-  if(!flagHTML)flagHTML="<p style='font-size:13px;color:#888'>No items rated Not Observed or Approaching Expectations.</p>";
+  if(!flagHTML)flagHTML="<p style='font-size:13px;color:#888'>No items rated Does Not Meet or Approaches Expectations.</p>";
 
   // Strengths
   var strengthHTML="";
@@ -1595,7 +1682,7 @@ function buildSummary(){
     "<h2 style='font-size:17px;color:#2c3e6e;margin-bottom:14px'>Audit Summary Report</h2>"+
     completionHTML+
     "<div class='sum-meta'><strong>Teacher:</strong> "+tn+(gr?" &nbsp;|&nbsp; <strong>Grade:</strong> "+gr:"")+(ct?" &nbsp;|&nbsp; <strong>Content:</strong> "+ct:"")+" &nbsp;|&nbsp; <strong>Campus:</strong> "+cp+" &nbsp;|&nbsp; <strong>Observer:</strong> "+ob+" &nbsp;|&nbsp; <strong>Date:</strong> "+dt+" &nbsp;|&nbsp; <strong>Duration:</strong> "+durStr+"</div>"+
-    "<div class='sum-overall' style='background:"+oBg+"'><div class='sum-big' style='color:"+col+"'>"+pct+"%</div><div><div class='sum-lbl' style='color:"+col+"'>"+lbl+"</div><div class='sum-sub'>"+t.score+" of "+t.max+" points  ·  "+t.rated+" of "+t.total+" items rated</div></div></div>"+
+    "<div class='sum-overall' style='background:"+oBg+"'><div class='sum-big' style='color:"+col+"'>"+pct+"%</div><div><div class='sum-lbl' style='color:"+col+"'>"+lbl+"</div><div class='sum-sub'>"+t.score+" of "+t.max+" points  ·  "+t.rated+" of "+t.total+" items rated  ·  "+t.observed+" observed</div></div></div>"+
     splitHTML+
     "<h3 class='sub-h'>Section Breakdown</h3>"+barsHTML+
     "<div style='display:flex;gap:12px;margin:10px 0;flex-wrap:wrap'>"+
@@ -1606,7 +1693,7 @@ function buildSummary(){
     ((sectionTimers["permanent"]||0)<60&&(timerElapsed>120)?"<div style='font-size:11px;color:#e67e22;margin-bottom:10px'>Note: Less than 1 minute was spent on Permanent Materials. Consider spending more time reviewing this category.</div>":"")+
     ((sectionTimers["rotating"]||0)<60&&(timerElapsed>120)?"<div style='font-size:11px;color:#e67e22;margin-bottom:10px'>Note: Less than 1 minute was spent on Rotating Materials. Consider spending more time reviewing this category.</div>":"")+
     "<h3 class='sub-h' style='color:#27ae60'>Strengths (Exceeds Expectations)</h3>"+strengthHTML+
-    "<h3 class='sub-h' style='color:#e74c3c'>Items Needing Attention (Not Observed / Approaching)</h3>"+flagHTML+
+    "<h3 class='sub-h' style='color:#e74c3c'>Items Needing Attention (Does Not Meet / Approaches)</h3>"+flagHTML+
     "<h3 class='sub-h'>Environment Principles</h3>"+prDetailHTML+
     "<p style='font-size:13px;color:#555;margin-top:8px'><strong>"+pc+" of "+PRINCIPLES.length+"</strong> environment principles observed.</p>"+
     "<div class='next-box'><h3>Recommended Next Steps</h3><p>"+nextTxt+"</p></div>"+
@@ -1637,7 +1724,7 @@ function copySummary(){
   var perm=typeScore("permanent"),rot=typeScore("rotating"),pc=prCount();
   var permPct=perm.max>0?Math.round((perm.score/perm.max)*100):0;
   var rotPct=rot.max>0?Math.round((rot.score/rot.max)*100):0;
-  var durMin=Math.floor(timerElapsed/60);
+  var durMin=Math.floor(getTotalTimerElapsed()/60);
 
   var lines=[];
   lines.push("MLP CLASSROOM ENVIRONMENT AUDIT SUMMARY");
@@ -1651,7 +1738,7 @@ function copySummary(){
   lines.push("Duration: "+durMin+" minutes");
   lines.push("");
   lines.push("OVERALL SCORE: "+pct+"% ("+lbl+" Language-Forward Environment)");
-  lines.push(t.score+" of "+t.max+" points | "+t.rated+" of "+t.total+" items rated");
+  lines.push(t.score+" of "+t.max+" points | "+t.rated+" of "+t.total+" items rated | "+t.observed+" observed");
   lines.push("Permanent Materials: "+permPct+"% | Rotating Materials: "+rotPct+"% | Principles: "+pc+"/"+PRINCIPLES.length);
   lines.push("");
   lines.push("SECTION BREAKDOWN:");
@@ -1680,13 +1767,13 @@ function copySummary(){
   if(!hasStr)lines.push("  (none)");
 
   lines.push("");
-  lines.push("ITEMS NEEDING ATTENTION (Not Observed / Approaching):");
+  lines.push("ITEMS NEEDING ATTENTION (Does Not Meet / Approaches):");
   var hasFlag=false;
   for(var i=0;i<SECTIONS.length;i++){
     var s=SECTIONS[i];
     for(var j=0;j<s.items.length;j++){
       var k=s.id+"-"+j;
-      if(ratings[k]!==undefined&&ratings[k]<=1){
+      if(ratings[k]!==undefined&&ratings[k]>=0&&ratings[k]<=1){
         hasFlag=true;
         var short=s.items[j].split("—")[0].trim();
         var comment=itemComments[k]?" ("+itemComments[k]+")":"";
@@ -1735,6 +1822,7 @@ function collectState(){
     itemTags:itemTags,
     itemPhotos:itemPhotos,
     timerElapsed:timerElapsed,
+    completedTimers:completedTimers,
     sectionTimers:sectionTimers
   };
 }
@@ -1754,6 +1842,7 @@ function saveToStorage(){
     el.textContent="Saved "+new Date().toLocaleTimeString();
     setTimeout(function(){el.textContent="Auto-save: active";},2000);
     broadcastAuditSync();
+    if(window.mlpSync) mlpSync.push(STORAGE_KEY);
   }catch(e){document.getElementById("saveStatus").textContent="Auto-save: error";}
 }
 
@@ -1812,6 +1901,11 @@ function applyState(state){
     document.getElementById("timerDisplay").textContent=(m<10?"0":"")+m+":"+(s<10?"0":"")+s;
   }
 
+  completedTimers=state.completedTimers||[];
+  timerCount=completedTimers.length+1;
+  document.getElementById("timerLabel").value="Timer "+timerCount;
+  renderCompletedTimers();
+
   if(state.sectionTimers) sectionTimers=state.sectionTimers;
 
   refreshPrSummary();
@@ -1847,7 +1941,7 @@ function exportCSV() {
   var ob = document.getElementById("m-observer").value || "";
   var dt = document.getElementById("m-date").value || "";
   var rows = [];
-  rows.push(["Teacher","Campus","Observer","Date","Section","Section Type","Item","Mastery Level","Mastery Label","Score (0-3)","Evidence Tags","Comment","Section Notes"].join(","));
+  rows.push(["Teacher","Campus","Observer","Date","Section","Section Type","Item","Mastery Level","Mastery Label","Score (-1 to 3)","Evidence Tags","Comment","Section Notes"].join(","));
   for (var i = 0; i < SECTIONS.length; i++) {
     var s = SECTIONS[i];
     for (var j = 0; j < s.items.length; j++) {
@@ -2178,6 +2272,22 @@ function getHistory(){
 }
 
 function saveToHistory(){
+  var missing=[];
+  if(!document.getElementById("m-teacher").value.trim()) missing.push("Teacher Name");
+  if(!document.getElementById("m-campus").value.trim()) missing.push("Campus");
+  if(!document.getElementById("m-observer").value.trim()) missing.push("Observer");
+  if(!document.getElementById("m-grade").value) missing.push("Grade Level");
+  if(!document.getElementById("m-content").value) missing.push("Content Area");
+  if(!document.getElementById("m-date").value) missing.push("Date");
+  if(missing.length){
+    alert("Please fill in the following required fields before saving:\n\n\u2022 "+missing.join("\n\u2022 "));
+    var ids={"Teacher Name":"m-teacher","Campus":"m-campus","Observer":"m-observer","Grade Level":"m-grade","Content Area":"m-content","Date":"m-date"};
+    for(var i=0;i<missing.length;i++){
+      var el=document.getElementById(ids[missing[i]]);
+      if(el){el.style.borderColor="#e74c3c";el.style.boxShadow="0 0 0 2px rgba(231,76,60,.2)";}
+    }
+    return;
+  }
   var state=collectState();
   state.id=Date.now().toString();
   var t=totalScore();
@@ -2186,6 +2296,7 @@ function saveToHistory(){
   history.push(state);
   localStorage.setItem(HISTORY_KEY,JSON.stringify(history));
   stampLastSaved();
+  if(window.mlpSync) mlpSync.pushNow(HISTORY_KEY);
   alert("Audit saved to history for "+( state.meta.teacher||"unnamed teacher")+" on "+(state.meta.date||"unknown date")+".");
 }
 
@@ -2287,15 +2398,14 @@ function clearComparison(){
 
 function buildComparisonHTML(prev){
   var prevTotal=0,prevMax=0;
-  for(var k in prev.ratings){if(prev.ratings[k]!==undefined){prevTotal+=prev.ratings[k];prevMax+=3;}}
+  for(var k in prev.ratings){if(prev.ratings[k]!==undefined&&prev.ratings[k]>=0){prevTotal+=prev.ratings[k];prevMax+=3;}}
   // Recalculate properly
   var prevScores={};
   for(var i=0;i<SECTIONS.length;i++){
     var s=SECTIONS[i],sc=0,mx=0;
     for(var j=0;j<s.items.length;j++){
       var k=s.id+"-"+j;
-      mx+=3;
-      if(prev.ratings[k]!==undefined)sc+=prev.ratings[k];
+      if(prev.ratings[k]!==undefined&&prev.ratings[k]>=0){mx+=3;sc+=prev.ratings[k];}
     }
     prevScores[s.id]={score:sc,max:mx,pct:mx>0?Math.round((sc/mx)*100):0};
   }
@@ -3552,7 +3662,7 @@ function generateCoachingPlan() {
     var weakItems = [];
     for (var j = 0; j < s.items.length; j++) {
       var k = s.id + "-" + j;
-      if (ratings[k] !== undefined && ratings[k] <= 1) {
+      if (ratings[k] !== undefined && ratings[k] >= 0 && ratings[k] <= 1) {
         weakItems.push({ text: s.items[j].split(" — ")[0], level: R[ratings[k]].label });
       }
     }
@@ -4040,6 +4150,19 @@ function initMetaListeners(){
   });
 }
 
+function initMetaValidationReset(){
+  var metaFields=["m-teacher","m-campus","m-observer","m-grade","m-content","m-date"];
+  for(var i=0;i<metaFields.length;i++){
+    (function(fid){
+      var el=document.getElementById(fid);
+      if(el){
+        el.addEventListener("focus",function(){this.style.borderColor="";this.style.boxShadow="";});
+        el.addEventListener("input",function(){this.style.borderColor="";this.style.boxShadow="";});
+      }
+    })(metaFields[i]);
+  }
+}
+
 /* ==============================
    INIT
    ============================== */
@@ -4062,6 +4185,7 @@ if(hadSave)document.getElementById("saveStatus").textContent="Auto-save: restore
 
 refreshBanner();
 initMetaListeners();
+initMetaValidationReset();
 currentSection="permanent";
 sectionTimerStart=Date.now();
 
@@ -4079,6 +4203,14 @@ if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("../service-worker.js").catch(function() {});
 }
 initNotifBell();
+
+/* Sync engine: pull on load + polling */
+if(window.mlpSync && mlpSync.isConfigured()){
+  mlpSync.startPolling([STORAGE_KEY, HISTORY_KEY], function(updated){
+    loadFromStorage();
+    refreshBanner();
+  });
+}
 
 // Walkthrough → Audit handoff
 (function(){

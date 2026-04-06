@@ -242,6 +242,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 <h1>&#128451; Data Backup Hub</h1>
 <p>Export, import, and manage localStorage data across all MLP coordinator tools in one place.</p>
 <div class="toolbar" role="toolbar" aria-label="Backup tools">
+<a class="tool-btn" href="index.html" aria-label="Back to Home">&#127968; Home</a>
 <button class="tool-btn success" onclick="exportSelected()" aria-label="Export selected keys">&#128229; Export Selected</button>
 <button class="tool-btn success" onclick="exportAll()" aria-label="Export all keys">&#128230; Export All</button>
 <button class="tool-btn import-btn" onclick="showImportArea()" aria-label="Import backup file">&#128228; Import Backup</button>
@@ -252,7 +253,6 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 <a class="notif-bell-link" href="index.html" title="Notifications" id="notifBellLink">&#128276;<span class="notif-bell-badge hidden" id="notifBellBadge">0</span></a>
 <button class="tool-btn" onclick="toggleDarkMode()" id="darkModeToggle" aria-label="Toggle dark mode">&#9789; Dark</button>
 <button class="tool-btn" onclick="window.print()" aria-label="Print or save as PDF">&#128438; Print / PDF</button>
-<a class="tool-btn" href="index.html" style="margin-left:auto" aria-label="Back to Home">&#127968; Home</a>
 </div>
 </div>
 
@@ -333,7 +333,8 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 <!-- Gist Cloud Sync -->
 <div class="card" id="gistCard" style="display:none">
 <h2>&#9729; GitHub Gist Cloud Sync</h2>
-<p style="font-size:12px;color:#888;margin-bottom:12px">Sync your data across devices using a private GitHub Gist. You'll need a <a href="https://github.com/settings/tokens/new?scopes=gist&description=MLP+Coordinator+Hub" target="_blank" style="color:#4a90d9">Personal Access Token</a> with <strong>gist</strong> scope.</p>
+<p style="font-size:12px;color:#888;margin-bottom:8px">Sync your data across devices using a private GitHub Gist. You'll need a <a href="https://github.com/settings/tokens/new?scopes=gist&description=MLP+Coordinator+Hub" target="_blank" style="color:#4a90d9">Personal Access Token</a> with <strong>gist</strong> scope.</p>
+<p style="font-size:11px;color:#27ae60;margin-bottom:12px;padding:6px 10px;background:rgba(39,174,96,0.08);border-radius:6px;border-left:3px solid #27ae60">&#128274; Your PAT is encrypted with AES-256-GCM before being stored in the browser. You'll set a passphrase when saving &mdash; you'll need it each time you sync.</p>
 <div class="gist-section">
 <h3>Settings</h3>
 <div class="gist-row">
@@ -1254,10 +1255,65 @@ function toggleDarkMode(){
 })();
 
 /* ======================================================
-   GIST CLOUD SYNC
+   GIST CLOUD SYNC — with AES-GCM encrypted PAT storage
    ====================================================== */
 var GIST_SETTINGS_KEY = "esl_gist_sync";
+var GIST_ENCRYPTION_SALT = "mlp-hub-gist-pat-v1";
 
+/* --- Web Crypto AES-GCM helpers (browser-native, no library) --- */
+function _str2buf(str) {
+  return new TextEncoder().encode(str);
+}
+function _buf2hex(buf) {
+  return Array.prototype.map.call(new Uint8Array(buf), function(b) {
+    return ("00" + b.toString(16)).slice(-2);
+  }).join("");
+}
+function _hex2buf(hex) {
+  var bytes = new Uint8Array(hex.length / 2);
+  for (var i = 0; i < hex.length; i += 2) {
+    bytes[i / 2] = parseInt(hex.substr(i, 2), 16);
+  }
+  return bytes;
+}
+
+function _deriveKey(passphrase) {
+  return crypto.subtle.importKey(
+    "raw", _str2buf(passphrase), "PBKDF2", false, ["deriveKey"]
+  ).then(function(baseKey) {
+    return crypto.subtle.deriveKey(
+      { name: "PBKDF2", salt: _str2buf(GIST_ENCRYPTION_SALT), iterations: 100000, hash: "SHA-256" },
+      baseKey, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]
+    );
+  });
+}
+
+function encryptPat(pat, passphrase) {
+  var iv = crypto.getRandomValues(new Uint8Array(12));
+  return _deriveKey(passphrase).then(function(key) {
+    return crypto.subtle.encrypt({ name: "AES-GCM", iv: iv }, key, _str2buf(pat));
+  }).then(function(encrypted) {
+    return _buf2hex(iv) + ":" + _buf2hex(encrypted);
+  });
+}
+
+function decryptPat(encryptedHex, passphrase) {
+  var parts = encryptedHex.split(":");
+  if (parts.length !== 2) return Promise.reject(new Error("Invalid format"));
+  var iv = _hex2buf(parts[0]);
+  var data = _hex2buf(parts[1]);
+  return _deriveKey(passphrase).then(function(key) {
+    return crypto.subtle.decrypt({ name: "AES-GCM", iv: iv }, key, data);
+  }).then(function(decrypted) {
+    return new TextDecoder().decode(decrypted);
+  });
+}
+
+function isEncryptedPat(val) {
+  return typeof val === "string" && val.indexOf(":") > 20 && !/^ghp_/.test(val);
+}
+
+/* --- Gist settings UI --- */
 function toggleGistSection() {
   var card = document.getElementById("gistCard");
   if (card.style.display === "none") {
@@ -1277,7 +1333,12 @@ function togglePatVisibility() {
 function loadGistSettings() {
   var settings = safeGetGist();
   if (settings) {
-    document.getElementById("gistPat").value = settings.pat || "";
+    if (settings.pat && isEncryptedPat(settings.pat)) {
+      document.getElementById("gistPat").value = "";
+      document.getElementById("gistPat").placeholder = "(encrypted — enter passphrase to unlock)";
+    } else {
+      document.getElementById("gistPat").value = settings.pat || "";
+    }
     document.getElementById("gistId").value = settings.gistId || "";
   }
 }
@@ -1296,22 +1357,38 @@ function saveGistSettings() {
     showGistStatus("Please enter a Personal Access Token.", "err");
     return;
   }
-  localStorage.setItem(GIST_SETTINGS_KEY, JSON.stringify({pat: pat, gistId: gistId}));
-  showGistStatus("Settings saved.", "ok");
+  var passphrase = prompt("Enter a passphrase to encrypt your PAT (remember this!):");
+  if (!passphrase) {
+    // Save unencrypted if user cancels passphrase
+    localStorage.setItem(GIST_SETTINGS_KEY, JSON.stringify({pat: pat, gistId: gistId}));
+    showGistStatus("Settings saved (unencrypted).", "ok");
+    return;
+  }
+  encryptPat(pat, passphrase).then(function(encrypted) {
+    localStorage.setItem(GIST_SETTINGS_KEY, JSON.stringify({pat: encrypted, gistId: gistId, encrypted: true}));
+    document.getElementById("gistPat").value = "";
+    document.getElementById("gistPat").placeholder = "(encrypted — enter passphrase to unlock)";
+    showGistStatus("Settings saved with AES-256-GCM encryption.", "ok");
+  }).catch(function(err) {
+    showGistStatus("Encryption failed: " + err.message, "err");
+  });
 }
 
 function clearGistSettings() {
+  if (!confirm("Clear ALL Gist settings (PAT + Gist ID)? This cannot be undone.")) return;
   localStorage.removeItem(GIST_SETTINGS_KEY);
   document.getElementById("gistPat").value = "";
+  document.getElementById("gistPat").placeholder = "ghp_xxxxxxxxxxxxxxxxxxxx";
   document.getElementById("gistId").value = "";
-  showGistStatus("Settings cleared.", "info");
+  showGistStatus("All Gist settings cleared.", "info");
 }
 
 function clearPatOnly() {
-  if (!confirm("Are you sure you want to remove your GitHub Personal Access Token? You'll need to re-enter it to use Gist sync.")) return;
+  if (!confirm("Remove your GitHub Personal Access Token? You'll need to re-enter it to use Gist sync.")) return;
   var settings = safeGetGist();
-  if (settings && settings.pat) {
+  if (settings) {
     delete settings.pat;
+    delete settings.encrypted;
     if (settings.gistId) {
       localStorage.setItem(GIST_SETTINGS_KEY, JSON.stringify(settings));
     } else {
@@ -1321,8 +1398,21 @@ function clearPatOnly() {
     localStorage.removeItem(GIST_SETTINGS_KEY);
   }
   document.getElementById("gistPat").value = "";
+  document.getElementById("gistPat").placeholder = "ghp_xxxxxxxxxxxxxxxxxxxx";
   showToast("PAT cleared");
   showGistStatus("Personal Access Token removed. Gist ID preserved.", "info");
+}
+
+function getDecryptedPat() {
+  var settings = safeGetGist();
+  if (!settings || !settings.pat) return Promise.resolve(null);
+  if (!isEncryptedPat(settings.pat)) return Promise.resolve(settings.pat);
+  var passphrase = prompt("Enter your passphrase to decrypt the PAT:");
+  if (!passphrase) return Promise.resolve(null);
+  return decryptPat(settings.pat, passphrase).catch(function() {
+    showSyncStatus("Wrong passphrase or corrupted data.", "err");
+    return null;
+  });
 }
 
 function showGistStatus(msg, type) {
@@ -1350,47 +1440,54 @@ function pushToGist() {
     showSyncStatus("Configure your PAT first.", "err");
     return;
   }
-  showSyncStatus("Pushing to Gist...", "info");
-  var payload = getGistPayload();
-  var body = {
-    description: "MLP Coordinator Hub - Data Backup (" + new Date().toISOString() + ")",
-    public: false,
-    files: { "esl_backup.json": { content: payload } }
-  };
-
-  var method = "POST";
-  var url = "https://api.github.com/gists";
-  if (settings.gistId) {
-    method = "PATCH";
-    url = "https://api.github.com/gists/" + settings.gistId;
-  }
-
-  var xhr = new XMLHttpRequest();
-  xhr.open(method, url, true);
-  xhr.setRequestHeader("Authorization", "Bearer " + settings.pat);
-  xhr.setRequestHeader("Content-Type", "application/json");
-  xhr.setRequestHeader("Accept", "application/vnd.github.v3+json");
-  xhr.onload = function() {
-    if (xhr.status === 200 || xhr.status === 201) {
-      try {
-        var resp = JSON.parse(xhr.responseText);
-        if (!settings.gistId && resp.id) {
-          settings.gistId = resp.id;
-          localStorage.setItem(GIST_SETTINGS_KEY, JSON.stringify(settings));
-          document.getElementById("gistId").value = resp.id;
-        }
-        showSyncStatus("Pushed successfully! Gist ID: " + resp.id, "ok");
-      } catch(e) {
-        showSyncStatus("Push succeeded but response parse failed.", "ok");
-      }
-    } else {
-      showSyncStatus("Push failed: HTTP " + xhr.status + " — " + xhr.statusText, "err");
+  showSyncStatus("Decrypting PAT...", "info");
+  getDecryptedPat().then(function(pat) {
+    if (!pat) {
+      showSyncStatus("Could not get PAT. Configure or re-enter passphrase.", "err");
+      return;
     }
-  };
-  xhr.onerror = function() {
-    showSyncStatus("Network error. Check your connection.", "err");
-  };
-  xhr.send(JSON.stringify(body));
+    showSyncStatus("Pushing to Gist...", "info");
+    var payload = getGistPayload();
+    var body = {
+      description: "MLP Coordinator Hub - Data Backup (" + new Date().toISOString() + ")",
+      public: false,
+      files: { "esl_backup.json": { content: payload } }
+    };
+
+    var method = "POST";
+    var url = "https://api.github.com/gists";
+    if (settings.gistId) {
+      method = "PATCH";
+      url = "https://api.github.com/gists/" + settings.gistId;
+    }
+
+    var xhr = new XMLHttpRequest();
+    xhr.open(method, url, true);
+    xhr.setRequestHeader("Authorization", "Bearer " + pat);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.setRequestHeader("Accept", "application/vnd.github.v3+json");
+    xhr.onload = function() {
+      if (xhr.status === 200 || xhr.status === 201) {
+        try {
+          var resp = JSON.parse(xhr.responseText);
+          if (!settings.gistId && resp.id) {
+            settings.gistId = resp.id;
+            localStorage.setItem(GIST_SETTINGS_KEY, JSON.stringify(settings));
+            document.getElementById("gistId").value = resp.id;
+          }
+          showSyncStatus("Pushed successfully! Gist ID: " + resp.id, "ok");
+        } catch(e) {
+          showSyncStatus("Push succeeded but response parse failed.", "ok");
+        }
+      } else {
+        showSyncStatus("Push failed: HTTP " + xhr.status + " — " + xhr.statusText, "err");
+      }
+    };
+    xhr.onerror = function() {
+      showSyncStatus("Network error. Check your connection.", "err");
+    };
+    xhr.send(JSON.stringify(body));
+  });
 }
 
 function pullFromGist() {
@@ -1403,11 +1500,22 @@ function pullFromGist() {
     showSyncStatus("No Gist ID set. Push data first to create one, or paste an existing ID.", "err");
     return;
   }
+  showSyncStatus("Decrypting PAT...", "info");
+  getDecryptedPat().then(function(pat) {
+    if (!pat) {
+      showSyncStatus("Could not get PAT. Configure or re-enter passphrase.", "err");
+      return;
+    }
+    _doPullFromGist(pat, settings.gistId);
+  });
+}
+
+function _doPullFromGist(pat, gistId) {
   showSyncStatus("Pulling from Gist...", "info");
 
   var xhr = new XMLHttpRequest();
-  xhr.open("GET", "https://api.github.com/gists/" + settings.gistId, true);
-  xhr.setRequestHeader("Authorization", "Bearer " + settings.pat);
+  xhr.open("GET", "https://api.github.com/gists/" + gistId, true);
+  xhr.setRequestHeader("Authorization", "Bearer " + pat);
   xhr.setRequestHeader("Accept", "application/vnd.github.v3+json");
   xhr.onload = function() {
     if (xhr.status === 200) {

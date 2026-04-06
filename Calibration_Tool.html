@@ -214,6 +214,7 @@ body{animation:fadeIn .25s ease both}
 <div class="last-saved-footer" id="lastSavedFooter"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+<script src="./sync-engine.js"></script>
 <script>
 function initNotifBell(){var c=localStorage.getItem('notification_unread_count');var n=parseInt(c)||0;var b=document.getElementById('notifBellBadge');if(b){b.textContent=n>9?'9+':String(n);b.className=n>0?'notif-bell-badge':'notif-bell-badge hidden';}}
 
@@ -337,6 +338,7 @@ function getCoordinators() {
     stampLastSaved();
     updateSessionCount(data);
     if (mlpChannel) mlpChannel.postMessage({type:'data_update',key:STORAGE_KEY,timestamp:Date.now()});
+    if(window.mlpSync) mlpSync.push(STORAGE_KEY);
   }
 
   function updateSessionCount(data) {
@@ -1290,6 +1292,19 @@ function getCoordinators() {
 
   init();
   initNotifBell();
+
+  /* Sync engine: pull on load + polling */
+  if(window.mlpSync && mlpSync.isConfigured()){
+    mlpSync.startPolling([STORAGE_KEY], function(updated){
+      var data = loadData();
+      updateSessionCount(data);
+      if (state.currentTab === 'history') {
+        switchTab('history');
+      } else {
+        renderSessionsList();
+      }
+    });
+  }
 })();
 </script>
 </body>

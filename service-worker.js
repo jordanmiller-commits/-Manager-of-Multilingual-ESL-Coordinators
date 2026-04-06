@@ -1,5 +1,6 @@
-var CACHE_NAME = "mlp-suite-v12";
+var CACHE_NAME = "mlp-suite-v13";
 var ASSETS = [
+  "./sync-engine.js",
   "./Principal_Checkpoint_Portal/Principal_Checkpoint_Portal.html",
   "./Principal_Checkpoint_Portal/Campus_Report_Card.html",
   "./index.html",

@@ -302,6 +302,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
   <h1>MLP Coordinator Scope &amp; Sequence</h1>
   <p>2026-2027 School Year &mdash; Secondary Campuses (Grades 6-12)</p>
   <div class="toolbar">
+    <a class="tool-btn" href="../index.html" aria-label="Back to Home">&#127968; Home</a>
     <button class="tool-btn" onclick="exportData()" title="Download state as JSON">&#128190; Export</button>
     <button class="tool-btn" onclick="showImportModal()" title="Import saved state">&#128194; Import</button>
     <button class="tool-btn danger" onclick="showResetModal()" title="Clear all data">&#128260; Reset</button>
@@ -309,8 +310,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
     <button class="tool-btn" onclick="toggleShortcutsHelp()" aria-label="Keyboard shortcuts">&#9000; Keys</button>
     <a class="notif-bell-link" href="../index.html" title="Notifications" id="notifBellLink">&#128276;<span class="notif-bell-badge hidden" id="notifBellBadge">0</span></a>
     <button class="tool-btn" onclick="toggleDarkMode()" id="darkModeToggle" aria-label="Toggle dark mode">&#9789; Dark</button>
-    <a class="tool-btn" href="../index.html" style="margin-left:auto" aria-label="Back to Home">&#127968; Home</a>
-    <span class="save-indicator" id="saveStatus">Auto-save: ready</span>
+    <span class="save-indicator" id="saveStatus" style="margin-left:auto">Auto-save: ready</span>
   </div>
 </div>
 
@@ -470,6 +470,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
   </div>
 </div>
 
+<script src="../sync-engine.js"></script>
 <script>
 function escHtml(str) {
   if (!str) return "";
@@ -1403,6 +1404,7 @@ function saveToStorage(){
     el.textContent="Saved "+new Date().toLocaleTimeString();
     setTimeout(function(){el.textContent="Auto-save: ready";},3000);
     broadcastScopeSync();
+    if(window.mlpSync) mlpSync.push(STORAGE_KEY);
   }catch(e){}
 }
 
@@ -1741,6 +1743,14 @@ function renderLastSaved(){var ts=localStorage.getItem(LAST_SAVED_KEY);var el=do
 renderLastSaved();
 if("serviceWorker" in navigator){navigator.serviceWorker.register("../service-worker.js").catch(function(){});}
 initNotifBell();
+
+/* Sync engine: pull on load + polling */
+if(window.mlpSync && mlpSync.isConfigured()){
+  mlpSync.startPolling([STORAGE_KEY], function(updated){
+    loadFromStorage();
+    rebuildAll();
+  });
+}
 </script>
 </body>
 </html>
