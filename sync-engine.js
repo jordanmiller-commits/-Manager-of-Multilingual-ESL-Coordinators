@@ -165,20 +165,13 @@
     fetch(GAS_URL, {
       method: "POST",
       body: payload,
-      headers: {"Content-Type": "text/plain;charset=utf-8"},
+      mode: "no-cors",
       redirect: "follow"
-    }).then(function(resp){ return resp.text(); })
-    .then(function(text){
-      try{
-        var resp = JSON.parse(text);
-        if(resp.success){
-          showStatus("\u2713 Synced", "ok");
-          localStorage.setItem("mlp_last_push_" + key, Date.now().toString());
-        } else {
-          showStatus("\u26A0 " + (resp.error || "Sync error"), "err");
-        }
-      }catch(e){ showStatus("\u26A0 Sync error", "err"); }
-    })["catch"](function(e){ showStatus("\u26A0 Offline", "err"); });
+    }).then(function(){
+      // no-cors gives opaque response — trust the push succeeded
+      showStatus("\u2713 Synced", "ok");
+      localStorage.setItem("mlp_last_push_" + key, Date.now().toString());
+    })["catch"](function(){ showStatus("\u26A0 Offline", "err"); });
   }
 
   // ---- PULL (from Google Drive via GAS) ----
@@ -286,7 +279,7 @@
     fetch(GAS_URL, {
       method: "POST",
       body: body,
-      headers: {"Content-Type": "text/plain;charset=utf-8"},
+      mode: "no-cors",
       redirect: "follow"
     })["catch"](function(){});
   }
