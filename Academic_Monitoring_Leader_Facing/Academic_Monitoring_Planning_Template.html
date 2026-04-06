@@ -888,6 +888,7 @@ var coachingActions = [];
 var reflection = {patterns: "", actions: "", observer: "", date: ""};
 var saveTimeout = null;
 var activeSuggestRound = 0;
+var lastFocusedCellId = null;
 
 /* ======================================================
    UTILITIES
@@ -1030,7 +1031,7 @@ function renderGrid() {
       var val = rounds[c2][rc.key] || "";
       var cellId = "cell-" + c2 + "-" + rc.key;
       bHtml += '<td class="grid-cell">';
-      bHtml += '<textarea id="' + cellId + '" placeholder="' + escHtml(rc.placeholder) + '" oninput="scheduleSave()">' + escHtml(val) + '</textarea>';
+      bHtml += '<textarea id="' + cellId + '" placeholder="' + escHtml(rc.placeholder) + '" oninput="scheduleSave()" onfocus="lastFocusedCellId=\'' + cellId + '\'">' + escHtml(val) + '</textarea>';
       bHtml += '</td>';
     }
 
@@ -1213,19 +1214,31 @@ function showSuggestionBank() {
 }
 
 function applySuggestion(catIdx, sugIdx) {
+  var text = SUGGESTION_BANK[catIdx].suggestions[sugIdx];
+
+  // Insert into last focused cell if available
+  if (lastFocusedCellId) {
+    var ta = document.getElementById(lastFocusedCellId);
+    if (ta) {
+      var current = ta.value;
+      ta.value = current ? current + "\n\n" + text : text;
+      syncFromDOM();
+      scheduleSave();
+      closeModal("suggestModal");
+      ta.focus();
+      return;
+    }
+  }
+
+  // Fallback: use round dropdown target → lookFor field
   var targetIdx = parseInt(document.getElementById("suggestTarget").value, 10);
   if (isNaN(targetIdx) || targetIdx < 0 || targetIdx >= rounds.length) {
-    alert("Please select a valid target round.");
+    alert("Please click into a cell first, or select a target round.");
     return;
   }
   syncFromDOM();
-  var text = SUGGESTION_BANK[catIdx].suggestions[sugIdx];
   var current = rounds[targetIdx].lookFor;
-  if (current) {
-    rounds[targetIdx].lookFor = current + "\n\n" + text;
-  } else {
-    rounds[targetIdx].lookFor = text;
-  }
+  rounds[targetIdx].lookFor = current ? current + "\n\n" + text : text;
   renderGrid();
   scheduleSave();
   closeModal("suggestModal");
@@ -2184,9 +2197,7 @@ function hidePrintPreview() {
 
 function initDefaults() {
   rounds = [
-    createRound("procedural"),
-    createRound("conceptual"),
-    createRound("engagement")
+    createRound("procedural")
   ];
   renderGrid();
   scheduleSave();
