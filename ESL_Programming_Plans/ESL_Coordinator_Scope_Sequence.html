@@ -64,6 +64,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 .view-btn{flex:1;padding:12px 16px;border:2px solid var(--primary-dark);background:var(--card-bg);color:var(--primary-dark);font-size:14px;font-weight:700;cursor:pointer;transition:all .15s}
 .view-btn:first-child{border-radius:8px 0 0 8px}
 .view-btn:last-child{border-radius:0 8px 8px 0}
+.view-btn:not(:first-child):not(:last-child){border-radius:0}
 .view-btn.active{background:#2c3e6e;color:#fff}
 
 /* Progress Dashboard */
@@ -292,6 +293,45 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 .shortcuts-modal table{width:100%;border-collapse:collapse;font-size:12px}
 .shortcuts-modal td{padding:6px 8px;border-bottom:1px solid var(--border)}
 .shortcuts-modal kbd{display:inline-block;padding:2px 7px;border-radius:4px;background:var(--section-bg-light);border:1px solid var(--border);font-family:inherit;font-size:11px;font-weight:700;color:var(--text-heading)}
+
+/* Feature 2: Coordinator Dashboard Cards */
+.coord-dash-card{background:var(--card-bg);border-radius:8px;padding:12px 16px;border-left:4px solid;margin-bottom:8px}
+.coord-dash-header{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.coord-dash-name{font-weight:700;font-size:13px;color:var(--text)}
+.coord-dash-health{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.coord-dash-stats{display:flex;gap:16px;font-size:11px;color:var(--text-muted);flex-wrap:wrap}
+.coord-dash-stat{display:flex;flex-direction:column;align-items:center}
+.coord-dash-stat-val{font-size:16px;font-weight:800}
+.coord-dash-overdue{color:#e74c3c;font-weight:700}
+
+/* Feature 3: Overdue Badge */
+.overdue-badge{background:#fdecea;color:#c0392b;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;display:inline-block}
+
+/* Feature 5: Month Strip Progress */
+.month-chip .month-progress{display:block;height:3px;border-radius:2px;margin-top:4px;background:var(--border)}
+.month-chip .month-progress-fill{height:100%;border-radius:2px;transition:width .3s}
+
+/* Feature 6: Bulk Check Button */
+.bulk-check-btn{background:var(--success-light,#e8f5e9);color:var(--success-text,#2e7d32);border:1px solid var(--success,#27ae60);border-radius:6px;padding:4px 12px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit}
+.bulk-check-btn:hover{background:var(--success,#27ae60);color:#fff}
+
+/* Gantt / Timeline View */
+.gantt-table{width:100%;border-collapse:collapse;font-size:11px}
+.gantt-table th,.gantt-table td{padding:4px 6px;border:1px solid var(--border);text-align:center}
+.gantt-label{text-align:left!important;font-weight:700;min-width:250px;position:sticky;left:0;background:var(--card-bg);z-index:1}
+.gantt-month{font-size:10px;font-weight:700;min-width:50px}
+.gantt-action-label{text-align:left!important;font-size:11px;color:var(--text-secondary);max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;position:sticky;left:0;background:var(--card-bg);z-index:1}
+.gantt-cell{min-width:50px;font-size:10px;font-weight:700}
+.gantt-na{background:var(--section-bg-light)}
+.gantt-active{border-width:1.5px!important}
+.gantt-done{color:#27ae60;font-weight:800}
+.gantt-current{border-left:2px solid var(--primary)!important;border-right:2px solid var(--primary)!important}
+.gantt-type-row td{border:none}
+
+/* Evidence & Coaching Integration */
+.action-evidence-input{width:100%;padding:5px 8px;border-radius:5px;border:1px solid var(--input-border);font-size:11px;font-family:inherit;margin-top:4px;background:var(--input-bg);color:var(--input-text);box-sizing:border-box}
+.action-coaching-btn{padding:4px 10px;border-radius:5px;border:1.5px solid #8e44ad;background:transparent;color:#8e44ad;font-size:10px;font-weight:600;cursor:pointer;margin-top:4px;font-family:inherit}
+.action-coaching-btn:hover{background:#f5eefb}
 </style>
 </head>
 <body>
@@ -342,10 +382,17 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
   <div id="quarterBody" style="display:none"></div>
 </div>
 
+<!-- This Month's Priorities -->
+<div class="card" id="prioritiesCard">
+  <h3 style="margin-bottom:10px">This Month's Priorities</h3>
+  <div id="prioritiesContent"></div>
+</div>
+
 <!-- View Toggle -->
 <div class="view-toggle">
   <button class="view-btn active" id="vbtn-interactive" onclick="showView('interactive')">Interactive Tracker</button>
   <button class="view-btn" id="vbtn-spreadsheet" onclick="showView('spreadsheet')">Spreadsheet Reference</button>
+  <button class="view-btn" id="vbtn-timeline" onclick="showView('timeline')">Timeline View</button>
 </div>
 
 <!-- Interactive View -->
@@ -361,6 +408,9 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
     <div class="mode-toggle-switch" id="modeSwitch" onclick="toggleTrackingMode()"><div class="knob"></div></div>
     <span>Individual Tracking (per coordinator)</span>
   </div>
+  <div id="customActionBtnWrap" style="margin-bottom:12px">
+    <button class="tool-btn" onclick="showModal('customActionModal')" style="background:var(--primary);color:#fff;border-color:var(--primary)">+ Add Custom Action</button>
+  </div>
   <div id="actionContainer"></div>
 </div>
 
@@ -370,6 +420,11 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
     <div><label>Coordinator</label><br/><select id="ssFilterCoord" onchange="renderSpreadsheet()"><option value="">All Coordinators</option></select></div>
   </div>
   <div class="ss-container"><table class="ss-table" id="ssTable"></table></div>
+</div>
+
+<!-- Timeline / Gantt View -->
+<div id="timelineView" style="display:none">
+  <div class="ss-container" id="ganttContainer"></div>
 </div>
 
 </div><!-- end .wrap -->
@@ -396,6 +451,49 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
     <div class="modal-btns">
       <button class="btn-cancel" onclick="closeModal('importModal')">Cancel</button>
       <button class="btn-import" onclick="confirmImport()">Import</button>
+    </div>
+  </div>
+</div>
+
+<!-- CUSTOM ACTION MODAL -->
+<div class="modal-overlay" id="customActionModal" role="dialog" aria-modal="true" aria-label="Add custom action">
+  <div class="modal" style="max-width:500px">
+    <h3 style="margin-bottom:14px">Add Custom Action</h3>
+    <div style="margin-bottom:10px">
+      <label style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;display:block;margin-bottom:4px">Action Description</label>
+      <textarea id="caText" rows="2" style="width:100%;padding:8px;border-radius:6px;border:1px solid var(--input-border);font-family:inherit;font-size:13px;background:var(--input-bg);color:var(--input-text);box-sizing:border-box" placeholder="Describe the action..."></textarea>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+      <div>
+        <label style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;display:block;margin-bottom:4px">Type</label>
+        <select id="caType" style="width:100%;padding:8px;border-radius:6px;border:1px solid var(--input-border);font-size:13px;background:var(--input-bg);color:var(--input-text)"></select>
+      </div>
+      <div>
+        <label style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;display:block;margin-bottom:4px">Frequency</label>
+        <select id="caFreq" style="width:100%;padding:8px;border-radius:6px;border:1px solid var(--input-border);font-size:13px;background:var(--input-bg);color:var(--input-text)">
+          <option value="weekly">Weekly</option>
+          <option value="monthly" selected>Monthly</option>
+          <option value="quarterly">Quarterly</option>
+          <option value="milestone">Milestone</option>
+        </select>
+      </div>
+    </div>
+    <div style="margin-bottom:10px">
+      <label style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;display:block;margin-bottom:4px">Campus Scope</label>
+      <select id="caCampus" style="width:100%;padding:8px;border-radius:6px;border:1px solid var(--input-border);font-size:13px;background:var(--input-bg);color:var(--input-text)">
+        <option value="both">Both (Rise + Inspire)</option>
+        <option value="rise">Rise Only</option>
+        <option value="inspire">Inspire Only</option>
+        <option value="district">District</option>
+      </select>
+    </div>
+    <div style="margin-bottom:14px">
+      <label style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;display:block;margin-bottom:4px">Applicable Months (check all that apply)</label>
+      <div id="caMonths" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn-cancel" onclick="closeModal('customActionModal')">Cancel</button>
+      <button class="btn-save" onclick="saveCustomAction()" style="background:var(--primary);color:#fff;border:none;padding:8px 18px;border-radius:6px;font-weight:600;cursor:pointer;font-family:inherit">Add Action</button>
     </div>
   </div>
 </div>
@@ -664,6 +762,7 @@ var currentView = "interactive";
 var currentMonth = "aug26";
 var trackingMode = "individual";
 var saveTimeout = null;
+var viewAsCoord = null; /* null = manager view, "c1"/"c2"/etc = coordinator view */
 
 /* ==============================
    UTILITY
@@ -875,13 +974,39 @@ function refreshProgress(){
 
   var barsHtml="";
   if(trackingMode==="individual"){
-    for(var i=0;i<COORDINATORS.length;i++){
-      var cp=calcCoordProgress(COORDINATORS[i].id);
-      var col=getCoordColor(COORDINATORS[i].id);
-      barsHtml+='<div class="dash-row">';
-      barsHtml+='<span class="dash-row-label">'+getCoordName(COORDINATORS[i].id)+'</span>';
-      barsHtml+='<div class="dash-row-bar"><div class="dash-row-fill" style="width:'+cp.pct+'%;background:'+col+'"></div></div>';
-      barsHtml+='<span class="dash-row-val" style="color:'+col+'">'+cp.pct+'%</span>';
+    var coordsToShow = [];
+    if(viewAsCoord){
+      for(var vi=0;vi<COORDINATORS.length;vi++){
+        if(COORDINATORS[vi].id===viewAsCoord) coordsToShow.push(COORDINATORS[vi]);
+      }
+    } else {
+      coordsToShow = COORDINATORS;
+    }
+    for(var i=0;i<coordsToShow.length;i++){
+      var cid = coordsToShow[i].id;
+      var cp=calcCoordProgress(cid);
+      var col=getCoordColor(cid);
+      var overdueList = calcOverdueActions(cid);
+      var overdueCount = overdueList.length;
+      /* This month stats */
+      var curMid = getCurrentMonthId();
+      var thisMonthProg = calcMonthProgressForCoord(curMid, cid);
+      /* Health indicator */
+      var healthColor = cp.pct >= 80 ? "#27ae60" : (cp.pct >= 50 ? "#f1c40f" : "#e74c3c");
+      barsHtml+='<div class="coord-dash-card" style="border-left-color:'+col+'">';
+      barsHtml+='<div class="coord-dash-header">';
+      barsHtml+='<span class="coord-dash-health" style="background:'+healthColor+'"></span>';
+      barsHtml+='<span class="coord-dash-name">'+escHtml(getCoordName(cid))+'</span>';
+      barsHtml+='<span style="margin-left:auto;font-size:18px;font-weight:900;color:'+col+'">'+cp.pct+'%</span>';
+      barsHtml+='</div>';
+      barsHtml+='<div class="dash-row-bar" style="height:6px;margin-bottom:8px"><div class="dash-row-fill" style="width:'+cp.pct+'%;background:'+col+'"></div></div>';
+      barsHtml+='<div class="coord-dash-stats">';
+      barsHtml+='<div class="coord-dash-stat"><span class="coord-dash-stat-val">'+thisMonthProg.done+'/'+thisMonthProg.total+'</span><span>This Month</span></div>';
+      barsHtml+='<div class="coord-dash-stat"><span class="coord-dash-stat-val">'+cp.done+'/'+cp.total+'</span><span>Overall</span></div>';
+      if(overdueCount > 0){
+        barsHtml+='<div class="coord-dash-stat"><span class="coord-dash-stat-val coord-dash-overdue">'+overdueCount+'</span><span class="coord-dash-overdue">Overdue</span></div>';
+      }
+      barsHtml+='</div>';
       barsHtml+='</div>';
     }
   } else {
@@ -985,13 +1110,29 @@ function saveQuarterTopic(qid){
 
 function buildMonthStrip(){
   var realMonth=getCurrentMonthId();
+  var realIdx=getMonthIndex(realMonth);
   var html="";
   for(var i=0;i<MONTHS.length;i++){
     var m=MONTHS[i];
     var cls="month-chip";
     if(m.id===currentMonth) cls+=" active";
     if(m.id===realMonth) cls+=" current";
-    html+='<button class="'+cls+'" onclick="selectMonth(\''+m.id+'\')" title="'+m.label+'">'+m.short+'</button>';
+    /* Calculate progress for this month */
+    var mp;
+    if(viewAsCoord){
+      mp = calcMonthProgressForCoord(m.id, viewAsCoord);
+    } else {
+      mp = calcMonthProgress(m.id);
+    }
+    var barColor = "#27ae60";
+    if(i < realIdx && mp.pct < 100 && mp.total > 0) barColor = "#e74c3c";
+    else if(mp.pct < 50) barColor = "#f1c40f";
+    html+='<button class="'+cls+'" onclick="selectMonth(\''+m.id+'\')" title="'+m.label+' ('+mp.pct+'%)">';
+    html+=m.short;
+    if(mp.total > 0){
+      html+='<div class="month-progress"><div class="month-progress-fill" style="width:'+mp.pct+'%;background:'+barColor+'"></div></div>';
+    }
+    html+='</button>';
   }
   document.getElementById("monthStrip").innerHTML=html;
 }
@@ -1079,6 +1220,7 @@ function buildActionCard(act){
   if(trackingMode==="individual"){
     for(var c=0;c<COORDINATORS.length;c++){
       var cid=COORDINATORS[c].id;
+      if(viewAsCoord && cid !== viewAsCoord) continue;
       if(act.coordScope!=="all" && act.coordScope!==cid) continue;
       var k=act.id+"-"+cid+"-"+currentMonth;
       var chk=checks[k]?"checked":"";
@@ -1108,6 +1250,8 @@ function buildActionCard(act){
   if(act.frequency==="weekly") html+=' <span style="font-size:10px;color:#888;font-weight:600">WEEKLY</span>';
   else if(act.frequency==="monthly") html+=' <span style="font-size:10px;color:#888;font-weight:600">MONTHLY</span>';
   else if(act.frequency==="quarterly") html+=' <span style="font-size:10px;color:#888;font-weight:600">QUARTERLY</span>';
+  var overdueN = countOverdueForAction(act.id);
+  if(overdueN > 0) html+=' <span class="overdue-badge">'+overdueN+' overdue</span>';
   html+='<div class="action-text">'+act.text+'</div>';
 
   /* Scope */
@@ -1125,10 +1269,15 @@ function buildActionCard(act){
   var noteKey=act.id+"-"+currentMonth;
   var noteVal=actionNotes[noteKey]||"";
   var hasCls=noteVal?"has-content":"";
+  var evidenceKey=act.id+"-"+currentMonth+"-evidence";
+  var evidenceVal=(actionNotes._evidence && actionNotes._evidence[evidenceKey]) || "";
+  if(evidenceVal) hasCls="has-content";
   html+='<span class="action-note-toggle" onclick="toggleActionNote(\''+act.id+'\')">+ Notes</span>';
   html+='<div class="action-note-area '+hasCls+'" id="anote-'+act.id+'">';
   if(act.notes) html+='<div style="font-size:11px;color:#888;margin-bottom:4px;font-style:italic">'+act.notes+'</div>';
   html+='<textarea placeholder="Add notes..." onchange="saveActionNote(\''+noteKey+'\',this.value)">'+noteVal+'</textarea>';
+  html+='<input type="text" class="action-evidence-input" placeholder="Evidence link or artifact..." value="'+escHtml(evidenceVal)+'" onchange="saveActionEvidence(\''+act.id+'\',\''+currentMonth+'\',this.value)"/>';
+  html+='<button class="action-coaching-btn" onclick="sendToCoaching(\''+act.id+'\',\''+currentMonth+'\')">Send to Coaching Tracker</button>';
   html+='</div>';
 
   html+='</div>'; /* end body */
@@ -1154,7 +1303,7 @@ function renderInteractiveActions(){
     var grp=groups[order[g]];
     if(grp.length===0) continue;
     html+='<div class="freq-group">';
-    html+='<h4>'+labels[order[g]]+' ('+grp.length+')</h4>';
+    html+='<h4>'+labels[order[g]]+' ('+grp.length+') <button class="bulk-check-btn" onclick="bulkCheck(\''+order[g]+'\')">&#10003; Mark All Complete</button></h4>';
     for(var j=0;j<grp.length;j++){
       html+=buildActionCard(grp[j]);
     }
@@ -1270,6 +1419,7 @@ function renderSpreadsheet(){
             var cellHtml="";
             for(var c=0;c<COORDINATORS.length;c++){
               var cid=COORDINATORS[c].id;
+              if(viewAsCoord && cid !== viewAsCoord) continue;
               if(act.coordScope!=="all" && act.coordScope!==cid) continue;
               var k=act.id+"-"+cid+"-"+mid;
               var chk=checks[k]?"checked":"";
@@ -1301,6 +1451,8 @@ function renderSpreadsheet(){
 function updateSpreadsheetCell(key,val){
   checks[key]=val;
   refreshProgress();
+  renderPriorities();
+  buildMonthStrip();
   scheduleSave();
   renderSpreadsheet();
 }
@@ -1312,6 +1464,8 @@ function updateSpreadsheetCell(key,val){
 function toggleCheck(key,val){
   checks[key]=val;
   refreshProgress();
+  renderPriorities();
+  buildMonthStrip();
   scheduleSave();
 }
 
@@ -1347,6 +1501,7 @@ function deleteCustomAction(actionId){
   scheduleSave();
   renderInteractiveActions();
   if(currentView==="spreadsheet") renderSpreadsheet();
+  if(currentView==="timeline") renderTimeline();
   refreshProgress();
 }
 
@@ -1358,9 +1513,12 @@ function showView(view){
   currentView=view;
   document.getElementById("interactiveView").style.display=view==="interactive"?"block":"none";
   document.getElementById("spreadsheetView").style.display=view==="spreadsheet"?"block":"none";
+  document.getElementById("timelineView").style.display=view==="timeline"?"block":"none";
   document.getElementById("vbtn-interactive").className=view==="interactive"?"view-btn active":"view-btn";
   document.getElementById("vbtn-spreadsheet").className=view==="spreadsheet"?"view-btn active":"view-btn";
+  document.getElementById("vbtn-timeline").className=view==="timeline"?"view-btn active":"view-btn";
   if(view==="spreadsheet") renderSpreadsheet();
+  if(view==="timeline") renderTimeline();
   scheduleSave();
 }
 
@@ -1379,6 +1537,7 @@ function collectState(){
     currentView:currentView,
     currentMonth:currentMonth,
     trackingMode:trackingMode,
+    evidence:actionNotes._evidence || {},
     savedAt:new Date().toISOString()
   };
 }
@@ -1394,6 +1553,15 @@ function applyState(state){
   if(state.currentView) currentView=state.currentView;
   if(state.currentMonth) currentMonth=state.currentMonth;
   if(state.trackingMode) trackingMode=state.trackingMode;
+  if(state.evidence){
+    if(!actionNotes._evidence) actionNotes._evidence = {};
+    for(var ek in state.evidence){
+      if(state.evidence.hasOwnProperty(ek)) actionNotes._evidence[ek] = state.evidence[ek];
+    }
+  }
+  if(actionNotes._evidence && !state.evidence){
+    /* _evidence already inside actionNotes from prior save format - keep it */
+  }
 }
 
 function saveToStorage(){
@@ -1654,6 +1822,370 @@ function closeAssessModal() {
 }
 
 /* ==============================
+   FEATURE 1: COORDINATOR BANNER
+   ============================== */
+
+function renderCoordBanner(){
+  var existing = document.getElementById("coordViewBanner");
+  if(existing) existing.parentNode.removeChild(existing);
+  if(!viewAsCoord) return;
+  var name = getCoordName(viewAsCoord);
+  var color = getCoordColor(viewAsCoord);
+  var area = "";
+  for(var i=0;i<COORDINATORS.length;i++){if(COORDINATORS[i].id===viewAsCoord)area=COORDINATORS[i].area;}
+  var banner = document.createElement("div");
+  banner.id = "coordViewBanner";
+  banner.style.cssText = "background:"+color+";color:#fff;padding:12px 20px;border-radius:8px;margin-bottom:12px;font-size:14px;font-weight:700;display:flex;align-items:center;gap:10px";
+  banner.innerHTML = "Viewing as "+escHtml(name)+" &mdash; "+escHtml(area)+" <a href='ESL_Coordinator_Scope_Sequence.html' style='margin-left:auto;color:#fff;font-size:12px;opacity:.8'>Switch to Manager View</a>";
+  var wrap = document.querySelector(".wrap");
+  var firstCard = document.getElementById("dashCard");
+  wrap.insertBefore(banner, firstCard);
+  /* Hide manager-only sections */
+  document.getElementById("coordSetupCard").style.display = "none";
+  document.getElementById("quarterCard").style.display = "none";
+  document.getElementById("modeToggle").style.display = "none";
+}
+
+/* ==============================
+   FEATURE 3: OVERDUE ACTIONS
+   ============================== */
+
+function getMonthIndex(mid){
+  for(var i=0;i<MONTHS.length;i++){
+    if(MONTHS[i].id===mid) return i;
+  }
+  return -1;
+}
+
+function calcOverdueActions(coordId){
+  var curIdx = getMonthIndex(currentMonth);
+  var allActs = getAllActions();
+  var overdue = [];
+  for(var a=0;a<allActs.length;a++){
+    var act = allActs[a];
+    if(act.coordScope!=="all" && act.coordScope!==coordId) continue;
+    for(var m=0;m<act.months.length;m++){
+      var mIdx = getMonthIndex(act.months[m]);
+      if(mIdx < 0 || mIdx >= curIdx) continue; /* only past months */
+      var k = act.id+"-"+coordId+"-"+act.months[m];
+      if(!checks[k]){
+        overdue.push({action:act, monthId:act.months[m]});
+      }
+    }
+  }
+  return overdue;
+}
+
+function countOverdueForAction(actId){
+  var curIdx = getMonthIndex(currentMonth);
+  var count = 0;
+  var allActs = getAllActions();
+  var act = null;
+  for(var i=0;i<allActs.length;i++){
+    if(allActs[i].id===actId){act=allActs[i];break;}
+  }
+  if(!act) return 0;
+  var coordList = viewAsCoord ? [viewAsCoord] : [];
+  if(!viewAsCoord){
+    for(var ci=0;ci<COORDINATORS.length;ci++) coordList.push(COORDINATORS[ci].id);
+  }
+  for(var m=0;m<act.months.length;m++){
+    var mIdx = getMonthIndex(act.months[m]);
+    if(mIdx < 0 || mIdx >= curIdx) continue;
+    for(var c=0;c<coordList.length;c++){
+      if(act.coordScope!=="all" && act.coordScope!==coordList[c]) continue;
+      var k = act.id+"-"+coordList[c]+"-"+act.months[m];
+      if(!checks[k]) count++;
+    }
+  }
+  return count;
+}
+
+/* ==============================
+   FEATURE 4: PRIORITIES CARD
+   ============================== */
+
+function renderPriorities(){
+  var mid = getCurrentMonthId();
+  var allActs = getAllActions();
+  var applicable = [];
+  for(var i=0;i<allActs.length;i++){
+    var act = allActs[i];
+    var inMonth = false;
+    for(var m=0;m<act.months.length;m++){
+      if(act.months[m]===mid){inMonth=true;break;}
+    }
+    if(!inMonth) continue;
+    if(viewAsCoord && act.coordScope!=="all" && act.coordScope!==viewAsCoord) continue;
+    applicable.push(act);
+  }
+  /* Group by frequency */
+  var groups = {weekly:[],monthly:[],quarterly:[],milestone:[]};
+  for(var j=0;j<applicable.length;j++){
+    var f = applicable[j].frequency;
+    if(groups[f]) groups[f].push(applicable[j]);
+    else groups.milestone.push(applicable[j]);
+  }
+  var order = ["weekly","monthly","quarterly","milestone"];
+  var labels = {weekly:"Weekly",monthly:"Monthly",quarterly:"Quarterly",milestone:"Milestones"};
+  var html = "";
+  for(var g=0;g<order.length;g++){
+    var grp = groups[order[g]];
+    if(grp.length===0) continue;
+    html += '<div style="margin-bottom:10px"><strong style="font-size:11px;color:var(--text-muted);text-transform:uppercase">'+labels[order[g]]+'</strong>';
+    for(var k=0;k<grp.length;k++){
+      var act = grp[k];
+      var at = getActionType(act.type);
+      /* Completion status */
+      var coordList = viewAsCoord ? [viewAsCoord] : [];
+      if(!viewAsCoord){
+        for(var ci=0;ci<COORDINATORS.length;ci++) coordList.push(COORDINATORS[ci].id);
+      }
+      var doneCount = 0;
+      var totalCount = 0;
+      for(var ci2=0;ci2<coordList.length;ci2++){
+        if(act.coordScope!=="all" && act.coordScope!==coordList[ci2]) continue;
+        totalCount++;
+        var ck = act.id+"-"+coordList[ci2]+"-"+mid;
+        if(checks[ck]) doneCount++;
+      }
+      var allDone = (totalCount > 0 && doneCount === totalCount);
+      var bgStyle = allDone ? "background:var(--success-light,#e8f5e9);border-left:3px solid var(--success,#27ae60)" : "background:var(--section-bg-light);border-left:3px solid "+at.color;
+      html += '<div style="padding:8px 12px;border-radius:6px;margin-top:6px;font-size:12px;display:flex;align-items:center;gap:8px;'+bgStyle+'">';
+      html += '<span class="action-badge" style="background:'+at.color+';font-size:9px;padding:1px 6px;margin:0">'+at.icon+'</span>';
+      html += '<span style="flex:1;'+(allDone?'text-decoration:line-through;opacity:.6':'')+'">'+escHtml(act.text)+'</span>';
+      /* Coordinator checkmarks */
+      html += '<span style="font-size:11px;white-space:nowrap">';
+      for(var ci3=0;ci3<coordList.length;ci3++){
+        if(act.coordScope!=="all" && act.coordScope!==coordList[ci3]) continue;
+        var ck2 = act.id+"-"+coordList[ci3]+"-"+mid;
+        var col = getCoordColor(coordList[ci3]);
+        if(checks[ck2]){
+          html += '<span style="color:'+col+'" title="'+escHtml(getCoordName(coordList[ci3]))+'">&#10003;</span> ';
+        } else {
+          html += '<span style="color:#ccc" title="'+escHtml(getCoordName(coordList[ci3]))+'">&#9711;</span> ';
+        }
+      }
+      html += '</span>';
+      html += '</div>';
+    }
+    html += '</div>';
+  }
+  if(html===""){
+    html = '<p style="font-size:12px;color:var(--text-muted);text-align:center">No actions scheduled for this month.</p>';
+  }
+  document.getElementById("prioritiesContent").innerHTML = html;
+}
+
+/* ==============================
+   FEATURE 5: MONTH PROGRESS (per-coord)
+   ============================== */
+
+function calcMonthProgressForCoord(mid, cid){
+  var allActs = getAllActions();
+  var total=0, done=0;
+  for(var a=0;a<allActs.length;a++){
+    var act = allActs[a];
+    if(act.coordScope!=="all" && act.coordScope!==cid) continue;
+    var inMonth = false;
+    for(var m=0;m<act.months.length;m++){
+      if(act.months[m]===mid){inMonth=true;break;}
+    }
+    if(!inMonth) continue;
+    total++;
+    var k = act.id+"-"+cid+"-"+mid;
+    if(checks[k]) done++;
+  }
+  return {done:done,total:total,pct:total>0?Math.round((done/total)*100):0};
+}
+
+/* ==============================
+   FEATURE 6: BULK CHECK
+   ============================== */
+
+function bulkCheck(frequency){
+  var mid = currentMonth;
+  var actions = getAllActions();
+  for(var i=0;i<actions.length;i++){
+    var act = actions[i];
+    if(act.frequency !== frequency) continue;
+    if(act.months.indexOf(mid)===-1) continue;
+    if(viewAsCoord){
+      if(act.coordScope!=="all" && act.coordScope!==viewAsCoord) continue;
+      checks[act.id+"-"+viewAsCoord+"-"+mid] = true;
+    } else {
+      for(var ci=0;ci<COORDINATORS.length;ci++){
+        if(act.coordScope!=="all" && act.coordScope!==COORDINATORS[ci].id) continue;
+        checks[act.id+"-"+COORDINATORS[ci].id+"-"+mid] = true;
+      }
+    }
+  }
+  renderInteractiveActions();
+  refreshProgress();
+  renderPriorities();
+  scheduleSave();
+  showToast("All "+frequency+" items marked complete for this month");
+}
+
+/* ==============================
+   FEATURE: TIMELINE / GANTT VIEW
+   ============================== */
+
+function renderTimeline(){
+  var container = document.getElementById("ganttContainer");
+  var actions = getAllActions();
+  var curMonth = getCurrentMonthId();
+  var html = "<table class='gantt-table'><thead><tr><th class='gantt-label'>Action</th>";
+  for(var m=0;m<MONTHS.length;m++){
+    var isCurrent = MONTHS[m].id === curMonth;
+    html += "<th class='gantt-month" + (isCurrent?" gantt-current":"") + "'>" + MONTHS[m].short + "</th>";
+  }
+  html += "</tr></thead><tbody>";
+
+  var typeOrder = [];
+  for(var t=0;t<ACTION_TYPES.length;t++) typeOrder.push(ACTION_TYPES[t].id);
+
+  for(var ti=0;ti<typeOrder.length;ti++){
+    var typeId = typeOrder[ti];
+    var typeActions = [];
+    for(var a=0;a<actions.length;a++){
+      if(actions[a].type===typeId) typeActions.push(actions[a]);
+    }
+    if(!typeActions.length) continue;
+    var at = getActionType(typeId);
+    html += "<tr class='gantt-type-row'><td colspan='" + (MONTHS.length+1) + "' style='background:" + at.color + ";color:#fff;font-weight:700;font-size:12px;padding:6px 10px'>" + at.icon + " " + at.label + "</td></tr>";
+
+    for(var ai=0;ai<typeActions.length;ai++){
+      var act = typeActions[ai];
+      var shortText = act.text.length > 60 ? act.text.substring(0,57) + "..." : act.text;
+      html += "<tr><td class='gantt-action-label' title='" + escHtml(act.text) + "'>" + escHtml(shortText) + "</td>";
+      for(var mi=0;mi<MONTHS.length;mi++){
+        var mid = MONTHS[mi].id;
+        var applies = act.months.indexOf(mid) !== -1;
+        var isCur = mid === curMonth;
+        if(!applies){
+          html += "<td class='gantt-cell gantt-na" + (isCur?" gantt-current":"") + "'></td>";
+        } else {
+          var checked = 0, total = 0;
+          if(viewAsCoord){
+            total = 1;
+            if(checks[act.id+"-"+viewAsCoord+"-"+mid]) checked = 1;
+          } else {
+            for(var ci=0;ci<COORDINATORS.length;ci++){
+              if(act.coordScope==="all" || act.coordScope===COORDINATORS[ci].id){
+                total++;
+                if(checks[act.id+"-"+COORDINATORS[ci].id+"-"+mid]) checked++;
+              }
+            }
+          }
+          var cellClass = "gantt-cell gantt-active";
+          if(checked===total) cellClass += " gantt-done";
+          if(isCur) cellClass += " gantt-current";
+          var label = checked===total ? "&#10003;" : (checked>0 ? checked+"/"+total : "");
+          html += "<td class='" + cellClass + "' style='background:" + at.color + "22;border-color:" + at.color + "'>" + label + "</td>";
+        }
+      }
+      html += "</tr>";
+    }
+  }
+  html += "</tbody></table>";
+  container.innerHTML = html;
+}
+
+/* ==============================
+   FEATURE: CUSTOM ACTION BUILDER UI
+   ============================== */
+
+function initCustomActionModal(){
+  var sel = document.getElementById("caType");
+  var html = "";
+  for(var i=0;i<ACTION_TYPES.length;i++){
+    html += "<option value='" + ACTION_TYPES[i].id + "'>" + ACTION_TYPES[i].label + "</option>";
+  }
+  sel.innerHTML = html;
+
+  var mc = document.getElementById("caMonths");
+  var mhtml = "";
+  for(var m=0;m<MONTHS.length;m++){
+    mhtml += "<label style='display:inline-flex;align-items:center;gap:4px;font-size:12px;padding:4px 8px;border-radius:4px;background:var(--section-bg-light);cursor:pointer'><input type='checkbox' value='" + MONTHS[m].id + "'/>" + MONTHS[m].short + "</label>";
+  }
+  mc.innerHTML = mhtml;
+}
+
+function saveCustomAction(){
+  var text = document.getElementById("caText").value.trim();
+  if(!text){ alert("Please enter an action description."); return; }
+  var type = document.getElementById("caType").value;
+  var freq = document.getElementById("caFreq").value;
+  var campus = document.getElementById("caCampus").value;
+  var monthEls = document.getElementById("caMonths").querySelectorAll("input:checked");
+  var months = [];
+  for(var i=0;i<monthEls.length;i++) months.push(monthEls[i].value);
+  if(!months.length){ alert("Please select at least one month."); return; }
+
+  var action = {
+    id: "custom_" + Date.now(),
+    text: text,
+    type: type,
+    frequency: freq,
+    months: months,
+    campusScope: campus,
+    coordScope: "all",
+    notes: "",
+    isCustom: true
+  };
+  customActions.push(action);
+
+  document.getElementById("caText").value = "";
+  var cbs = document.getElementById("caMonths").querySelectorAll("input");
+  for(var j=0;j<cbs.length;j++) cbs[j].checked = false;
+
+  closeModal("customActionModal");
+  renderInteractiveActions();
+  refreshProgress();
+  renderPriorities();
+  buildMonthStrip();
+  if(currentView==="spreadsheet") renderSpreadsheet();
+  if(currentView==="timeline") renderTimeline();
+  scheduleSave();
+  showToast("Custom action added");
+}
+
+function showModal(id){
+  document.getElementById(id).classList.add("active");
+}
+
+/* ==============================
+   FEATURE: EVIDENCE & COACHING INTEGRATION
+   ============================== */
+
+function saveActionEvidence(actId, mid, value){
+  if(!actionNotes._evidence) actionNotes._evidence = {};
+  var key = actId + "-" + mid + "-evidence";
+  actionNotes._evidence[key] = value;
+  scheduleSave();
+}
+
+function sendToCoaching(actId, mid){
+  var actions = getAllActions();
+  var act = null;
+  for(var i=0;i<actions.length;i++){if(actions[i].id===actId){act=actions[i];break;}}
+  if(!act) return;
+  var note = actionNotes[actId+"-"+mid] || "";
+  var evidence = (actionNotes._evidence && actionNotes._evidence[actId+"-"+mid+"-evidence"]) || "";
+  var handoff = {
+    source: "scope_sequence",
+    actionText: act.text,
+    month: mid,
+    note: note,
+    evidence: evidence,
+    timestamp: new Date().toISOString()
+  };
+  localStorage.setItem("coaching_cycle_handoff", JSON.stringify(handoff));
+  showToast("Sent to Coaching Tracker");
+}
+
+/* ==============================
    INIT / REBUILD
    ============================== */
 
@@ -1668,14 +2200,32 @@ function rebuildAll(){
   buildMonthStrip();
   renderInteractiveActions();
   if(currentView==="spreadsheet") renderSpreadsheet();
+  if(currentView==="timeline") renderTimeline();
   showView(currentView);
   refreshProgress();
+  renderPriorities();
+  renderCoordBanner();
 }
 
 function init(){
+  /* Parse URL params for coordinator view */
+  (function(){
+    var params = new URLSearchParams(window.location.search);
+    var cv = params.get("coord");
+    if(cv && (cv==="c1"||cv==="c2"||cv==="c3"||cv==="c4")) viewAsCoord = cv;
+  })();
+  /* Force individual tracking mode in coordinator view */
+  if(viewAsCoord) trackingMode = "individual";
   loadFromStorage();
+  if(viewAsCoord) trackingMode = "individual";
   buildFilterOptions();
+  initCustomActionModal();
   rebuildAll();
+  /* Hide custom action button for coordinator view */
+  if(viewAsCoord){
+    var caWrap = document.getElementById("customActionBtnWrap");
+    if(caWrap) caWrap.style.display = "none";
+  }
 }
 
 /* Dark Mode */
