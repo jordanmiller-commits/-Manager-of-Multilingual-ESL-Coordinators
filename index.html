@@ -427,7 +427,8 @@ kbd{display:inline-block;padding:2px 7px;font-size:11px;font-weight:600;line-hei
 
   <!-- Quick Stats -->
   <div class="stats-row" id="statsRow">
-    <div class="stat-card"><div class="stat-val" id="statAudits">0</div><div class="stat-label">Audits Saved</div></div>
+    <div class="stat-card"><div class="stat-val" id="statAudits">0</div><div class="stat-label">Full Observations</div></div>
+    <div class="stat-card"><div class="stat-val" id="statStreamlined">0</div><div class="stat-label">Targeted Walkthroughs</div></div>
     <div class="stat-card"><div class="stat-val" id="statWalkthroughs">0</div><div class="stat-label">Walkthroughs</div></div>
     <div class="stat-card"><div class="stat-val" id="statTeachers">0</div><div class="stat-label">Teachers in Roster</div></div>
     <div class="stat-card"><div class="stat-val" id="statCoaching">0</div><div class="stat-label">Coaching Cycles</div></div>
@@ -1253,12 +1254,18 @@ function showToast(msg) {
    ====================================================== */
 function loadStats() {
   var auditHistory = safeGet("esl_audit_history") || [];
+  var fullObs = []; var targetedWalks = [];
+  for (var ai = 0; ai < auditHistory.length; ai++) {
+    if (auditHistory[ai].formType === "streamlined") targetedWalks.push(auditHistory[ai]);
+    else fullObs.push(auditHistory[ai]);
+  }
   var walkthroughHistory = safeGet("walkthrough_history") || [];
   var roster = safeGet("shared_teacher_roster") || [];
   var cyclesData = safeGet("coaching_cycles_data");
   var cycles = cyclesData && cyclesData.cycles ? cyclesData.cycles : [];
 
-  document.getElementById("statAudits").textContent = auditHistory.length;
+  document.getElementById("statAudits").textContent = fullObs.length;
+  document.getElementById("statStreamlined").textContent = targetedWalks.length;
   document.getElementById("statWalkthroughs").textContent = walkthroughHistory.length;
   document.getElementById("statTeachers").textContent = roster.length;
   document.getElementById("statCoaching").textContent = cycles.length;
@@ -1266,9 +1273,16 @@ function loadStats() {
   // Tool card meta badges
   var metaAudit = document.getElementById("metaAudit");
   if (metaAudit) {
-    metaAudit.innerHTML = auditHistory.length > 0
-      ? '<span class="tc-badge green">' + auditHistory.length + ' audits saved</span>'
-      : '<span class="tc-badge gray">No audits yet</span>';
+    metaAudit.innerHTML = fullObs.length > 0
+      ? '<span class="tc-badge green">' + fullObs.length + ' observations saved</span>'
+      : '<span class="tc-badge gray">No observations yet</span>';
+  }
+
+  var metaStreamlinedAudit = document.getElementById("metaStreamlinedAudit");
+  if (metaStreamlinedAudit) {
+    metaStreamlinedAudit.innerHTML = targetedWalks.length > 0
+      ? '<span class="tc-badge green">' + targetedWalks.length + ' walkthroughs saved</span>'
+      : '<span class="tc-badge gray">No walkthroughs yet</span>';
   }
 
   var metaAuditDash = document.getElementById("metaAuditDash");
