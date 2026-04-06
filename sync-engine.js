@@ -153,7 +153,7 @@
 
     showStatus("\u27F3 Syncing\u2026", "info");
 
-    var body = JSON.stringify({
+    var payload = JSON.stringify({
       action: "syncKey",
       coordinatorId: identity.id,
       coordinatorName: identity.name,
@@ -162,24 +162,23 @@
       value: value
     });
 
-    var xhr = new XMLHttpRequest();
-    xhr.open("POST", GAS_URL, true);
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.onload = function(){
-      if(xhr.status === 200){
-        try{
-          var resp = JSON.parse(xhr.responseText);
-          if(resp.success){
-            showStatus("\u2713 Synced", "ok");
-            localStorage.setItem("mlp_last_push_" + key, Date.now().toString());
-          } else {
-            showStatus("\u26A0 Sync error", "err");
-          }
-        }catch(e){ showStatus("\u26A0 Sync error", "err"); }
-      } else { showStatus("\u26A0 Sync failed", "err"); }
-    };
-    xhr.onerror = function(){ showStatus("\u26A0 Offline", "err"); };
-    xhr.send(body);
+    fetch(GAS_URL, {
+      method: "POST",
+      body: payload,
+      headers: {"Content-Type": "text/plain;charset=utf-8"},
+      redirect: "follow"
+    }).then(function(resp){ return resp.text(); })
+    .then(function(text){
+      try{
+        var resp = JSON.parse(text);
+        if(resp.success){
+          showStatus("\u2713 Synced", "ok");
+          localStorage.setItem("mlp_last_push_" + key, Date.now().toString());
+        } else {
+          showStatus("\u26A0 " + (resp.error || "Sync error"), "err");
+        }
+      }catch(e){ showStatus("\u26A0 Sync error", "err"); }
+    })["catch"](function(e){ showStatus("\u26A0 Offline", "err"); });
   }
 
   // ---- PULL (from Google Drive via GAS) ----
@@ -192,12 +191,11 @@
       + "?action=read&coordinatorId=" + encodeURIComponent(identity.id)
       + "&secret=" + encodeURIComponent(GAS_SECRET);
 
-    var xhr = new XMLHttpRequest();
-    xhr.open("GET", url, true);
-    xhr.onload = function(){
-      if(xhr.status !== 200) return;
+    fetch(url, {redirect: "follow"})
+    .then(function(resp){ return resp.text(); })
+    .then(function(text){
       try{
-        var resp = JSON.parse(xhr.responseText);
+        var resp = JSON.parse(text);
         if(!resp.success || !resp.data || !resp.data.data) return;
         var remote = resp.data.data;
         var updated = [];
@@ -240,9 +238,7 @@
           }catch(e3){}
         }
       }catch(e){}
-    };
-    xhr.onerror = function(){};
-    xhr.send();
+    })["catch"](function(){});
   }
 
   // ---- SHEETS LOGGING (Option B) ----
@@ -287,10 +283,12 @@
     });
 
     // Fire and forget — don't show indicator for sheet logging
-    var xhr = new XMLHttpRequest();
-    xhr.open("POST", GAS_URL, true);
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.send(body);
+    fetch(GAS_URL, {
+      method: "POST",
+      body: body,
+      headers: {"Content-Type": "text/plain;charset=utf-8"},
+      redirect: "follow"
+    })["catch"](function(){});
   }
 
   // ---- PUBLIC API ----
