@@ -1,4 +1,4 @@
-var CACHE_NAME = "mlp-suite-v16";
+var CACHE_NAME = "mlp-suite-v17";
 var ASSETS = [
   "./sync-engine.js",
   "./Principal_Checkpoint_Portal/Principal_Checkpoint_Portal.html",
@@ -26,6 +26,7 @@ var ASSETS = [
   "./ELPS_Agent/ELPS_Agent.html",
   "./Calibration_Tool.html",
   "./Reports_Hub.html",
+  "./Feedback_Report.html",
   "./Teacher_360_Profile.html",
   "https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"
 ];

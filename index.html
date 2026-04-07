@@ -590,6 +590,13 @@ kbd{display:inline-block;padding:2px 7px;font-size:11px;font-weight:600;line-hei
       <div class="tc-meta" id="metaReportsHub"></div>
     </a>
 
+    <a class="tool-card" href="Feedback_Report.html" data-roles="manager,coordinator">
+      <div class="tc-icon">&#9997;</div>
+      <div class="tc-name">Feedback Report Builder</div>
+      <div class="tc-desc">Compose rich-text feedback with bullet points, action items, and email reports directly to teachers.</div>
+      <div class="tc-meta" id="metaFeedbackReport"></div>
+    </a>
+
     <!-- ===== MANAGER + COORDINATOR ===== -->
     <a class="tool-card" href="Data_Backup_Hub.html" data-roles="manager,coordinator">
       <div class="tc-icon">&#128190;</div>
@@ -1438,6 +1445,17 @@ function loadActivity() {
       color: fid >= 80 ? "#27ae60" : fid >= 50 ? "#f39c12" : "#e74c3c"
     });
   }
+  var fbData = safeGet("feedback_report_data");
+  var fbReports = (fbData && fbData.reports) ? fbData.reports : [];
+  for (var fi = 0; fi < fbReports.length; fi++) {
+    var fb = fbReports[fi];
+    var fbStatus = fb.sent ? "Sent" : "Draft";
+    items.push({
+      date: fb.date || "",
+      text: "Feedback: " + (fb.teacherName || "Untitled") + (fb.campus ? " at " + fb.campus : "") + " \u2014 " + fbStatus,
+      color: fb.sent ? "#27ae60" : "#4a90d9"
+    });
+  }
   items.sort(function(a, b) { return (b.date || "").localeCompare(a.date || ""); });
 
   var container = document.getElementById("activityList");
@@ -1732,6 +1750,18 @@ function loadExtraMeta() {
     metaDataBackup.innerHTML = (gasSyncBk && gasSyncBk.gasUrl)
       ? '<span class="tc-badge green">Drive sync configured</span>'
       : '<span class="tc-badge orange">Sync not configured</span>';
+  }
+
+  var metaFeedbackReport = document.getElementById("metaFeedbackReport");
+  if (metaFeedbackReport) {
+    var fbData = safeGet("feedback_report_data");
+    var fbReports = (fbData && fbData.reports) ? fbData.reports : [];
+    var fbSent = 0;
+    for (var fi = 0; fi < fbReports.length; fi++) { if (fbReports[fi].sent) fbSent++; }
+    metaFeedbackReport.innerHTML = fbReports.length > 0
+      ? '<span class="tc-badge blue">' + fbReports.length + ' report' + (fbReports.length !== 1 ? 's' : '') + '</span>' +
+        (fbSent > 0 ? '<span class="tc-badge green">' + fbSent + ' sent</span>' : '<span class="tc-badge orange">None sent</span>')
+      : '<span class="tc-badge gray">No reports yet</span>';
   }
 
   var metaPrincipalPortal = document.getElementById("metaPrincipalPortal");

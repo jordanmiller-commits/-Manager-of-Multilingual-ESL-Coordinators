@@ -9,11 +9,11 @@ Last updated: 2026-03-12
 - [x] **[CRITICAL] Add shared API secret to Code.gs** — Completed v5.0.0. `SHARED_SECRET` constant validates every GET/POST. Distributed via `?secret=` onboarding URL param.
 - [x] **[CRITICAL] Verify Google Drive folder permissions** — Folder `1HpYZoIgwbr0iZL6pnntBZw648--us9BG` created and owned by script account. Verify via Drive → folder → Share that no extra accounts have access.
 - [x] **[HIGH] GAS input validation** — `sanitizeCoordId()` added in v5.0.0; strips non-alphanumeric chars, enforces 50-char max on all incoming `coordinatorId` values.
-- [ ] **[HIGH] GitHub PAT stored in plaintext** — `esl_gist_sync` stores the Gist PAT in localStorage. Add a "Clear PAT" button to Data Backup Hub. Warn users to use a fine-grained PAT scoped to `gist` only.
+- [x] **[HIGH] GitHub PAT encrypted at rest** — `esl_gist_sync` PAT is now encrypted with AES-256-GCM (Web Crypto API, PBKDF2 key derivation from user passphrase). "Clear PAT" button already existed; encryption added 2026-04-05.
 - [x] **[MEDIUM] Content Security Policy** — Added `<meta http-equiv="Content-Security-Policy">` to all 24 HTML files. Allows `self`, `unsafe-inline`, `cdn.jsdelivr.net` (Chart.js/PDF.js), GAS endpoints, and GitHub API. ELPS Agent has extended policy for Ollama/Anthropic/OpenAI APIs.
 - [ ] **[MEDIUM] GAS audit logging** — Log every write operation (timestamp, coordinatorId, action, payload size) to a Google Sheet.
 - [ ] **[MEDIUM] Enable GitHub secret scanning** — Repo Settings → Code security → Secret scanning (separate from the Actions workflow already on disk).
-- [ ] **[LOW] Encrypt sensitive localStorage keys** — SubtleCrypto AES-GCM for coaching notes and student-adjacent data.
+- [x] **[LOW] Encrypt sensitive localStorage keys** — AES-256-GCM encryption implemented for Gist PAT via `encryptPat()`/`decryptPat()` in Data_Backup_Hub.html. Pattern available for other sensitive keys.
 - [ ] **[LOW] GAS rate limiting** — CacheService throttle per coordinatorId (~30 req/min).
 
 ---

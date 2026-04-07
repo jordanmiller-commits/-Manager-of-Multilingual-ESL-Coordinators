@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Feedback Report Builder</title>
+<link rel="manifest" href="./manifest.json"/>
+<meta name="theme-color" content="#2c3e6e"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://api.github.com; font-src 'self'; frame-src 'none'"/>
+<style>
+:root{
+  --bg:#f0f2f7;--card-bg:#fff;--card-border:transparent;--card-shadow:rgba(0,0,0,.07);
+  --text:#333;--text-secondary:#555;--text-muted:#888;--text-faint:#aaa;--text-heading:#2c3e6e;
+  --input-bg:#fff;--input-border:#ddd;--input-text:#333;
+  --border:#eee;--border-light:#f5f5f5;--hover-bg:#f0f4fb;--item-hover:#f8f9fb;
+  --section-bg-light:#f8f9fb;
+  --primary:#4a90d9;--primary-dark:#2c3e6e;--primary-light:#7eb8f7;
+  --success:#27ae60;--success-light:#e8f5e9;--success-text:#2e7d32;
+  --danger:#e74c3c;--danger-light:#fdecea;--danger-text:#c0392b;
+  --warn:#f39c12;--warn-bg:#fff3e0;--warn-text:#e65100;--warn-border:#ffe0b2;
+  --info-bg:#e3f2fd;--info-text:#1565c0;--info-border:#bbdefb;
+  --good-bg:#e8f5e9;--good-text:#2e7d32;--good-border:#c8e6c9;
+  --header-gradient-1:#2c3e6e;--header-gradient-2:#4a90d9;
+  --shadow:0 1px 5px rgba(0,0,0,.07);
+  --modal-bg:#fff;--modal-overlay:rgba(0,0,0,.45);
+  --toast-bg:#2c3e6e;--toast-text:#fff;
+  --footer-bg:rgba(248,249,251,.95);--footer-border:#e0e3e8;--footer-text:#999
+}
+body.dark-mode{
+  --bg:#1a1a2e;--card-bg:#16213e;--card-border:#2d3a6e;--card-shadow:rgba(0,0,0,.3);
+  --text:#e0e0e0;--text-secondary:#ccc;--text-muted:#999;--text-faint:#666;--text-heading:#7eb8f7;
+  --input-bg:#16213e;--input-border:#2d3a6e;--input-text:#e0e0e0;
+  --border:#2d3a6e;--border-light:#2d3a6e;--hover-bg:#1a2744;--item-hover:#1a2744;
+  --section-bg-light:#1a2744;
+  --primary:#4a90d9;--primary-dark:#2d3a6e;--primary-light:#7eb8f7;
+  --success:#27ae60;--success-light:#1a3a1a;--success-text:#66bb6a;
+  --danger:#e74c3c;--danger-light:#3a1a1a;--danger-text:#ef5350;
+  --warn:#f39c12;--warn-bg:#3e2a10;--warn-text:#f5c842;--warn-border:#5a3e15;
+  --info-bg:#0d2847;--info-text:#64b5f6;--info-border:#1a3a5c;
+  --good-bg:#1a3a1a;--good-text:#66bb6a;--good-border:#2a5a2a;
+  --header-gradient-1:#1a1a2e;--header-gradient-2:#2d3a6e;
+  --shadow:0 1px 5px rgba(0,0,0,.3);
+  --modal-bg:#16213e;--modal-overlay:rgba(0,0,0,.7);
+  --toast-bg:#7eb8f7;--toast-text:#1a1a2e;
+  --footer-bg:rgba(30,30,30,.95);--footer-border:#333;--footer-text:#666
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100vh;padding:20px;color:var(--text)}
+.skip-link{position:absolute;top:-40px;left:0;background:var(--primary);color:#fff;padding:8px 16px;z-index:9999;font-size:13px;border-radius:0 0 6px 0;transition:top .2s}
+.skip-link:focus{top:0}
+.wrap{max-width:960px;margin:0 auto}
+
+/* HEADER */
+.header{background:linear-gradient(135deg,var(--header-gradient-1),var(--header-gradient-2));color:#fff;padding:24px 28px 16px;border-radius:14px 14px 0 0}
+.header h1{font-size:21px;font-weight:800;margin-bottom:2px}
+.header p{font-size:12px;opacity:.85;margin-bottom:12px}
+.toolbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.tool-btn{background:rgba(255,255,255,.13);color:#fff;border:2px solid rgba(255,255,255,.35);padding:6px 13px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;text-decoration:none;display:inline-block}
+.tool-btn:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.55)}
+.tool-btn.danger{border-color:rgba(231,76,60,.6);color:#fdd}
+.tool-btn.danger:hover{background:rgba(231,76,60,.3);border-color:rgba(231,76,60,.9)}
+.tool-btn.success{border-color:rgba(39,174,96,.5)}
+.tool-btn.success:hover{background:rgba(39,174,96,.2);border-color:rgba(39,174,96,.8)}
+.save-indicator{font-size:10px;color:rgba(255,255,255,.6);margin-left:auto}
+.notif-bell-link{color:#fff;text-decoration:none;font-size:16px;position:relative;padding:4px 6px}
+.notif-bell-link .notif-badge{position:absolute;top:-2px;right:-4px;background:#e74c3c;color:#fff;font-size:8px;font-weight:700;border-radius:50%;width:16px;height:16px;display:flex;align-items:center;justify-content:center}
+.nav-links{display:flex;gap:6px;margin-top:8px}
+.nav-link{color:rgba(255,255,255,.7);font-size:11px;text-decoration:none;padding:3px 10px;border:1px solid rgba(255,255,255,.25);border-radius:5px;transition:all .15s}
+.nav-link:hover{color:#fff;border-color:rgba(255,255,255,.5);background:rgba(255,255,255,.1)}
+
+/* CARD */
+.card{background:var(--card-bg);border-radius:10px;box-shadow:var(--shadow);padding:16px 20px;margin-bottom:12px}
+.first-card{border-radius:0 0 10px 10px;margin-top:0}
+.card h2{font-size:14px;font-weight:700;color:var(--text-heading);margin-bottom:10px}
+
+/* FORM FIELDS */
+.field-group{margin-bottom:14px}
+.field-group label{display:block;font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px}
+.field-group input,.field-group textarea,.field-group select{width:100%;padding:8px 10px;border-radius:6px;border:1px solid var(--input-border);font-size:13px;font-family:inherit;background:var(--input-bg);color:var(--input-text)}
+.field-group input:focus,.field-group textarea:focus,.field-group select:focus{border-color:var(--primary);outline:none;box-shadow:0 0 0 2px rgba(74,144,217,.12)}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+
+/* RICH TEXT TOOLBAR */
+.rt-toolbar{display:flex;gap:3px;flex-wrap:wrap;align-items:center;padding:8px 10px;background:var(--section-bg-light);border:1px solid var(--input-border);border-bottom:none;border-radius:8px 8px 0 0}
+.rt-toolbar .sep{width:1px;height:22px;background:var(--border);margin:0 4px}
+.rt-btn{width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:1px solid transparent;border-radius:5px;background:none;cursor:pointer;font-size:14px;font-weight:700;color:var(--text-secondary);font-family:inherit;transition:all .12s;padding:0}
+.rt-btn:hover{background:var(--hover-bg);border-color:var(--input-border)}
+.rt-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.rt-btn svg{width:16px;height:16px;fill:currentColor;pointer-events:none}
+.rt-btn .btn-label{font-size:10px;font-weight:700;pointer-events:none}
+
+/* RICH TEXT EDITOR */
+.rt-editor{min-height:160px;max-height:400px;overflow-y:auto;padding:12px 14px;border:1px solid var(--input-border);border-radius:0 0 8px 8px;background:var(--input-bg);color:var(--input-text);font-size:13px;font-family:inherit;line-height:1.6;outline:none}
+.rt-editor:focus{border-color:var(--primary);box-shadow:0 0 0 2px rgba(74,144,217,.12)}
+.rt-editor ul,.rt-editor ol{margin-left:20px;padding-left:0}
+.rt-editor li{margin-bottom:4px}
+.rt-editor p{margin-bottom:6px}
+.rt-editor h3{font-size:15px;font-weight:700;color:var(--text-heading);margin:8px 0 4px}
+
+/* ACTION ITEMS */
+.action-items-list{margin-top:8px}
+.action-item{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:7px;margin-bottom:6px;background:var(--card-bg);transition:background .12s}
+.action-item:hover{background:var(--hover-bg)}
+.action-item .ai-check{width:18px;height:18px;flex-shrink:0;accent-color:var(--primary);cursor:pointer;margin-top:2px}
+.action-item .ai-text{flex:1;padding:4px 8px;border-radius:5px;border:1px solid var(--input-border);font-size:12px;font-family:inherit;background:var(--input-bg);color:var(--input-text);min-height:28px}
+.action-item .ai-text:focus{border-color:var(--primary);outline:none}
+.action-item .ai-owner{width:120px;padding:4px 8px;border-radius:5px;border:1px solid var(--input-border);font-size:12px;font-family:inherit;background:var(--input-bg);color:var(--input-text)}
+.action-item .ai-due{width:120px;padding:4px 8px;border-radius:5px;border:1px solid var(--input-border);font-size:12px;font-family:inherit;background:var(--input-bg);color:var(--input-text)}
+.action-item .ai-del{background:none;border:none;color:#ccc;cursor:pointer;font-size:16px;padding:2px 4px;flex-shrink:0;line-height:1}
+.action-item .ai-del:hover{color:var(--danger)}
+.action-item.completed .ai-text{text-decoration:line-through;color:var(--text-faint)}
+.add-action-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border:1.5px dashed var(--border);border-radius:7px;background:none;color:var(--text-muted);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;margin-top:6px}
+.add-action-btn:hover{border-color:var(--primary);color:var(--primary);background:var(--hover-bg)}
+
+/* EMAIL SECTION */
+.email-section{background:var(--info-bg);border:1px solid var(--info-border);border-radius:8px;padding:14px 16px;margin-top:14px}
+.email-section h3{font-size:13px;font-weight:700;color:var(--info-text);margin-bottom:8px}
+.email-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.email-row input{flex:1;min-width:200px;padding:8px 10px;border-radius:6px;border:1px solid var(--info-border);font-size:13px;font-family:inherit;background:var(--input-bg);color:var(--input-text)}
+.email-row input:focus{border-color:var(--primary);outline:none;box-shadow:0 0 0 2px rgba(74,144,217,.12)}
+.send-btn{padding:8px 20px;border-radius:7px;border:none;background:var(--primary);color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.send-btn:hover{background:var(--primary-dark)}
+.send-btn:disabled{opacity:.5;cursor:not-allowed}
+.email-note{font-size:10px;color:var(--text-muted);margin-top:8px}
+
+/* SAVED REPORTS LIST */
+.report-list{margin-top:12px}
+.report-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid var(--border);border-radius:8px;margin-bottom:6px;background:var(--card-bg);cursor:pointer;transition:all .12s}
+.report-item:hover{border-color:var(--primary);box-shadow:0 2px 8px rgba(74,144,217,.1)}
+.report-item.selected{border-color:var(--primary);background:var(--hover-bg)}
+.report-item .ri-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--primary-dark));display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:800;flex-shrink:0}
+.report-item .ri-info{flex:1;min-width:0}
+.report-item .ri-teacher{font-size:13px;font-weight:700;color:var(--text-heading);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.report-item .ri-meta{font-size:10px;color:var(--text-muted);margin-top:2px}
+.report-item .ri-sent{display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;background:var(--success-light);color:var(--success-text)}
+.report-item .ri-draft{display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;background:var(--warn-bg);color:var(--warn-text)}
+.report-item .ri-del{background:none;border:none;color:#ccc;cursor:pointer;font-size:14px;padding:4px;flex-shrink:0}
+.report-item .ri-del:hover{color:var(--danger)}
+
+/* PREVIEW */
+.preview-box{border:1px solid var(--border);border-radius:8px;padding:16px 20px;background:var(--section-bg-light);margin-top:12px}
+.preview-box h3{font-size:14px;font-weight:700;color:var(--text-heading);margin-bottom:8px;border-bottom:2px solid var(--primary);padding-bottom:6px}
+.preview-box .pv-field{margin-bottom:8px}
+.preview-box .pv-label{font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px}
+.preview-box .pv-value{font-size:13px;color:var(--text);margin-top:2px}
+.preview-box .pv-actions{margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.preview-box .pv-action-item{display:flex;align-items:center;gap:6px;padding:4px 0;font-size:12px}
+.preview-box .pv-action-item .pv-bullet{width:6px;height:6px;border-radius:50%;background:var(--primary);flex-shrink:0}
+.preview-box .pv-action-done{text-decoration:line-through;color:var(--text-faint)}
+
+/* TWO COL LAYOUT */
+.main-cols{display:grid;grid-template-columns:280px 1fr;gap:14px;align-items:start}
+.sidebar-title{font-size:13px;font-weight:700;color:var(--text-heading);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
+.sidebar-count{font-size:10px;color:var(--text-muted);font-weight:600}
+.report-list-wrap{max-height:calc(100vh - 280px);overflow-y:auto}
+.empty-state{text-align:center;padding:40px 20px;color:var(--text-faint)}
+.empty-state .es-icon{font-size:36px;margin-bottom:8px}
+.empty-state p{font-size:12px}
+
+/* BTN */
+.btn{padding:6px 14px;border-radius:7px;border:1.5px solid var(--input-border);background:var(--card-bg);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;color:var(--text-secondary)}
+.btn:hover{background:var(--hover-bg);border-color:var(--primary);color:var(--primary-dark)}
+.btn.primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.btn.primary:hover{background:var(--primary-dark)}
+.btn.danger{color:var(--danger);border-color:var(--danger)}
+.btn.danger:hover{background:var(--danger-light)}
+.btn.success{background:var(--success);color:#fff;border-color:var(--success)}
+.btn.success:hover{background:#219a52}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--toast-bg);color:var(--toast-text);padding:10px 22px;border-radius:8px;font-size:13px;font-weight:600;opacity:0;transition:all .3s;z-index:2000;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:var(--modal-overlay);z-index:1000;justify-content:center;align-items:center}
+.modal-overlay.active{display:flex}
+.modal{background:var(--modal-bg);border-radius:12px;padding:24px 28px;max-width:500px;width:92%;box-shadow:0 10px 40px rgba(0,0,0,.2)}
+.modal h3{font-size:16px;font-weight:800;color:var(--text-heading);margin-bottom:6px}
+.modal p{font-size:12px;color:var(--text-secondary);margin-bottom:14px}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+
+/* SHORTCUTS OVERLAY */
+.shortcuts-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:var(--modal-overlay);z-index:1100;justify-content:center;align-items:center}
+.shortcuts-overlay.active{display:flex}
+.shortcuts-modal{background:var(--modal-bg);border-radius:12px;padding:24px;max-width:400px;width:90%}
+.shortcuts-modal h3{font-size:16px;font-weight:800;color:var(--text-heading);margin-bottom:14px}
+.shortcut-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border-light);font-size:12px}
+.shortcut-key{font-weight:700;color:var(--primary);background:var(--section-bg-light);padding:2px 8px;border-radius:4px;font-size:11px}
+
+/* LAST SAVED FOOTER */
+.last-saved-footer{position:fixed;bottom:0;left:0;right:0;background:var(--footer-bg);border-top:1px solid var(--footer-border);padding:6px 20px;font-size:10px;color:var(--footer-text);text-align:center;z-index:500;backdrop-filter:blur(8px)}
+
+/* PRINT */
+@media print{
+  body{background:#fff!important;padding:0;color:#333!important}
+  .header,.toolbar,.nav-links,.email-section,.add-action-btn,.ai-del,.ri-del,.last-saved-footer,.toast,.sidebar-col,.modal-overlay,.shortcuts-overlay,.skip-link,.rt-toolbar{display:none!important}
+  .wrap{max-width:100%}
+  .main-cols{display:block}
+  .card{box-shadow:none;border:1px solid #ddd;break-inside:avoid}
+  .rt-editor{border:none;padding:0;min-height:auto;max-height:none}
+  .preview-box{border:1px solid #ccc;background:#f9f9f9}
+}
+
+/* MOBILE */
+@media(max-width:768px){
+  .main-cols{grid-template-columns:1fr}
+  .sidebar-col{order:2}
+  .editor-col{order:1}
+  .field-row,.field-row-3{grid-template-columns:1fr}
+  .action-item{flex-wrap:wrap}
+  .action-item .ai-owner,.action-item .ai-due{width:100%}
+  .email-row{flex-direction:column}
+  .email-row input{min-width:0}
+}
+@media(max-width:600px){
+  body{padding:10px}
+  .header{padding:16px 16px 12px;border-radius:10px 10px 0 0}
+  .header h1{font-size:18px}
+  .tool-btn,.btn,.send-btn,.add-action-btn,.rt-btn{min-height:44px}
+  .rt-btn{width:40px;height:40px}
+}
+</style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<div class="wrap">
+
+<!-- HEADER -->
+<div class="header">
+  <h1>Feedback Report Builder</h1>
+  <p>Compose, format, and email feedback reports to teachers with action items</p>
+  <div class="toolbar">
+    <button class="tool-btn" onclick="newReport()" aria-label="New report">+ New Report</button>
+    <button class="tool-btn" onclick="window.print()" aria-label="Print report">&#128438; Print</button>
+    <button class="tool-btn" onclick="toggleDarkMode()" aria-label="Toggle dark mode">&#9790; Dark</button>
+    <button class="tool-btn" onclick="toggleShortcutsHelp()" aria-label="Keyboard shortcuts">? Keys</button>
+    <span class="save-indicator" id="saveInd">Saved</span>
+    <a class="notif-bell-link" href="index.html" aria-label="Notifications" id="notifBell">&#128276;<span class="notif-badge" id="notifBadge" style="display:none">0</span></a>
+  </div>
+  <div class="nav-links">
+    <a class="nav-link" href="index.html">&#127968; Home</a>
+    <a class="nav-link" href="Academic_Monitoring_Leader_Facing/Coaching_Cycle_Tracker.html">&#128260; Coaching</a>
+    <a class="nav-link" href="Meeting_Notes.html">&#128221; Meetings</a>
+    <a class="nav-link" href="Teacher_360_Profile.html">&#128100; Teacher 360</a>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div id="main-content">
+
+<!-- TWO COLUMN LAYOUT -->
+<div class="main-cols">
+
+<!-- SIDEBAR: Saved Reports -->
+<div class="sidebar-col">
+  <div class="card first-card">
+    <div class="sidebar-title">
+      <span>Saved Reports</span>
+      <span class="sidebar-count" id="reportCount">0</span>
+    </div>
+    <div class="report-list-wrap">
+      <div class="report-list" id="reportList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- EDITOR -->
+<div class="editor-col">
+
+  <!-- Report Meta -->
+  <div class="card first-card">
+    <h2>&#128203; Report Details</h2>
+    <div class="field-row">
+      <div class="field-group">
+        <label for="teacherName">Teacher Name</label>
+        <input type="text" id="teacherName" placeholder="e.g. Ms. Rodriguez" oninput="scheduleSave()"/>
+      </div>
+      <div class="field-group">
+        <label for="reportDate">Date</label>
+        <input type="date" id="reportDate" onchange="scheduleSave()"/>
+      </div>
+    </div>
+    <div class="field-row-3">
+      <div class="field-group">
+        <label for="campus">Campus</label>
+        <input type="text" id="campus" placeholder="Campus name" oninput="scheduleSave()"/>
+      </div>
+      <div class="field-group">
+        <label for="subject">Subject / Grade</label>
+        <input type="text" id="subject" placeholder="e.g. 3rd ELA" oninput="scheduleSave()"/>
+      </div>
+      <div class="field-group">
+        <label for="coordinator">Coordinator</label>
+        <select id="coordinator" onchange="scheduleSave()">
+          <option value="">Select...</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rich Text Feedback -->
+  <div class="card">
+    <h2>&#9997; Feedback &amp; Comments</h2>
+    <p style="font-size:11px;color:var(--text-muted);margin-bottom:10px">Use the toolbar to format your notes with bullet points, headings, bold/italic text, and more.</p>
+
+    <!-- FORMATTING TOOLBAR -->
+    <div class="rt-toolbar" id="rtToolbar" role="toolbar" aria-label="Text formatting">
+      <button class="rt-btn" onclick="execFmt('bold')" title="Bold (Ctrl+B)" aria-label="Bold"><strong>B</strong></button>
+      <button class="rt-btn" onclick="execFmt('italic')" title="Italic (Ctrl+I)" aria-label="Italic"><em>I</em></button>
+      <button class="rt-btn" onclick="execFmt('underline')" title="Underline (Ctrl+U)" aria-label="Underline"><u>U</u></button>
+      <button class="rt-btn" onclick="execFmt('strikeThrough')" title="Strikethrough" aria-label="Strikethrough"><s>S</s></button>
+      <div class="sep"></div>
+      <button class="rt-btn" onclick="execFmt('insertUnorderedList')" title="Bullet list" aria-label="Bullet list">
+        <svg viewBox="0 0 24 24"><circle cx="4" cy="6" r="2"/><circle cx="4" cy="12" r="2"/><circle cx="4" cy="18" r="2"/><rect x="9" y="5" width="12" height="2" rx="1"/><rect x="9" y="11" width="12" height="2" rx="1"/><rect x="9" y="17" width="12" height="2" rx="1"/></svg>
+      </button>
+      <button class="rt-btn" onclick="execFmt('insertOrderedList')" title="Numbered list" aria-label="Numbered list">
+        <svg viewBox="0 0 24 24"><text x="2" y="8" font-size="7" font-weight="700" fill="currentColor">1.</text><text x="2" y="14" font-size="7" font-weight="700" fill="currentColor">2.</text><text x="2" y="20" font-size="7" font-weight="700" fill="currentColor">3.</text><rect x="12" y="5" width="9" height="2" rx="1"/><rect x="12" y="11" width="9" height="2" rx="1"/><rect x="12" y="17" width="9" height="2" rx="1"/></svg>
+      </button>
+      <div class="sep"></div>
+      <button class="rt-btn" onclick="execBlock('h3')" title="Heading" aria-label="Heading"><span class="btn-label">H</span></button>
+      <button class="rt-btn" onclick="execFmt('indent')" title="Increase indent" aria-label="Increase indent">
+        <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="2" rx="1"/><rect x="10" y="9" width="12" height="2" rx="1"/><rect x="10" y="15" width="12" height="2" rx="1"/><rect x="2" y="21" width="20" height="2" rx="1"/><polygon points="2,8 7,12 2,16"/></svg>
+      </button>
+      <button class="rt-btn" onclick="execFmt('outdent')" title="Decrease indent" aria-label="Decrease indent">
+        <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="2" rx="1"/><rect x="10" y="9" width="12" height="2" rx="1"/><rect x="10" y="15" width="12" height="2" rx="1"/><rect x="2" y="21" width="20" height="2" rx="1"/><polygon points="7,8 2,12 7,16"/></svg>
+      </button>
+      <div class="sep"></div>
+      <button class="rt-btn" onclick="execFmt('removeFormat')" title="Clear formatting" aria-label="Clear formatting">
+        <svg viewBox="0 0 24 24"><line x1="4" y1="4" x2="20" y2="20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><line x1="20" y1="4" x2="4" y2="20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+      </button>
+      <button class="rt-btn" onclick="execFmt('undo')" title="Undo (Ctrl+Z)" aria-label="Undo">&#8617;</button>
+      <button class="rt-btn" onclick="execFmt('redo')" title="Redo (Ctrl+Y)" aria-label="Redo">&#8618;</button>
+    </div>
+    <div class="rt-editor" id="feedbackEditor" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Feedback content" oninput="scheduleSave()"></div>
+  </div>
+
+  <!-- Action Items -->
+  <div class="card">
+    <h2>&#9989; Action Items</h2>
+    <p style="font-size:11px;color:var(--text-muted);margin-bottom:10px">Track follow-up tasks with owner and due date. These will be highlighted in the emailed report.</p>
+    <div class="action-items-list" id="actionItemsList"></div>
+    <button class="add-action-btn" onclick="addActionItem()" aria-label="Add action item">+ Add Action Item</button>
+  </div>
+
+  <!-- Email Section -->
+  <div class="card">
+    <div class="email-section">
+      <h3>&#9993; Email Report to Teacher</h3>
+      <div class="email-row">
+        <input type="email" id="teacherEmail" placeholder="teacher@school.org" aria-label="Teacher email address"/>
+        <input type="email" id="ccEmail" placeholder="CC (optional)" aria-label="CC email address" style="max-width:200px"/>
+        <button class="send-btn" onclick="sendEmail()" id="sendBtn" aria-label="Send email">
+          &#9993; Send Report
+        </button>
+      </div>
+      <div class="email-note">Opens your default email client with the formatted report. Action items are highlighted for easy review.</div>
+    </div>
+  </div>
+
+  <!-- Preview -->
+  <div class="card">
+    <h2>&#128065; Report Preview</h2>
+    <p style="font-size:11px;color:var(--text-muted);margin-bottom:10px">This is how the report will appear in the email.</p>
+    <div class="preview-box" id="previewBox"></div>
+  </div>
+
+</div><!-- /editor-col -->
+</div><!-- /main-cols -->
+</div><!-- /main-content -->
+</div><!-- /wrap -->
+
+<!-- Toast -->
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- Confirm Delete Modal -->
+<div class="modal-overlay" id="deleteModal" role="dialog" aria-modal="true" aria-label="Confirm delete">
+  <div class="modal">
+    <h3>Delete Report?</h3>
+    <p>This will permanently remove this feedback report. This cannot be undone.</p>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeDeleteModal()">Cancel</button>
+      <button class="btn danger" onclick="confirmDelete()" id="confirmDeleteBtn">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Keyboard Shortcuts -->
+<div class="shortcuts-overlay" id="shortcutsOverlay" role="dialog" aria-modal="true" aria-label="Keyboard shortcuts">
+  <div class="shortcuts-modal">
+    <h3>Keyboard Shortcuts</h3>
+    <div class="shortcut-row"><span>New report</span><span class="shortcut-key">Ctrl + N</span></div>
+    <div class="shortcut-row"><span>Save</span><span class="shortcut-key">Ctrl + S</span></div>
+    <div class="shortcut-row"><span>Bold</span><span class="shortcut-key">Ctrl + B</span></div>
+    <div class="shortcut-row"><span>Italic</span><span class="shortcut-key">Ctrl + I</span></div>
+    <div class="shortcut-row"><span>Underline</span><span class="shortcut-key">Ctrl + U</span></div>
+    <div class="shortcut-row"><span>Dark mode</span><span class="shortcut-key">Ctrl + D</span></div>
+    <div class="shortcut-row"><span>Close / Cancel</span><span class="shortcut-key">Escape</span></div>
+    <div class="shortcut-row"><span>This help</span><span class="shortcut-key">?</span></div>
+    <div style="margin-top:14px;text-align:center">
+      <button class="btn" onclick="toggleShortcutsHelp()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Last Saved Footer -->
+<div class="last-saved-footer" id="lastSavedFooter"></div>
+
+<script>
+/* ============================
+   THEME ENGINE
+   ============================ */
+(function(){
+  try {
+    var raw = localStorage.getItem("mlp_hub_config");
+    var cfg = raw ? JSON.parse(raw) : {};
+    var THEMES = {
+      "default":{primary:"#4a90d9",primaryDark:"#2c3e6e",headerGrad1:"#2c3e6e",headerGrad2:"#4a90d9"},
+      "forest":{primary:"#27ae60",primaryDark:"#1e6b3a",headerGrad1:"#1e6b3a",headerGrad2:"#27ae60"},
+      "sunset":{primary:"#e67e22",primaryDark:"#a0521a",headerGrad1:"#a0521a",headerGrad2:"#e67e22"},
+      "ruby":{primary:"#e74c3c",primaryDark:"#922b21",headerGrad1:"#922b21",headerGrad2:"#e74c3c"},
+      "slate":{primary:"#7f8c8d",primaryDark:"#4a5657",headerGrad1:"#4a5657",headerGrad2:"#7f8c8d"},
+      "royal":{primary:"#8e44ad",primaryDark:"#5b2c6f",headerGrad1:"#5b2c6f",headerGrad2:"#8e44ad"},
+      "teal":{primary:"#0097a7",primaryDark:"#00626e",headerGrad1:"#00626e",headerGrad2:"#0097a7"},
+      "charcoal":{primary:"#555",primaryDark:"#333",headerGrad1:"#333",headerGrad2:"#555"}
+    };
+    var colors = cfg.customColors || THEMES[cfg.theme || "default"] || THEMES["default"];
+    var r = document.documentElement.style;
+    r.setProperty("--primary", colors.primary);
+    r.setProperty("--primary-dark", colors.primaryDark);
+    r.setProperty("--header-gradient-1", colors.headerGrad1);
+    r.setProperty("--header-gradient-2", colors.headerGrad2);
+    r.setProperty("--text-heading", colors.primaryDark);
+    var pName = cfg.productName || cfg.orgName || '';
+    if (pName) {
+      var h1 = document.querySelector(".header h1");
+      if (h1) h1.textContent = pName + ' \u2014 Feedback Report';
+      document.title = pName + ' \u2014 Feedback Report Builder';
+    }
+  } catch(e){}
+})();
+
+/* ============================
+   CONSTANTS & STATE
+   ============================ */
+var STORAGE_KEY = "feedback_report_data";
+var ROSTER_KEY = "shared_teacher_roster";
+var reports = [];
+var currentReportId = null;
+var saveTimer = null;
+var deleteTargetId = null;
+
+var DEFAULT_COORDINATORS = [
+  {id:'jmiller', name:'J. Miller', email:'jmiller@uplifteducation.org', color:'#8e44ad'},
+  {id:'kpatterson', name:'K. Patterson', email:'kpatterson@uplifteducation.org', color:'#0097a7'},
+  {id:'pokolo', name:'P. Okolo', email:'Pokolo@uplifteducation.org', color:'#c0392b'},
+  {id:'vpalencia', name:'V. Palencia', email:'vpalencia@uplifteducation.org', color:'#2980b9'}
+];
+
+/* ============================
+   UTILITIES
+   ============================ */
+function escHtml(str) {
+  if (!str) return "";
+  var d = document.createElement("div");
+  d.appendChild(document.createTextNode(str));
+  return d.innerHTML;
+}
+
+function showToast(msg) {
+  var t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(function(){ t.classList.remove("show"); }, 2200);
+}
+
+function genId() {
+  return "rpt" + Date.now() + Math.floor(Math.random() * 10000);
+}
+
+function getCoordinators() {
+  try {
+    var raw = localStorage.getItem('mlp_hub_config');
+    var cfg = raw ? JSON.parse(raw) : {};
+    if (cfg.coordinators && cfg.coordinators.length) return cfg.coordinators;
+  } catch(e) {}
+  return DEFAULT_COORDINATORS;
+}
+
+function getCurrentUser() {
+  try {
+    var raw = localStorage.getItem('mlp_hub_config');
+    var cfg = raw ? JSON.parse(raw) : {};
+    return {id: cfg.userId || '', name: cfg.userName || '', role: cfg.userRole || '', orgId: cfg.orgId || '', orgName: cfg.orgName || ''};
+  } catch(e) { return {id:'', name:'', role:'', orgId:'', orgName:''}; }
+}
+
+function teacherInitials(name) {
+  if (!name) return "?";
+  var parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+}
+
+function formatDate(iso) {
+  if (!iso) return "";
+  try {
+    var d = new Date(iso + "T00:00:00");
+    if (isNaN(d.getTime())) return iso;
+    return d.toLocaleDateString();
+  } catch(e) { return iso; }
+}
+
+function getRoster() {
+  try {
+    var raw = localStorage.getItem(ROSTER_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch(e) { return []; }
+}
+
+function addToRoster(name) {
+  if (!name || !name.trim()) return;
+  name = name.trim();
+  var roster = getRoster();
+  for (var i = 0; i < roster.length; i++) {
+    if (roster[i].toLowerCase() === name.toLowerCase()) return;
+  }
+  roster.push(name);
+  roster.sort(function(a, b) { return a.toLowerCase().localeCompare(b.toLowerCase()); });
+  localStorage.setItem(ROSTER_KEY, JSON.stringify(roster));
+}
+
+/* ============================
+   DARK MODE
+   ============================ */
+if (localStorage.getItem('esl_app_theme') === 'dark') document.body.classList.add('dark-mode');
+
+function toggleDarkMode() {
+  var isDark = document.body.classList.toggle('dark-mode');
+  localStorage.setItem('esl_app_theme', isDark ? 'dark' : 'light');
+}
+
+/* ============================
+   NOTIFICATION BELL
+   ============================ */
+function updateNotifBell() {
+  try {
+    var count = parseInt(localStorage.getItem('notification_unread_count') || '0', 10);
+    var badge = document.getElementById('notifBadge');
+    if (count > 0) {
+      badge.textContent = count > 99 ? '99+' : count;
+      badge.style.display = 'flex';
+    } else {
+      badge.style.display = 'none';
+    }
+  } catch(e) {}
+}
+
+/* ============================
+   PERSISTENCE
+   ============================ */
+function loadData() {
+  try {
+    var raw = localStorage.getItem(STORAGE_KEY);
+    var d = raw ? JSON.parse(raw) : null;
+    if (d && d.reports) {
+      reports = d.reports;
+    } else {
+      reports = [];
+    }
+  } catch(e) {
+    reports = [];
+  }
+}
+
+function saveData() {
+  var obj = {version: 1, reports: reports};
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
+  localStorage.setItem(STORAGE_KEY + '_lastSaved', String(Date.now()));
+  showSaveIndicator();
+  renderLastSaved();
+  broadcastUpdate();
+}
+
+function scheduleSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(function(){
+    syncEditorToReport();
+    saveData();
+  }, 800);
+}
+
+function showSaveIndicator() {
+  var ind = document.getElementById('saveInd');
+  ind.textContent = 'Saved';
+  ind.style.color = 'rgba(255,255,255,.9)';
+  setTimeout(function(){ ind.style.color = 'rgba(255,255,255,.5)'; }, 1500);
+}
+
+function stampLastSaved() {
+  localStorage.setItem(STORAGE_KEY + '_lastSaved', String(Date.now()));
+}
+
+function renderLastSaved() {
+  var footer = document.getElementById('lastSavedFooter');
+  try {
+    var ts = localStorage.getItem(STORAGE_KEY + '_lastSaved');
+    if (ts) {
+      var d = new Date(parseInt(ts, 10));
+      footer.textContent = 'Last saved: ' + d.toLocaleString();
+    } else {
+      footer.textContent = '';
+    }
+  } catch(e) { footer.textContent = ''; }
+}
+
+/* ============================
+   BROADCAST
+   ============================ */
+var bc = null;
+try {
+  bc = new BroadcastChannel('mlp_hub_sync');
+  bc.onmessage = function(e) {
+    if (e.data && e.data.type === 'data_update' && e.data.key === STORAGE_KEY) {
+      loadData();
+      renderReportList();
+      if (currentReportId) loadReportIntoEditor(currentReportId);
+    }
+  };
+} catch(e) {}
+
+function broadcastUpdate() {
+  try {
+    if (bc) bc.postMessage({type:'data_update', key:STORAGE_KEY, timestamp:Date.now()});
+  } catch(e) {}
+}
+
+/* ============================
+   RICH TEXT COMMANDS
+   ============================ */
+function execFmt(cmd) {
+  document.getElementById('feedbackEditor').focus();
+  document.execCommand(cmd, false, null);
+  scheduleSave();
+}
+
+function execBlock(tag) {
+  document.getElementById('feedbackEditor').focus();
+  document.execCommand('formatBlock', false, '<' + tag + '>');
+  scheduleSave();
+}
+
+/* ============================
+   COORDINATOR DROPDOWN
+   ============================ */
+function populateCoordDropdown() {
+  var sel = document.getElementById('coordinator');
+  var coords = getCoordinators();
+  while (sel.options.length > 1) sel.remove(1);
+  for (var i = 0; i < coords.length; i++) {
+    var o = document.createElement('option');
+    o.value = coords[i].id;
+    o.textContent = coords[i].name;
+    sel.appendChild(o);
+  }
+}
+
+/* ============================
+   REPORT MANAGEMENT
+   ============================ */
+function findReport(id) {
+  for (var i = 0; i < reports.length; i++) {
+    if (reports[i].id === id) return reports[i];
+  }
+  return null;
+}
+
+function newReport() {
+  syncEditorToReport();
+  saveData();
+  var r = {
+    id: genId(),
+    teacherName: '',
+    date: new Date().toISOString().split('T')[0],
+    campus: '',
+    subject: '',
+    coordinator: '',
+    feedbackHtml: '',
+    actionItems: [],
+    teacherEmail: '',
+    ccEmail: '',
+    sent: false,
+    sentDate: '',
+    created: new Date().toISOString()
+  };
+  reports.unshift(r);
+  currentReportId = r.id;
+  saveData();
+  loadReportIntoEditor(r.id);
+  renderReportList();
+  showToast('New report created');
+}
+
+function selectReport(id) {
+  syncEditorToReport();
+  saveData();
+  currentReportId = id;
+  loadReportIntoEditor(id);
+  renderReportList();
+}
+
+function loadReportIntoEditor(id) {
+  var r = findReport(id);
+  if (!r) return;
+  document.getElementById('teacherName').value = r.teacherName || '';
+  document.getElementById('reportDate').value = r.date || '';
+  document.getElementById('campus').value = r.campus || '';
+  document.getElementById('subject').value = r.subject || '';
+  document.getElementById('coordinator').value = r.coordinator || '';
+  document.getElementById('feedbackEditor').innerHTML = r.feedbackHtml || '';
+  document.getElementById('teacherEmail').value = r.teacherEmail || '';
+  document.getElementById('ccEmail').value = r.ccEmail || '';
+  renderActionItems(r.actionItems || []);
+  renderPreview();
+}
+
+function syncEditorToReport() {
+  if (!currentReportId) return;
+  var r = findReport(currentReportId);
+  if (!r) return;
+  r.teacherName = document.getElementById('teacherName').value.trim();
+  r.date = document.getElementById('reportDate').value;
+  r.campus = document.getElementById('campus').value.trim();
+  r.subject = document.getElementById('subject').value.trim();
+  r.coordinator = document.getElementById('coordinator').value;
+  r.feedbackHtml = document.getElementById('feedbackEditor').innerHTML;
+  r.teacherEmail = document.getElementById('teacherEmail').value.trim();
+  r.ccEmail = document.getElementById('ccEmail').value.trim();
+  r.actionItems = collectActionItems();
+  if (r.teacherName) addToRoster(r.teacherName);
+  renderPreview();
+}
+
+/* ============================
+   ACTION ITEMS
+   ============================ */
+function addActionItem() {
+  if (!currentReportId) {
+    newReport();
+  }
+  var list = document.getElementById('actionItemsList');
+  var idx = list.querySelectorAll('.action-item').length;
+  var html = '<div class="action-item" data-idx="' + idx + '">' +
+    '<input type="checkbox" class="ai-check" onchange="toggleActionDone(this);scheduleSave()" aria-label="Mark complete"/>' +
+    '<input type="text" class="ai-text" placeholder="Describe the action item..." oninput="scheduleSave()" aria-label="Action item text"/>' +
+    '<input type="text" class="ai-owner" placeholder="Owner" oninput="scheduleSave()" aria-label="Owner"/>' +
+    '<input type="date" class="ai-due" onchange="scheduleSave()" aria-label="Due date"/>' +
+    '<button class="ai-del" onclick="removeActionItem(this)" aria-label="Delete action item">&times;</button>' +
+    '</div>';
+  list.insertAdjacentHTML('beforeend', html);
+  var newItem = list.lastElementChild;
+  var textInput = newItem.querySelector('.ai-text');
+  if (textInput) textInput.focus();
+  scheduleSave();
+}
+
+function removeActionItem(btn) {
+  var item = btn.parentElement;
+  item.parentElement.removeChild(item);
+  scheduleSave();
+}
+
+function toggleActionDone(cb) {
+  var item = cb.parentElement;
+  if (cb.checked) {
+    item.classList.add('completed');
+  } else {
+    item.classList.remove('completed');
+  }
+}
+
+function collectActionItems() {
+  var items = [];
+  var rows = document.querySelectorAll('#actionItemsList .action-item');
+  for (var i = 0; i < rows.length; i++) {
+    var text = rows[i].querySelector('.ai-text').value.trim();
+    var owner = rows[i].querySelector('.ai-owner').value.trim();
+    var due = rows[i].querySelector('.ai-due').value;
+    var done = rows[i].querySelector('.ai-check').checked;
+    if (text || owner || due) {
+      items.push({text: text, owner: owner, due: due, done: done});
+    }
+  }
+  return items;
+}
+
+function renderActionItems(items) {
+  var list = document.getElementById('actionItemsList');
+  var html = '';
+  for (var i = 0; i < items.length; i++) {
+    var ai = items[i];
+    html += '<div class="action-item' + (ai.done ? ' completed' : '') + '" data-idx="' + i + '">' +
+      '<input type="checkbox" class="ai-check"' + (ai.done ? ' checked' : '') + ' onchange="toggleActionDone(this);scheduleSave()" aria-label="Mark complete"/>' +
+      '<input type="text" class="ai-text" value="' + escHtml(ai.text) + '" placeholder="Describe the action item..." oninput="scheduleSave()" aria-label="Action item text"/>' +
+      '<input type="text" class="ai-owner" value="' + escHtml(ai.owner) + '" placeholder="Owner" oninput="scheduleSave()" aria-label="Owner"/>' +
+      '<input type="date" class="ai-due" value="' + (ai.due || '') + '" onchange="scheduleSave()" aria-label="Due date"/>' +
+      '<button class="ai-del" onclick="removeActionItem(this)" aria-label="Delete action item">&times;</button>' +
+      '</div>';
+  }
+  list.innerHTML = html;
+}
+
+/* ============================
+   REPORT LIST SIDEBAR
+   ============================ */
+function renderReportList() {
+  var list = document.getElementById('reportList');
+  var countEl = document.getElementById('reportCount');
+  countEl.textContent = reports.length;
+
+  if (reports.length === 0) {
+    list.innerHTML = '<div class="empty-state"><div class="es-icon">&#128203;</div><p>No reports yet.<br/>Click <strong>+ New Report</strong> to start.</p></div>';
+    return;
+  }
+
+  var html = '';
+  for (var i = 0; i < reports.length; i++) {
+    var r = reports[i];
+    var sel = r.id === currentReportId ? ' selected' : '';
+    var name = r.teacherName || 'Untitled Report';
+    var badge = r.sent ? '<span class="ri-sent">Sent</span>' : '<span class="ri-draft">Draft</span>';
+    html += '<div class="report-item' + sel + '" onclick="selectReport(\'' + r.id + '\')">' +
+      '<div class="ri-avatar">' + escHtml(teacherInitials(r.teacherName)) + '</div>' +
+      '<div class="ri-info"><div class="ri-teacher">' + escHtml(name) + '</div>' +
+      '<div class="ri-meta">' + formatDate(r.date) + (r.campus ? ' &middot; ' + escHtml(r.campus) : '') + ' ' + badge + '</div></div>' +
+      '<button class="ri-del" onclick="event.stopPropagation();askDelete(\'' + r.id + '\')" aria-label="Delete report">&times;</button>' +
+      '</div>';
+  }
+  list.innerHTML = html;
+}
+
+/* ============================
+   DELETE
+   ============================ */
+function askDelete(id) {
+  deleteTargetId = id;
+  document.getElementById('deleteModal').classList.add('active');
+}
+
+function closeDeleteModal() {
+  deleteTargetId = null;
+  document.getElementById('deleteModal').classList.remove('active');
+}
+
+function confirmDelete() {
+  if (!deleteTargetId) return;
+  for (var i = 0; i < reports.length; i++) {
+    if (reports[i].id === deleteTargetId) {
+      reports.splice(i, 1);
+      break;
+    }
+  }
+  if (currentReportId === deleteTargetId) {
+    currentReportId = reports.length > 0 ? reports[0].id : null;
+    if (currentReportId) {
+      loadReportIntoEditor(currentReportId);
+    } else {
+      clearEditor();
+    }
+  }
+  saveData();
+  renderReportList();
+  closeDeleteModal();
+  showToast('Report deleted');
+}
+
+function clearEditor() {
+  document.getElementById('teacherName').value = '';
+  document.getElementById('reportDate').value = '';
+  document.getElementById('campus').value = '';
+  document.getElementById('subject').value = '';
+  document.getElementById('coordinator').value = '';
+  document.getElementById('feedbackEditor').innerHTML = '';
+  document.getElementById('teacherEmail').value = '';
+  document.getElementById('ccEmail').value = '';
+  document.getElementById('actionItemsList').innerHTML = '';
+  document.getElementById('previewBox').innerHTML = '<div class="empty-state"><div class="es-icon">&#128065;</div><p>Create a report to see preview</p></div>';
+}
+
+/* ============================
+   PREVIEW
+   ============================ */
+function renderPreview() {
+  var box = document.getElementById('previewBox');
+  if (!currentReportId) {
+    box.innerHTML = '<div class="empty-state"><div class="es-icon">&#128065;</div><p>Create a report to see preview</p></div>';
+    return;
+  }
+  var r = findReport(currentReportId);
+  if (!r) return;
+
+  var coordName = '';
+  if (r.coordinator) {
+    var coords = getCoordinators();
+    for (var i = 0; i < coords.length; i++) {
+      if (coords[i].id === r.coordinator) { coordName = coords[i].name; break; }
+    }
+  }
+
+  var html = '<h3>Feedback Report' + (r.teacherName ? ' \u2014 ' + escHtml(r.teacherName) : '') + '</h3>';
+
+  html += '<div class="pv-field"><span class="pv-label">Date</span><div class="pv-value">' + (r.date ? formatDate(r.date) : 'Not set') + '</div></div>';
+
+  if (r.campus || r.subject) {
+    html += '<div class="pv-field"><span class="pv-label">Campus / Subject</span><div class="pv-value">' + escHtml(r.campus || '') + (r.campus && r.subject ? ' \u2014 ' : '') + escHtml(r.subject || '') + '</div></div>';
+  }
+  if (coordName) {
+    html += '<div class="pv-field"><span class="pv-label">Coordinator</span><div class="pv-value">' + escHtml(coordName) + '</div></div>';
+  }
+
+  var feedbackText = r.feedbackHtml || '';
+  if (feedbackText) {
+    html += '<div class="pv-field"><span class="pv-label">Feedback &amp; Comments</span><div class="pv-value">' + feedbackText + '</div></div>';
+  }
+
+  if (r.actionItems && r.actionItems.length > 0) {
+    html += '<div class="pv-actions"><span class="pv-label">Action Items</span>';
+    for (var j = 0; j < r.actionItems.length; j++) {
+      var ai = r.actionItems[j];
+      var doneClass = ai.done ? ' pv-action-done' : '';
+      var dueStr = ai.due ? ' (due ' + formatDate(ai.due) + ')' : '';
+      var ownerStr = ai.owner ? ' \u2014 ' + escHtml(ai.owner) : '';
+      html += '<div class="pv-action-item' + doneClass + '"><span class="pv-bullet"></span><span>' +
+        (ai.done ? '&#9989; ' : '&#9744; ') +
+        escHtml(ai.text) + ownerStr + dueStr + '</span></div>';
+    }
+    html += '</div>';
+  }
+
+  box.innerHTML = html;
+}
+
+/* ============================
+   EMAIL
+   ============================ */
+function sendEmail() {
+  syncEditorToReport();
+  saveData();
+
+  if (!currentReportId) {
+    showToast('Create a report first');
+    return;
+  }
+
+  var r = findReport(currentReportId);
+  if (!r) return;
+
+  var email = document.getElementById('teacherEmail').value.trim();
+  if (!email) {
+    showToast('Please enter a teacher email address');
+    document.getElementById('teacherEmail').focus();
+    return;
+  }
+
+  var coordName = '';
+  if (r.coordinator) {
+    var coords = getCoordinators();
+    for (var i = 0; i < coords.length; i++) {
+      if (coords[i].id === r.coordinator) { coordName = coords[i].name; break; }
+    }
+  }
+
+  var subject = 'Feedback Report' + (r.teacherName ? ' - ' + r.teacherName : '') + (r.date ? ' (' + formatDate(r.date) + ')' : '');
+
+  var body = 'FEEDBACK REPORT\n';
+  body += '================================\n\n';
+  if (r.teacherName) body += 'Teacher: ' + r.teacherName + '\n';
+  if (r.date) body += 'Date: ' + formatDate(r.date) + '\n';
+  if (r.campus) body += 'Campus: ' + r.campus + '\n';
+  if (r.subject) body += 'Subject/Grade: ' + r.subject + '\n';
+  if (coordName) body += 'Coordinator: ' + coordName + '\n';
+  body += '\n';
+
+  var feedbackPlain = htmlToPlainText(r.feedbackHtml || '');
+  if (feedbackPlain.trim()) {
+    body += 'FEEDBACK & COMMENTS\n';
+    body += '--------------------------------\n';
+    body += feedbackPlain + '\n\n';
+  }
+
+  if (r.actionItems && r.actionItems.length > 0) {
+    body += 'ACTION ITEMS\n';
+    body += '--------------------------------\n';
+    for (var j = 0; j < r.actionItems.length; j++) {
+      var ai = r.actionItems[j];
+      var prefix = ai.done ? '[DONE] ' : '[ ] ';
+      var line = prefix + ai.text;
+      if (ai.owner) line += ' (Owner: ' + ai.owner + ')';
+      if (ai.due) line += ' (Due: ' + formatDate(ai.due) + ')';
+      body += line + '\n';
+    }
+    body += '\n';
+  }
+
+  body += '================================\n';
+  body += 'Sent via Coordinator Hub - Feedback Report Builder\n';
+
+  var mailto = 'mailto:' + encodeURIComponent(email);
+  var params = [];
+  if (r.ccEmail) params.push('cc=' + encodeURIComponent(r.ccEmail));
+  params.push('subject=' + encodeURIComponent(subject));
+  params.push('body=' + encodeURIComponent(body));
+  mailto += '?' + params.join('&');
+
+  window.open(mailto, '_self');
+
+  r.sent = true;
+  r.sentDate = new Date().toISOString();
+  saveData();
+  renderReportList();
+  renderPreview();
+  showToast('Email client opened with report');
+}
+
+function htmlToPlainText(html) {
+  if (!html) return '';
+  var div = document.createElement('div');
+  div.innerHTML = html;
+
+  var result = '';
+  function walk(node, listType, depth) {
+    if (!depth) depth = 0;
+    var indent = '';
+    for (var d = 0; d < depth; d++) indent += '  ';
+
+    if (node.nodeType === 3) {
+      result += node.textContent;
+      return;
+    }
+    if (node.nodeType !== 1) return;
+
+    var tag = node.tagName.toLowerCase();
+
+    if (tag === 'br') { result += '\n'; return; }
+    if (tag === 'ul' || tag === 'ol') {
+      if (result.length > 0 && result.charAt(result.length - 1) !== '\n') result += '\n';
+      var counter = 0;
+      for (var c = 0; c < node.childNodes.length; c++) {
+        var child = node.childNodes[c];
+        if (child.nodeType === 1 && child.tagName.toLowerCase() === 'li') {
+          counter++;
+          if (tag === 'ul') {
+            result += indent + '  \u2022 ';
+          } else {
+            result += indent + '  ' + counter + '. ';
+          }
+          for (var lc = 0; lc < child.childNodes.length; lc++) {
+            walk(child.childNodes[lc], tag, depth + 1);
+          }
+          if (result.charAt(result.length - 1) !== '\n') result += '\n';
+        } else {
+          walk(child, listType, depth);
+        }
+      }
+      return;
+    }
+    if (tag === 'p' || tag === 'div' || tag === 'h1' || tag === 'h2' || tag === 'h3' || tag === 'h4') {
+      if (result.length > 0 && result.charAt(result.length - 1) !== '\n') result += '\n';
+    }
+
+    for (var i = 0; i < node.childNodes.length; i++) {
+      walk(node.childNodes[i], listType, depth);
+    }
+
+    if (tag === 'p' || tag === 'div' || tag === 'h1' || tag === 'h2' || tag === 'h3' || tag === 'h4') {
+      if (result.charAt(result.length - 1) !== '\n') result += '\n';
+    }
+  }
+
+  walk(div, null, 0);
+  return result;
+}
+
+/* ============================
+   KEYBOARD SHORTCUTS
+   ============================ */
+function toggleShortcutsHelp() {
+  var overlay = document.getElementById('shortcutsOverlay');
+  overlay.classList.toggle('active');
+}
+
+document.addEventListener('keydown', function(e) {
+  var tag = (e.target.tagName || '').toLowerCase();
+  var isInput = tag === 'input' || tag === 'textarea' || tag === 'select';
+  var isEditor = e.target.getAttribute('contenteditable') === 'true';
+
+  if (e.key === 'Escape') {
+    if (document.getElementById('shortcutsOverlay').classList.contains('active')) {
+      toggleShortcutsHelp();
+      e.preventDefault();
+      return;
+    }
+    if (document.getElementById('deleteModal').classList.contains('active')) {
+      closeDeleteModal();
+      e.preventDefault();
+      return;
+    }
+  }
+
+  if (e.key === '?' && !isInput && !isEditor) {
+    e.preventDefault();
+    toggleShortcutsHelp();
+    return;
+  }
+
+  if (e.ctrlKey || e.metaKey) {
+    if (e.key === 's' || e.key === 'S') {
+      e.preventDefault();
+      syncEditorToReport();
+      saveData();
+      showToast('Saved');
+      return;
+    }
+    if (e.key === 'd' || e.key === 'D') {
+      if (!isInput && !isEditor) {
+        e.preventDefault();
+        toggleDarkMode();
+        return;
+      }
+    }
+    if (e.key === 'n' || e.key === 'N') {
+      if (!isInput && !isEditor) {
+        e.preventDefault();
+        newReport();
+        return;
+      }
+    }
+  }
+});
+
+/* ============================
+   PWA REGISTRATION
+   ============================ */
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./service-worker.js').catch(function(){});
+}
+
+/* ============================
+   INIT
+   ============================ */
+function init() {
+  populateCoordDropdown();
+  loadData();
+  updateNotifBell();
+  renderLastSaved();
+
+  if (reports.length > 0) {
+    currentReportId = reports[0].id;
+    loadReportIntoEditor(currentReportId);
+  } else {
+    clearEditor();
+  }
+  renderReportList();
+
+  // Auto-create first report if URL has teacher param
+  var teacherParam = null;
+  try {
+    var match = RegExp('[?&]teacher=([^&]*)').exec(window.location.search);
+    teacherParam = match ? decodeURIComponent(match[1].replace(/\+/g, ' ')) : null;
+  } catch(e) {}
+
+  if (teacherParam) {
+    newReport();
+    var r = findReport(currentReportId);
+    if (r) {
+      r.teacherName = teacherParam;
+      document.getElementById('teacherName').value = teacherParam;
+      saveData();
+      renderReportList();
+    }
+  }
+}
+
+init();
+</script>
+</body>
+</html>
