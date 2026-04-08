@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**MLP Coordinator Hub** — a suite of 19+ single-file HTML web applications for managing multilingual/ESL coordinators at Uplift Education. Hosted on GitHub Pages as a PWA. No build step, no bundler, no framework.
+**MLP Coordinator Hub** — a suite of 25+ single-file HTML web applications for managing multilingual/ESL coordinators at Uplift Education. Hosted on GitHub Pages as a PWA. No build step, no bundler, no framework.
 
 **Live URL**: `https://jordanmiller-commits.github.io/-Manager-of-Multilingual-ESL-Coordinators/`
 
@@ -45,7 +45,62 @@ All coordinator dropdowns are populated via `getCoordinators()` → reads `mlp_h
 ### Adding a coordinator
 - Open `index.html` → click ⚙ Settings → Coordinators section → "Add Coordinator" (no HTML editing needed)
 - Also update `COORDINATOR_EMAIL_MAP` in `Code.gs` for GAS email reminders
-- Generate onboarding link with `?gasUrl=...&coordId=...&coordName=...&secret=...`
+- Generate onboarding link with `?gasUrl=...&coordId=...&coordName=...&secret=...&role=coordinator`
+
+---
+
+## Role-Based Permissions (added 2026-04-07)
+
+Every tool enforces role-based access via an IIFE that runs before init. Three roles exist:
+
+| Role | Value | Access | Who |
+|---|---|---|---|
+| **Manager** | `manager` | All 25 tools + settings admin + role switching | J. Miller (`jmiller`) |
+| **MLP Coordinator** | `coordinator` | 20 tools (excludes Team Overview, Reports Hub, Principal Portal, Campus Report Card) | K. Patterson, P. Okolo, V. Palencia |
+| **Campus Leader** | `campus-leader` | 4 tools (Audit Dashboard, Teacher 360, Principal Portal, Campus Report Card) | Campus principals |
+
+**How roles work:**
+- Role stored in `esl_home_role` localStorage key, also mirrored in `mlp_hub_config.userRole`
+- Set automatically via onboarding link `?role=coordinator` parameter
+- Each tool's `<script>` starts with a role gate IIFE (after theme IIFE) that checks `ALLOWED_ROLES`
+- Unauthorized access shows a "restricted" screen with link to Home
+- `index.html` role tabs: only Manager can see/switch between all three roles; others see only their own
+- Settings modal: Organization, Tool Visibility, Coordinators sections hidden for non-Manager roles
+- Data Backup Hub: Cloud Sync, Drive Sync, Semester Archive hidden for non-Manager roles
+
+**Adding a new tool with role gate:**
+```javascript
+// Insert after theme IIFE, before any other code
+(function(){
+  var ALLOWED_ROLES = ["manager","coordinator"]; // adjust per tool
+  var role = "";
+  try {
+    role = localStorage.getItem("esl_home_role") || "";
+    if (!role) {
+      var cfg = JSON.parse(localStorage.getItem("mlp_hub_config") || "{}");
+      role = cfg.userRole || "manager";
+    }
+  } catch(e){ role = "manager"; }
+  var allowed = false;
+  for (var i = 0; i < ALLOWED_ROLES.length; i++) {
+    if (ALLOWED_ROLES[i] === role) { allowed = true; break; }
+  }
+  if (!allowed) {
+    document.addEventListener("DOMContentLoaded", function(){
+      document.body.innerHTML = '...restricted access screen...';
+    });
+    return;
+  }
+})();
+```
+
+**Permission map:**
+| Allowed Roles | Tools |
+|---|---|
+| `["manager"]` | Team Overview, Reports Hub |
+| `["manager","campus-leader"]` | Principal Checkpoint Portal, Campus Report Card |
+| `["manager","coordinator","campus-leader"]` | Audit Dashboard, Teacher 360 Profile |
+| `["manager","coordinator"]` | All other 20 tools |
 
 ---
 
@@ -222,6 +277,9 @@ Tools share data through localStorage keys. **Before renaming or restructuring a
 | `notification_unread_count` | Home Page | All tools | Unread notification count for bell badge |
 | `*_lastSaved` | Each tool | Each tool, Dashboards, Backup Hub | Timestamp (ms) of last save per localStorage key |
 | `principal_checkpoint_config` | Principal Portal | Principal Portal, Campus Report Card | `{gasUrl, campus, secret}` |
+| `feedback_report_data` | Feedback Report | Feedback Report, Backup Hub, Home | `{version, reports[]}` — rich text feedback + action items. Syncs to Drive. |
+| `semester_archive_*` | Data Backup Hub | Data Backup Hub | One key per archived year (e.g. `semester_archive_2025-26`). Manager-only. |
+| `esl_home_role` | index.html / Onboarding | All tools (role gate) | `"manager"` / `"coordinator"` / `"campus-leader"` |
 
 ### Cross-tool navigation
 - **Teacher profile links**: `<a class="teacher-link">` → `Teacher_360_Profile.html?teacher=NAME`
@@ -249,8 +307,9 @@ Tools share data through localStorage keys. **Before renaming or restructuring a
 ├── TELPAS_Tracker.html                 # TELPAS score tracker with decline alerts (localStorage only)
 ├── Calibration_Tool.html               # Scoring calibration — inter-rater reliability for audit items
 ├── Reports_Hub.html                    # Cross-tool reporting — semester overview, coordinator/campus/coaching reports
+├── Feedback_Report.html                # Rich text feedback builder + email to teacher + action items
 ├── manifest.json                       # PWA manifest ("Coordinator Hub" / "CoordHub" — white-label neutral)
-├── service-worker.js                   # PWA service worker — cache-first, CACHE_NAME = "mlp-suite-v10"
+├── service-worker.js                   # PWA service worker — cache-first, CACHE_NAME = "mlp-suite-v20"
 ├── Principal_Checkpoint_Portal/
 │   ├── Principal_Checkpoint_Portal.html  # Campus leader view — coaching, audit scores, notes sync to GAS
 │   └── Campus_Report_Card.html           # One-page weekly campus snapshot — health score, pipeline, action items
@@ -265,7 +324,7 @@ Tools share data through localStorage keys. **Before renaming or restructuring a
 │   └── Guiding_Documents/                   # Reference PDFs (ESL nonnegotiables, program design, etc.)
 ├── Academic_Monitoring_Leader_Facing/
 │   ├── Academic_Monitoring_Planning_Template.html  # Walkthrough planning + ICS calendar export
-│   ├── Walkthrough_Dashboard.html          # 5-view Chart.js dashboard + report generator
+│   ├── Walkthrough_Dashboard.html          # 6-view Chart.js dashboard + report generator (incl. coverage heatmap)
 │   ├── Coaching_Cycle_Tracker.html         # 5-stage coaching pipeline + ICS export
 │   └── test-data-generator.js              # Console test data utility
 ├── Data_Analysis/
@@ -287,15 +346,15 @@ Tools share data through localStorage keys. **Before renaming or restructuring a
 ## Tool-by-Tool Reference
 
 ### index.html — Unified Home Page
-- **3 role tabs**: Manager (all 19 tools), MLP Coordinator (17 tools), Campus Leader (3 tools)
+- **3 role tabs**: Manager (all 25 tools), MLP Coordinator (20 tools), Campus Leader (4 tools) — only Manager can switch roles
 - `data-roles` attribute on `.tool-card` controls visibility per role
 - **Tool visibility toggles** — Settings → Tool Visibility lets admins hide tools per org (stored in `mlp_hub_config.hiddenTools`)
 - Global search across localStorage with result count, "Show more", keyboard arrow navigation
 - Stats bar (with count-up animation), alerts (overdue coaching, stalled cycles), recent activity timeline
 - **Demo data system** — "Try Demo" button loads `_isDemo`-tagged records into all major localStorage keys; "Clear Demo Data" strips them. Auto-triggers via `?demo=1` URL param.
 - **Interactive tutorial** — "?" button launches 7-step spotlight tour; works best after loading demo data
-- **Settings modal** — theme picker (8 palettes), custom colors, org name, product name, logo upload, coordinator management, tool visibility
-- Role persisted in `esl_home_role`
+- **Settings modal** — theme picker (8 palettes), custom colors, org name, product name, logo upload, coordinator management, tool visibility. **Organization, Tool Visibility, and Coordinators sections are Manager-only.**
+- Role persisted in `esl_home_role`; set via onboarding `?role=` param
 
 ### Team_Overview.html — Manager Dashboard
 - Reads GAS `readAll` endpoint; requires `esl_gas_sync` configured
@@ -358,9 +417,9 @@ No npm, no node_modules, no build step.
 
 ## PWA & Caching
 
-- **Cache name**: `mlp-suite-v10` in root `service-worker.js` — bump whenever HTML files are added or significant changes are deployed
+- **Cache name**: `mlp-suite-v20` in root `service-worker.js` — bump whenever HTML files are added or significant changes are deployed
 - Strategy: cache-first with network fallback
-- All 24 HTML files + Chart.js CDN listed in `ASSETS` array
+- All 25 HTML files + Chart.js CDN listed in `ASSETS` array
 - **When adding files**: add to `ASSETS` and bump `CACHE_NAME`
 - Legacy audit-only PWA files exist in `ESL_Classroom_Audit/` (can be ignored)
 
@@ -386,10 +445,11 @@ No npm, no node_modules, no build step.
 
 ## Security Notes
 
-**Completed**: API secret in GAS, input sanitization, Drive folder permissions, CSP headers, "Clear PAT" button in Data Backup Hub
+**Completed**: API secret in GAS (rotated 2026-04-07), input sanitization, Drive folder permissions, CSP headers, PAT encryption (AES-256-GCM), role-based permissions on all tools
 **Open items**:
-- GAS audit logging not yet implemented
-- Sensitive localStorage keys not encrypted
+- GAS audit logging not yet implemented (Code.gs has `appendToActivityLog` ready but tools don't call it yet)
+- GAS redeploy needed for rotated secret to take effect
+- Sensitive localStorage keys not encrypted (beyond Gist PAT)
 
 ---
 
