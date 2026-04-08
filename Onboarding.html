@@ -600,6 +600,24 @@ function applyUrlParams() {
   if (gasUrl || coordId || coordName || secret) {
     localStorage.setItem("esl_gas_sync", JSON.stringify(s));
   }
+
+  var role = params.get("role");
+  if (role) {
+    var validRoles = ["manager", "coordinator", "campus-leader"];
+    for (var r = 0; r < validRoles.length; r++) {
+      if (validRoles[r] === role) {
+        localStorage.setItem("esl_home_role", role);
+        try {
+          var cfg = JSON.parse(localStorage.getItem("mlp_hub_config") || "{}");
+          cfg.userRole = role;
+          if (coordId) cfg.userId = coordId;
+          if (coordName) cfg.userName = coordName;
+          localStorage.setItem("mlp_hub_config", JSON.stringify(cfg));
+        } catch(e2) {}
+        break;
+      }
+    }
+  }
 }
 
 /* ============================================================
