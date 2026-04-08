@@ -656,14 +656,55 @@ function broadcastScopeSync() {
    CONSTANTS & DATA
    ============================== */
 
-var COORD_COLORS = ["#2980b9","#8e44ad","#27ae60","#d35400"];
+var DEFAULT_COORD_COLORS = ["#2980b9","#8e44ad","#27ae60","#d35400","#c0392b","#16a085","#e67e22","#7f8c8d"];
 
-var COORDINATORS = [
+var DEFAULT_COORDINATORS = [
   {id:"c1",defaultName:"Coordinator 1",area:"ELA",riseCampus:"Rise Campus 1",inspireCampus:"Inspire Campus 1"},
   {id:"c2",defaultName:"Coordinator 2",area:"Math",riseCampus:"Rise Campus 2",inspireCampus:"Inspire Campus 2"},
   {id:"c3",defaultName:"Coordinator 3",area:"Science",riseCampus:"Rise Campus 3",inspireCampus:"Inspire Campus 3"},
   {id:"c4",defaultName:"Coordinator 4",area:"Humanities",riseCampus:"Rise Campus 4",inspireCampus:"Inspire Campus 4"}
 ];
+
+/* Load coordinators from hub config (Settings), fall back to defaults */
+function loadDynamicCoordinators() {
+  try {
+    var raw = localStorage.getItem("mlp_hub_config");
+    var cfg = raw ? JSON.parse(raw) : {};
+    if (cfg.coordinators && cfg.coordinators.length) {
+      var result = [];
+      for (var i = 0; i < cfg.coordinators.length; i++) {
+        var c = cfg.coordinators[i];
+        result.push({
+          id: c.id,
+          defaultName: c.name,
+          area: "",
+          riseCampus: "",
+          inspireCampus: ""
+        });
+      }
+      return result;
+    }
+  } catch(e) {}
+  return DEFAULT_COORDINATORS;
+}
+
+function loadCoordColors() {
+  try {
+    var raw = localStorage.getItem("mlp_hub_config");
+    var cfg = raw ? JSON.parse(raw) : {};
+    if (cfg.coordinators && cfg.coordinators.length) {
+      var colors = [];
+      for (var i = 0; i < cfg.coordinators.length; i++) {
+        colors.push(cfg.coordinators[i].color || DEFAULT_COORD_COLORS[i % DEFAULT_COORD_COLORS.length]);
+      }
+      return colors;
+    }
+  } catch(e) {}
+  return DEFAULT_COORD_COLORS;
+}
+
+var COORDINATORS = loadDynamicCoordinators();
+var COORD_COLORS = loadCoordColors();
 
 var MONTHS = [
   {id:"jul26",label:"Jul 2026",short:"Jul",quarter:"pre",semester:0},
@@ -787,7 +828,7 @@ function getCoordName(cid){
 
 function getCoordColor(cid){
   for(var i=0;i<COORDINATORS.length;i++){
-    if(COORDINATORS[i].id===cid) return COORD_COLORS[i];
+    if(COORDINATORS[i].id===cid) return COORD_COLORS[i] || DEFAULT_COORD_COLORS[i % DEFAULT_COORD_COLORS.length];
   }
   return "#999";
 }
@@ -2269,6 +2310,29 @@ function toggleDarkMode(){var d=document.body.classList.toggle("dark-mode");loca
       document.title = cfg.orgName + " - Scope & Sequence";
     }
   } catch(e){}
+})();
+
+/* Role-based permission gate */
+(function(){
+  var ALLOWED_ROLES = ["manager","coordinator"];
+  var role = "";
+  try {
+    role = localStorage.getItem("esl_home_role") || "";
+    if (!role) {
+      var cfg = JSON.parse(localStorage.getItem("mlp_hub_config") || "{}");
+      role = cfg.userRole || "manager";
+    }
+  } catch(e){ role = "manager"; }
+  var allowed = false;
+  for (var i = 0; i < ALLOWED_ROLES.length; i++) {
+    if (ALLOWED_ROLES[i] === role) { allowed = true; break; }
+  }
+  if (!allowed) {
+    document.addEventListener("DOMContentLoaded", function(){
+      document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:Segoe UI,sans-serif;background:#f0f2f7;padding:20px"><div style="text-align:center;max-width:400px"><div style="font-size:48px;margin-bottom:16px">&#128274;</div><h2 style="color:#2c3e6e;margin-bottom:8px">Access Restricted</h2><p style="color:#666;font-size:14px;margin-bottom:20px">This tool requires <strong>' + ALLOWED_ROLES.join(' or ') + '</strong> access. Your current role is <strong>' + (role || 'not set') + '</strong>.</p><a href="../index.html" style="display:inline-block;padding:10px 24px;background:#4a90d9;color:#fff;text-decoration:none;border-radius:8px;font-weight:600">Return to Home</a></div></div>';
+    });
+    return;
+  }
 })();
 
 /* Close modals on overlay click */

@@ -271,8 +271,8 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 <button class="tool-btn success" onclick="exportAll()" aria-label="Export all keys">&#128230; Export All</button>
 <button class="tool-btn import-btn" onclick="showImportArea()" aria-label="Import backup file">&#128228; Import Backup</button>
 <button class="tool-btn" onclick="refreshDashboard()" aria-label="Refresh data display">&#128260; Refresh</button>
-<button class="tool-btn" onclick="toggleGistSection()" aria-label="Cloud sync settings">&#9729; Cloud Sync</button>
-<button class="tool-btn" onclick="toggleGasSection()" aria-label="Google Drive sync settings">&#128190; Drive Sync</button>
+<button class="tool-btn manager-admin-btn" onclick="toggleGistSection()" aria-label="Cloud sync settings">&#9729; Cloud Sync</button>
+<button class="tool-btn manager-admin-btn" onclick="toggleGasSection()" aria-label="Google Drive sync settings">&#128190; Drive Sync</button>
 <button class="tool-btn" onclick="toggleShortcutsHelp()" aria-label="Keyboard shortcuts">&#9000; Keys</button>
 <a class="notif-bell-link" href="index.html" title="Notifications" id="notifBellLink">&#128276;<span class="notif-bell-badge hidden" id="notifBellBadge">0</span></a>
 <button class="tool-btn" onclick="toggleDarkMode()" id="darkModeToggle" aria-label="Toggle dark mode">&#9789; Dark</button>
@@ -416,7 +416,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 </div>
 
 <!-- Semester Archive -->
-<div class="card" id="archiveCard">
+<div class="card manager-admin-section" id="archiveCard">
 <h2>&#128230; Semester Archive</h2>
 <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px">Snapshot all working data for a school year. Archives are stored in localStorage and can be restored later. FERPA-protected student data (Student Roster, TELPAS Tracker) is never included in archives.</p>
 <div class="archive-ferpa-warn">
@@ -584,6 +584,23 @@ function init() {
   renderLastSaved();
   checkSyncNotice();
   renderArchiveList();
+  enforceAdminPermissions();
+}
+
+function enforceAdminPermissions() {
+  var role = "";
+  try {
+    role = localStorage.getItem("esl_home_role") || "";
+    if (!role) {
+      var cfg = JSON.parse(localStorage.getItem("mlp_hub_config") || "{}");
+      role = cfg.userRole || "manager";
+    }
+  } catch(e) { role = "manager"; }
+  if (role === "manager") return;
+  var btns = document.querySelectorAll(".manager-admin-btn");
+  for (var i = 0; i < btns.length; i++) { btns[i].style.display = "none"; }
+  var sections = document.querySelectorAll(".manager-admin-section");
+  for (var j = 0; j < sections.length; j++) { sections[j].style.display = "none"; }
 }
 
 function refreshDashboard() {
@@ -1309,6 +1326,31 @@ function toggleDarkMode(){
     document.body.classList.add("dark-mode");
     var btn = document.getElementById("darkModeToggle");
     if(btn) btn.innerHTML = "&#9788; Light";
+  }
+})();
+
+/* ======================================================
+   ROLE-BASED PERMISSION GATE
+   ====================================================== */
+(function(){
+  var ALLOWED_ROLES = ["manager","coordinator"];
+  var role = "";
+  try {
+    role = localStorage.getItem("esl_home_role") || "";
+    if (!role) {
+      var cfg = JSON.parse(localStorage.getItem("mlp_hub_config") || "{}");
+      role = cfg.userRole || "manager";
+    }
+  } catch(e){ role = "manager"; }
+  var allowed = false;
+  for (var i = 0; i < ALLOWED_ROLES.length; i++) {
+    if (ALLOWED_ROLES[i] === role) { allowed = true; break; }
+  }
+  if (!allowed) {
+    document.addEventListener("DOMContentLoaded", function(){
+      document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:Segoe UI,sans-serif;background:#f0f2f7;padding:20px"><div style="text-align:center;max-width:400px"><div style="font-size:48px;margin-bottom:16px">&#128274;</div><h2 style="color:#2c3e6e;margin-bottom:8px">Access Restricted</h2><p style="color:#666;font-size:14px;margin-bottom:20px">This tool requires <strong>' + ALLOWED_ROLES.join(' or ') + '</strong> access. Your current role is <strong>' + (role || 'not set') + '</strong>.</p><a href="index.html" style="display:inline-block;padding:10px 24px;background:#4a90d9;color:#fff;text-decoration:none;border-radius:8px;font-weight:600">Return to Home</a></div></div>';
+    });
+    return;
   }
 })();
 

@@ -399,7 +399,7 @@ kbd{display:inline-block;padding:2px 7px;font-size:11px;font-weight:600;line-hei
       <button class="tool-btn" onclick="startTutorial()" title="Take a Tour" aria-label="Take a guided tour" style="font-weight:700">?</button>
     </div>
     <!-- Role tabs -->
-    <div class="role-tabs-row">
+    <div class="role-tabs-row" id="roleTabsRow">
       <button class="role-tab active" data-role="manager"       onclick="setRole('manager')">&#128202; Manager</button>
       <button class="role-tab"        data-role="coordinator"   onclick="setRole('coordinator')">&#128101; MLP Coordinator</button>
       <button class="role-tab"        data-role="campus-leader" onclick="setRole('campus-leader')">&#127983; Campus Leader</button>
@@ -659,8 +659,8 @@ kbd{display:inline-block;padding:2px 7px;font-size:11px;font-weight:600;line-hei
         </div>
       </div>
 
-      <div class="settings-section">
-        <h4>Organization</h4>
+      <div class="settings-section" id="settingsOrg" data-manager-only="true">
+        <h4>&#128274; Organization <span style="font-size:10px;font-weight:400;color:var(--text-muted)">(Manager only)</span></h4>
         <div class="settings-row">
           <label for="orgNameInput">Org Name</label>
           <input type="text" id="orgNameInput" placeholder="e.g. Uplift Education" maxlength="60"/>
@@ -680,8 +680,8 @@ kbd{display:inline-block;padding:2px 7px;font-size:11px;font-weight:600;line-hei
         </div>
       </div>
 
-      <div class="settings-section">
-        <h4>Tool Visibility</h4>
+      <div class="settings-section" id="settingsToolVis" data-manager-only="true">
+        <h4>&#128274; Tool Visibility <span style="font-size:10px;font-weight:400;color:var(--text-muted)">(Manager only)</span></h4>
         <p style="font-size:11px;color:var(--text-muted);margin-bottom:12px">Toggle tools on/off. Hidden tools will not appear on the home page.</p>
         <div class="tool-visibility-list" id="toolVisList"></div>
         <div style="display:flex;gap:8px;margin-top:8px">
@@ -690,8 +690,8 @@ kbd{display:inline-block;padding:2px 7px;font-size:11px;font-weight:600;line-hei
         </div>
       </div>
 
-      <div class="settings-section">
-        <h4>&#128101; Coordinators</h4>
+      <div class="settings-section" id="settingsCoords" data-manager-only="true">
+        <h4>&#128274; &#128101; Coordinators <span style="font-size:10px;font-weight:400;color:var(--text-muted)">(Manager only)</span></h4>
         <p style="font-size:11px;color:var(--text-muted);margin-bottom:12px">Manage the coordinator list used across all tools. Changes apply after saving.</p>
         <div class="coord-mgmt-header">
           <span class="ch-name">Name</span>
@@ -872,6 +872,16 @@ function openSettings() {
   renderThemeGrid();
   loadSettingsForm();
   renderCoordMgmtList();
+  enforceSettingsPermissions();
+}
+
+function enforceSettingsPermissions() {
+  var role = localStorage.getItem("esl_home_role") || "manager";
+  var isManager = (role === "manager");
+  var restricted = document.querySelectorAll("[data-manager-only]");
+  for (var i = 0; i < restricted.length; i++) {
+    restricted[i].style.display = isManager ? "" : "none";
+  }
 }
 
 function closeSettings() {
@@ -1217,6 +1227,16 @@ function countVisible(role) {
 function initRole() {
   var saved = localStorage.getItem("esl_home_role") || "manager";
   setRole(saved);
+  // Only managers can switch roles — hide the role tabs for others
+  var tabsRow = document.getElementById("roleTabsRow");
+  if (tabsRow && saved !== "manager") {
+    var tabs = tabsRow.querySelectorAll(".role-tab");
+    for (var i = 0; i < tabs.length; i++) {
+      if (tabs[i].getAttribute("data-role") !== saved) {
+        tabs[i].style.display = "none";
+      }
+    }
+  }
 }
 
 /* ======================================================

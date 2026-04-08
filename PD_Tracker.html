@@ -1263,6 +1263,30 @@ document.getElementById('importModal').addEventListener('click', function(e) {
     }
   } catch(e){}
 })();
+
+/* Role-based permission gate */
+(function(){
+  var ALLOWED_ROLES = ["manager","coordinator"];
+  var role = "";
+  try {
+    role = localStorage.getItem("esl_home_role") || "";
+    if (!role) {
+      var cfg = JSON.parse(localStorage.getItem("mlp_hub_config") || "{}");
+      role = cfg.userRole || "manager";
+    }
+  } catch(e){ role = "manager"; }
+  var allowed = false;
+  for (var i = 0; i < ALLOWED_ROLES.length; i++) {
+    if (ALLOWED_ROLES[i] === role) { allowed = true; break; }
+  }
+  if (!allowed) {
+    document.addEventListener("DOMContentLoaded", function(){
+      document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:Segoe UI,sans-serif;background:#f0f2f7;padding:20px"><div style="text-align:center;max-width:400px"><div style="font-size:48px;margin-bottom:16px">&#128274;</div><h2 style="color:#2c3e6e;margin-bottom:8px">Access Restricted</h2><p style="color:#666;font-size:14px;margin-bottom:20px">This tool requires <strong>' + ALLOWED_ROLES.join(' or ') + '</strong> access. Your current role is <strong>' + (role || 'not set') + '</strong>.</p><a href="index.html" style="display:inline-block;padding:10px 24px;background:#4a90d9;color:#fff;text-decoration:none;border-radius:8px;font-weight:600">Return to Home</a></div></div>';
+    });
+    return;
+  }
+})();
+
 (function init() {
   if (localStorage.getItem('esl_app_theme') === 'dark') {
     document.body.classList.add('dark-mode');
