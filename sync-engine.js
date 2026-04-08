@@ -9,7 +9,7 @@
 
   // ---- HARDCODED BACKEND CONFIG ----
   var GAS_URL = "https://script.google.com/macros/s/AKfycbz2gob9qMfrPTb_zgMy-LAt1HoZQfO_jzNSvLqqVok3DzWnPESD4VhQ5PN0uDL0NgHJxA/exec";
-  var GAS_SECRET = "fe50135497f480b9dfa7e3f4cc79c6e6e5383236";
+  var GAS_SECRET = "5ef368f432052d81e68ad59e2a3ca794494d3c78";
 
   // ---- TIMING ----
   var DEBOUNCE_MS = 3000;

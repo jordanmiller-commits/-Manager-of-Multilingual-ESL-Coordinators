@@ -180,6 +180,25 @@ tr:hover td{background:var(--item-hover)}
 .shortcuts-modal td{padding:6px 4px;border-bottom:1px solid var(--border)}
 .shortcuts-modal kbd{display:inline-block;background:var(--section-bg-light);border:1px solid var(--input-border);border-radius:4px;padding:2px 7px;font-size:11px;font-family:'Segoe UI',monospace;font-weight:700;color:var(--text-secondary)}
 
+/* GROWTH ANALYSIS */
+.ga-toggle{cursor:pointer;user-select:none;display:flex;align-items:center;gap:8px}
+.ga-toggle:hover{opacity:.85}
+.ga-toggle-arrow{font-size:14px;transition:transform .2s;display:inline-block}
+.ga-toggle-arrow.open{transform:rotate(90deg)}
+.ga-stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.ga-stat{background:var(--section-bg-light);border-radius:8px;padding:14px 16px;text-align:center;border:1px solid var(--border)}
+.ga-stat-value{font-size:24px;font-weight:800;color:var(--text-heading);line-height:1.1}
+.ga-stat-label{font-size:9px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-top:4px}
+.ga-chart-wrap{height:320px;position:relative;margin-bottom:16px}
+.ga-section{margin-bottom:20px}
+.ga-section-title{font-size:13px;font-weight:700;color:var(--text-heading);margin-bottom:8px;padding-bottom:4px;border-bottom:1.5px solid var(--border)}
+.ga-empty{text-align:center;padding:24px 16px;color:var(--text-muted);font-size:12px}
+.ga-empty .ga-empty-icon{font-size:32px;margin-bottom:8px}
+.ga-ferpa-note{font-size:10px;color:var(--text-muted);margin-top:12px;padding:8px 12px;background:var(--section-bg-light);border-radius:6px;border:1px solid var(--border)}
+.ga-row-positive{background:var(--success-light)}
+.ga-row-negative{background:var(--danger-light)}
+.ga-refresh-bar{display:flex;gap:8px;align-items:center;margin-bottom:14px}
+
 /* PRINT */
 @media print{
   .toolbar,.filter-bar,.modal-overlay,.toast{display:none!important}
@@ -190,12 +209,12 @@ tr:hover td{background:var(--item-hover)}
 
 /* MOBILE */
 @media(max-width:600px){
-  .stats-row{grid-template-columns:repeat(2,1fr)}
+  .stats-row,.ga-stats-row{grid-template-columns:repeat(2,1fr)}
   .filter-bar select,.filter-bar input,.tool-btn,.btn,.tbl-btn{min-height:44px}
   .modal-overlay{padding:20px 10px}
 }
 @media(max-width:768px){
-  .stats-row{grid-template-columns:repeat(2,1fr)}
+  .stats-row,.ga-stats-row{grid-template-columns:repeat(2,1fr)}
   .filter-bar{flex-direction:column;align-items:stretch}
 }
 .last-saved-footer{position:fixed;bottom:0;left:0;width:100%;background:var(--footer-bg);border-top:1px solid var(--footer-border);padding:4px 16px;font-size:10px;color:var(--footer-text);text-align:right;z-index:50;font-family:inherit}
@@ -310,6 +329,38 @@ tr:hover td{background:var(--item-hover)}
     <div class="section-title">Growth Tracking <span id="growthYearLabel" style="font-size:12px;font-weight:400;color:#888"></span></div>
     <div id="growthContent">
       <div class="empty-state"><div class="es-icon">&#128200;</div><p>No matched records for growth comparison.</p></div>
+    </div>
+  </div>
+
+  <!-- GROWTH ANALYSIS -->
+  <div class="card" id="growthAnalysisCard">
+    <h2 class="section-title ga-toggle" onclick="toggleGrowthAnalysis()" style="border-bottom:none;margin-bottom:0;padding-bottom:0">
+      &#128200; Growth Analysis <span class="ga-toggle-arrow" id="growthToggle">&#9654;</span>
+    </h2>
+    <div id="growthAnalysisContent" style="display:none">
+      <div class="ga-refresh-bar">
+        <button class="btn btn-sm" onclick="refreshGrowthAnalysis()">&#8635; Refresh Analysis</button>
+        <span style="font-size:10px;color:var(--text-muted)" id="gaLastRefreshed"></span>
+      </div>
+      <div class="ga-stats-row" id="gaStatsRow">
+        <div class="ga-stat"><div class="ga-stat-value" id="gaTotalPaired">0</div><div class="ga-stat-label">Students With YoY Data</div></div>
+        <div class="ga-stat"><div class="ga-stat-value" id="gaAvgChange">--</div><div class="ga-stat-label">Avg Composite Change</div></div>
+        <div class="ga-stat"><div class="ga-stat-value" id="gaAdvancing">0%</div><div class="ga-stat-label">Advancing</div></div>
+        <div class="ga-stat"><div class="ga-stat-value" id="gaDeclining">0%</div><div class="ga-stat-label">Declining</div></div>
+      </div>
+      <div class="ga-section" id="gaScatterSection">
+        <div class="ga-section-title">Coaching Impact: Cycles vs TELPAS Growth</div>
+        <div id="gaScatterContent"></div>
+      </div>
+      <div class="ga-section" id="gaCampusSection">
+        <div class="ga-section-title">Campus Growth Summary</div>
+        <div id="gaCampusContent"></div>
+      </div>
+      <div class="ga-section" id="gaCoordSection">
+        <div class="ga-section-title">Coordinator Growth Summary</div>
+        <div id="gaCoordContent"></div>
+      </div>
+      <div class="ga-ferpa-note">&#128274; Growth analysis uses locally-stored data only. No student data is transmitted.</div>
     </div>
   </div>
 
@@ -1302,6 +1353,381 @@ document.getElementById("notesModal").addEventListener("click", function(e) {
 document.getElementById("shortcutsModal").addEventListener("click", function(e) {
   if (e.target === this) toggleShortcutsHelp();
 });
+
+/* =====================
+   GROWTH ANALYSIS
+   ===================== */
+var gaScatterChart = null;
+var gaIsOpen = false;
+
+function toggleGrowthAnalysis() {
+  var content = document.getElementById('growthAnalysisContent');
+  var arrow = document.getElementById('growthToggle');
+  gaIsOpen = !gaIsOpen;
+  if (gaIsOpen) {
+    content.style.display = 'block';
+    arrow.classList.add('open');
+    refreshGrowthAnalysis();
+  } else {
+    content.style.display = 'none';
+    arrow.classList.remove('open');
+  }
+}
+
+function refreshGrowthAnalysis() {
+  var pairs = computeGrowth();
+  var coachingData = loadCoachingData();
+  renderGaKeyStats(pairs);
+  renderGaScatterPlot(pairs, coachingData);
+  renderGaCampusTable(pairs, coachingData);
+  renderGaCoordTable(pairs, coachingData);
+  var el = document.getElementById('gaLastRefreshed');
+  if (el) el.textContent = 'Refreshed: ' + new Date().toLocaleTimeString();
+}
+
+function loadCoachingData() {
+  try {
+    var raw = localStorage.getItem('coaching_cycles_data');
+    if (!raw) return null;
+    var parsed = JSON.parse(raw);
+    if (parsed && parsed.cycles && parsed.cycles.length) return parsed;
+    return null;
+  } catch(e) { return null; }
+}
+
+function getCompletedCyclesByTeacher(coachingData) {
+  var map = {};
+  if (!coachingData || !coachingData.cycles) return map;
+  for (var i = 0; i < coachingData.cycles.length; i++) {
+    var c = coachingData.cycles[i];
+    var teacher = (c.teacher || '').trim().toLowerCase();
+    if (!teacher) continue;
+    var stages = c.stages || [];
+    var complete = true;
+    if (stages.length < 5) { complete = false; }
+    else {
+      for (var s = 0; s < 5; s++) {
+        if (!stages[s] || !stages[s].completed) { complete = false; break; }
+      }
+    }
+    if (complete) {
+      if (!map[teacher]) map[teacher] = {count:0, campus: c.campus || '', coordinator: c.coordinator || '', displayName: c.teacher};
+      map[teacher].count++;
+    }
+  }
+  return map;
+}
+
+function getCyclesByTeacherAll(coachingData) {
+  var map = {};
+  if (!coachingData || !coachingData.cycles) return map;
+  for (var i = 0; i < coachingData.cycles.length; i++) {
+    var c = coachingData.cycles[i];
+    var teacher = (c.teacher || '').trim().toLowerCase();
+    if (!teacher) continue;
+    if (!map[teacher]) map[teacher] = {count:0, campus: c.campus || '', coordinator: c.coordinator || '', displayName: c.teacher};
+    map[teacher].count++;
+  }
+  return map;
+}
+
+function getCycleCountByCampus(coachingData) {
+  var map = {};
+  if (!coachingData || !coachingData.cycles) return map;
+  for (var i = 0; i < coachingData.cycles.length; i++) {
+    var c = coachingData.cycles[i];
+    var campus = (c.campus || '').trim().toLowerCase();
+    if (!campus) continue;
+    if (!map[campus]) map[campus] = 0;
+    map[campus]++;
+  }
+  return map;
+}
+
+function getCycleCountByCoordinator(coachingData) {
+  var map = {};
+  if (!coachingData || !coachingData.cycles) return map;
+  for (var i = 0; i < coachingData.cycles.length; i++) {
+    var c = coachingData.cycles[i];
+    var coord = (c.coordinator || '').trim();
+    if (!coord) continue;
+    var stages = c.stages || [];
+    var complete = true;
+    if (stages.length < 5) { complete = false; }
+    else {
+      for (var s = 0; s < 5; s++) {
+        if (!stages[s] || !stages[s].completed) { complete = false; break; }
+      }
+    }
+    if (complete) {
+      if (!map[coord]) map[coord] = 0;
+      map[coord]++;
+    }
+  }
+  return map;
+}
+
+/* KEY STATS */
+function renderGaKeyStats(pairs) {
+  var total = pairs.length;
+  var advancing = 0;
+  var declining = 0;
+  var sumChange = 0;
+
+  for (var i = 0; i < pairs.length; i++) {
+    var diff = getLevelValue(pairs[i].cur.compositeLevel) - getLevelValue(pairs[i].prior.compositeLevel);
+    sumChange += diff;
+    if (diff > 0) advancing++;
+    if (diff < 0) declining++;
+  }
+
+  document.getElementById('gaTotalPaired').textContent = total;
+  document.getElementById('gaAvgChange').textContent = total ? (sumChange / total >= 0 ? '+' : '') + (sumChange / total).toFixed(2) : '--';
+  document.getElementById('gaAdvancing').textContent = total ? Math.round(advancing / total * 100) + '%' : '0%';
+  document.getElementById('gaDeclining').textContent = total ? Math.round(declining / total * 100) + '%' : '0%';
+
+  var avgEl = document.getElementById('gaAvgChange');
+  if (total && sumChange / total > 0) {
+    avgEl.style.color = 'var(--success-text)';
+  } else if (total && sumChange / total < 0) {
+    avgEl.style.color = 'var(--danger-text)';
+  } else {
+    avgEl.style.color = 'var(--text-heading)';
+  }
+}
+
+/* SCATTER PLOT */
+function renderGaScatterPlot(pairs, coachingData) {
+  var container = document.getElementById('gaScatterContent');
+
+  if (!coachingData) {
+    container.innerHTML = '<div class="ga-empty"><div class="ga-empty-icon">&#128203;</div>' +
+      '<p>No coaching data found. Start coaching cycles in the <a href="Academic_Monitoring_Leader_Facing/Coaching_Cycle_Tracker.html" style="color:var(--primary)">Coaching Cycle Tracker</a> to see impact analysis.</p></div>';
+    if (gaScatterChart) { gaScatterChart.destroy(); gaScatterChart = null; }
+    return;
+  }
+
+  if (pairs.length === 0) {
+    container.innerHTML = '<div class="ga-empty"><div class="ga-empty-icon">&#128200;</div>' +
+      '<p>No year-over-year student data available. Import TELPAS data for two consecutive years.</p></div>';
+    if (gaScatterChart) { gaScatterChart.destroy(); gaScatterChart = null; }
+    return;
+  }
+
+  var completedByTeacher = getCompletedCyclesByTeacher(coachingData);
+
+  /* Group students by coordinator (which acts as teacher proxy since coordinator manages students) */
+  /* The TELPAS data has coordinator field; coaching data has teacher field */
+  /* Build a map of: for each teacher in coaching, what TELPAS students are associated via coordinator match */
+  /* Actually, join on teacher names appearing in both datasets */
+
+  /* Build per-teacher growth from TELPAS pairs: group by coordinator field as teacher proxy */
+  /* Better approach: the TELPAS coordinator field represents who manages them,
+     but coaching_cycles teacher is the classroom teacher. We need to match coaching teacher
+     names to see if any TELPAS students are taught by them. Since TELPAS doesn't have a teacher
+     field, we use campus as the join key. */
+
+  /* Approach: For each teacher with coaching cycles, find students at the same campus,
+     compute their avg growth. Each dot = teacher. */
+  var teacherDots = [];
+  var teacherKeys = Object.keys(completedByTeacher);
+
+  for (var t = 0; t < teacherKeys.length; t++) {
+    var tKey = teacherKeys[t];
+    var tInfo = completedByTeacher[tKey];
+    var tCampus = (tInfo.campus || '').trim().toLowerCase();
+    if (!tCampus) continue;
+
+    var studentPairs = [];
+    for (var p = 0; p < pairs.length; p++) {
+      if ((pairs[p].cur.campus || '').trim().toLowerCase() === tCampus) {
+        studentPairs.push(pairs[p]);
+      }
+    }
+    if (studentPairs.length === 0) continue;
+
+    var growthSum = 0;
+    for (var s = 0; s < studentPairs.length; s++) {
+      growthSum += getLevelValue(studentPairs[s].cur.compositeLevel) - getLevelValue(studentPairs[s].prior.compositeLevel);
+    }
+    var avgGrowth = growthSum / studentPairs.length;
+
+    teacherDots.push({
+      teacher: tInfo.displayName,
+      cycles: tInfo.count,
+      avgGrowth: avgGrowth,
+      studentCount: studentPairs.length
+    });
+  }
+
+  if (teacherDots.length === 0) {
+    container.innerHTML = '<div class="ga-empty"><div class="ga-empty-icon">&#128203;</div>' +
+      '<p>No overlap found between coaching teachers and TELPAS campuses. Ensure coaching cycle data includes campus information matching TELPAS records.</p></div>';
+    if (gaScatterChart) { gaScatterChart.destroy(); gaScatterChart = null; }
+    return;
+  }
+
+  /* Ensure canvas exists */
+  if (!document.getElementById('gaScatterCanvas')) {
+    container.innerHTML = '<div class="ga-chart-wrap"><canvas id="gaScatterCanvas"></canvas></div>';
+  }
+
+  var ctx = document.getElementById('gaScatterCanvas').getContext('2d');
+  if (gaScatterChart) { gaScatterChart.destroy(); }
+
+  var scatterData = [];
+  var bgColors = [];
+  var borderColors = [];
+  var radii = [];
+  var labels = [];
+
+  for (var d = 0; d < teacherDots.length; d++) {
+    var dot = teacherDots[d];
+    scatterData.push({x: dot.cycles, y: Math.round(dot.avgGrowth * 100) / 100});
+    var isPositive = dot.avgGrowth >= 0;
+    bgColors.push(isPositive ? 'rgba(39,174,96,0.6)' : 'rgba(231,76,60,0.6)');
+    borderColors.push(isPositive ? '#27ae60' : '#e74c3c');
+    radii.push(Math.max(6, Math.min(20, 4 + dot.studentCount * 1.5)));
+    labels.push(dot.teacher + ' (' + dot.studentCount + ' students)');
+  }
+
+  gaScatterChart = new Chart(ctx, {
+    type: 'bubble',
+    data: {
+      datasets: [{
+        label: 'Teachers',
+        data: scatterData.map(function(pt, idx) { return {x: pt.x, y: pt.y, r: radii[idx]}; }),
+        backgroundColor: bgColors,
+        borderColor: borderColors,
+        borderWidth: 1.5
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              var idx = ctx.dataIndex;
+              return labels[idx] + ' | Cycles: ' + scatterData[idx].x + ' | Avg Growth: ' + (scatterData[idx].y >= 0 ? '+' : '') + scatterData[idx].y;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          title: { display: true, text: 'Completed Coaching Cycles', font: { size: 11 } },
+          ticks: { stepSize: 1, font: { size: 10 } },
+          beginAtZero: true
+        },
+        y: {
+          title: { display: true, text: 'Avg TELPAS Composite Change', font: { size: 11 } },
+          ticks: { font: { size: 10 } }
+        }
+      }
+    }
+  });
+}
+
+/* CAMPUS TABLE */
+function renderGaCampusTable(pairs, coachingData) {
+  var container = document.getElementById('gaCampusContent');
+
+  if (pairs.length === 0) {
+    container.innerHTML = '<div class="ga-empty"><p>No year-over-year data to summarize.</p></div>';
+    return;
+  }
+
+  var campusMap = {};
+  for (var i = 0; i < pairs.length; i++) {
+    var campus = pairs[i].cur.campus || 'Unknown';
+    if (!campusMap[campus]) campusMap[campus] = {students: 0, sumChange: 0, advancing: 0, declining: 0};
+    var diff = getLevelValue(pairs[i].cur.compositeLevel) - getLevelValue(pairs[i].prior.compositeLevel);
+    campusMap[campus].students++;
+    campusMap[campus].sumChange += diff;
+    if (diff > 0) campusMap[campus].advancing++;
+    if (diff < 0) campusMap[campus].declining++;
+  }
+
+  var cyclesByCampus = getCycleCountByCampus(coachingData);
+  var campusKeys = Object.keys(campusMap).sort();
+
+  var html = '<div style="overflow-x:auto"><table><thead><tr>';
+  html += '<th>Campus</th><th>Students</th><th>Avg Composite Change</th>';
+  html += '<th>% Advancing</th><th>% Declining</th><th>Coaching Cycles</th>';
+  html += '</tr></thead><tbody>';
+
+  for (var c = 0; c < campusKeys.length; c++) {
+    var key = campusKeys[c];
+    var cm = campusMap[key];
+    var avgChange = cm.sumChange / cm.students;
+    var pctAdv = Math.round(cm.advancing / cm.students * 100);
+    var pctDec = Math.round(cm.declining / cm.students * 100);
+    var cycleCount = cyclesByCampus[key.toLowerCase()] || 0;
+    var rowClass = avgChange > 0 ? ' class="ga-row-positive"' : (avgChange < 0 ? ' class="ga-row-negative"' : '');
+
+    html += '<tr' + rowClass + '>';
+    html += '<td>' + escHtml(key) + '</td>';
+    html += '<td>' + cm.students + '</td>';
+    html += '<td>' + (avgChange >= 0 ? '+' : '') + avgChange.toFixed(2) + '</td>';
+    html += '<td>' + pctAdv + '%</td>';
+    html += '<td>' + pctDec + '%</td>';
+    html += '<td>' + cycleCount + '</td>';
+    html += '</tr>';
+  }
+
+  html += '</tbody></table></div>';
+  container.innerHTML = html;
+}
+
+/* COORDINATOR TABLE */
+function renderGaCoordTable(pairs, coachingData) {
+  var container = document.getElementById('gaCoordContent');
+
+  if (pairs.length === 0) {
+    container.innerHTML = '<div class="ga-empty"><p>No year-over-year data to summarize.</p></div>';
+    return;
+  }
+
+  var coordMap = {};
+  for (var i = 0; i < pairs.length; i++) {
+    var coord = pairs[i].cur.coordinator || 'unassigned';
+    if (!coordMap[coord]) coordMap[coord] = {campuses: {}, students: 0, sumChange: 0};
+    coordMap[coord].students++;
+    coordMap[coord].sumChange += getLevelValue(pairs[i].cur.compositeLevel) - getLevelValue(pairs[i].prior.compositeLevel);
+    var campusName = pairs[i].cur.campus || 'Unknown';
+    coordMap[coord].campuses[campusName] = true;
+  }
+
+  var cyclesByCoord = getCycleCountByCoordinator(coachingData);
+  var coordKeys = Object.keys(coordMap).sort();
+
+  var html = '<div style="overflow-x:auto"><table><thead><tr>';
+  html += '<th>Coordinator</th><th>Campuses</th><th>Students</th>';
+  html += '<th>Avg Composite Change</th><th>Coaching Cycles Completed</th>';
+  html += '</tr></thead><tbody>';
+
+  for (var c = 0; c < coordKeys.length; c++) {
+    var key = coordKeys[c];
+    var cm = coordMap[key];
+    var avgChange = cm.sumChange / cm.students;
+    var campusList = Object.keys(cm.campuses).sort().join(', ');
+    var cycleCount = cyclesByCoord[key] || 0;
+
+    html += '<tr>';
+    html += '<td>' + escHtml(coordLabel(key)) + '</td>';
+    html += '<td style="font-size:11px;max-width:200px;white-space:normal">' + escHtml(campusList) + '</td>';
+    html += '<td>' + cm.students + '</td>';
+    html += '<td>' + (avgChange >= 0 ? '+' : '') + avgChange.toFixed(2) + '</td>';
+    html += '<td>' + cycleCount + '</td>';
+    html += '</tr>';
+  }
+
+  html += '</tbody></table></div>';
+  container.innerHTML = html;
+}
 
 /* Cross-tab sync listener */
 if (mlpChannel) {

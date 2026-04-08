@@ -189,6 +189,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 .wrap>.card:nth-child(3){animation-delay:.1s}
 .wrap>.card:nth-child(4){animation-delay:.15s}
 .wrap>.card:nth-child(5){animation-delay:.2s}
+.wrap>.card:nth-child(6){animation-delay:.25s}
 
 /* Normalised button system */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:8px 16px;border-radius:7px;border:1.5px solid var(--input-border);background:var(--card-bg);color:var(--text-secondary);font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;transition:background .15s,border-color .15s,box-shadow .15s,transform .1s;text-decoration:none}
@@ -232,6 +233,29 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 .shortcuts-modal table{width:100%;border-collapse:collapse;font-size:12px}
 .shortcuts-modal td{padding:6px 8px;border-bottom:1px solid var(--border)}
 .shortcuts-modal kbd{display:inline-block;padding:2px 7px;border-radius:4px;background:var(--section-bg-light);border:1px solid var(--border);font-family:inherit;font-size:11px;font-weight:700;color:var(--text-heading)}
+
+/* Semester Archive */
+.archive-section{margin-top:14px;padding:18px;background:var(--section-bg-light);border-radius:10px;border:1px solid var(--border)}
+.archive-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.archive-controls select{padding:8px 12px;border-radius:6px;border:1px solid var(--input-border);font-size:13px;background:var(--input-bg);color:var(--input-text);min-width:130px}
+.archive-controls select:focus{outline:none;border-color:var(--primary)}
+.archive-clear-opt{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text-secondary);cursor:pointer;margin-bottom:14px}
+.archive-clear-opt input{margin:0}
+.archive-ferpa-warn{display:flex;align-items:flex-start;gap:8px;padding:10px 14px;border-radius:8px;background:var(--warn-bg);border:1px solid var(--warn-border);font-size:12px;color:var(--warn-text);line-height:1.5;margin-bottom:14px}
+.archive-ferpa-warn .warn-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+.archive-list{margin-top:14px}
+.archive-item{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--card-bg);border-radius:8px;box-shadow:var(--shadow);margin-bottom:10px;flex-wrap:wrap}
+.archive-item-info{flex:1;min-width:180px}
+.archive-item-year{font-size:14px;font-weight:700;color:var(--text-heading)}
+.archive-item-meta{font-size:11px;color:var(--text-muted);margin-top:2px}
+.archive-item-actions{display:flex;gap:6px;flex-wrap:wrap}
+.archive-empty{text-align:center;padding:20px;color:var(--text-muted);font-size:13px;font-style:italic}
+@media(max-width:600px){
+  .archive-controls{flex-direction:column;align-items:stretch}
+  .archive-item{flex-direction:column;align-items:stretch}
+  .archive-item-actions{justify-content:flex-end}
+  .archive-item-actions .btn-sm{min-height:44px}
+}
 </style>
 </head>
 <body>
@@ -391,6 +415,39 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 <div id="gasSyncStatus" style="margin-top:8px"></div>
 </div>
 
+<!-- Semester Archive -->
+<div class="card" id="archiveCard">
+<h2>&#128230; Semester Archive</h2>
+<p style="font-size:12px;color:var(--text-muted);margin-bottom:14px">Snapshot all working data for a school year. Archives are stored in localStorage and can be restored later. FERPA-protected student data (Student Roster, TELPAS Tracker) is never included in archives.</p>
+<div class="archive-ferpa-warn">
+  <span class="warn-icon">&#9888;</span>
+  <div><strong>FERPA Notice:</strong> <code>student_roster_data</code> and <code>telpas_tracker_data</code> contain protected student information and are excluded from all archives. These keys must be managed separately.</div>
+</div>
+<div class="archive-section">
+  <h3 style="font-size:14px;font-weight:700;color:var(--text-heading);margin-bottom:10px">Create Archive</h3>
+  <div class="archive-controls">
+    <label style="font-size:12px;font-weight:600;color:var(--text-secondary)" for="archiveYear">School Year:</label>
+    <select id="archiveYear" aria-label="School year to archive">
+      <option value="2022-23">2022-23</option>
+      <option value="2023-24">2023-24</option>
+      <option value="2024-25">2024-25</option>
+      <option value="2025-26" selected>2025-26</option>
+      <option value="2026-27">2026-27</option>
+      <option value="2027-28">2027-28</option>
+    </select>
+    <button class="btn-confirm" onclick="archiveSemester()" aria-label="Archive current semester data">&#128230; Archive Now</button>
+  </div>
+  <label class="archive-clear-opt">
+    <input type="checkbox" id="archiveClearCb"/>
+    Clear working data after archive (settings and config keys are preserved)
+  </label>
+</div>
+<div class="archive-section" style="margin-top:14px">
+  <h3 style="font-size:14px;font-weight:700;color:var(--text-heading);margin-bottom:10px">Past Archives</h3>
+  <div id="archiveList"></div>
+</div>
+</div>
+
 <div class="modal-overlay" id="confirmModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
 <div class="modal">
 <h3 id="modalTitle">Confirm Action</h3>
@@ -526,6 +583,7 @@ function init() {
   setupDragDrop();
   renderLastSaved();
   checkSyncNotice();
+  renderArchiveList();
 }
 
 function refreshDashboard() {
@@ -1705,6 +1763,203 @@ function pullFromDrive() {
   };
   xhr.onerror = function() { showDriveSyncStatus("Network error. Check your connection.", "err"); };
   xhr.send();
+}
+
+/* ======================================================
+   SEMESTER ARCHIVE
+   ====================================================== */
+var ARCHIVE_WORKING_KEYS = [
+  'esl_audit_data', 'esl_audit_history', 'esl_audit_campuses', 'esl_streamlined_audit_data',
+  'walkthrough_plan_data_v2', 'walkthrough_history', 'esl_scope_data', 'shared_teacher_roster',
+  'coaching_cycles_data', 'meeting_notes_data', 'pd_tracker_data', 'parent_comm_log',
+  'compliance_checklist_data', 'goal_setting_data', 'calibration_sessions', 'feedback_report_data'
+];
+
+var ARCHIVE_PREFIX = 'semester_archive_';
+
+function archiveSemester() {
+  var yearSel = document.getElementById('archiveYear');
+  var year = yearSel ? yearSel.value : '';
+  if (!year) { showToast('Please select a school year.'); return; }
+
+  var archiveKey = ARCHIVE_PREFIX + year;
+  var existing = localStorage.getItem(archiveKey);
+  if (existing) {
+    showModal('Overwrite Archive?',
+      'An archive for ' + year + ' already exists. Overwriting will replace the previous snapshot. Continue?',
+      function() { _doArchive(year, archiveKey); }
+    );
+  } else {
+    _doArchive(year, archiveKey);
+  }
+}
+
+function _doArchive(year, archiveKey) {
+  var snapshot = {};
+  var keyCount = 0;
+  for (var i = 0; i < ARCHIVE_WORKING_KEYS.length; i++) {
+    var k = ARCHIVE_WORKING_KEYS[i];
+    var raw = localStorage.getItem(k);
+    if (raw !== null) {
+      try { snapshot[k] = JSON.parse(raw); } catch(e) { snapshot[k] = raw; }
+      keyCount++;
+    }
+  }
+
+  if (keyCount === 0) {
+    showToast('No working data found to archive.');
+    return;
+  }
+
+  var archive = {
+    year: year,
+    archivedAt: new Date().toISOString(),
+    keyCount: keyCount,
+    data: snapshot
+  };
+
+  try {
+    localStorage.setItem(archiveKey, JSON.stringify(archive));
+  } catch(e) {
+    showToast('Archive failed: storage may be full. ' + e.message);
+    return;
+  }
+
+  var shouldClear = document.getElementById('archiveClearCb');
+  if (shouldClear && shouldClear.checked) {
+    for (var j = 0; j < ARCHIVE_WORKING_KEYS.length; j++) {
+      localStorage.removeItem(ARCHIVE_WORKING_KEYS[j]);
+    }
+    showToast('Archived ' + keyCount + ' key(s) for ' + year + ' and cleared working data.');
+  } else {
+    showToast('Archived ' + keyCount + ' key(s) for ' + year + '.');
+  }
+
+  refreshDashboard();
+  renderArchiveList();
+}
+
+function listArchives() {
+  var archives = [];
+  for (var i = 0; i < localStorage.length; i++) {
+    var k = localStorage.key(i);
+    if (k && k.indexOf(ARCHIVE_PREFIX) === 0) {
+      var raw = localStorage.getItem(k);
+      var sizeChars = raw ? raw.length : 0;
+      try {
+        var parsed = JSON.parse(raw);
+        archives.push({
+          key: k,
+          year: parsed.year || k.replace(ARCHIVE_PREFIX, ''),
+          archivedAt: parsed.archivedAt || null,
+          keyCount: parsed.keyCount || Object.keys(parsed.data || {}).length,
+          sizeStr: formatSize(sizeChars)
+        });
+      } catch(e) {
+        archives.push({
+          key: k,
+          year: k.replace(ARCHIVE_PREFIX, ''),
+          archivedAt: null,
+          keyCount: 0,
+          sizeStr: formatSize(sizeChars)
+        });
+      }
+    }
+  }
+  archives.sort(function(a, b) {
+    if (a.year < b.year) return -1;
+    if (a.year > b.year) return 1;
+    return 0;
+  });
+  return archives;
+}
+
+function renderArchiveList() {
+  var el = document.getElementById('archiveList');
+  if (!el) return;
+  var archives = listArchives();
+
+  if (archives.length === 0) {
+    el.innerHTML = '<div class="archive-empty">No semester archives yet. Use the form above to create one.</div>';
+    return;
+  }
+
+  var html = '';
+  for (var i = 0; i < archives.length; i++) {
+    var a = archives[i];
+    var dateStr = a.archivedAt ? formatDate(a.archivedAt) : 'Unknown date';
+    html += '<div class="archive-item">';
+    html += '<div class="archive-item-info">';
+    html += '<div class="archive-item-year">&#128197; ' + escHtml(a.year) + '</div>';
+    html += '<div class="archive-item-meta">Archived: ' + escHtml(dateStr) + ' &middot; ' + a.keyCount + ' key(s) &middot; ' + escHtml(a.sizeStr) + '</div>';
+    html += '</div>';
+    html += '<div class="archive-item-actions">';
+    html += '<button class="btn-sm" onclick="downloadArchive(\'' + escHtml(a.year) + '\')" aria-label="Download archive for ' + escHtml(a.year) + '">&#128229; Download</button>';
+    html += '<button class="btn-sm" onclick="restoreArchive(\'' + escHtml(a.year) + '\')" aria-label="Restore archive for ' + escHtml(a.year) + '">&#128260; Restore</button>';
+    html += '<button class="btn-sm danger" onclick="deleteArchive(\'' + escHtml(a.year) + '\')" aria-label="Delete archive for ' + escHtml(a.year) + '">&#128465; Delete</button>';
+    html += '</div>';
+    html += '</div>';
+  }
+  el.innerHTML = html;
+}
+
+function restoreArchive(year) {
+  var archiveKey = ARCHIVE_PREFIX + year;
+  var raw = localStorage.getItem(archiveKey);
+  if (!raw) { showToast('Archive not found for ' + year + '.'); return; }
+
+  showModal('Restore Archive: ' + year,
+    'This will overwrite all current working data with the archived snapshot from ' + year + '. Settings and config keys will not be affected. Continue?',
+    function() {
+      try {
+        var archive = JSON.parse(raw);
+        var data = archive.data || {};
+        var keys = Object.keys(data);
+        var restored = 0;
+        for (var i = 0; i < keys.length; i++) {
+          var val = data[keys[i]];
+          if (typeof val === 'string') {
+            localStorage.setItem(keys[i], val);
+          } else {
+            localStorage.setItem(keys[i], JSON.stringify(val));
+          }
+          restored++;
+        }
+        refreshDashboard();
+        renderArchiveList();
+        showToast('Restored ' + restored + ' key(s) from ' + year + ' archive.');
+      } catch(e) {
+        showToast('Restore failed: ' + e.message);
+      }
+    }
+  );
+}
+
+function deleteArchive(year) {
+  var archiveKey = ARCHIVE_PREFIX + year;
+  showModal('Delete Archive: ' + year,
+    'Permanently delete the ' + year + ' semester archive? This cannot be undone.',
+    function() {
+      localStorage.removeItem(archiveKey);
+      renderArchiveList();
+      refreshDashboard();
+      showToast('Deleted archive for ' + year + '.');
+    }
+  );
+}
+
+function downloadArchive(year) {
+  var archiveKey = ARCHIVE_PREFIX + year;
+  var raw = localStorage.getItem(archiveKey);
+  if (!raw) { showToast('Archive not found for ' + year + '.'); return; }
+  try {
+    var data = JSON.parse(raw);
+    var filename = 'Semester_Archive_' + year + '_' + getDateStamp() + '.json';
+    downloadJSON(data, filename);
+    showToast('Downloaded archive for ' + year + '.');
+  } catch(e) {
+    showToast('Download failed: ' + e.message);
+  }
 }
 
 init();

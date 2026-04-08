@@ -30,7 +30,7 @@ Last updated: 2026-03-12
 
 - [ ] **Redeploy Code.gs** — v5.0.0 adds `SHARED_SECRET` and `sanitizeCoordId()`. Must create a new deployment version in Apps Script editor (Deploy → Manage Deployments → Edit → New version → Deploy) for changes to take effect on the live endpoint.
 - [ ] **Re-run your J. Miller onboarding link** — Your current `esl_gas_sync` was set before the secret was added. Re-open your personalized onboarding link (with `?secret=...`) to store the secret in your browser, or manually open DevTools → Application → Local Storage and add `"secret": "fe50135497f480b9dfa7e3f4cc79c6e6e5383236"` to the `esl_gas_sync` object.
-- [ ] **Send coordinator onboarding links** — Updated links now include `&secret=fe50135497f480b9dfa7e3f4cc79c6e6e5383236` appended.
+- [ ] **Send coordinator onboarding links** — Updated links now include `&secret=5ef368f432052d81e68ad59e2a3ca794494d3c78` appended. Secret rotated 2026-04-07.
 
 ---
 

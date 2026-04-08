@@ -87,6 +87,29 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 .empty-state p{font-size:12px;line-height:1.6;margin-bottom:16px}
 .empty-state .btn-primary{display:inline-block}
 
+/* Heatmap */
+.heatmap-wrap{overflow-x:auto;margin-top:8px}
+.heatmap-table{border-collapse:collapse;font-size:11px;width:100%;min-width:600px}
+.heatmap-table th{padding:6px 8px;font-size:9px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.3px;border-bottom:2px solid var(--border);text-align:center;white-space:nowrap;position:sticky;top:0;background:var(--card-bg);z-index:1}
+.heatmap-table th:first-child{text-align:left;min-width:140px;position:sticky;left:0;z-index:2}
+.heatmap-table td{padding:5px 6px;text-align:center;border-bottom:1px solid var(--border-light);position:relative}
+.heatmap-table td:first-child{text-align:left;font-weight:600;color:var(--text-heading);white-space:nowrap;position:sticky;left:0;background:var(--card-bg);z-index:1}
+.heatmap-table tr:hover td{background:var(--hover-bg)}
+.hm-cell{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;font-size:10px;font-weight:700;transition:transform .1s}
+.hm-cell:hover{transform:scale(1.15)}
+.hm-0{background:var(--danger-light);color:var(--danger-text)}
+.hm-1{background:#fff3e0;color:#e65100}
+.hm-2{background:#e3f2fd;color:#1565c0}
+.hm-3{background:var(--success-light);color:var(--success-text)}
+.hm-4{background:#1b5e20;color:#fff}
+.hm-summary{font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px;display:inline-block}
+.hm-legend{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;font-size:10px;color:var(--text-muted)}
+.hm-legend-item{display:flex;align-items:center;gap:4px}
+.hm-legend-swatch{width:16px;height:16px;border-radius:4px;display:inline-block}
+.hm-gap-row td{background:var(--danger-light)!important}
+.hm-teacher-link{color:var(--primary);text-decoration:none;font-weight:600}
+.hm-teacher-link:hover{text-decoration:underline}
+
 /* Button system */
 .btn{display:inline-block;padding:6px 14px;border-radius:7px;border:1.5px solid var(--input-border);background:var(--card-bg);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;color:var(--text-secondary);text-decoration:none}
 .btn:hover{background:#eaf3fb;border-color:#4a90d9;color:#2c3e6e}
@@ -227,6 +250,7 @@ kbd{display:inline-block;padding:2px 7px;border:1px solid var(--input-border);bo
           <option value="focusComparison">Focus Area Comparison</option>
           <option value="coachingPipeline">Coaching Pipeline</option>
           <option value="campusTrends">Campus-Level Trends</option>
+          <option value="coverageHeatmap">Coverage Heatmap</option>
         </select>
       </div>
       <div id="filterBar"></div>
@@ -1079,6 +1103,192 @@ function renderCampusTrends() {
 }
 
 /* ======================================================
+   VIEW: COVERAGE HEATMAP
+   ====================================================== */
+function renderCoverageHeatmap() {
+  var sessions = getFilteredHistory();
+  updateStats(sessions);
+
+  document.getElementById("chartTitle").textContent = "Teacher Coverage Heatmap";
+  var canvas = document.getElementById("mainChart");
+  if (canvas) canvas.style.display = "none";
+  destroyChart();
+
+  var extra = document.getElementById("chartExtra");
+
+  if (sessions.length === 0) {
+    extra.innerHTML = '<div class="empty-state"><div class="icon">&#128202;</div><h3>No Data Available</h3><p>Save walkthroughs from the planning template to see coverage.</p></div>';
+    return;
+  }
+
+  // Build week buckets from date range
+  var allDates = [];
+  for (var i = 0; i < sessions.length; i++) {
+    if (sessions[i].meta && sessions[i].meta.date) allDates.push(sessions[i].meta.date);
+  }
+  allDates.sort();
+  if (allDates.length === 0) {
+    extra.innerHTML = '<div class="empty-state"><div class="icon">&#128202;</div><h3>No Dated Sessions</h3><p>Walkthroughs need dates to build the heatmap.</p></div>';
+    return;
+  }
+
+  // Get Monday of a week
+  function getMonday(dateStr) {
+    var d = new Date(dateStr + "T00:00:00");
+    var day = d.getDay();
+    var diff = d.getDate() - day + (day === 0 ? -6 : 1);
+    d.setDate(diff);
+    return d.toISOString().slice(0, 10);
+  }
+
+  // Build week list
+  var startMonday = getMonday(allDates[0]);
+  var endMonday = getMonday(allDates[allDates.length - 1]);
+  var weeks = [];
+  var cur = new Date(startMonday + "T00:00:00");
+  var end = new Date(endMonday + "T00:00:00");
+  while (cur <= end) {
+    weeks.push(cur.toISOString().slice(0, 10));
+    cur.setDate(cur.getDate() + 7);
+  }
+  if (weeks.length === 0) weeks.push(startMonday);
+
+  // Collect all teachers from teacherCodes
+  var teacherSet = {};
+  for (var s = 0; s < sessions.length; s++) {
+    var tc = sessions[s].metrics ? sessions[s].metrics.teacherCodes : null;
+    if (!tc) continue;
+    for (var t = 0; t < tc.length; t++) {
+      if (tc[t].teacher) teacherSet[tc[t].teacher] = true;
+    }
+  }
+  var teachers = Object.keys(teacherSet);
+  teachers.sort(function(a, b) { return a.toLowerCase().localeCompare(b.toLowerCase()); });
+
+  if (teachers.length === 0) {
+    extra.innerHTML = '<div class="empty-state"><div class="icon">&#128202;</div><h3>No Teacher Data</h3><p>Walkthroughs need teacher observation codes to build the heatmap.</p></div>';
+    return;
+  }
+
+  // Build visit map: teacher -> week -> count
+  var visitMap = {};
+  for (var ti = 0; ti < teachers.length; ti++) {
+    visitMap[teachers[ti]] = {};
+  }
+  for (var si = 0; si < sessions.length; si++) {
+    var sess = sessions[si];
+    if (!sess.meta || !sess.meta.date || !sess.metrics || !sess.metrics.teacherCodes) continue;
+    var weekKey = getMonday(sess.meta.date);
+    var codes = sess.metrics.teacherCodes;
+    for (var ci = 0; ci < codes.length; ci++) {
+      var tName = codes[ci].teacher;
+      if (!tName || !visitMap[tName]) continue;
+      if (!visitMap[tName][weekKey]) visitMap[tName][weekKey] = 0;
+      visitMap[tName][weekKey]++;
+    }
+  }
+
+  // Compute totals per teacher
+  var teacherTotals = {};
+  for (var tj = 0; tj < teachers.length; tj++) {
+    var total = 0;
+    var wmap = visitMap[teachers[tj]];
+    for (var wk in wmap) {
+      if (wmap.hasOwnProperty(wk)) total += wmap[wk];
+    }
+    teacherTotals[teachers[tj]] = total;
+  }
+
+  // Sort teachers: fewest visits first (gaps at top)
+  teachers.sort(function(a, b) {
+    var diff = teacherTotals[a] - teacherTotals[b];
+    if (diff !== 0) return diff;
+    return a.toLowerCase().localeCompare(b.toLowerCase());
+  });
+
+  // Format week header
+  function fmtWeek(monday) {
+    var d = new Date(monday + "T00:00:00");
+    var m = d.getMonth() + 1;
+    var day = d.getDate();
+    return m + "/" + day;
+  }
+
+  // Color class based on visit count
+  function hmClass(count) {
+    if (count === 0) return "hm-0";
+    if (count === 1) return "hm-1";
+    if (count === 2) return "hm-2";
+    if (count === 3) return "hm-3";
+    return "hm-4";
+  }
+
+  // Build HTML
+  var html = '';
+
+  // Legend
+  html += '<div class="hm-legend">';
+  html += '<span style="font-weight:700">Visits per week:</span>';
+  html += '<div class="hm-legend-item"><span class="hm-legend-swatch hm-0"></span> 0</div>';
+  html += '<div class="hm-legend-item"><span class="hm-legend-swatch hm-1"></span> 1</div>';
+  html += '<div class="hm-legend-item"><span class="hm-legend-swatch hm-2"></span> 2</div>';
+  html += '<div class="hm-legend-item"><span class="hm-legend-swatch hm-3"></span> 3</div>';
+  html += '<div class="hm-legend-item"><span class="hm-legend-swatch hm-4"></span> 4+</div>';
+  html += '</div>';
+
+  // Summary stats
+  var zeroWeeks = 0;
+  var totalCells = teachers.length * weeks.length;
+  for (var tz = 0; tz < teachers.length; tz++) {
+    for (var wz = 0; wz < weeks.length; wz++) {
+      if (!visitMap[teachers[tz]][weeks[wz]]) zeroWeeks++;
+    }
+  }
+  var coveragePct = totalCells > 0 ? Math.round(((totalCells - zeroWeeks) / totalCells) * 100) : 0;
+  var neverVisited = 0;
+  for (var tn = 0; tn < teachers.length; tn++) {
+    if (teacherTotals[teachers[tn]] === 0) neverVisited++;
+  }
+
+  html += '<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:14px">';
+  html += '<div style="font-size:12px"><strong>' + teachers.length + '</strong> teachers</div>';
+  html += '<div style="font-size:12px"><strong>' + weeks.length + '</strong> weeks</div>';
+  html += '<div style="font-size:12px"><strong>' + coveragePct + '%</strong> coverage</div>';
+  if (neverVisited > 0) {
+    html += '<div style="font-size:12px;color:var(--danger)"><strong>' + neverVisited + '</strong> never visited</div>';
+  }
+  html += '</div>';
+
+  // Table
+  html += '<div class="heatmap-wrap"><table class="heatmap-table">';
+  html += '<thead><tr><th>Teacher</th>';
+  for (var wh = 0; wh < weeks.length; wh++) {
+    html += '<th>' + fmtWeek(weeks[wh]) + '</th>';
+  }
+  html += '<th>Total</th></tr></thead><tbody>';
+
+  for (var tr = 0; tr < teachers.length; tr++) {
+    var tch = teachers[tr];
+    var isGap = teacherTotals[tch] === 0;
+    html += '<tr' + (isGap ? ' class="hm-gap-row"' : '') + '>';
+    html += '<td>' + teacherProfileLink(tch) + '</td>';
+    for (var wc = 0; wc < weeks.length; wc++) {
+      var count = visitMap[tch][weeks[wc]] || 0;
+      html += '<td><span class="hm-cell ' + hmClass(count) + '">' + count + '</span></td>';
+    }
+    // Total
+    var tot = teacherTotals[tch];
+    var totColor = tot === 0 ? 'var(--danger)' : (tot <= 2 ? 'var(--warn)' : 'var(--success)');
+    html += '<td><span class="hm-summary" style="background:' + totColor + ';color:#fff">' + tot + '</span></td>';
+    html += '</tr>';
+  }
+
+  html += '</tbody></table></div>';
+
+  extra.innerHTML = html;
+}
+
+/* ======================================================
    EMPTY STATE
    ====================================================== */
 function showEmpty(message) {
@@ -1124,6 +1334,7 @@ function refreshCurrentView() {
     case "focusComparison": renderFocusComparison(); break;
     case "coachingPipeline": renderCoachingPipeline(); break;
     case "campusTrends": renderCampusTrends(); break;
+    case "coverageHeatmap": renderCoverageHeatmap(); break;
   }
 }
 

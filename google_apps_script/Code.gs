@@ -19,7 +19,7 @@ var APP_URL = "https://jordanmiller-commits.github.io/-Manager-of-Multilingual-E
 // API secret — every request from the app must include this value.
 // Update this string to any strong random value before deploying.
 // Distribute to coordinators via the ?secret= URL parameter in their onboarding link.
-var SHARED_SECRET = 'fe50135497f480b9dfa7e3f4cc79c6e6e5383236';
+var SHARED_SECRET = '5ef368f432052d81e68ad59e2a3ca794494d3c78';
 
 // localStorage keys to sync (excludes device-specific settings)
 var SYNC_KEYS = [
@@ -40,7 +40,8 @@ var SYNC_KEYS = [
   'pd_tracker_data',
   'parent_comm_log',
   'compliance_checklist_data',
-  'goal_setting_data'
+  'goal_setting_data',
+  'feedback_report_data'
 ];
 
 // ---- GET handler (reads) ----
@@ -620,7 +621,8 @@ function appendToActivityLog(coordId, coordName, key, toolName, meta, dataSize) 
     'esl_scope_data': 'Scope & Sequence',
     'calibration_sessions': 'Calibration Tool',
     'shared_teacher_roster': 'Teacher Roster (shared)',
-    'esl_audit_campuses': 'Campus List'
+    'esl_audit_campuses': 'Campus List',
+    'feedback_report_data': 'Feedback Report Builder'
   };
 
   var friendlyTool = TOOL_NAMES[key] || toolName || key;
