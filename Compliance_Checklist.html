@@ -6,7 +6,7 @@
 <title>MLP Program Compliance Checklist</title>
 <link rel="manifest" href="./manifest.json"/>
 <meta name="theme-color" content="#2c3e6e"/>
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://api.github.com; font-src 'self'; frame-src 'none'"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://api.zalphateachingsolutions.org https://script.google.com https://script.googleusercontent.com https://api.github.com; font-src 'self'; frame-src 'none'"/>
 <style>
 :root{
   --bg:#f0f2f7;--card-bg:#fff;--card-border:transparent;--card-shadow:rgba(0,0,0,.07);
@@ -55,6 +55,11 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 .toolbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .tool-btn{background:rgba(255,255,255,.13);color:#fff;border:2px solid rgba(255,255,255,.35);padding:6px 13px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;text-decoration:none;display:inline-flex;align-items:center;gap:5px}
 .tool-btn:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.55)}
+.role-dropdown-wrap{display:inline-flex;align-items:center;gap:6px}
+.role-dropdown-label{font-size:10px;color:rgba(255,255,255,.7);font-weight:600;white-space:nowrap}
+.role-dropdown{background:rgba(255,255,255,.13);color:#fff;border:2px solid rgba(255,255,255,.35);padding:6px 28px 6px 10px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;-webkit-appearance:none;-moz-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='white' stroke-width='2' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;background-size:10px}
+.role-dropdown:hover{background-color:rgba(255,255,255,.25);border-color:rgba(255,255,255,.55)}
+.role-dropdown option{background:var(--primary-dark);color:#fff}
 .tool-btn.accent{border-color:rgba(46,204,113,.5);background:rgba(46,204,113,.15)}
 .tool-btn.accent:hover{background:rgba(46,204,113,.3)}
 
@@ -232,11 +237,28 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 .shortcuts-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:var(--modal-overlay);z-index:1000;justify-content:center;align-items:center;padding:20px}
 .shortcuts-overlay.active{display:flex}
 .shortcuts-modal{background:var(--modal-bg);border-radius:12px;padding:24px 28px;max-width:460px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,.2)}
+
+/* CSV IMPORT MODAL */
+.drop-zone{border:2px dashed var(--primary);border-radius:8px;padding:24px;text-align:center;cursor:pointer;color:var(--text-muted);transition:all .15s;background:var(--section-bg-light)}
+.drop-zone:hover,.drop-zone.drag-over{background:var(--hover-bg);border-color:var(--primary-dark)}
+.import-info{background:var(--info-bg);border:1px solid var(--info-border);border-radius:6px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:var(--info-text)}
+.import-info code{background:rgba(0,0,0,.07);padding:1px 5px;border-radius:3px;font-size:11px}
+.btn-import{padding:8px 18px;border-radius:7px;border:none;background:var(--primary);color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s}
+.btn-import:hover{background:var(--primary-dark)}
+.btn-cancel{padding:8px 18px;border-radius:7px;border:1.5px solid var(--input-border);background:var(--card-bg);color:var(--text-secondary);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.btn-cancel:hover{background:var(--hover-bg)}
+.modal-btns{display:flex;justify-content:flex-end;gap:8px}
+.preview-table-inner{width:100%;border-collapse:collapse;font-size:11px}
+.preview-table-inner th{background:var(--section-bg-light);padding:5px 8px;text-align:left;font-weight:700;color:var(--text-muted);text-transform:uppercase;font-size:10px;border-bottom:1px solid var(--border)}
+.preview-table-inner td{padding:5px 8px;border-bottom:1px solid var(--border-light);vertical-align:top}
+.badge-new{display:inline-block;padding:1px 7px;border-radius:8px;font-size:9px;font-weight:700;background:var(--good-bg);color:var(--good-text);border:1px solid var(--good-border)}
+.badge-dup{display:inline-block;padding:1px 7px;border-radius:8px;font-size:9px;font-weight:700;background:var(--warn-bg);color:var(--warn-text);border:1px solid var(--warn-border)}
 .shortcuts-modal h3{font-size:16px;font-weight:800;color:var(--text-heading);margin-bottom:14px}
 .shortcuts-modal table{width:100%;border-collapse:collapse;font-size:12px}
 .shortcuts-modal td{padding:6px 8px;border-bottom:1px solid var(--border)}
 .shortcuts-modal kbd{display:inline-block;padding:2px 7px;border-radius:4px;background:var(--section-bg-light);border:1px solid var(--border);font-family:inherit;font-size:11px;font-weight:700;color:var(--text-heading)}
 </style>
+<script src="./api.js"></script>
 </head>
 <body>
 <a class="skip-link" href="#checklistCard">Skip to content</a>
@@ -250,12 +272,14 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
       <a class="tool-btn" href="index.html">&#127968; Home</a>
       <button class="tool-btn accent" onclick="generateReport()">&#128196; Generate Report</button>
       <button class="tool-btn" onclick="openItemsModal()">&#9999; Manage Items</button>
+      <button class="tool-btn" onclick="openImportModal()">&#128229; Import Items (CSV)</button>
       <button class="tool-btn" onclick="openCampusModal()">&#127970; Manage Campuses</button>
       <button class="tool-btn" onclick="undo()" aria-label="Undo">&#8630; Undo</button>
       <button class="tool-btn" onclick="redo()" aria-label="Redo">&#8631; Redo</button>
       <button class="tool-btn" onclick="window.print()" aria-label="Print">&#128438; Print</button>
       <a class="notif-bell-link" href="index.html" title="Notifications" id="notifBellLink">&#128276;<span class="notif-bell-badge hidden" id="notifBellBadge">0</span></a>
       <button class="tool-btn" onclick="toggleDarkMode()" id="darkModeToggle" aria-label="Toggle dark mode">&#9789; Dark</button>
+      <span class="role-dropdown-wrap" id="roleDropdownWrap"><span class="role-dropdown-label">View as:</span><select class="role-dropdown" id="roleDropdown" onchange="switchRoleView(this.value)" aria-label="Switch role view"><option value="manager">Manager</option><option value="coordinator">MLP Coordinator</option><option value="campus-leader">Campus Leader</option></select></span>
       <button class="tool-btn" onclick="toggleShortcutsHelp()" aria-label="Keyboard shortcuts">&#9000; Keys</button>
     </div>
   </div>
@@ -353,6 +377,54 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
   </div>
   <div class="report-table-wrap">
     <table class="report-table" id="reportTable"></table>
+  </div>
+</div>
+
+<!-- CSV IMPORT MODAL -->
+<div class="modal-overlay" id="csvImportModal" role="dialog" aria-modal="true" aria-labelledby="csvImportTitle">
+  <div class="modal" style="max-width:560px">
+    <h3 id="csvImportTitle">&#128229; Import Checklist Items from CSV</h3>
+
+    <!-- Format explanation -->
+    <div class="import-info">
+      <p><strong>CSV Format:</strong> One item per row. Columns: <code>category</code>, <code>text</code>, <code>required</code></p>
+      <p style="font-size:11px;color:var(--text-muted)">Headers are optional. "required" column accepts: true/false, yes/no, 1/0. Download a template to get started.</p>
+      <button class="btn-sm" onclick="downloadCsvTemplate()" style="margin-top:6px">&#11015; Download Template</button>
+    </div>
+
+    <!-- File drop zone -->
+    <div class="drop-zone" id="csvDropZone" onclick="document.getElementById('csvFileInput').click()">
+      <div id="dropZoneText">&#128194; Click to select a CSV file, or drag &amp; drop here</div>
+      <input type="file" id="csvFileInput" accept=".csv,text/csv" style="display:none" onchange="handleCsvFile(this.files[0])"/>
+    </div>
+
+    <!-- OR paste directly -->
+    <div style="margin-top:10px">
+      <label style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase">Or paste CSV content:</label>
+      <textarea id="csvPasteArea" rows="5" oninput="parseCsvFromPaste()" placeholder="category,text,required&#10;ESL Support Systems,ESL coordinator assigned to campus,true&#10;Compliance,Teacher LPAC documentation complete,true" style="width:100%;margin-top:4px;font-family:monospace;font-size:12px;padding:8px;border:1px solid var(--input-border);border-radius:6px;background:var(--input-bg);color:var(--input-text);resize:vertical"></textarea>
+    </div>
+
+    <!-- Preview area -->
+    <div id="csvPreviewArea" style="display:none;margin-top:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <strong id="csvPreviewCount" style="font-size:13px"></strong>
+        <div>
+          <label style="font-size:11px;font-weight:600;margin-right:8px">
+            <input type="radio" name="importMode" value="merge" checked/> Merge with existing
+          </label>
+          <label style="font-size:11px;font-weight:600">
+            <input type="radio" name="importMode" value="replace"/> Replace all items
+          </label>
+        </div>
+      </div>
+      <div id="csvPreviewTable" style="max-height:180px;overflow-y:auto;border:1px solid var(--border);border-radius:6px"></div>
+      <div id="csvWarnings" style="margin-top:6px;font-size:11px;color:var(--warn-text)"></div>
+    </div>
+
+    <div class="modal-btns" style="margin-top:14px">
+      <button class="btn-cancel" onclick="closeImportModal()">Cancel</button>
+      <button class="btn-import" id="csvConfirmBtn" onclick="confirmCsvImport()" style="display:none">Import Items</button>
+    </div>
   </div>
 </div>
 
@@ -933,6 +1005,7 @@ function applyTheme() {
     }
   } catch(e){ role = "manager"; }
   var allowed = false;
+  try{var _c=JSON.parse(localStorage.getItem("mlp_hub_config")||"{}");if((_c.userRole||"manager")==="manager")allowed=true;}catch(_e){}
   for (var i = 0; i < ALLOWED_ROLES.length; i++) {
     if (ALLOWED_ROLES[i] === role) { allowed = true; break; }
   }
@@ -1148,6 +1221,277 @@ if(window.mlpSync){
     renderCampusSummary();
   });
 }
+function switchRoleView(r){localStorage.setItem("esl_home_role",r);window.location.href="index.html";}
+(function(){var r=localStorage.getItem("esl_home_role")||"manager";var w=document.getElementById("roleDropdownWrap");var d=document.getElementById("roleDropdown");if(w){try{var c=JSON.parse(localStorage.getItem("mlp_hub_config")||"{}");if((c.userRole||"manager")!=="manager")w.style.display="none";}catch(e){}}if(d)d.value=r;})();
+
+/* =====================
+   CSV IMPORT
+   ===================== */
+var pendingImportRows = [];
+
+function openImportModal() {
+  document.getElementById('csvPasteArea').value = '';
+  document.getElementById('csvPreviewArea').style.display = 'none';
+  document.getElementById('csvConfirmBtn').style.display = 'none';
+  document.getElementById('dropZoneText').textContent = '\ud83d\udcc2 Click to select a CSV file, or drag & drop here';
+  document.getElementById('csvFileInput').value = '';
+  pendingImportRows = [];
+  document.getElementById('csvImportModal').classList.add('open');
+}
+
+function closeImportModal() {
+  document.getElementById('csvImportModal').classList.remove('open');
+  pendingImportRows = [];
+}
+
+function downloadCsvTemplate() {
+  var rows = [
+    'category,text,required',
+    'ESL Support Systems,ESL coordinator assigned to campus,true',
+    'ESL Support Systems,ELL identification and LPAC documentation current,true',
+    'Compliance,Waiver/denial documentation on file,true',
+    'Instruction,Language objectives posted in all EL classrooms,false'
+  ];
+  var blob = new Blob([rows.join('\r\n')], {type: 'text/csv'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'compliance_checklist_template.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function handleCsvFile(file) {
+  if (!file) return;
+  document.getElementById('dropZoneText').textContent = '\ud83d\udcc4 ' + file.name;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    parseCsvInput(e.target.result);
+  };
+  reader.readAsText(file);
+}
+
+function parseCsvFromPaste() {
+  var text = document.getElementById('csvPasteArea').value;
+  parseCsvInput(text);
+}
+
+function parseCsvLine(line) {
+  var result = [], current = '', inQuotes = false;
+  for (var i = 0; i < line.length; i++) {
+    var ch = line[i];
+    if (ch === '"') { inQuotes = !inQuotes; continue; }
+    if (ch === ',' && !inQuotes) { result.push(current.trim()); current = ''; continue; }
+    current += ch;
+  }
+  result.push(current.trim());
+  return result;
+}
+
+function normalizeCsvHeaders(fields) {
+  var map = {};
+  for (var i = 0; i < fields.length; i++) {
+    var f = fields[i].toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (f === 'category' || f === 'cat') { map.category = i; }
+    else if (f === 'text' || f === 'item' || f === 'itemtext' || f === 'requirement' || f === 'description') { map.text = i; }
+    else if (f === 'required' || f === 'mandatory' || f === 'req' || f === 'required') { map.required = i; }
+  }
+  return map;
+}
+
+function parseRequiredField(val) {
+  if (!val) return false;
+  var v = String(val).toLowerCase().trim();
+  return (v === 'true' || v === 'yes' || v === '1' || v === 'mandatory' || v === 'required');
+}
+
+function parseCsvInput(text) {
+  if (!text || !text.trim()) {
+    document.getElementById('csvPreviewArea').style.display = 'none';
+    document.getElementById('csvConfirmBtn').style.display = 'none';
+    pendingImportRows = [];
+    return;
+  }
+
+  var lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+  var colMap = null;
+  var defaultOrder = {category: 0, text: 1, required: 2};
+  var startIdx = 0;
+
+  // Auto-detect headers from first non-empty line
+  var firstLine = '';
+  for (var li = 0; li < lines.length; li++) {
+    if (lines[li].trim()) { firstLine = lines[li]; startIdx = li; break; }
+  }
+  var firstFields = parseCsvLine(firstLine);
+  var lowerFirst = firstLine.toLowerCase();
+  if (lowerFirst.indexOf('category') !== -1 || lowerFirst.indexOf('text') !== -1 ||
+      lowerFirst.indexOf('item') !== -1 || lowerFirst.indexOf('required') !== -1 ||
+      lowerFirst.indexOf('mandatory') !== -1) {
+    colMap = normalizeCsvHeaders(firstFields);
+    startIdx++;
+  } else {
+    colMap = defaultOrder;
+  }
+
+  var rows = [];
+  var warnings = [];
+  var existingTexts = {};
+  for (var ei = 0; ei < appData.items.length; ei++) {
+    existingTexts[(appData.items[ei].text || '').toLowerCase().trim()] = true;
+  }
+
+  for (var i = startIdx; i < lines.length; i++) {
+    var line = lines[i].trim();
+    if (!line) continue;
+    var fields = parseCsvLine(line);
+
+    var catIdx = (colMap.category !== undefined) ? colMap.category : 0;
+    var textIdx = (colMap.text !== undefined) ? colMap.text : 1;
+    var reqIdx = (colMap.required !== undefined) ? colMap.required : 2;
+
+    var cat = (fields[catIdx] || '').trim() || 'General';
+    var itemText = (fields[textIdx] || '').trim();
+    var reqVal = (fields[reqIdx] || '').trim();
+
+    if (!itemText) {
+      warnings.push('Row ' + (i + 1) + ': missing item text — skipped.');
+      continue;
+    }
+    if (itemText.length < 5) {
+      warnings.push('Row ' + (i + 1) + ': item text is very short (' + itemText.length + ' chars).');
+    }
+
+    var isDup = !!existingTexts[itemText.toLowerCase()];
+
+    rows.push({
+      category: cat,
+      text: itemText,
+      parsed_required: parseRequiredField(reqVal),
+      is_duplicate: isDup
+    });
+  }
+
+  pendingImportRows = rows;
+
+  var previewArea = document.getElementById('csvPreviewArea');
+  var previewTable = document.getElementById('csvPreviewTable');
+  var previewCount = document.getElementById('csvPreviewCount');
+  var warningsEl = document.getElementById('csvWarnings');
+  var confirmBtn = document.getElementById('csvConfirmBtn');
+
+  var newCount = 0, dupCount = 0;
+  for (var ri = 0; ri < rows.length; ri++) {
+    if (rows[ri].is_duplicate) dupCount++; else newCount++;
+  }
+
+  previewCount.textContent = rows.length + ' row' + (rows.length !== 1 ? 's' : '') + ' parsed — ' + newCount + ' new, ' + dupCount + ' duplicate' + (dupCount !== 1 ? 's' : '');
+
+  // Build preview table
+  var tHtml = '<table class="preview-table-inner"><thead><tr><th>Category</th><th>Item Text</th><th>Req</th><th>Status</th></tr></thead><tbody>';
+  for (var pi = 0; pi < rows.length; pi++) {
+    var row = rows[pi];
+    var rowStyle = row.is_duplicate ? 'background:var(--warn-bg)' : '';
+    tHtml += '<tr style="' + rowStyle + '">';
+    tHtml += '<td>' + escHtml(row.category) + '</td>';
+    tHtml += '<td>' + escHtml(row.text) + '</td>';
+    tHtml += '<td style="text-align:center">' + (row.parsed_required ? '<span style="color:var(--success);font-weight:700">&#10003;</span>' : '<span style="color:var(--text-faint)">&#8212;</span>') + '</td>';
+    tHtml += '<td>' + (row.is_duplicate ? '<span class="badge-dup">Duplicate</span>' : '<span class="badge-new">New</span>') + '</td>';
+    tHtml += '</tr>';
+  }
+  tHtml += '</tbody></table>';
+  previewTable.innerHTML = tHtml;
+
+  if (warnings.length) {
+    warningsEl.innerHTML = '&#9888; ' + warnings.join('<br/>&#9888; ');
+  } else {
+    warningsEl.innerHTML = '';
+  }
+
+  if (rows.length > 0) {
+    previewArea.style.display = 'block';
+    confirmBtn.style.display = 'inline-block';
+  } else {
+    previewArea.style.display = 'none';
+    confirmBtn.style.display = 'none';
+  }
+}
+
+function confirmCsvImport() {
+  var modeEl = document.querySelector('input[name="importMode"]:checked');
+  var mode = modeEl ? modeEl.value : 'merge';
+
+  if (mode === 'replace') {
+    pushUndo();
+    appData.items = [];
+  } else {
+    pushUndo();
+  }
+
+  var importedCount = 0;
+  var skippedCount = 0;
+
+  // Build existing-text index after potential replace
+  var existingTexts = {};
+  for (var ei = 0; ei < appData.items.length; ei++) {
+    existingTexts[(appData.items[ei].text || '').toLowerCase().trim()] = true;
+  }
+
+  for (var i = 0; i < pendingImportRows.length; i++) {
+    var row = pendingImportRows[i];
+    if (mode === 'merge' && row.is_duplicate) {
+      skippedCount++;
+      continue;
+    }
+    var newItem = {
+      id: 'item-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
+      category: row.category || 'General',
+      text: row.text,
+      required: row.parsed_required
+    };
+    appData.items.push(newItem);
+    existingTexts[row.text.toLowerCase().trim()] = true;
+    importedCount++;
+  }
+
+  saveData();
+  renderChecklist();
+  renderCampusSummary();
+  closeImportModal();
+
+  var msg = 'Imported ' + importedCount + ' item' + (importedCount !== 1 ? 's' : '');
+  if (skippedCount > 0) msg += ' (' + skippedCount + ' skipped as duplicate' + (skippedCount !== 1 ? 's' : '') + ')';
+  showToast(msg);
+}
+
+/* Drag-drop wiring for CSV drop zone */
+document.addEventListener('DOMContentLoaded', function() {
+  var dz = document.getElementById('csvDropZone');
+  if (!dz) return;
+  dz.addEventListener('dragover', function(e) { e.preventDefault(); dz.classList.add('drag-over'); });
+  dz.addEventListener('dragleave', function() { dz.classList.remove('drag-over'); });
+  dz.addEventListener('drop', function(e) {
+    e.preventDefault();
+    dz.classList.remove('drag-over');
+    var f = e.dataTransfer.files[0];
+    if (f) handleCsvFile(f);
+  });
+});
+
+/* Escape key closes CSV import modal */
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    var cm = document.getElementById('csvImportModal');
+    if (cm && cm.classList.contains('open')) { closeImportModal(); }
+  }
+});
+
+/* Backdrop click closes CSV import modal */
+document.getElementById('csvImportModal').addEventListener('click', function(e) {
+  if (e.target === this) closeImportModal();
+});
 </script>
 </body>
 </html>

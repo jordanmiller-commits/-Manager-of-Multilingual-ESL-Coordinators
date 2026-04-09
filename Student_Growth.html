@@ -1,0 +1,1592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Student Growth Dashboard</title>
+<link rel="manifest" href="./manifest.json"/>
+<meta name="theme-color" content="#2c3e6e"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://api.zalphateachingsolutions.org https://script.google.com https://script.googleusercontent.com https://api.github.com; font-src 'self'; frame-src 'none'"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#f0f2f7;--card-bg:#fff;--card-border:transparent;--card-shadow:rgba(0,0,0,.07);
+  --text:#333;--text-secondary:#555;--text-muted:#888;--text-faint:#aaa;--text-heading:#2c3e6e;
+  --input-bg:#fff;--input-border:#ddd;--input-text:#333;
+  --border:#eee;--border-light:#f5f5f5;--hover-bg:#f0f4fb;--item-hover:#f8f9fb;
+  --section-bg-light:#f8f9fb;
+  --primary:#4a90d9;--primary-dark:#2c3e6e;--primary-light:#7eb8f7;
+  --success:#27ae60;--success-light:#e8f5e9;--success-text:#2e7d32;
+  --danger:#e74c3c;--danger-light:#fdecea;--danger-text:#c0392b;
+  --warn:#f39c12;--warn-bg:#fff3e0;--warn-text:#e65100;--warn-border:#ffe0b2;
+  --info-bg:#e3f2fd;--info-text:#1565c0;--info-border:#bbdefb;
+  --good-bg:#e8f5e9;--good-text:#2e7d32;--good-border:#c8e6c9;
+  --header-gradient-1:#2c3e6e;--header-gradient-2:#4a90d9;
+  --shadow:0 1px 5px rgba(0,0,0,.07);
+  --modal-bg:#fff;--modal-overlay:rgba(0,0,0,.45);
+  --toast-bg:#2c3e6e;--toast-text:#fff;
+  --footer-bg:rgba(248,249,251,.95);--footer-border:#e0e3e8;--footer-text:#999
+}
+body.dark-mode{
+  --bg:#1a1a2e;--card-bg:#16213e;--card-border:#2d3a6e;--card-shadow:rgba(0,0,0,.3);
+  --text:#e0e0e0;--text-secondary:#ccc;--text-muted:#999;--text-faint:#666;--text-heading:#7eb8f7;
+  --input-bg:#16213e;--input-border:#2d3a6e;--input-text:#e0e0e0;
+  --border:#2d3a6e;--border-light:#2d3a6e;--hover-bg:#1a2744;--item-hover:#1a2744;
+  --section-bg-light:#1a2744;
+  --primary:#4a90d9;--primary-dark:#2d3a6e;--primary-light:#7eb8f7;
+  --success:#27ae60;--success-light:#1a3a1a;--success-text:#66bb6a;
+  --danger:#e74c3c;--danger-light:#3a1a1a;--danger-text:#ef5350;
+  --warn:#f39c12;--warn-bg:#3e2a10;--warn-text:#f5c842;--warn-border:#5a3e15;
+  --info-bg:#0d2847;--info-text:#64b5f6;--info-border:#1a3a5c;
+  --good-bg:#1a3a1a;--good-text:#66bb6a;--good-border:#2a5a2a;
+  --header-gradient-1:#1a1a2e;--header-gradient-2:#2d3a6e;
+  --shadow:0 1px 5px rgba(0,0,0,.3);
+  --modal-bg:#16213e;--modal-overlay:rgba(0,0,0,.7);
+  --toast-bg:#7eb8f7;--toast-text:#1a1a2e;
+  --footer-bg:rgba(26,26,26,.95);--footer-border:#333;--footer-text:#666
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100vh;padding:20px;color:var(--text)}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+body{animation:fadeIn .25s ease both}
+
+.skip-link{position:absolute;top:-40px;left:0;background:var(--primary);color:#fff;padding:8px 16px;z-index:9999;font-size:13px;border-radius:0 0 6px 0;transition:top .2s;text-decoration:none}
+.skip-link:focus{top:0}
+
+.wrap{max-width:1200px;margin:0 auto}
+
+/* HEADER */
+.header{background:linear-gradient(135deg,var(--header-gradient-1),var(--header-gradient-2));color:#fff;padding:24px 28px 16px;border-radius:14px 14px 0 0}
+.header h1{font-size:22px;font-weight:800;margin-bottom:2px}
+.header p{font-size:12px;opacity:.85;margin-bottom:12px}
+.toolbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.tool-btn{background:rgba(255,255,255,.13);color:#fff;border:2px solid rgba(255,255,255,.35);padding:6px 13px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;text-decoration:none;display:inline-block}
+.tool-btn:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.55)}
+.save-indicator{font-size:10px;color:rgba(255,255,255,.6);margin-left:auto}
+.notif-bell-link{color:#fff;text-decoration:none;font-size:13px;position:relative}
+.notif-badge{position:absolute;top:-4px;right:-6px;background:#e74c3c;color:#fff;font-size:8px;font-weight:700;border-radius:50%;width:14px;height:14px;display:flex;align-items:center;justify-content:center}
+
+/* FERPA BANNER */
+.ferpa-banner{background:#fff8e1;border:1.5px solid #ffcc02;border-radius:10px;padding:14px 18px;margin-bottom:12px;display:flex;gap:12px;align-items:flex-start}
+.ferpa-banner .ferpa-icon{font-size:20px;flex-shrink:0;margin-top:1px}
+.ferpa-banner .ferpa-text{font-size:11px;color:#6d4c00;line-height:1.6}
+.ferpa-banner .ferpa-text strong{font-size:12px;display:block;margin-bottom:3px;color:#5a3d00}
+body.dark-mode .ferpa-banner{background:#3e2d00;border-color:#c8971a}
+body.dark-mode .ferpa-banner .ferpa-text{color:#f5d98a}
+body.dark-mode .ferpa-banner .ferpa-text strong{color:#fde68a}
+
+/* TABS */
+.tab-bar{background:var(--card-bg);border-radius:0 0 0 0;border-bottom:2px solid var(--border);display:flex;gap:0;overflow-x:auto;padding:0 8px}
+.tab-btn{background:none;border:none;padding:12px 18px;font-size:12px;font-weight:600;color:var(--text-muted);cursor:pointer;font-family:inherit;border-bottom:2px solid transparent;margin-bottom:-2px;transition:color .15s,border-color .15s;white-space:nowrap}
+.tab-btn:hover{color:var(--primary)}
+.tab-btn.active{color:var(--primary);border-bottom-color:var(--primary)}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+/* FIRST CARD (connects to header) */
+.first-card{background:var(--card-bg);border-radius:0;box-shadow:none;padding:0;margin-bottom:0}
+.inner-wrap{background:var(--card-bg);border-radius:0 0 10px 10px;padding:16px 20px;box-shadow:var(--shadow)}
+
+/* CARD */
+.card{background:var(--card-bg);border-radius:10px;box-shadow:var(--shadow);padding:16px 20px;margin-bottom:12px}
+.card-title{font-size:14px;font-weight:700;color:var(--text-heading);margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--border)}
+
+/* STAT CARDS */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}
+.stat-card{background:var(--card-bg);border-radius:10px;box-shadow:var(--shadow);padding:14px 16px;text-align:center}
+.stat-value{font-size:28px;font-weight:800;color:var(--text-heading);line-height:1.1}
+.stat-label{font-size:9px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-top:4px}
+.stat-sub{font-size:10px;color:var(--text-muted);margin-top:2px}
+
+/* FILTER BAR */
+.filter-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-bottom:14px;padding:12px 16px;background:var(--section-bg-light);border-radius:8px;border:1px solid var(--border)}
+.filter-bar label{font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:3px}
+.filter-bar select{padding:7px 10px;border:1px solid var(--input-border);border-radius:6px;font-size:12px;font-family:inherit;background:var(--input-bg);color:var(--input-text)}
+.filter-bar select:focus{border-color:var(--primary);outline:none;box-shadow:0 0 0 2px rgba(74,144,217,.15)}
+.filter-group{display:flex;flex-direction:column}
+
+/* BUTTONS */
+.btn{padding:7px 14px;border-radius:7px;border:1.5px solid var(--input-border);background:var(--card-bg);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s,border-color .15s,transform .1s;color:var(--text-secondary)}
+.btn:hover{background:var(--hover-bg);border-color:var(--primary);color:var(--text-heading)}
+.btn:active{transform:scale(.97)}
+.btn.primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.btn.primary:hover{background:#3a7bc8}
+
+/* CHART WRAP */
+.chart-wrap{position:relative;margin-bottom:16px}
+.chart-wrap canvas{border-radius:8px}
+
+/* TABLE */
+.data-table{width:100%;border-collapse:collapse;font-size:12px}
+.data-table th{background:var(--section-bg-light);color:var(--text-muted);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;padding:8px 10px;text-align:left;border-bottom:2px solid var(--border)}
+.data-table td{padding:9px 10px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
+.data-table tr:hover td{background:var(--item-hover)}
+.data-table tr:last-child td{border-bottom:none}
+.table-wrap{overflow-x:auto;border-radius:8px;border:1px solid var(--border)}
+
+/* BADGES */
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700}
+.badge-green{color:#1b5e20;background:#e8f5e9}
+.badge-blue{color:#0d47a1;background:#e3f2fd}
+.badge-orange{color:#bf360c;background:#fbe9e7}
+.badge-red{color:#b71c1c;background:#fde8e8}
+.badge-gray{color:#546e7a;background:#f5f5f5}
+body.dark-mode .badge-green{color:#66bb6a;background:#1a3a1a}
+body.dark-mode .badge-blue{color:#64b5f6;background:#0d2847}
+body.dark-mode .badge-orange{color:#ffb74d;background:#3e2a10}
+body.dark-mode .badge-red{color:#ef9a9a;background:#3a1a1a}
+body.dark-mode .badge-gray{color:#aaa;background:#2a2a2a}
+
+/* TREND ARROWS */
+.trend-up{color:#27ae60;font-weight:700}
+.trend-down{color:#e74c3c;font-weight:700}
+.trend-same{color:#888;font-weight:700}
+
+/* COORD CARDS */
+.coord-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-bottom:14px}
+.coord-card{background:var(--card-bg);border-radius:10px;box-shadow:var(--shadow);padding:14px 16px;border-left:4px solid var(--primary)}
+.coord-card-name{font-size:13px;font-weight:700;color:var(--text-heading);margin-bottom:8px}
+.coord-card-stat{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--text-secondary);margin-bottom:4px}
+.coord-card-stat span:last-child{font-weight:700;color:var(--text)}
+
+/* NOTE BOX */
+.note-box{background:var(--info-bg);border:1px solid var(--info-border);border-radius:8px;padding:10px 14px;font-size:11px;color:var(--info-text);line-height:1.5;margin-bottom:12px}
+
+/* CAUTION BOX */
+.caution-box{background:var(--warn-bg);border:1px solid var(--warn-border);border-radius:8px;padding:10px 14px;font-size:11px;color:var(--warn-text);line-height:1.5;margin-bottom:12px}
+
+/* EMPTY STATE */
+.empty-state{text-align:center;padding:60px 20px;color:var(--text-muted)}
+.empty-state .empty-icon{font-size:48px;display:block;margin-bottom:12px;opacity:.5}
+.empty-state h3{font-size:16px;color:var(--text-secondary);margin-bottom:8px;font-weight:600}
+.empty-state p{font-size:12px;line-height:1.6;max-width:380px;margin:0 auto 16px}
+.empty-state a{color:var(--primary);text-decoration:none;font-weight:600}
+.empty-state a:hover{text-decoration:underline}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--toast-bg);color:var(--toast-text);padding:10px 18px;border-radius:8px;font-size:12px;font-weight:600;opacity:0;pointer-events:none;z-index:9999;transition:opacity .2s;max-width:320px;box-shadow:0 4px 12px rgba(0,0,0,.2)}
+.toast.show{opacity:1}
+
+/* FOOTER */
+.last-saved-footer{background:var(--footer-bg);border-top:1px solid var(--footer-border);border-radius:0 0 10px 10px;padding:8px 20px;font-size:10px;color:var(--footer-text);text-align:right;margin-top:0}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:var(--modal-overlay);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal{background:var(--modal-bg);border-radius:12px;padding:24px;max-width:500px;width:100%;max-height:80vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.2)}
+.modal h2{font-size:16px;font-weight:700;color:var(--text-heading);margin-bottom:16px}
+.modal p{font-size:12px;color:var(--text-secondary);line-height:1.6;margin-bottom:10px}
+.modal-close{float:right;background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-muted);line-height:1}
+.modal-close:hover{color:var(--text)}
+.shortcut-grid{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;font-size:12px}
+.shortcut-key{background:var(--section-bg-light);border:1px solid var(--border);border-radius:4px;padding:2px 7px;font-family:monospace;font-size:11px;font-weight:600;color:var(--text-heading);white-space:nowrap}
+.shortcut-desc{color:var(--text-secondary);align-self:center}
+
+/* LEVEL INDICATOR */
+.level-pill{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700}
+.level-1{background:#fde8e8;color:#b71c1c}
+.level-2{background:#fbe9e7;color:#bf360c}
+.level-3{background:#e3f2fd;color:#0d47a1}
+.level-4{background:#e8f5e9;color:#1b5e20}
+body.dark-mode .level-1{background:#3a1a1a;color:#ef9a9a}
+body.dark-mode .level-2{background:#3e2a10;color:#ffb74d}
+body.dark-mode .level-3{background:#0d2847;color:#64b5f6}
+body.dark-mode .level-4{background:#1a3a1a;color:#66bb6a}
+
+/* SECTION LABEL */
+.section-label{font-size:13px;font-weight:700;color:var(--text-heading);margin:16px 0 8px;padding-bottom:6px;border-bottom:2px solid var(--border)}
+
+/* TWO-COL GRID */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* PRINT */
+@media print{
+  .skip-link,.toolbar,.tab-bar,.filter-bar,.btn,.modal-overlay,.toast{display:none!important}
+  .header{border-radius:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body{padding:0;background:#fff}
+  .wrap{max-width:100%}
+  .ferpa-banner{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .tab-panel{display:block!important}
+  .tab-panel:not(.active){page-break-before:always}
+}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .stats-row{grid-template-columns:repeat(2,1fr)}
+  .two-col{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+  body{padding:10px}
+  .header{padding:18px 16px 12px}
+  .header h1{font-size:18px}
+  .stats-row{grid-template-columns:repeat(2,1fr)}
+  .tool-btn{padding:5px 9px;font-size:10px}
+  .filter-bar{flex-direction:column;align-items:stretch}
+  .filter-group select{width:100%}
+  .coord-cards{grid-template-columns:1fr}
+  .tab-btn{padding:10px 12px;font-size:11px}
+  button,select,input,a.tool-btn{min-height:44px}
+}
+</style>
+<script src="./api.js"></script>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<div class="wrap">
+
+  <!-- HEADER -->
+  <div class="header">
+    <h1>&#x1F4C8; Student Growth Dashboard</h1>
+    <p>Link TELPAS outcomes to teacher walkthroughs and coaching cycles</p>
+    <div class="toolbar">
+      <a class="tool-btn" href="./index.html">&#x1F3E0; Home</a>
+      <button class="tool-btn" onclick="window.print()">&#x1F5A8; Print</button>
+      <button class="tool-btn" onclick="toggleDarkMode()">&#x1F319; Dark</button>
+      <a class="notif-bell-link tool-btn" href="./index.html" id="notifBell" aria-label="Notifications">&#x1F514; <span id="notifCount" style="display:none"></span></a>
+      <span class="save-indicator" id="saveStatus"></span>
+    </div>
+  </div>
+
+  <!-- TAB BAR -->
+  <div class="first-card">
+    <div class="tab-bar" role="tablist" aria-label="Dashboard views">
+      <button class="tab-btn active" role="tab" aria-selected="true" aria-controls="tab-campus" id="tbtn-campus" onclick="switchTab('campus')">&#x1F3EB; Campus Growth</button>
+      <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-coord" id="tbtn-coord" onclick="switchTab('coord')">&#x1F4CB; Coordinator Impact</button>
+      <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-coaching" id="tbtn-coaching" onclick="switchTab('coaching')">&#x1F504; Coaching &#x2194; Growth</button>
+      <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-walkthrough" id="tbtn-walkthrough" onclick="switchTab('walkthrough')">&#x1F4CA; Walkthrough Coverage</button>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div id="main-content" tabindex="-1">
+
+    <!-- FERPA BANNER -->
+    <div class="ferpa-banner" role="alert">
+      <div class="ferpa-icon">&#x26A0;&#xFE0F;</div>
+      <div class="ferpa-text">
+        <strong>FERPA PROTECTED DATA</strong>
+        This dashboard contains student performance data. Do not share screenshots or printouts with unauthorized personnel. Data is stored locally only and is never synced to external services.
+      </div>
+    </div>
+
+    <!-- TAB 1: CAMPUS GROWTH OVERVIEW -->
+    <div class="tab-panel active" id="tab-campus" role="tabpanel" aria-labelledby="tbtn-campus">
+      <div class="card">
+        <div class="card-title">Campus Growth Overview</div>
+
+        <div class="filter-bar" id="campusFilterBar">
+          <div class="filter-group">
+            <label for="campusYearFilter">School Year</label>
+            <select id="campusYearFilter" onchange="renderCampusTab()">
+              <option value="">All Years</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label for="campusCoordFilter">Coordinator</label>
+            <select id="campusCoordFilter" onchange="renderCampusTab()">
+              <option value="">All Coordinators</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label for="campusCampusFilter">Campus</label>
+            <select id="campusCampusFilter" onchange="renderCampusTab()">
+              <option value="">All Campuses</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="campusStatsRow" class="stats-row"></div>
+
+        <div id="campusEmptyState" style="display:none">
+          <div class="empty-state">
+            <span class="empty-icon">&#x1F4CA;</span>
+            <h3>No TELPAS data yet</h3>
+            <p>Add student scores in the TELPAS Tracker tool first, then return here to view campus growth analysis.</p>
+            <a href="./TELPAS_Tracker.html">Go to TELPAS Tracker &rarr;</a>
+          </div>
+        </div>
+
+        <div id="campusChartSection" style="display:none">
+          <div class="section-label">Average Composite Score by Campus (1&#x2013;4 Scale)</div>
+          <div class="chart-wrap" style="height:280px"><canvas id="campusChart" aria-label="Bar chart of average composite TELPAS scores by campus"></canvas></div>
+          <div class="section-label">Campus Detail</div>
+          <div class="table-wrap">
+            <table class="data-table" id="campusTable">
+              <thead>
+                <tr>
+                  <th>Campus</th>
+                  <th>Coordinator</th>
+                  <th># Students</th>
+                  <th>Avg Score</th>
+                  <th>% Adv / Adv High</th>
+                  <th>Trend vs Prior Year</th>
+                </tr>
+              </thead>
+              <tbody id="campusTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: COORDINATOR IMPACT -->
+    <div class="tab-panel" id="tab-coord" role="tabpanel" aria-labelledby="tbtn-coord">
+      <div class="card">
+        <div class="card-title">Coordinator Impact Analysis</div>
+
+        <div class="filter-bar">
+          <div class="filter-group">
+            <label for="coordYearFilter">School Year</label>
+            <select id="coordYearFilter" onchange="renderCoordTab()">
+              <option value="">All Years</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="caution-box">
+          &#x1F4AC; <strong>Correlation only</strong> &#x2014; scores reflect many factors beyond coordinator activities, including campus demographics, program types, teacher capacity, and student enrollment history.
+        </div>
+
+        <div id="coordEmptyState" style="display:none">
+          <div class="empty-state">
+            <span class="empty-icon">&#x1F464;</span>
+            <h3>No TELPAS data yet</h3>
+            <p>Add student scores in the TELPAS Tracker tool first.</p>
+            <a href="./TELPAS_Tracker.html">Go to TELPAS Tracker &rarr;</a>
+          </div>
+        </div>
+
+        <div id="coordContent" style="display:none">
+          <div class="coord-cards" id="coordCards"></div>
+          <div class="section-label">Proficiency Level Distribution by Coordinator</div>
+          <div class="chart-wrap" style="height:300px"><canvas id="coordChart" aria-label="Grouped bar chart showing proficiency level distribution per coordinator"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: COACHING <-> GROWTH CORRELATION -->
+    <div class="tab-panel" id="tab-coaching" role="tabpanel" aria-labelledby="tbtn-coaching">
+      <div class="card">
+        <div class="card-title">Coaching &#x2194; Growth Correlation</div>
+
+        <div class="filter-bar">
+          <div class="filter-group">
+            <label for="coachingYearFilter">School Year</label>
+            <select id="coachingYearFilter" onchange="renderCoachingTab()">
+              <option value="">All Years</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label for="coachingCoordFilter">Coordinator</label>
+            <select id="coachingCoordFilter" onchange="renderCoachingTab()">
+              <option value="">All Coordinators</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="note-box">
+          &#x1F4CC; <strong>Methodology note:</strong> This view correlates coaching cycle completion counts for each teacher's campus with the average TELPAS composite score for that campus. This shows correlation, not causation. Many factors influence student outcomes.
+        </div>
+
+        <div id="coachingEmptyState" style="display:none">
+          <div class="empty-state">
+            <span class="empty-icon">&#x1F504;</span>
+            <h3>No data to correlate</h3>
+            <p>Add coaching cycles in the Coaching Cycle Tracker and TELPAS scores in the TELPAS Tracker to see correlations here.</p>
+          </div>
+        </div>
+
+        <div id="coachingContent" style="display:none">
+          <div class="section-label">Coaching Cycles Completed vs. Avg TELPAS Composite (by Campus)</div>
+          <div class="chart-wrap" style="height:300px"><canvas id="coachingChart" aria-label="Scatter plot of coaching cycles completed versus average TELPAS composite score by campus"></canvas></div>
+          <div class="section-label">Teacher / Campus Detail</div>
+          <div class="table-wrap">
+            <table class="data-table" id="coachingTable">
+              <thead>
+                <tr>
+                  <th>Teacher</th>
+                  <th>Campus</th>
+                  <th>Coaching Cycles Completed</th>
+                  <th>Avg TELPAS Composite</th>
+                  <th>Program Types</th>
+                </tr>
+              </thead>
+              <tbody id="coachingTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: WALKTHROUGH COVERAGE VS GROWTH -->
+    <div class="tab-panel" id="tab-walkthrough" role="tabpanel" aria-labelledby="tbtn-walkthrough">
+      <div class="card">
+        <div class="card-title">Walkthrough Coverage vs. Growth</div>
+
+        <div class="filter-bar">
+          <div class="filter-group">
+            <label for="wtPeriodFilter">Period</label>
+            <select id="wtPeriodFilter" onchange="renderWalkthroughTab()">
+              <option value="90">Last 3 Months</option>
+              <option value="180" selected>Last 6 Months</option>
+              <option value="365">This School Year</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label for="wtCoordFilter">Coordinator</label>
+            <select id="wtCoordFilter" onchange="renderWalkthroughTab()">
+              <option value="">All Coordinators</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="wtEmptyState" style="display:none">
+          <div class="empty-state">
+            <span class="empty-icon">&#x1F4C5;</span>
+            <h3>No walkthrough data yet</h3>
+            <p>Record walkthroughs in the Walkthrough Planning tool first.</p>
+          </div>
+        </div>
+
+        <div id="wtContent" style="display:none">
+          <div class="section-label">Campuses Ranked by Walkthrough Frequency</div>
+          <div class="chart-wrap" style="height:280px"><canvas id="wtChart" aria-label="Bar chart of campuses ranked by walkthrough frequency"></canvas></div>
+          <div class="section-label">Campus Summary</div>
+          <div class="table-wrap">
+            <table class="data-table" id="wtTable">
+              <thead>
+                <tr>
+                  <th>Campus</th>
+                  <th>Walkthroughs (period)</th>
+                  <th>Active Coaching Cycles</th>
+                  <th>Avg TELPAS Composite</th>
+                  <th># Students Assessed</th>
+                </tr>
+              </thead>
+              <tbody id="wtTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /#main-content -->
+
+  <!-- FOOTER -->
+  <div class="last-saved-footer" id="lastSavedFooter">Read-only view &mdash; data sourced from TELPAS Tracker, Coaching Cycle Tracker, and Walkthrough history</div>
+
+</div><!-- /.wrap -->
+
+<!-- TOAST -->
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- SHORTCUTS MODAL -->
+<div class="modal-overlay" id="shortcutsModal" role="dialog" aria-modal="true" aria-labelledby="shortcutsTitle">
+  <div class="modal">
+    <button class="modal-close" onclick="closeShortcuts()" aria-label="Close shortcuts">&times;</button>
+    <h2 id="shortcutsTitle">&#x2328;&#xFE0F; Keyboard Shortcuts</h2>
+    <div class="shortcut-grid">
+      <span class="shortcut-key">?</span><span class="shortcut-desc">Show this help</span>
+      <span class="shortcut-key">Esc</span><span class="shortcut-desc">Close modals</span>
+      <span class="shortcut-key">Ctrl+D</span><span class="shortcut-desc">Toggle dark mode</span>
+      <span class="shortcut-key">Ctrl+P</span><span class="shortcut-desc">Print</span>
+      <span class="shortcut-key">1&#x2013;4</span><span class="shortcut-desc">Switch to tab 1&#x2013;4</span>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================
+   THEME IIFE (runs before render)
+   ============================ */
+(function(){
+  try {
+    var raw = localStorage.getItem("mlp_hub_config");
+    var cfg = raw ? JSON.parse(raw) : {};
+    var THEMES = {
+      "default":{primary:"#4a90d9",primaryDark:"#2c3e6e",headerGrad1:"#2c3e6e",headerGrad2:"#4a90d9"},
+      "forest":{primary:"#2e7d32",primaryDark:"#1b5e20",headerGrad1:"#1b5e20",headerGrad2:"#2e7d32"},
+      "sunset":{primary:"#e64a19",primaryDark:"#bf360c",headerGrad1:"#bf360c",headerGrad2:"#e64a19"},
+      "ruby":{primary:"#c62828",primaryDark:"#7f0000",headerGrad1:"#7f0000",headerGrad2:"#c62828"},
+      "slate":{primary:"#455a64",primaryDark:"#263238",headerGrad1:"#263238",headerGrad2:"#455a64"},
+      "royal":{primary:"#7b1fa2",primaryDark:"#4a148c",headerGrad1:"#4a148c",headerGrad2:"#7b1fa2"},
+      "teal":{primary:"#00796b",primaryDark:"#004d40",headerGrad1:"#004d40",headerGrad2:"#00796b"},
+      "charcoal":{primary:"#616161",primaryDark:"#212121",headerGrad1:"#212121",headerGrad2:"#616161"}
+    };
+    var colors = cfg.customColors || THEMES[cfg.theme || "default"] || THEMES["default"];
+    var r = document.documentElement.style;
+    r.setProperty("--primary", colors.primary);
+    r.setProperty("--primary-dark", colors.primaryDark);
+    r.setProperty("--header-gradient-1", colors.headerGrad1);
+    r.setProperty("--header-gradient-2", colors.headerGrad2);
+    r.setProperty("--text-heading", colors.primaryDark);
+    var pName = cfg.productName || cfg.orgName || '';
+    if (pName) {
+      var h1 = document.querySelector(".header h1");
+      if (h1) h1.textContent = pName;
+      document.title = pName + ' \u2014 ' + document.title;
+    }
+  } catch(e){}
+})();
+
+/* ============================
+   ROLE GATE IIFE
+   ============================ */
+(function(){
+  var ALLOWED_ROLES = ["manager","coordinator"];
+  var role = "";
+  try {
+    role = localStorage.getItem("esl_home_role") || "";
+    if (!role) {
+      var cfg = JSON.parse(localStorage.getItem("mlp_hub_config") || "{}");
+      role = cfg.userRole || "manager";
+    }
+  } catch(e){ role = "manager"; }
+  var allowed = false;
+  for (var i = 0; i < ALLOWED_ROLES.length; i++) {
+    if (ALLOWED_ROLES[i] === role) { allowed = true; break; }
+  }
+  if (!allowed) {
+    document.addEventListener("DOMContentLoaded", function(){
+      document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:Segoe UI,Arial,sans-serif;background:#f0f2f7"><div style="text-align:center;padding:40px;background:#fff;border-radius:14px;box-shadow:0 4px 20px rgba(0,0,0,.1);max-width:400px"><div style="font-size:48px;margin-bottom:16px">&#x1F512;</div><h2 style="color:#2c3e6e;margin-bottom:10px">Access Restricted</h2><p style="color:#666;font-size:13px;margin-bottom:20px">This tool is available to Managers and MLP Coordinators only.</p><a href="./index.html" style="background:#4a90d9;color:#fff;padding:10px 22px;border-radius:8px;text-decoration:none;font-weight:600;font-size:13px">&#x1F3E0; Return Home</a></div></div>';
+    });
+  }
+})();
+
+/* ============================
+   CONSTANTS & DEFAULTS
+   ============================ */
+var DEFAULT_COORDINATORS = [
+  {id:"jmiller",  name:"J. Miller",     email:"jmiller@uplifteducation.org",   color:"#8e44ad"},
+  {id:"kpatterson",name:"K. Patterson", email:"kpatterson@uplifteducation.org", color:"#0097a7"},
+  {id:"pokolo",   name:"P. Okolo",      email:"Pokolo@uplifteducation.org",     color:"#c0392b"},
+  {id:"vpalencia",name:"V. Palencia",   email:"vpalencia@uplifteducation.org",  color:"#2980b9"}
+];
+
+var LEVEL_MAP = {"Beginning":1,"Intermediate":2,"Advanced":3,"Advanced High":4};
+var LEVEL_LABELS = {1:"Beginning",2:"Intermediate",3:"Advanced",4:"Advanced High"};
+var LEVEL_COLORS = {1:"#e74c3c",2:"#f39c12",3:"#3498db",4:"#27ae60"};
+var LEVEL_BG    = {1:"rgba(231,76,60,.18)",2:"rgba(243,156,18,.18)",3:"rgba(52,152,219,.18)",4:"rgba(39,174,96,.18)"};
+
+/* ============================
+   CHART REFS
+   ============================ */
+var campusChartRef = null;
+var coordChartRef  = null;
+var coachingChartRef = null;
+var wtChartRef     = null;
+
+/* ============================
+   UTILITY FUNCTIONS
+   ============================ */
+function escHtml(str) {
+  if (!str && str !== 0) return '';
+  var tn = document.createTextNode(String(str));
+  var div = document.createElement('div');
+  div.appendChild(tn);
+  return div.innerHTML;
+}
+
+var toastTimer = null;
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  if (!t) return;
+  t.textContent = msg;
+  t.classList.add('show');
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 2800);
+}
+
+function toggleDarkMode() {
+  var isDark = document.body.classList.toggle('dark-mode');
+  localStorage.setItem('esl_app_theme', isDark ? 'dark' : 'light');
+  rerenderAllCharts();
+}
+
+function getCoordinators() {
+  try {
+    var raw = localStorage.getItem('mlp_hub_config');
+    var cfg = raw ? JSON.parse(raw) : {};
+    if (cfg.coordinators && cfg.coordinators.length) return cfg.coordinators;
+  } catch(e){}
+  return DEFAULT_COORDINATORS;
+}
+
+function levelToNum(level) {
+  return LEVEL_MAP[level] || 0;
+}
+
+function avgLevel(records, field) {
+  var sum = 0, count = 0;
+  for (var i = 0; i < records.length; i++) {
+    var v = levelToNum(records[i][field] || records[i].compositeLevel || "");
+    if (v > 0) { sum += v; count++; }
+  }
+  return count > 0 ? parseFloat((sum / count).toFixed(2)) : 0;
+}
+
+function avgLevelFormatted(records, field) {
+  var v = avgLevel(records, field);
+  return v > 0 ? v.toFixed(2) : '&#x2014;';
+}
+
+function getCurrentSchoolYear() {
+  var now = new Date();
+  var y = now.getFullYear();
+  var m = now.getMonth();
+  return m >= 7 ? (y + '-' + String(y + 1).slice(2)) : ((y - 1) + '-' + String(y).slice(2));
+}
+
+function getSchoolYears(records) {
+  var seen = {};
+  var years = [];
+  for (var i = 0; i < records.length; i++) {
+    var sy = records[i].schoolYear || '';
+    if (sy && !seen[sy]) { seen[sy] = true; years.push(sy); }
+  }
+  years.sort(function(a, b){ return b > a ? 1 : -1; });
+  return years;
+}
+
+function isDarkMode() {
+  return document.body.classList.contains('dark-mode');
+}
+
+function chartTextColor() {
+  return isDarkMode() ? '#ccc' : '#555';
+}
+
+function chartGridColor() {
+  return isDarkMode() ? 'rgba(255,255,255,.08)' : 'rgba(0,0,0,.06)';
+}
+
+function stampLastSaved() {
+  var footer = document.getElementById('lastSavedFooter');
+  if (footer) {
+    var now = new Date();
+    footer.textContent = 'Last refreshed: ' + now.toLocaleString();
+  }
+}
+
+function renderLastSaved() {
+  stampLastSaved();
+}
+
+/* ============================
+   DATA LOADERS
+   ============================ */
+function loadTelpas() {
+  try {
+    var raw = localStorage.getItem('telpas_tracker_data');
+    if (!raw) return [];
+    var d = JSON.parse(raw);
+    return (d && d.records) ? d.records : [];
+  } catch(e){ return []; }
+}
+
+function loadCoachingCycles() {
+  try {
+    var raw = localStorage.getItem('coaching_cycles_data');
+    if (!raw) return [];
+    var d = JSON.parse(raw);
+    return (d && d.cycles) ? d.cycles : [];
+  } catch(e){ return []; }
+}
+
+function loadWalkthroughHistory() {
+  try {
+    var raw = localStorage.getItem('walkthrough_history');
+    if (!raw) return [];
+    var d = JSON.parse(raw);
+    return Array.isArray(d) ? d : [];
+  } catch(e){ return []; }
+}
+
+function loadStudentRoster() {
+  try {
+    var raw = localStorage.getItem('student_roster_data');
+    if (!raw) return [];
+    var d = JSON.parse(raw);
+    return (d && d.students) ? d.students : [];
+  } catch(e){ return []; }
+}
+
+/* ============================
+   NOTIFICATION BELL
+   ============================ */
+function renderNotifBell() {
+  try {
+    var cnt = parseInt(localStorage.getItem('notification_unread_count') || '0', 10);
+    var badge = document.getElementById('notifCount');
+    if (badge) {
+      if (cnt > 0) {
+        badge.textContent = cnt > 9 ? '9+' : String(cnt);
+        badge.style.display = 'inline';
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+  } catch(e){}
+}
+
+/* ============================
+   DROPDOWN POPULATION
+   ============================ */
+function populateYearDropdowns(records) {
+  var years = getSchoolYears(records);
+  var ids = ['campusYearFilter','coordYearFilter','coachingYearFilter'];
+  for (var i = 0; i < ids.length; i++) {
+    var sel = document.getElementById(ids[i]);
+    if (!sel) continue;
+    while (sel.options.length > 1) sel.remove(1);
+    for (var j = 0; j < years.length; j++) {
+      var o = document.createElement('option');
+      o.value = years[j];
+      o.textContent = years[j];
+      sel.appendChild(o);
+    }
+  }
+}
+
+function populateCoordDropdowns() {
+  var coords = getCoordinators();
+  var ids = ['campusCoordFilter','coachingCoordFilter','wtCoordFilter'];
+  for (var i = 0; i < ids.length; i++) {
+    var sel = document.getElementById(ids[i]);
+    if (!sel) continue;
+    while (sel.options.length > 1) sel.remove(1);
+    for (var j = 0; j < coords.length; j++) {
+      var o = document.createElement('option');
+      o.value = coords[j].name;
+      o.textContent = coords[j].name;
+      sel.appendChild(o);
+    }
+  }
+}
+
+function populateCampusDropdown(records) {
+  var sel = document.getElementById('campusCampusFilter');
+  if (!sel) return;
+  var seen = {}, campuses = [];
+  for (var i = 0; i < records.length; i++) {
+    var c = records[i].campus || '';
+    if (c && !seen[c]) { seen[c] = true; campuses.push(c); }
+  }
+  campuses.sort();
+  while (sel.options.length > 1) sel.remove(1);
+  for (var j = 0; j < campuses.length; j++) {
+    var o = document.createElement('option');
+    o.value = campuses[j];
+    o.textContent = campuses[j];
+    sel.appendChild(o);
+  }
+}
+
+/* ============================
+   FILTER HELPERS
+   ============================ */
+function filterTelpas(records, year, coord, campus) {
+  var out = [];
+  for (var i = 0; i < records.length; i++) {
+    var r = records[i];
+    if (year && r.schoolYear !== year) continue;
+    if (coord && r.coordinator !== coord) continue;
+    if (campus && r.campus !== campus) continue;
+    out.push(r);
+  }
+  return out;
+}
+
+function groupByCampus(records) {
+  var map = {};
+  for (var i = 0; i < records.length; i++) {
+    var c = records[i].campus || 'Unknown';
+    if (!map[c]) map[c] = [];
+    map[c].push(records[i]);
+  }
+  return map;
+}
+
+function groupByCoord(records) {
+  var map = {};
+  for (var i = 0; i < records.length; i++) {
+    var c = records[i].coordinator || 'Unknown';
+    if (!map[c]) map[c] = [];
+    map[c].push(records[i]);
+  }
+  return map;
+}
+
+function pctAdvanced(records) {
+  var adv = 0;
+  for (var i = 0; i < records.length; i++) {
+    var lv = levelToNum(records[i].compositeLevel || '');
+    if (lv >= 3) adv++;
+  }
+  return records.length > 0 ? Math.round((adv / records.length) * 100) : 0;
+}
+
+function pctBeginnerInterm(records) {
+  var low = 0;
+  for (var i = 0; i < records.length; i++) {
+    var lv = levelToNum(records[i].compositeLevel || '');
+    if (lv > 0 && lv <= 2) low++;
+  }
+  return records.length > 0 ? Math.round((low / records.length) * 100) : 0;
+}
+
+function coordColorMap() {
+  var coords = getCoordinators();
+  var map = {};
+  for (var i = 0; i < coords.length; i++) {
+    map[coords[i].name] = coords[i].color || '#4a90d9';
+  }
+  return map;
+}
+
+/* ============================
+   TAB 1: CAMPUS GROWTH
+   ============================ */
+function renderCampusTab() {
+  saveFilters();
+  var allRecords = loadTelpas();
+  var yearSel = document.getElementById('campusYearFilter');
+  var coordSel = document.getElementById('campusCoordFilter');
+  var campusSel = document.getElementById('campusCampusFilter');
+  var year   = yearSel  ? yearSel.value  : '';
+  var coord  = coordSel ? coordSel.value : '';
+  var campus = campusSel ? campusSel.value : '';
+
+  var records = filterTelpas(allRecords, year, coord, campus);
+
+  var emptyEl   = document.getElementById('campusEmptyState');
+  var chartSect = document.getElementById('campusChartSection');
+  var statsRow  = document.getElementById('campusStatsRow');
+
+  if (!allRecords.length) {
+    emptyEl.style.display = 'block';
+    chartSect.style.display = 'none';
+    statsRow.innerHTML = '';
+    return;
+  }
+
+  emptyEl.style.display = 'none';
+  chartSect.style.display = 'block';
+
+  // Stats
+  var total    = records.length;
+  var avgComp  = avgLevel(records, 'compositeLevel');
+  var pctAdv   = pctAdvanced(records);
+  var pctLow   = pctBeginnerInterm(records);
+
+  statsRow.innerHTML =
+    '<div class="stat-card"><div class="stat-value">' + total + '</div><div class="stat-label">Students Assessed</div></div>' +
+    '<div class="stat-card"><div class="stat-value">' + (avgComp > 0 ? avgComp.toFixed(2) : '&#x2014;') + '</div><div class="stat-label">Avg Composite</div><div class="stat-sub">1=Beg &nbsp; 4=Adv High</div></div>' +
+    '<div class="stat-card"><div class="stat-value" style="color:#27ae60">' + pctAdv + '%</div><div class="stat-label">Advanced / Adv High</div></div>' +
+    '<div class="stat-card"><div class="stat-value" style="color:#e74c3c">' + pctLow + '%</div><div class="stat-label">Beg / Intermediate</div></div>';
+
+  // Group by campus
+  var grouped = groupByCampus(records);
+  var campuses = Object.keys(grouped).sort();
+
+  // Prior year records for trend
+  var priorYear = '';
+  if (year) {
+    var parts = year.split('-');
+    if (parts.length === 2) {
+      var py = parseInt(parts[0], 10) - 1;
+      priorYear = py + '-' + String(py + 1).slice(2);
+    }
+  }
+  var priorRecords = priorYear ? filterTelpas(allRecords, priorYear, coord, campus) : [];
+  var priorGrouped = groupByCampus(priorRecords);
+
+  var colorMap = coordColorMap();
+  var labels = [], dataVals = [], bgColors = [], borderColors = [];
+  var tbody = document.getElementById('campusTableBody');
+  tbody.innerHTML = '';
+
+  for (var i = 0; i < campuses.length; i++) {
+    var camp = campuses[i];
+    var recs = grouped[camp];
+    var coordName = recs[0].coordinator || 'Unknown';
+    var avg = avgLevel(recs, 'compositeLevel');
+    var pAdv = pctAdvanced(recs);
+    var color = colorMap[coordName] || '#4a90d9';
+
+    // Trend
+    var trendHtml = '<span class="trend-same">&#x2014;</span>';
+    if (priorGrouped[camp] && priorGrouped[camp].length) {
+      var priorAvg = avgLevel(priorGrouped[camp], 'compositeLevel');
+      if (priorAvg > 0 && avg > 0) {
+        var diff = avg - priorAvg;
+        if (diff > 0.05) trendHtml = '<span class="trend-up">&#x2191; +' + diff.toFixed(2) + '</span>';
+        else if (diff < -0.05) trendHtml = '<span class="trend-down">&#x2193; ' + diff.toFixed(2) + '</span>';
+        else trendHtml = '<span class="trend-same">&#x2192; ' + (diff >= 0 ? '+' : '') + diff.toFixed(2) + '</span>';
+      }
+    }
+
+    labels.push(camp);
+    dataVals.push(avg > 0 ? avg : 0);
+    bgColors.push(color.replace('#','rgba(') ? hexToRgba(color, 0.7) : 'rgba(74,144,217,.7)');
+    borderColors.push(color);
+
+    var tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td>' + escHtml(camp) + '</td>' +
+      '<td>' + escHtml(coordName) + '</td>' +
+      '<td>' + recs.length + '</td>' +
+      '<td><strong>' + (avg > 0 ? avg.toFixed(2) : '&#x2014;') + '</strong></td>' +
+      '<td>' + pAdv + '%</td>' +
+      '<td>' + trendHtml + '</td>';
+    tbody.appendChild(tr);
+  }
+
+  // Chart
+  var ctx = document.getElementById('campusChart').getContext('2d');
+  if (campusChartRef) { campusChartRef.destroy(); campusChartRef = null; }
+  campusChartRef = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Avg Composite Score',
+        data: dataVals,
+        backgroundColor: bgColors,
+        borderColor: borderColors,
+        borderWidth: 2,
+        borderRadius: 5
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        title: { display: true, text: 'Average TELPAS Composite Score by Campus', color: chartTextColor(), font: {size:13} },
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              var v = ctx.raw;
+              var label = '';
+              if (v >= 3.5) label = 'Advanced High';
+              else if (v >= 2.5) label = 'Advanced';
+              else if (v >= 1.5) label = 'Intermediate';
+              else if (v > 0) label = 'Beginning';
+              return ' Score: ' + v.toFixed(2) + (label ? ' (' + label + ')' : '');
+            }
+          }
+        }
+      },
+      scales: {
+        y: {
+          min: 0, max: 4,
+          title: { display: true, text: 'Avg Composite (1-4)', color: chartTextColor() },
+          ticks: { color: chartTextColor(), stepSize: 1,
+            callback: function(v){ return LEVEL_LABELS[v] || v; }
+          },
+          grid: { color: chartGridColor() }
+        },
+        x: {
+          ticks: { color: chartTextColor(), maxRotation: 35 },
+          grid: { display: false }
+        }
+      }
+    }
+  });
+}
+
+/* ============================
+   TAB 2: COORDINATOR IMPACT
+   ============================ */
+function renderCoordTab() {
+  saveFilters();
+  var allRecords = loadTelpas();
+  var yearSel = document.getElementById('coordYearFilter');
+  var year = yearSel ? yearSel.value : '';
+  var records = filterTelpas(allRecords, year, '', '');
+
+  var emptyEl  = document.getElementById('coordEmptyState');
+  var content  = document.getElementById('coordContent');
+  var cardsEl  = document.getElementById('coordCards');
+
+  if (!allRecords.length) {
+    emptyEl.style.display = 'block';
+    content.style.display = 'none';
+    return;
+  }
+
+  emptyEl.style.display = 'none';
+  content.style.display = 'block';
+
+  var coordMap = groupByCoord(records);
+  var coordNames = Object.keys(coordMap).sort();
+  var colorMap = coordColorMap();
+
+  // Coord cards
+  var cardsHtml = '';
+  for (var i = 0; i < coordNames.length; i++) {
+    var cn = coordNames[i];
+    var recs = coordMap[cn];
+    var avg = avgLevel(recs, 'compositeLevel');
+    var pAdv = pctAdvanced(recs);
+    var color = colorMap[cn] || '#4a90d9';
+    cardsHtml +=
+      '<div class="coord-card" style="border-left-color:' + escHtml(color) + '">' +
+        '<div class="coord-card-name">' + escHtml(cn) + '</div>' +
+        '<div class="coord-card-stat"><span>Total Students</span><span>' + recs.length + '</span></div>' +
+        '<div class="coord-card-stat"><span>Avg Composite</span><span>' + (avg > 0 ? avg.toFixed(2) : '&#x2014;') + '</span></div>' +
+        '<div class="coord-card-stat"><span>% Adv / Adv High</span><span style="color:#27ae60">' + pAdv + '%</span></div>' +
+      '</div>';
+  }
+  cardsEl.innerHTML = cardsHtml;
+
+  // Grouped bar chart: each coord has 4 bars (% at each level)
+  var levelNames = ['Beginning','Intermediate','Advanced','Advanced High'];
+  var levelColors = ['#e74c3c','#f39c12','#3498db','#27ae60'];
+  var datasets = [];
+  for (var li = 0; li < levelNames.length; li++) {
+    var lvNum = li + 1;
+    var vals = [];
+    for (var ci = 0; ci < coordNames.length; ci++) {
+      var crecs = coordMap[coordNames[ci]];
+      var count = 0;
+      for (var ri = 0; ri < crecs.length; ri++) {
+        if (levelToNum(crecs[ri].compositeLevel || '') === lvNum) count++;
+      }
+      vals.push(crecs.length > 0 ? Math.round((count / crecs.length) * 100) : 0);
+    }
+    datasets.push({
+      label: levelNames[li],
+      data: vals,
+      backgroundColor: hexToRgba(levelColors[li], 0.75),
+      borderColor: levelColors[li],
+      borderWidth: 2,
+      borderRadius: 4
+    });
+  }
+
+  var ctx2 = document.getElementById('coordChart').getContext('2d');
+  if (coordChartRef) { coordChartRef.destroy(); coordChartRef = null; }
+  coordChartRef = new Chart(ctx2, {
+    type: 'bar',
+    data: { labels: coordNames, datasets: datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        title: { display: true, text: 'Proficiency Level Distribution by Coordinator (%)', color: chartTextColor(), font:{size:13} },
+        legend: { labels: { color: chartTextColor() } },
+        tooltip: { callbacks: { label: function(ctx){ return ' ' + ctx.dataset.label + ': ' + ctx.raw + '%'; } } }
+      },
+      scales: {
+        y: {
+          min: 0, max: 100,
+          title: { display: true, text: '% of Students', color: chartTextColor() },
+          ticks: { color: chartTextColor(), callback: function(v){ return v + '%'; } },
+          grid: { color: chartGridColor() }
+        },
+        x: {
+          ticks: { color: chartTextColor() },
+          grid: { display: false }
+        }
+      }
+    }
+  });
+}
+
+/* ============================
+   TAB 3: COACHING <-> GROWTH
+   ============================ */
+function renderCoachingTab() {
+  saveFilters();
+  var allTelpas = loadTelpas();
+  var cycles = loadCoachingCycles();
+  var yearSel  = document.getElementById('coachingYearFilter');
+  var coordSel = document.getElementById('coachingCoordFilter');
+  var year  = yearSel  ? yearSel.value  : '';
+  var coord = coordSel ? coordSel.value : '';
+
+  var records = filterTelpas(allTelpas, year, coord, '');
+
+  var emptyEl = document.getElementById('coachingEmptyState');
+  var content = document.getElementById('coachingContent');
+
+  if (!allTelpas.length && !cycles.length) {
+    emptyEl.style.display = 'block';
+    content.style.display = 'none';
+    return;
+  }
+
+  emptyEl.style.display = 'none';
+  content.style.display = 'block';
+
+  // Build campus->telpas avg map
+  var campusGroups = groupByCampus(records);
+  var campusAvgMap = {};
+  for (var c in campusGroups) {
+    campusAvgMap[c] = avgLevel(campusGroups[c], 'compositeLevel');
+  }
+
+  // Build teacher -> coaching cycles completed count
+  // Count stages with status "complete"
+  var teacherCycleMap = {};
+  var teacherCampusMap = {};
+  for (var i = 0; i < cycles.length; i++) {
+    var cy = cycles[i];
+    var teacher = cy.teacher || 'Unknown';
+    var campus  = cy.campus  || '';
+    var completed = 0;
+    if (cy.stages && cy.stages.length) {
+      for (var si = 0; si < cy.stages.length; si++) {
+        if (cy.stages[si].status === 'complete' || cy.stages[si].status === 'completed') {
+          completed++;
+        }
+      }
+    }
+    if (!teacherCycleMap[teacher]) { teacherCycleMap[teacher] = 0; }
+    teacherCycleMap[teacher] += completed;
+    if (campus && !teacherCampusMap[teacher]) {
+      teacherCampusMap[teacher] = campus;
+    }
+  }
+
+  // Build scatter data: group by campus
+  var campusCycleMap = {};
+  var campusCycleTeachersMap = {};
+  for (var teacher in teacherCycleMap) {
+    var camp = teacherCampusMap[teacher] || 'Unknown';
+    if (!campusCycleMap[camp]) { campusCycleMap[camp] = 0; campusCycleTeachersMap[camp] = []; }
+    campusCycleMap[camp] += teacherCycleMap[teacher];
+    campusCycleTeachersMap[camp].push(teacher);
+  }
+
+  // Scatter points: campuses that have both cycle data and telpas
+  var scatterPoints = [];
+  var scatterLabels = [];
+  for (var camp in campusCycleMap) {
+    var avgTelpas = campusAvgMap[camp] || 0;
+    scatterPoints.push({ x: campusCycleMap[camp], y: avgTelpas, label: camp });
+    scatterLabels.push(camp);
+  }
+  // Also include campuses with only telpas data
+  for (var camp2 in campusAvgMap) {
+    if (!campusCycleMap[camp2]) {
+      scatterPoints.push({ x: 0, y: campusAvgMap[camp2], label: camp2 });
+    }
+  }
+
+  // Chart
+  var ctx3 = document.getElementById('coachingChart').getContext('2d');
+  if (coachingChartRef) { coachingChartRef.destroy(); coachingChartRef = null; }
+  coachingChartRef = new Chart(ctx3, {
+    type: 'scatter',
+    data: {
+      datasets: [{
+        label: 'Campuses',
+        data: scatterPoints,
+        backgroundColor: 'rgba(74,144,217,.65)',
+        borderColor: '#4a90d9',
+        borderWidth: 2,
+        pointRadius: 8,
+        pointHoverRadius: 11
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        title: { display: true, text: 'Coaching Cycles Completed vs Avg TELPAS Composite (by Campus)', color: chartTextColor(), font:{size:13} },
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              var pt = ctx.raw;
+              return ' ' + (pt.label || '') + ' | Cycles: ' + pt.x + ' | Avg: ' + (pt.y > 0 ? pt.y.toFixed(2) : 'N/A');
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          title: { display: true, text: 'Coaching Cycle Stages Completed (campus total)', color: chartTextColor() },
+          ticks: { color: chartTextColor() },
+          grid: { color: chartGridColor() },
+          min: 0
+        },
+        y: {
+          min: 0, max: 4,
+          title: { display: true, text: 'Avg TELPAS Composite (1-4)', color: chartTextColor() },
+          ticks: {
+            color: chartTextColor(),
+            callback: function(v){ return LEVEL_LABELS[v] || v; }
+          },
+          grid: { color: chartGridColor() }
+        }
+      }
+    }
+  });
+
+  // Table: teachers
+  var tbody = document.getElementById('coachingTableBody');
+  tbody.innerHTML = '';
+
+  var teachers = Object.keys(teacherCycleMap).sort();
+  if (!teachers.length && !scatterPoints.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:20px">No coaching cycle data available</td></tr>';
+    return;
+  }
+
+  for (var ti = 0; ti < teachers.length; ti++) {
+    var tc = teachers[ti];
+    var tcampus = teacherCampusMap[tc] || 'Unknown';
+    var tcycles = teacherCycleMap[tc];
+    var tAvg    = campusAvgMap[tcampus] || 0;
+
+    // Program types from student roster for that campus
+    var roster  = loadStudentRoster();
+    var progSet = {};
+    for (var ri = 0; ri < roster.length; ri++) {
+      if ((roster[ri].campus || '') === tcampus && roster[ri].programType) {
+        progSet[roster[ri].programType] = true;
+      }
+    }
+    var progTypes = Object.keys(progSet).join(', ') || '&#x2014;';
+
+    var tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td>' + escHtml(tc) + '</td>' +
+      '<td>' + escHtml(tcampus) + '</td>' +
+      '<td style="text-align:center"><strong>' + tcycles + '</strong></td>' +
+      '<td style="text-align:center">' + (tAvg > 0 ? tAvg.toFixed(2) : '&#x2014;') + '</td>' +
+      '<td>' + progTypes + '</td>';
+    tbody.appendChild(tr);
+  }
+
+  if (!teachers.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:20px">No coaching cycle data available for current filters</td></tr>';
+  }
+}
+
+/* ============================
+   TAB 4: WALKTHROUGH COVERAGE
+   ============================ */
+function renderWalkthroughTab() {
+  saveFilters();
+  var walkthroughs = loadWalkthroughHistory();
+  var allTelpas    = loadTelpas();
+  var cycles       = loadCoachingCycles();
+
+  var periodSel = document.getElementById('wtPeriodFilter');
+  var coordSel  = document.getElementById('wtCoordFilter');
+  var days  = periodSel ? parseInt(periodSel.value, 10) : 180;
+  var coord = coordSel  ? coordSel.value : '';
+
+  var cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - days);
+
+  var emptyEl = document.getElementById('wtEmptyState');
+  var content = document.getElementById('wtContent');
+
+  if (!walkthroughs.length && !allTelpas.length) {
+    emptyEl.style.display = 'block';
+    content.style.display = 'none';
+    return;
+  }
+
+  emptyEl.style.display = 'none';
+  content.style.display = 'block';
+
+  // Count walkthroughs per campus within period
+  var campusWtCount = {};
+  for (var wi = 0; wi < walkthroughs.length; wi++) {
+    var wt = walkthroughs[wi];
+    var wtDate = null;
+    try { wtDate = new Date((wt.meta && wt.meta.date) ? wt.meta.date : (wt.date || '')); } catch(e){}
+    if (!wtDate || isNaN(wtDate.getTime()) || wtDate < cutoff) continue;
+    var wtCampus = (wt.meta && wt.meta.campus) ? wt.meta.campus : (wt.campus || 'Unknown');
+    if (coord) {
+      // Filter by coordinator if selected — check coordinator field on walkthrough
+      var wtCoord = (wt.meta && wt.meta.coordinator) ? wt.meta.coordinator : (wt.coordinator || '');
+      if (wtCoord && wtCoord !== coord) continue;
+    }
+    if (!campusWtCount[wtCampus]) campusWtCount[wtCampus] = 0;
+    campusWtCount[wtCampus]++;
+  }
+
+  // Also pull campuses from telpas even if no walkthroughs
+  var telpasGroups = groupByCampus(filterTelpas(allTelpas, '', coord, ''));
+  for (var tc in telpasGroups) {
+    if (!campusWtCount[tc]) campusWtCount[tc] = 0;
+  }
+
+  // Count active coaching cycles per campus
+  var campusActiveCycles = {};
+  for (var ci = 0; ci < cycles.length; ci++) {
+    var cy = cycles[ci];
+    var camp = cy.campus || 'Unknown';
+    // "Active" = not all stages complete
+    var allDone = true;
+    if (cy.stages && cy.stages.length) {
+      for (var si = 0; si < cy.stages.length; si++) {
+        if (cy.stages[si].status !== 'complete' && cy.stages[si].status !== 'completed') {
+          allDone = false; break;
+        }
+      }
+    } else { allDone = false; }
+    if (!allDone) {
+      if (!campusActiveCycles[camp]) campusActiveCycles[camp] = 0;
+      campusActiveCycles[camp]++;
+    }
+  }
+
+  // Sort campuses by walkthrough count desc
+  var campuses = Object.keys(campusWtCount);
+  campuses.sort(function(a, b){ return campusWtCount[b] - campusWtCount[a]; });
+
+  // Build chart data
+  var labels = [], wtData = [], bgColors = [];
+  for (var i = 0; i < campuses.length; i++) {
+    labels.push(campuses[i]);
+    wtData.push(campusWtCount[campuses[i]]);
+    bgColors.push('rgba(74,144,217,.72)');
+  }
+
+  var ctx4 = document.getElementById('wtChart').getContext('2d');
+  if (wtChartRef) { wtChartRef.destroy(); wtChartRef = null; }
+  wtChartRef = new Chart(ctx4, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Walkthroughs',
+        data: wtData,
+        backgroundColor: bgColors,
+        borderColor: '#4a90d9',
+        borderWidth: 2,
+        borderRadius: 5
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        title: { display: true, text: 'Campuses Ranked by Walkthrough Frequency', color: chartTextColor(), font:{size:13} },
+        legend: { display: false },
+        tooltip: { callbacks: { label: function(ctx){ return ' ' + ctx.raw + ' walkthrough(s)'; } } }
+      },
+      scales: {
+        x: {
+          min: 0,
+          title: { display: true, text: 'Number of Walkthroughs', color: chartTextColor() },
+          ticks: { color: chartTextColor() },
+          grid: { color: chartGridColor() }
+        },
+        y: {
+          ticks: { color: chartTextColor() },
+          grid: { display: false }
+        }
+      }
+    }
+  });
+
+  // Table
+  var tbody = document.getElementById('wtTableBody');
+  tbody.innerHTML = '';
+
+  if (!campuses.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:20px">No data available for selected filters</td></tr>';
+    return;
+  }
+
+  for (var j = 0; j < campuses.length; j++) {
+    var camp = campuses[j];
+    var wtCount = campusWtCount[camp] || 0;
+    var activeCycles = campusActiveCycles[camp] || 0;
+    var campRecs = telpasGroups[camp] || [];
+    var avgComp = avgLevel(campRecs, 'compositeLevel');
+    var numStudents = campRecs.length;
+
+    var tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td>' + escHtml(camp) + '</td>' +
+      '<td style="text-align:center"><strong>' + wtCount + '</strong></td>' +
+      '<td style="text-align:center">' + activeCycles + '</td>' +
+      '<td style="text-align:center">' + (avgComp > 0 ? avgComp.toFixed(2) : '&#x2014;') + '</td>' +
+      '<td style="text-align:center">' + numStudents + '</td>';
+    tbody.appendChild(tr);
+  }
+}
+
+/* ============================
+   CHART RE-RENDER ON DARK MODE
+   ============================ */
+function rerenderAllCharts() {
+  var active = document.querySelector('.tab-panel.active');
+  if (!active) return;
+  var id = active.id;
+  if (id === 'tab-campus')      { renderCampusTab(); }
+  else if (id === 'tab-coord')  { renderCoordTab(); }
+  else if (id === 'tab-coaching'){ renderCoachingTab(); }
+  else if (id === 'tab-walkthrough'){ renderWalkthroughTab(); }
+}
+
+/* ============================
+   TAB SWITCHING
+   ============================ */
+function switchTab(name) {
+  var tabs = ['campus','coord','coaching','walkthrough'];
+  for (var i = 0; i < tabs.length; i++) {
+    var panel = document.getElementById('tab-' + tabs[i]);
+    var btn   = document.getElementById('tbtn-' + tabs[i]);
+    if (panel) panel.classList.toggle('active', tabs[i] === name);
+    if (btn) {
+      btn.classList.toggle('active', tabs[i] === name);
+      btn.setAttribute('aria-selected', tabs[i] === name ? 'true' : 'false');
+    }
+  }
+  sessionStorage.setItem('sg_activeTab', name);
+  if (name === 'campus')       renderCampusTab();
+  else if (name === 'coord')   renderCoordTab();
+  else if (name === 'coaching') renderCoachingTab();
+  else if (name === 'walkthrough') renderWalkthroughTab();
+}
+
+/* ============================
+   FILTER PERSISTENCE
+   ============================ */
+function saveFilters() {
+  var ids = ['campusYearFilter','campusCoordFilter','campusCampusFilter',
+             'coordYearFilter','coachingYearFilter','coachingCoordFilter',
+             'wtPeriodFilter','wtCoordFilter'];
+  var f = {};
+  for (var i = 0; i < ids.length; i++) {
+    var el = document.getElementById(ids[i]);
+    if (el) f[ids[i]] = el.value;
+  }
+  try { sessionStorage.setItem('sg_filters', JSON.stringify(f)); } catch(e){}
+}
+
+function restoreFilters() {
+  try {
+    var raw = sessionStorage.getItem('sg_filters');
+    if (!raw) return;
+    var f = JSON.parse(raw);
+    for (var k in f) {
+      var el = document.getElementById(k);
+      if (el) el.value = f[k];
+    }
+  } catch(e){}
+}
+
+/* ============================
+   SHORTCUTS MODAL
+   ============================ */
+function openShortcuts() {
+  var m = document.getElementById('shortcutsModal');
+  if (m) { m.classList.add('open'); m.focus(); }
+}
+function closeShortcuts() {
+  var m = document.getElementById('shortcutsModal');
+  if (m) m.classList.remove('open');
+}
+
+/* ============================
+   KEYBOARD SHORTCUTS
+   ============================ */
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    closeShortcuts();
+  }
+  if (e.key === '?' && !e.ctrlKey && !e.metaKey && !['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) {
+    openShortcuts();
+  }
+  if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
+    e.preventDefault();
+    toggleDarkMode();
+  }
+  if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+    // allow default print
+  }
+  if (!e.ctrlKey && !e.metaKey && !e.altKey && ['1','2','3','4'].includes(e.key)) {
+    if (['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) return;
+    var tabNames = ['campus','coord','coaching','walkthrough'];
+    var idx = parseInt(e.key, 10) - 1;
+    if (tabNames[idx]) switchTab(tabNames[idx]);
+  }
+});
+
+/* ============================
+   HEX TO RGBA HELPER
+   ============================ */
+function hexToRgba(hex, alpha) {
+  var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  if (!result) return 'rgba(74,144,217,' + alpha + ')';
+  return 'rgba(' + parseInt(result[1],16) + ',' + parseInt(result[2],16) + ',' + parseInt(result[3],16) + ',' + alpha + ')';
+}
+
+/* ============================
+   BROADCAST CHANNEL (cross-tab sync)
+   ============================ */
+var syncChannel = null;
+try {
+  syncChannel = new BroadcastChannel('mlp_hub_sync');
+  syncChannel.onmessage = function(ev) {
+    var data = ev.data || {};
+    if (data.type === 'data_update') {
+      var key = data.key || '';
+      if (key === 'telpas_tracker_data' || key === 'coaching_cycles_data' ||
+          key === 'walkthrough_history' || key === 'student_roster_data') {
+        rerenderAllCharts();
+        showToast('Data updated in another tab \u2014 view refreshed');
+      }
+    }
+  };
+} catch(e){}
+
+/* ============================
+   PWA REGISTRATION
+   ============================ */
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./service-worker.js').catch(function(){});
+}
+
+/* ============================
+   INIT
+   ============================ */
+document.addEventListener('DOMContentLoaded', function() {
+  // Dark mode
+  if (localStorage.getItem('esl_app_theme') === 'dark') {
+    document.body.classList.add('dark-mode');
+  }
+
+  // Load data
+  var allTelpas = loadTelpas();
+
+  // Populate dropdowns
+  populateYearDropdowns(allTelpas);
+  populateCoordDropdowns();
+  populateCampusDropdown(allTelpas);
+
+  // Restore filters
+  restoreFilters();
+
+  // Notification bell
+  renderNotifBell();
+
+  // Last saved
+  renderLastSaved();
+
+  // Restore active tab
+  var savedTab = sessionStorage.getItem('sg_activeTab');
+  if (savedTab && ['campus','coord','coaching','walkthrough'].indexOf(savedTab) >= 0) {
+    switchTab(savedTab);
+  } else {
+    renderCampusTab();
+  }
+});
+</script>
+</body>
+</html>

@@ -6,7 +6,7 @@
 <title>Walkthrough Data Dashboard</title>
 <link rel="manifest" href="../manifest.json"/>
 <meta name="theme-color" content="#2c3e6e"/>
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://api.github.com; font-src 'self'; frame-src 'none'"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://api.zalphateachingsolutions.org https://script.google.com https://script.googleusercontent.com https://api.github.com; font-src 'self'; frame-src 'none'"/>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 :root{
@@ -56,6 +56,11 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 .header-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .tool-btn{background:rgba(255,255,255,.13);color:#fff;border:2px solid rgba(255,255,255,.35);padding:6px 13px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;text-decoration:none;display:inline-block}
 .tool-btn:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.55)}
+.role-dropdown-wrap{display:inline-flex;align-items:center;gap:6px}
+.role-dropdown-label{font-size:10px;color:rgba(255,255,255,.7);font-weight:600;white-space:nowrap}
+.role-dropdown{background:rgba(255,255,255,.13);color:#fff;border:2px solid rgba(255,255,255,.35);padding:6px 28px 6px 10px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;-webkit-appearance:none;-moz-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='white' stroke-width='2' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;background-size:10px}
+.role-dropdown:hover{background-color:rgba(255,255,255,.25);border-color:rgba(255,255,255,.55)}
+.role-dropdown option{background:var(--primary-dark);color:#fff}
 
 /* Cards */
 .card{background:var(--card-bg);border-radius:10px;box-shadow:var(--shadow);padding:16px 20px;margin-bottom:12px}
@@ -220,6 +225,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 kbd{display:inline-block;padding:2px 7px;border:1px solid var(--input-border);border-radius:4px;background:var(--section-bg-light);font-size:11px;font-family:inherit;font-weight:600;color:var(--text-secondary);box-shadow:0 1px 0 var(--input-border)}
 @media(max-width:600px){.tool-btn,button,input,select{min-height:44px}}
 </style>
+<script src="../api.js"></script>
 </head>
 <body>
 <a href="#main-content" class="skip-link">Skip to main content</a>
@@ -234,6 +240,7 @@ kbd{display:inline-block;padding:2px 7px;border:1px solid var(--input-border);bo
       <button class="tool-btn" onclick="generateReport()">&#128196; Generate Report</button>
       <a class="notif-bell-link" href="../index.html" title="Notifications" id="notifBellLink" aria-label="Notifications">&#128276;<span class="notif-bell-badge hidden" id="notifBellBadge">0</span></a>
       <button class="tool-btn" onclick="toggleDarkMode()" id="darkModeToggle" aria-label="Toggle dark mode">&#9789; Dark</button>
+      <span class="role-dropdown-wrap" id="roleDropdownWrap"><span class="role-dropdown-label">View as:</span><select class="role-dropdown" id="roleDropdown" onchange="switchRoleView(this.value)" aria-label="Switch role view"><option value="manager">Manager</option><option value="coordinator">MLP Coordinator</option><option value="campus-leader">Campus Leader</option></select></span>
       <button class="tool-btn" onclick="toggleShortcutsHelp()" aria-label="Keyboard shortcuts">? Help</button>
     </div>
   </div>
@@ -1532,6 +1539,7 @@ function toggleDarkMode(){var d=document.body.classList.toggle("dark-mode");loca
     }
   } catch(e){ role = "manager"; }
   var allowed = false;
+  try{var _c=JSON.parse(localStorage.getItem("mlp_hub_config")||"{}");if((_c.userRole||"manager")==="manager")allowed=true;}catch(_e){}
   for (var i = 0; i < ALLOWED_ROLES.length; i++) {
     if (ALLOWED_ROLES[i] === role) { allowed = true; break; }
   }
@@ -1624,6 +1632,8 @@ function renderLastSaved(){var ts=localStorage.getItem('walkthrough_history_last
 renderLastSaved();
 if("serviceWorker" in navigator){navigator.serviceWorker.register("../service-worker.js").catch(function(){});}
 initNotifBell();
+function switchRoleView(r){localStorage.setItem("esl_home_role",r);window.location.href="../index.html";}
+(function(){var r=localStorage.getItem("esl_home_role")||"manager";var w=document.getElementById("roleDropdownWrap");var d=document.getElementById("roleDropdown");if(w){try{var c=JSON.parse(localStorage.getItem("mlp_hub_config")||"{}");if((c.userRole||"manager")!=="manager")w.style.display="none";}catch(e){}}if(d)d.value=r;})();
 </script>
 </body>
 </html>

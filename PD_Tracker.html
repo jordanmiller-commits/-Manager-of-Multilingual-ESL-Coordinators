@@ -6,7 +6,7 @@
 <title>PD Tracker &mdash; MLP Coordinator Hub</title>
 <link rel="manifest" href="./manifest.json"/>
 <meta name="theme-color" content="#2c3e6e"/>
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://api.github.com; font-src 'self'; frame-src 'none'"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://api.zalphateachingsolutions.org https://script.google.com https://script.googleusercontent.com https://api.github.com; font-src 'self'; frame-src 'none'"/>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <style>
 :root{
@@ -56,6 +56,11 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 .toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .tool-btn{background:rgba(255,255,255,.13);color:#fff;border:2px solid rgba(255,255,255,.35);padding:6px 13px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;text-decoration:none;display:inline-block}
 .tool-btn:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.55)}
+.role-dropdown-wrap{display:inline-flex;align-items:center;gap:6px}
+.role-dropdown-label{font-size:10px;color:rgba(255,255,255,.7);font-weight:600;white-space:nowrap}
+.role-dropdown{background:rgba(255,255,255,.13);color:#fff;border:2px solid rgba(255,255,255,.35);padding:6px 28px 6px 10px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;-webkit-appearance:none;-moz-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='white' stroke-width='2' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;background-size:10px}
+.role-dropdown:hover{background-color:rgba(255,255,255,.25);border-color:rgba(255,255,255,.55)}
+.role-dropdown option{background:var(--primary-dark);color:#fff}
 .tool-btn.accent{border-color:rgba(39,174,96,.6)}
 .tool-btn.accent:hover{background:rgba(39,174,96,.2)}
 
@@ -129,6 +134,15 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 .target-bar-track{height:8px;background:var(--border);border-radius:4px;overflow:hidden;margin-bottom:2px}
 .target-bar-fill{height:100%;border-radius:4px;transition:width .4s;background:linear-gradient(90deg,#4a90d9,#27ae60)}
 .target-pct{font-size:10px;color:var(--text-muted);min-width:40px;text-align:right}
+
+/* Gauge charts */
+.gauge-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:12px}
+.gauge-card{background:var(--section-bg-light);border-radius:10px;padding:14px 10px 10px;text-align:center;border:1px solid var(--border)}
+.gauge-card canvas{display:block;margin:0 auto}
+.gauge-label{font-size:12px;font-weight:700;color:var(--text-heading);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gauge-value{font-size:13px;font-weight:700;margin-top:2px}
+.gauge-pct{font-size:18px;font-weight:900;margin-top:1px}
+@media(max-width:600px){.gauge-grid{grid-template-columns:1fr}}
 
 /* Animations */
 @keyframes fadeInUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
@@ -210,6 +224,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 .shortcuts-modal td{padding:6px 8px;border-bottom:1px solid var(--border)}
 .shortcuts-modal kbd{display:inline-block;padding:2px 7px;border-radius:4px;background:var(--section-bg-light);border:1px solid var(--border);font-family:inherit;font-size:11px;font-weight:700;color:var(--text-heading)}
 </style>
+<script src="./api.js"></script>
 </head>
 <body>
 <a class="skip-link" href="#sessionsTable">Skip to content</a>
@@ -227,6 +242,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
       <button class="tool-btn" onclick="window.print()">&#128438; Print / PDF</button>
       <a class="notif-bell-link" href="index.html" title="Notifications" id="notifBellLink">&#128276;<span class="notif-bell-badge hidden" id="notifBellBadge">0</span></a>
       <button class="tool-btn" onclick="toggleDarkMode()" id="darkModeToggle" aria-label="Toggle dark mode">&#9789; Dark</button>
+      <span class="role-dropdown-wrap" id="roleDropdownWrap"><span class="role-dropdown-label">View as:</span><select class="role-dropdown" id="roleDropdown" onchange="switchRoleView(this.value)" aria-label="Switch role view"><option value="manager">Manager</option><option value="coordinator">MLP Coordinator</option><option value="campus-leader">Campus Leader</option></select></span>
       <button class="tool-btn" onclick="toggleShortcutsHelp()" aria-label="Keyboard shortcuts">&#9000; Keys</button>
     </div>
   </div>
@@ -1133,14 +1149,15 @@ function saveSettings() {
 }
 
 function renderTargetProgress() {
-  var targetGrid = document.getElementById('targetGrid');
+  var container = document.getElementById('targetGrid');
   var sy = getCurrentSchoolYear();
   var syRange = SCHOOL_YEARS[sy] || {start:'2025-08-01', end:'2026-07-31'};
+  var coords = getCoordinators();
+  var coordData = [];
+  var html = '';
 
-  var html = '<div style="font-size:11px;font-weight:700;color:#888;margin-bottom:8px;text-transform:uppercase;letter-spacing:.4px">Progress vs Target &mdash; ' + escHtml(sy) + '</div>';
-
-  for (var i = 0; i < COORDINATORS.length; i++) {
-    var coord = COORDINATORS[i];
+  for (var i = 0; i < coords.length; i++) {
+    var coord = coords[i];
     var target = (pdData.settings.hourTargets[coord.id] !== undefined)
       ? pdData.settings.hourTargets[coord.id] : 20;
     var hours = 0;
@@ -1151,20 +1168,50 @@ function renderTargetProgress() {
       }
     }
     var pct = target > 0 ? Math.min(100, Math.round((hours / target) * 100)) : 0;
-    var color = COORD_LINE_COLORS[i];
+    var col = pct >= 80 ? '#27ae60' : pct >= 50 ? '#f39c12' : '#e74c3c';
 
-    html += '<div class="target-row">' +
-      '<div class="target-name">' + escHtml(coord.name) + '</div>' +
-      '<div class="target-bar-wrap">' +
-        '<div class="target-bar-track">' +
-          '<div class="target-bar-fill" style="width:' + pct + '%;background:' + color + '"></div>' +
-        '</div>' +
-        '<div style="font-size:10px;color:#888">' + hours.toFixed(1) + ' / ' + target + ' hrs</div>' +
-      '</div>' +
-      '<div class="target-pct">' + pct + '%</div>' +
-    '</div>';
+    coordData.push({id: coord.id, name: coord.name, hours: hours, target: target, pct: pct, color: col});
+    html += '<div class="gauge-card">';
+    html += '<canvas id="gauge-' + i + '" width="160" height="100"></canvas>';
+    html += '<div class="gauge-label">' + escHtml(coord.name) + '</div>';
+    html += '<div class="gauge-value" style="color:' + col + '">' + hours.toFixed(1) + ' / ' + target + ' hrs</div>';
+    html += '<div class="gauge-pct" style="color:' + col + '">' + pct + '%</div>';
+    html += '</div>';
   }
-  targetGrid.innerHTML = html;
+
+  container.innerHTML = '<div style="font-size:11px;font-weight:700;color:#888;margin-bottom:8px;text-transform:uppercase;letter-spacing:.4px">Progress vs Target &mdash; ' + escHtml(sy) + '</div>' +
+    '<div class="gauge-grid">' + html + '</div>';
+
+  setTimeout(function() {
+    for (var i = 0; i < coordData.length; i++) {
+      (function(idx, d) {
+        var canvas = document.getElementById('gauge-' + idx);
+        if (!canvas) return;
+        var ctx = canvas.getContext('2d');
+        new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            datasets: [{
+              data: [d.pct, 100 - d.pct],
+              backgroundColor: [d.color, 'rgba(0,0,0,0.08)'],
+              borderWidth: 0
+            }]
+          },
+          options: {
+            circumference: 180,
+            rotation: -90,
+            cutout: '72%',
+            responsive: false,
+            plugins: {
+              legend: {display: false},
+              tooltip: {enabled: false}
+            },
+            animation: {duration: 800}
+          }
+        });
+      })(i, coordData[i]);
+    }
+  }, 50);
 }
 
 function renderSettings() {
@@ -1276,6 +1323,7 @@ document.getElementById('importModal').addEventListener('click', function(e) {
     }
   } catch(e){ role = "manager"; }
   var allowed = false;
+  try{var _c=JSON.parse(localStorage.getItem("mlp_hub_config")||"{}");if((_c.userRole||"manager")==="manager")allowed=true;}catch(_e){}
   for (var i = 0; i < ALLOWED_ROLES.length; i++) {
     if (ALLOWED_ROLES[i] === role) { allowed = true; break; }
   }
@@ -1473,6 +1521,8 @@ if(window.mlpSync){
     renderAll();
   });
 }
+function switchRoleView(r){localStorage.setItem("esl_home_role",r);window.location.href="index.html";}
+(function(){var r=localStorage.getItem("esl_home_role")||"manager";var w=document.getElementById("roleDropdownWrap");var d=document.getElementById("roleDropdown");if(w){try{var c=JSON.parse(localStorage.getItem("mlp_hub_config")||"{}");if((c.userRole||"manager")!=="manager")w.style.display="none";}catch(e){}}if(d)d.value=r;})();
 </script>
 </body>
 </html>

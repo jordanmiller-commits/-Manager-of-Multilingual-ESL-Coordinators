@@ -1,5 +1,6 @@
-var CACHE_NAME = "mlp-suite-v20";
+var CACHE_NAME = "mlp-suite-v25";
 var ASSETS = [
+  "./api.js",
   "./sync-engine.js",
   "./Principal_Checkpoint_Portal/Principal_Checkpoint_Portal.html",
   "./Principal_Checkpoint_Portal/Campus_Report_Card.html",
@@ -28,6 +29,8 @@ var ASSETS = [
   "./Reports_Hub.html",
   "./Feedback_Report.html",
   "./Teacher_360_Profile.html",
+  "./Student_Growth.html",
+  "./Self_Assessment.html",
   "https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"
 ];
 

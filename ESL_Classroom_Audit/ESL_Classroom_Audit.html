@@ -4,7 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <meta name="theme-color" content="#2c3e6e"/>
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://api.github.com; font-src 'self'; frame-src 'none'"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://api.zalphateachingsolutions.org https://script.google.com https://script.googleusercontent.com https://api.github.com; font-src 'self'; frame-src 'none'"/>
 <link rel="manifest" href="../manifest.json"/>
 <title>Full Observation</title>
 <style>
@@ -57,10 +57,23 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 .toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;align-items:center}
 .tool-btn{padding:7px 14px;border-radius:7px;border:2px solid rgba(255,255,255,.35);background:rgba(255,255,255,.12);color:#fff;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:5px}
 .tool-btn:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.5)}
+.role-dropdown-wrap{display:inline-flex;align-items:center;gap:6px}
+.role-dropdown-label{font-size:10px;color:rgba(255,255,255,.7);font-weight:600;white-space:nowrap}
+.role-dropdown{background:rgba(255,255,255,.13);color:#fff;border:2px solid rgba(255,255,255,.35);padding:6px 28px 6px 10px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;-webkit-appearance:none;-moz-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='white' stroke-width='2' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;background-size:10px}
+.role-dropdown:hover{background-color:rgba(255,255,255,.25);border-color:rgba(255,255,255,.55)}
+.role-dropdown option{background:var(--primary-dark);color:#fff}
 .tool-btn.danger{border-color:rgba(231,76,60,.5);background:rgba(231,76,60,.15)}
 .tool-btn.danger:hover{background:rgba(231,76,60,.3)}
 .tool-btn.history-btn{border-color:rgba(46,204,113,.5);background:rgba(46,204,113,.15)}
 .tool-btn.history-btn:hover{background:rgba(46,204,113,.3)}
+.pipeline-breadcrumb{display:flex;align-items:center;gap:6px;padding:10px 20px;background:var(--section-bg-light);border-bottom:1px solid var(--border);font-size:12px;flex-wrap:wrap}
+.pipeline-breadcrumb a{color:var(--primary);text-decoration:none;font-weight:600}
+.pipeline-breadcrumb a:hover{text-decoration:underline}
+.pipeline-breadcrumb .current{color:var(--text);font-weight:700}
+.pipeline-breadcrumb .sep{color:var(--text-muted);font-size:10px}
+.pipeline-breadcrumb .from-handoff{margin-left:auto;font-size:11px;color:var(--success-text);font-style:italic}
+.teacher-link{color:var(--primary);text-decoration:none;font-weight:600;border-bottom:1px dashed var(--primary)}
+.teacher-link:hover{text-decoration:underline}
 .save-indicator{font-size:11px;color:rgba(255,255,255,.65);margin-left:auto}
 .card{background:var(--card-bg);border-radius:10px;padding:20px;margin-bottom:18px;box-shadow:0 1px 5px var(--card-shadow)}
 .meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
@@ -413,6 +426,7 @@ mark{background:#fef08a;color:#333;padding:0 2px;border-radius:2px}
 .shortcuts-modal td{padding:6px 8px;border-bottom:1px solid var(--border)}
 .shortcuts-modal kbd{display:inline-block;padding:2px 7px;border-radius:4px;background:var(--section-bg-light);border:1px solid var(--border);font-family:inherit;font-size:11px;font-weight:700;color:var(--text-heading)}
 </style>
+<script src="../api.js"></script>
 </head>
 <body>
 <a class="skip-link" href="#scoreCard">Skip to content</a>
@@ -433,8 +447,16 @@ mark{background:#fef08a;color:#333;padding:0 2px;border-radius:2px}
     <button class="tool-btn" onclick="showSettingsModal()" title="Settings: export, import, appearance" aria-label="Settings">&#9881; Settings</button>
     <button class="tool-btn" onclick="window.print()" aria-label="Print or save as PDF">&#128438; Print / PDF</button>
     <button class="tool-btn" onclick="toggleShortcutsHelp()" aria-label="Keyboard shortcuts">&#9000; Keys</button>
+    <span class="role-dropdown-wrap" id="roleDropdownWrap"><span class="role-dropdown-label">View as:</span><select class="role-dropdown" id="roleDropdown" onchange="switchRoleView(this.value)" aria-label="Switch role view"><option value="manager">Manager</option><option value="coordinator">MLP Coordinator</option><option value="campus-leader">Campus Leader</option></select></span>
     <span class="save-indicator" id="saveStatus" style="margin-left:auto">Auto-save: ready</span>
   </div>
+</div>
+<div class="pipeline-breadcrumb" id="pipelineBreadcrumb">
+  <a href="../Academic_Monitoring_Leader_Facing/Academic_Monitoring_Planning_Template.html">Walkthrough Planning</a>
+  <span class="sep">&rarr;</span>
+  <span class="current">Classroom Audit</span>
+  <span class="sep">&rarr;</span>
+  <a href="../Academic_Monitoring_Leader_Facing/Coaching_Cycle_Tracker.html">Coaching Tracker</a>
 </div>
 
 <div class="card">
@@ -770,6 +792,11 @@ function escHtml(str) {
   var d = document.createElement("div");
   d.appendChild(document.createTextNode(str));
   return d.innerHTML;
+}
+
+function teacherProfileLink(name) {
+  if (!name) return '';
+  return '<a href="../Teacher_360_Profile.html?teacher=' + encodeURIComponent(name) + '" class="teacher-link" title="View teacher profile">' + escHtml(name) + '</a>';
 }
 
 function showToast(msg) {
@@ -1681,7 +1708,7 @@ function buildSummary(){
   el.innerHTML=
     "<h2 style='font-size:17px;color:#2c3e6e;margin-bottom:14px'>Audit Summary Report</h2>"+
     completionHTML+
-    "<div class='sum-meta'><strong>Teacher:</strong> "+tn+(gr?" &nbsp;|&nbsp; <strong>Grade:</strong> "+gr:"")+(ct?" &nbsp;|&nbsp; <strong>Content:</strong> "+ct:"")+" &nbsp;|&nbsp; <strong>Campus:</strong> "+cp+" &nbsp;|&nbsp; <strong>Observer:</strong> "+ob+" &nbsp;|&nbsp; <strong>Date:</strong> "+dt+" &nbsp;|&nbsp; <strong>Duration:</strong> "+durStr+"</div>"+
+    "<div class='sum-meta'><strong>Teacher:</strong> "+(tn?teacherProfileLink(tn):tn)+(gr?" &nbsp;|&nbsp; <strong>Grade:</strong> "+gr:"")+(ct?" &nbsp;|&nbsp; <strong>Content:</strong> "+ct:"")+" &nbsp;|&nbsp; <strong>Campus:</strong> "+cp+" &nbsp;|&nbsp; <strong>Observer:</strong> "+ob+" &nbsp;|&nbsp; <strong>Date:</strong> "+dt+" &nbsp;|&nbsp; <strong>Duration:</strong> "+durStr+"</div>"+
     "<div class='sum-overall' style='background:"+oBg+"'><div class='sum-big' style='color:"+col+"'>"+pct+"%</div><div><div class='sum-lbl' style='color:"+col+"'>"+lbl+"</div><div class='sum-sub'>"+t.score+" of "+t.max+" points  ·  "+t.rated+" of "+t.total+" items rated  ·  "+t.observed+" observed</div></div></div>"+
     splitHTML+
     "<h3 class='sub-h'>Section Breakdown</h3>"+barsHTML+
@@ -2116,6 +2143,9 @@ function confirmReset(){
 
   refreshPrSummary();refreshBanner();
   localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem("audit_nav_source");
+  var backLink = document.getElementById("walkthroughBackLink");
+  if (backLink) backLink.parentNode.removeChild(backLink);
   document.getElementById("saveStatus").textContent="Auto-save: cleared";
   closeModal("resetModal");
 }
@@ -2337,7 +2367,7 @@ function renderHistory(){
     var dur=a.timerElapsed?Math.floor(a.timerElapsed/60)+"m":"—";
     html+="<div class='hist-item'>"+
       "<div class='hist-info'>"+
-      "<div class='hist-teacher'>"+(a.meta.teacher||"Unnamed Teacher")+"</div>"+
+      "<div class='hist-teacher'>"+teacherProfileLink(a.meta.teacher||"Unnamed Teacher")+"</div>"+
       "<div class='hist-detail'>"+(a.meta.campus||"No campus")+" &nbsp;|&nbsp; "+date+" &nbsp;|&nbsp; Observer: "+(a.meta.observer||"—")+" &nbsp;|&nbsp; Duration: "+dur+"</div>"+
       "</div>"+
       "<div class='hist-score' style='color:"+col+"'>"+pct+"%</div>"+
@@ -3590,7 +3620,7 @@ function renderCampusDash() {
     var t = teacherList[i];
     var col = getCol(t.avg);
     html += "<div style='display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-radius:6px;margin-bottom:4px;background:var(--card-bg);border:1px solid var(--card-border)'>";
-    html += "<span style='font-weight:600;color:var(--text)'>" + t.name + " <span style='font-size:11px;color:var(--text-muted)'>(" + t.count + " audit" + (t.count > 1 ? "s" : "") + ")</span></span>";
+    html += "<span style='font-weight:600;color:var(--text)'>" + teacherProfileLink(t.name) + " <span style='font-size:11px;color:var(--text-muted)'>(" + t.count + " audit" + (t.count > 1 ? "s" : "") + ")</span></span>";
     html += "<span style='font-weight:700;color:" + col + "'>" + t.avg + "%</span></div>";
   }
 
@@ -3745,8 +3775,7 @@ function generateCoachingPlan() {
   html += "</ul></div>";
 
   html += "<div style='margin-top:14px;text-align:center'>";
-  html += "<button class='start-cycle-btn' onclick='createCoachingCycleFromAudit()'>Start Coaching Cycle from This Audit</button>";
-  html += "<div id='cycleCreatedMsg' style='margin-top:8px;font-size:12px;color:#27ae60;display:none'></div>";
+  html += "<button class='start-cycle-btn' onclick='createCoachingCycleFromAudit()'>&#128172; Open Coaching Tracker — Pre-fill Cycle</button>";
   html += "</div>";
 
   html += "</div>";
@@ -3841,37 +3870,17 @@ function createCoachingCycleFromAudit() {
   nextStepsParts.push("follow-up audit weeks 6-8");
   var nextStepsText = nextStepsParts.join(", ");
 
-  var cycle = {
-    id: "cyc" + Date.now() + Math.floor(Math.random() * 10000),
+  // Use handoff pattern so Coaching Tracker opens the New Cycle modal pre-filled
+  var handoffPayload = {
     teacher: teacher,
     campus: campus,
-    createdAt: new Date().toISOString(),
-    stages: [
-      {key:"observation", status:"complete", date:auditDate, notes:"Audit observation — " + weakSummaryText},
-      {key:"feedback", status:"in-progress", date:"", notes:"Coaching recommendations from audit:\n" + recommendationText},
-      {key:"actionStep", status:"not-started", date:"", notes:"Suggested next steps:\n" + nextStepsText},
-      {key:"followUp", status:"not-started", date:"", notes:""},
-      {key:"growth", status:"not-started", date:"", notes:""}
-    ],
-    sourceWalkthroughId: null,
     sourceAuditId: auditId,
-    evidenceSummary: evidenceSummary
+    sourceDate: auditDate,
+    obsNotes: "Audit observation — " + weakSummaryText,
+    recommendationNotes: recommendationText,
+    nextStepsNotes: nextStepsText
   };
-
-  // Read coaching_cycles_data
-  var cyclesData;
-  try {
-    var raw = localStorage.getItem("coaching_cycles_data");
-    cyclesData = raw ? JSON.parse(raw) : null;
-  } catch (e) {
-    cyclesData = null;
-  }
-  if (!cyclesData || !cyclesData.cycles) {
-    cyclesData = { version: 1, savedAt: new Date().toISOString(), cycles: [], settings: {} };
-  }
-  cyclesData.cycles.push(cycle);
-  cyclesData.savedAt = new Date().toISOString();
-  localStorage.setItem("coaching_cycles_data", JSON.stringify(cyclesData));
+  localStorage.setItem("coaching_cycle_handoff", JSON.stringify(handoffPayload));
 
   // Add teacher to shared roster
   var roster = [];
@@ -3892,13 +3901,7 @@ function createCoachingCycleFromAudit() {
     localStorage.setItem("shared_teacher_roster", JSON.stringify(roster));
   }
 
-  alert("Coaching cycle created for " + teacher + "!\nOpen the Coaching Cycle Tracker to view it.");
-
-  var msgEl = document.getElementById("cycleCreatedMsg");
-  if (msgEl) {
-    msgEl.style.display = "block";
-    msgEl.innerHTML = "Coaching cycle created. <a href='../Academic_Monitoring_Leader_Facing/Coaching_Cycle_Tracker.html' style='color:#27ae60;font-weight:700;text-decoration:underline'>Open Coaching Cycle Tracker</a>";
-  }
+  window.location.href = "../Academic_Monitoring_Leader_Facing/Coaching_Cycle_Tracker.html";
 }
 
 function openELPSForSection(sectionId) {
@@ -4146,6 +4149,7 @@ function initDarkMode() {
     }
   } catch(e){ role = "manager"; }
   var allowed = false;
+  try{var _c=JSON.parse(localStorage.getItem("mlp_hub_config")||"{}");if((_c.userRole||"manager")==="manager")allowed=true;}catch(_e){}
   for (var i = 0; i < ALLOWED_ROLES.length; i++) {
     if (ALLOWED_ROLES[i] === role) { allowed = true; break; }
   }
@@ -4276,8 +4280,25 @@ if(window.mlpSync){
     }
     // Also store in notes state
     if (typeof notes !== "undefined") notes["s01"] = noteLines.join("\n");
+    // Persist nav source so back-link survives reloads
+    localStorage.setItem("audit_nav_source", "walkthrough");
     scheduleSave();
-    alert("Walkthrough context loaded!\n\nCheck the notes in Section 1 (Language Production Supports) for your walkthrough observation reference.");
+    showToast("Walkthrough context loaded — check notes in Section 1");
+  } catch(e) {}
+})();
+
+// Restore back-to-walkthrough link on every load (persists across reloads until New Audit)
+(function(){
+  try {
+    if (localStorage.getItem("audit_nav_source") !== "walkthrough") return;
+    var bc = document.getElementById("pipelineBreadcrumb");
+    if (!bc) return;
+    // Avoid duplicating the link if already present as static breadcrumb
+    var backSpan = document.createElement("span");
+    backSpan.id = "walkthroughBackLink";
+    backSpan.className = "from-handoff";
+    backSpan.innerHTML = "&#8592; <a href='../Academic_Monitoring_Leader_Facing/Academic_Monitoring_Planning_Template.html' style='color:var(--success-text);font-weight:600'>Back to Walkthrough Planning</a>";
+    bc.appendChild(backSpan);
   } catch(e) {}
 })();
 
@@ -4301,6 +4322,8 @@ if(window.mlpSync){
     alert("Could not find audit with ID: " + auditId + " in history.");
   } catch(e) {}
 })();
+function switchRoleView(r){localStorage.setItem("esl_home_role",r);window.location.href="../index.html";}
+(function(){var r=localStorage.getItem("esl_home_role")||"manager";var w=document.getElementById("roleDropdownWrap");var d=document.getElementById("roleDropdown");if(w){try{var c=JSON.parse(localStorage.getItem("mlp_hub_config")||"{}");if((c.userRole||"manager")!=="manager")w.style.display="none";}catch(e){}}if(d)d.value=r;})();
 </script>
 </body>
 </html>

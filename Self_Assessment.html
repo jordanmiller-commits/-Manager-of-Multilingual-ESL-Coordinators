@@ -1,0 +1,1508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MLP Self-Assessment</title>
+<link rel="manifest" href="./manifest.json"/>
+<meta name="theme-color" content="#2c3e6e"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://api.zalphateachingsolutions.org https://script.google.com https://script.googleusercontent.com https://api.github.com; font-src 'self'; frame-src 'none'"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#f0f2f7;--card-bg:#fff;--card-border:transparent;--card-shadow:rgba(0,0,0,.07);
+  --text:#333;--text-secondary:#555;--text-muted:#888;--text-faint:#aaa;--text-heading:#2c3e6e;
+  --input-bg:#fff;--input-border:#ddd;--input-text:#333;
+  --border:#eee;--border-light:#f5f5f5;--hover-bg:#f0f4fb;--item-hover:#f8f9fb;
+  --section-bg-light:#f8f9fb;
+  --primary:#4a90d9;--primary-dark:#2c3e6e;--primary-light:#7eb8f7;
+  --success:#27ae60;--success-light:#e8f5e9;--success-text:#2e7d32;
+  --danger:#e74c3c;--danger-light:#fdecea;--danger-text:#c0392b;
+  --warn:#f39c12;--warn-bg:#fff3e0;--warn-text:#e65100;--warn-border:#ffe0b2;
+  --info-bg:#e3f2fd;--info-text:#1565c0;--info-border:#bbdefb;
+  --good-bg:#e8f5e9;--good-text:#2e7d32;--good-border:#c8e6c9;
+  --header-gradient-1:#2c3e6e;--header-gradient-2:#4a90d9;
+  --shadow:0 1px 5px rgba(0,0,0,.07);
+  --modal-bg:#fff;--modal-overlay:rgba(0,0,0,.45);
+  --toast-bg:#2c3e6e;--toast-text:#fff;
+  --footer-bg:rgba(248,249,251,.95);--footer-border:#e0e3e8;--footer-text:#999
+}
+body.dark-mode{
+  --bg:#1a1a2e;--card-bg:#16213e;--card-border:#2d3a6e;--card-shadow:rgba(0,0,0,.3);
+  --text:#e0e0e0;--text-secondary:#ccc;--text-muted:#999;--text-faint:#666;--text-heading:#7eb8f7;
+  --input-bg:#16213e;--input-border:#2d3a6e;--input-text:#e0e0e0;
+  --border:#2d3a6e;--border-light:#2d3a6e;--hover-bg:#1a2744;--item-hover:#1a2744;
+  --section-bg-light:#1a2744;
+  --primary:#4a90d9;--primary-dark:#2d3a6e;--primary-light:#7eb8f7;
+  --success:#27ae60;--success-light:#1a3a1a;--success-text:#66bb6a;
+  --danger:#e74c3c;--danger-light:#3a1a1a;--danger-text:#ef5350;
+  --warn:#f39c12;--warn-bg:#3e2a10;--warn-text:#f5c842;--warn-border:#5a3e15;
+  --info-bg:#0d2847;--info-text:#64b5f6;--info-border:#1a3a5c;
+  --good-bg:#1a3a1a;--good-text:#66bb6a;--good-border:#2a5a2a;
+  --header-gradient-1:#1a1a2e;--header-gradient-2:#2d3a6e;
+  --shadow:0 1px 5px rgba(0,0,0,.3);
+  --modal-bg:#16213e;--modal-overlay:rgba(0,0,0,.7);
+  --toast-bg:#7eb8f7;--toast-text:#1a1a2e;
+  --footer-bg:rgba(30,30,30,.95);--footer-border:#333;--footer-text:#666
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100vh;color:var(--text)}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+body{animation:fadeIn .25s ease both}
+
+/* SKIP LINK */
+.skip-link{position:absolute;top:-40px;left:0;background:var(--primary-dark);color:#fff;padding:8px 14px;border-radius:0 0 8px 0;font-size:13px;font-weight:700;z-index:9999;transition:top .15s}
+.skip-link:focus{top:0}
+
+/* HEADER */
+.header{background:linear-gradient(135deg,var(--header-gradient-1),var(--header-gradient-2));color:#fff;padding:24px 28px 16px}
+.header h1{font-size:22px;font-weight:800;margin-bottom:2px;display:flex;align-items:center;gap:8px}
+.header p{font-size:12px;opacity:.85;margin-bottom:12px}
+.toolbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.tool-btn{background:rgba(255,255,255,.13);color:#fff;border:2px solid rgba(255,255,255,.35);padding:6px 13px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;text-decoration:none;display:inline-flex;align-items:center;gap:5px}
+.tool-btn:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.55)}
+.tool-btn:active{transform:scale(.97)}
+.tool-btn.accent{border-color:rgba(46,204,113,.5);background:rgba(46,204,113,.15)}
+.tool-btn.accent:hover{background:rgba(46,204,113,.3)}
+.notif-bell-link{position:relative;display:inline-flex;align-items:center}
+.notif-bell-badge{position:absolute;top:-4px;right:-4px;background:#e74c3c;color:#fff;font-size:9px;font-weight:900;border-radius:50%;width:16px;height:16px;display:flex;align-items:center;justify-content:center;line-height:1}
+
+/* CONTAINER */
+.container{max-width:1100px;margin:0 auto;padding:18px 16px 60px}
+
+/* TABS */
+.tabs{display:flex;gap:4px;margin-bottom:18px;flex-wrap:wrap}
+.tab-btn{padding:10px 22px;border:none;border-radius:8px 8px 0 0;cursor:pointer;font-size:13px;font-family:inherit;background:var(--border-light);color:var(--text-secondary);font-weight:600;transition:background .2s}
+.tab-btn.active{background:var(--card-bg);color:var(--text-heading);box-shadow:0 -2px 6px rgba(0,0,0,.06)}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+/* CARD */
+.card{background:var(--card-bg);border-radius:10px;box-shadow:var(--shadow);padding:20px;margin-bottom:16px;transition:box-shadow .18s}
+.card-title{font-size:15px;font-weight:700;color:var(--text-heading);margin-bottom:14px;display:flex;align-items:center;gap:7px}
+
+/* FORM LAYOUT */
+.form-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:14px}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-group label{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px}
+.form-group select,.form-group input,.form-group textarea{padding:8px 10px;border:1.5px solid var(--input-border);border-radius:7px;font-size:13px;font-family:inherit;background:var(--input-bg);color:var(--input-text);transition:border-color .15s}
+.form-group select:focus,.form-group input:focus,.form-group textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 2px rgba(74,144,217,.15)}
+.form-group textarea{resize:vertical;min-height:72px;line-height:1.5}
+
+/* DOMAIN RATING */
+.domain-section{margin-bottom:20px}
+.domain-header{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.domain-icon{font-size:18px;line-height:1}
+.domain-label{font-size:13px;font-weight:700;color:var(--text-heading)}
+.rating-pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.rating-pill{width:40px;height:40px;border-radius:8px;border:2px solid var(--input-border);background:var(--input-bg);color:var(--text-muted);font-size:16px;font-weight:800;cursor:pointer;font-family:inherit;transition:all .15s;display:flex;align-items:center;justify-content:center}
+.rating-pill:hover{border-color:var(--primary);color:var(--primary);background:var(--hover-bg)}
+.rating-pill:active{transform:scale(.95)}
+.rating-pill.selected{border-color:var(--primary);background:var(--primary);color:#fff;box-shadow:0 2px 8px rgba(74,144,217,.35)}
+.rating-pill.r1.selected{background:#e74c3c;border-color:#e74c3c;box-shadow:0 2px 8px rgba(231,76,60,.35)}
+.rating-pill.r2.selected{background:#f39c12;border-color:#f39c12;box-shadow:0 2px 8px rgba(243,156,18,.35)}
+.rating-pill.r3.selected{background:#27ae60;border-color:#27ae60;box-shadow:0 2px 8px rgba(39,174,96,.35)}
+.rating-pill.r4.selected{background:#2c3e6e;border-color:#2c3e6e;box-shadow:0 2px 8px rgba(44,62,110,.35)}
+.descriptor-text{font-size:12px;color:var(--text-secondary);background:var(--section-bg-light);border-left:3px solid var(--primary);padding:7px 10px;border-radius:0 6px 6px 0;line-height:1.5;min-height:36px;transition:all .2s;opacity:0}
+.descriptor-text.visible{opacity:1}
+
+/* RATING LEVEL LEGEND */
+.rating-legend{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-muted)}
+.legend-dot{width:12px;height:12px;border-radius:3px}
+
+/* SECTION DIVIDER */
+.section-divider{border:none;border-top:1px solid var(--border);margin:20px 0}
+
+/* SUBMIT AREA */
+.submit-area{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:18px}
+.btn{padding:9px 20px;border-radius:8px;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primary-dark)}
+.btn-secondary{background:var(--section-bg-light);color:var(--text-secondary);border:1.5px solid var(--input-border)}
+.btn-secondary:hover{background:var(--hover-bg)}
+.btn-success{background:var(--success);color:#fff}
+.btn-success:hover{filter:brightness(1.1)}
+.btn-sm{padding:6px 14px;font-size:12px}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-danger:hover{filter:brightness(1.1)}
+
+/* POST-SAVE BANNER */
+.post-save-banner{background:var(--good-bg);border:1px solid var(--good-border);border-radius:8px;padding:14px 18px;display:none;align-items:center;gap:12px;flex-wrap:wrap}
+.post-save-banner.show{display:flex}
+.post-save-banner-text{flex:1;font-size:13px;color:var(--good-text);font-weight:600}
+
+/* COMPARISON VIEW */
+.comparison-header{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px}
+.comp-filter-card{background:var(--card-bg);border-radius:10px;box-shadow:var(--shadow);padding:16px}
+.comp-filter-title{font-size:13px;font-weight:700;color:var(--text-heading);margin-bottom:10px}
+.radar-wrap{max-width:400px;margin:0 auto;position:relative}
+.radar-legend{display:flex;gap:18px;justify-content:center;margin-top:10px;flex-wrap:wrap}
+.radar-legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-secondary)}
+.radar-legend-dot{width:14px;height:6px;border-radius:3px}
+
+/* GAP TABLE */
+.gap-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:14px}
+.gap-table th{background:var(--section-bg-light);color:var(--text-muted);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;padding:8px 12px;text-align:left;border-bottom:1.5px solid var(--border)}
+.gap-table td{padding:9px 12px;border-bottom:1px solid var(--border-light);vertical-align:middle}
+.gap-table tr:hover td{background:var(--item-hover)}
+.gap-pill{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700}
+.gap-aligned{background:var(--good-bg);color:var(--good-text);border:1px solid var(--good-border)}
+.gap-minor{background:var(--warn-bg);color:var(--warn-text);border:1px solid var(--warn-border)}
+.gap-major{background:var(--danger-light);color:var(--danger-text);border:1px solid #f5c6cb}
+.rating-badge{display:inline-block;width:24px;height:24px;border-radius:5px;font-size:12px;font-weight:800;color:#fff;text-align:center;line-height:24px}
+.rb1{background:#e74c3c}
+.rb2{background:#f39c12}
+.rb3{background:#27ae60}
+.rb4{background:#2c3e6e}
+.rb0{background:#ccc;color:#555}
+
+/* NARRATIVE SUMMARY */
+.narrative-card{background:var(--info-bg);border:1px solid var(--info-border);border-radius:8px;padding:14px 16px;margin-top:16px}
+.narrative-card h4{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--info-text);margin-bottom:8px}
+.narrative-section{margin-bottom:10px}
+.narrative-section-label{font-size:11px;font-weight:700;color:var(--text-heading);margin-bottom:3px}
+.narrative-section-body{font-size:12px;color:var(--text-secondary);line-height:1.6}
+.no-data-msg{text-align:center;padding:48px 20px;color:var(--text-muted);font-size:14px}
+.no-data-msg .no-data-icon{font-size:36px;margin-bottom:10px}
+
+/* HISTORY / TIMELINE */
+.filter-bar{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px}
+.filter-bar label{font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:3px}
+.filter-bar select{padding:7px 10px;border:1.5px solid var(--input-border);border-radius:7px;font-size:12px;font-family:inherit;background:var(--input-bg);color:var(--input-text)}
+.filter-bar select:focus{outline:none;border-color:var(--primary)}
+
+/* ASSESSMENT CARD */
+.assessment-card{background:var(--card-bg);border-radius:10px;box-shadow:var(--shadow);padding:16px;margin-bottom:12px;border-left:4px solid var(--primary);transition:box-shadow .15s}
+.assessment-card:hover{box-shadow:0 4px 14px rgba(0,0,0,.11)}
+.assessment-card.type-manager{border-left-color:var(--warn)}
+.assessment-card.type-self{border-left-color:var(--primary)}
+.ac-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.ac-title{font-size:14px;font-weight:700;color:var(--text-heading)}
+.ac-meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.type-pill{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700}
+.type-self-pill{background:var(--info-bg);color:var(--info-text);border:1px solid var(--info-border)}
+.type-manager-pill{background:var(--warn-bg);color:var(--warn-text);border:1px solid var(--warn-border)}
+.sem-pill{display:inline-block;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:600;background:var(--section-bg-light);color:var(--text-secondary)}
+.ac-scores{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.domain-score-chip{display:flex;flex-direction:column;align-items:center;background:var(--section-bg-light);border-radius:6px;padding:4px 8px;min-width:44px}
+.domain-score-chip .chip-icon{font-size:13px}
+.domain-score-chip .chip-val{font-size:13px;font-weight:800;color:var(--text-heading)}
+.ac-avg{font-size:13px;color:var(--text-muted);font-weight:600}
+.ac-avg span{color:var(--text-heading);font-weight:800}
+.ac-remarks{font-size:12px;color:var(--text-secondary);margin-top:6px;line-height:1.5;border-top:1px solid var(--border-light);padding-top:8px}
+.ac-actions{display:flex;gap:6px;margin-top:8px}
+.mini-radar-wrap{display:inline-block;vertical-align:middle}
+
+/* TREND CHART */
+.trend-section{background:var(--card-bg);border-radius:10px;box-shadow:var(--shadow);padding:18px;margin-bottom:16px}
+
+/* EXPORT */
+.export-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--toast-bg);color:var(--toast-text);padding:11px 22px;border-radius:22px;font-size:13px;font-weight:600;opacity:0;transition:all .28s cubic-bezier(.4,0,.2,1);z-index:9999;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* SHORTCUTS OVERLAY */
+.overlay{position:fixed;inset:0;background:var(--modal-overlay);z-index:8000;display:none;align-items:center;justify-content:center}
+.overlay.open{display:flex}
+.modal{background:var(--modal-bg);border-radius:14px;padding:26px 28px;max-width:460px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.18)}
+.modal h3{font-size:16px;font-weight:800;color:var(--text-heading);margin-bottom:14px}
+.shortcut-list{list-style:none}
+.shortcut-list li{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border-light);font-size:13px;color:var(--text-secondary)}
+.shortcut-list li:last-child{border-bottom:none}
+.shortcut-key{background:var(--section-bg-light);border:1px solid var(--border);border-radius:4px;padding:2px 7px;font-size:11px;font-family:'Courier New',monospace;font-weight:700;color:var(--text-heading)}
+
+/* FOOTER */
+.last-saved-footer{position:fixed;bottom:0;left:0;right:0;background:var(--footer-bg);border-top:1px solid var(--footer-border);padding:6px 20px;font-size:11px;color:var(--footer-text);text-align:right;z-index:100}
+
+/* PRINT */
+@media print{
+  .header .toolbar,.toast,.tool-btn,.last-saved-footer,.tabs,.submit-area,.post-save-banner,.ac-actions,.export-bar,.notif-bell-link,.skip-link{display:none!important}
+  body{background:#fff;animation:none}
+  .container{padding:0}
+  .card,.assessment-card{box-shadow:none;border:1px solid #ccc;break-inside:avoid}
+  .tab-panel{display:block!important}
+}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .comparison-header{grid-template-columns:1fr}
+  .form-row{grid-template-columns:1fr 1fr}
+  .stats-row{grid-template-columns:1fr 1fr}
+}
+@media(max-width:600px){
+  body{padding:0}
+  .header{padding:18px 14px 12px}
+  .container{padding:12px 10px 60px}
+  .form-row{grid-template-columns:1fr}
+  .rating-pills{gap:4px}
+  .rating-pill{width:36px;height:36px;font-size:14px}
+  .tabs{gap:2px}
+  .tab-btn{padding:8px 14px;font-size:12px}
+  .btn{min-height:44px}
+}
+</style>
+<script src="./api.js"></script>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<div class="header">
+  <h1>&#128203; MLP Self-Assessment</h1>
+  <p>Coordinator professional growth ratings &mdash; 8 domains, semester-by-semester</p>
+  <div class="toolbar">
+    <a class="tool-btn" href="index.html">&#8962; Home</a>
+    <button class="tool-btn" onclick="toggleDarkMode()" id="darkModeBtn" aria-label="Toggle dark mode">&#9790; Dark</button>
+    <button class="tool-btn" onclick="window.print()" aria-label="Print">&#128438; Print</button>
+    <button class="tool-btn" onclick="showShortcutsHelp()" aria-label="Keyboard shortcuts">&#9875; Shortcuts</button>
+    <a class="notif-bell-link tool-btn" href="index.html" id="notifBell" aria-label="Notifications">&#128276;<span class="notif-bell-badge" id="notifBadge" style="display:none">0</span></a>
+  </div>
+</div>
+
+<div class="container" id="main-content">
+  <!-- TABS -->
+  <div class="tabs" role="tablist">
+    <button class="tab-btn active" id="tab-new" role="tab" aria-selected="true" onclick="switchTab('new')">&#10133; New Assessment</button>
+    <button class="tab-btn" id="tab-compare" role="tab" aria-selected="false" onclick="switchTab('compare')">&#128202; Comparison View</button>
+    <button class="tab-btn" id="tab-history" role="tab" aria-selected="false" onclick="switchTab('history')">&#128337; History &amp; Trends</button>
+  </div>
+
+  <!-- TAB 1: NEW ASSESSMENT -->
+  <div class="tab-panel active" id="panel-new" role="tabpanel">
+    <!-- Assessment meta -->
+    <div class="card">
+      <div class="card-title">&#128101; Assessment Details</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="saCoordinator">Coordinator</label>
+          <select id="saCoordinator" onchange="onCoordChange()"></select>
+        </div>
+        <div class="form-group">
+          <label for="saSchoolYear">School Year</label>
+          <select id="saSchoolYear"></select>
+        </div>
+        <div class="form-group">
+          <label for="saSemester">Semester</label>
+          <select id="saSemester">
+            <option value="Fall">Fall</option>
+            <option value="Spring">Spring</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="saType">Assessment Type</label>
+          <select id="saType">
+            <option value="self">Self-Assessment</option>
+            <option value="manager">Manager Assessment</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rating legend -->
+    <div class="card">
+      <div class="rating-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#e74c3c"></div> 1 &mdash; Beginning</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#f39c12"></div> 2 &mdash; Developing</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#27ae60"></div> 3 &mdash; Proficient</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#2c3e6e"></div> 4 &mdash; Expert</div>
+      </div>
+      <div id="domainsContainer"></div>
+    </div>
+
+    <!-- Narrative -->
+    <div class="card">
+      <div class="card-title">&#128221; Narrative Reflection</div>
+      <div class="form-row" style="grid-template-columns:1fr">
+        <div class="form-group">
+          <label for="saStrengths">Strengths</label>
+          <textarea id="saStrengths" rows="3" placeholder="What are this coordinator's key strengths in MLP coordination?"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="saGrowthAreas">Growth Areas</label>
+          <textarea id="saGrowthAreas" rows="3" placeholder="What 1-2 areas would most benefit from focused development?"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="saGoals">Goals &amp; Action Steps</label>
+          <textarea id="saGoals" rows="3" placeholder="What specific goals and actions are planned for this semester?"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="submit-area">
+      <button class="btn btn-primary" onclick="saveAssessment()">&#10003; Save Assessment</button>
+      <button class="btn btn-secondary" onclick="resetForm()">&#8635; Reset</button>
+    </div>
+
+    <!-- Post-save banner -->
+    <div class="post-save-banner" id="postSaveBanner">
+      <div class="post-save-banner-text">&#127881; Assessment saved! Link this to Goal Setting to create a coaching goal?</div>
+      <button class="btn btn-success btn-sm" onclick="linkToGoalSetting()">Link to Goal Setting</button>
+      <button class="btn btn-secondary btn-sm" onclick="document.getElementById('postSaveBanner').classList.remove('show')">Dismiss</button>
+    </div>
+  </div>
+
+  <!-- TAB 2: COMPARISON VIEW -->
+  <div class="tab-panel" id="panel-compare" role="tabpanel">
+    <div id="compareManagerOnly" style="display:none">
+      <div class="no-data-msg">
+        <div class="no-data-icon">&#128274;</div>
+        <div>Comparison View is available to managers only.</div>
+      </div>
+    </div>
+    <div id="compareContent">
+      <div class="comparison-header">
+        <div class="comp-filter-card">
+          <div class="comp-filter-title">&#128202; Filter Comparison</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="cmpCoord">Coordinator</label>
+              <select id="cmpCoord" onchange="renderComparison()"></select>
+            </div>
+            <div class="form-group">
+              <label for="cmpYear">School Year</label>
+              <select id="cmpYear" onchange="renderComparison()"></select>
+            </div>
+            <div class="form-group">
+              <label for="cmpSemester">Semester</label>
+              <select id="cmpSemester" onchange="renderComparison()">
+                <option value="Fall">Fall</option>
+                <option value="Spring">Spring</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="comp-filter-card" id="cmpSummaryCard">
+          <div class="comp-filter-title">&#128269; At a Glance</div>
+          <div id="cmpAtAGlance" style="font-size:13px;color:var(--text-secondary)">Select a coordinator and semester above.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">&#127919; Radar Comparison</div>
+        <div class="radar-wrap">
+          <canvas id="compareRadar" height="320"></canvas>
+        </div>
+        <div class="radar-legend">
+          <div class="radar-legend-item"><div class="radar-legend-dot" style="background:rgba(74,144,217,.85)"></div> Self-Assessment</div>
+          <div class="radar-legend-item"><div class="radar-legend-dot" style="background:rgba(243,156,18,.85)"></div> Manager Assessment</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">&#128270; Gap Analysis</div>
+        <div id="gapTableWrap">
+          <div class="no-data-msg"><div class="no-data-icon">&#128202;</div><div>Select a coordinator above to view gap analysis.</div></div>
+        </div>
+        <div class="narrative-card" id="narrativeCard" style="display:none">
+          <h4>Alignment Summary</h4>
+          <div id="narrativeSections"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 3: HISTORY & TRENDS -->
+  <div class="tab-panel" id="panel-history" role="tabpanel">
+    <div class="export-bar">
+      <button class="btn btn-secondary" onclick="exportCSV()">&#128229; Export CSV</button>
+      <span style="font-size:12px;color:var(--text-muted)" id="historyCount"></span>
+    </div>
+    <div class="filter-bar">
+      <div>
+        <label for="hFilterCoord">Coordinator</label>
+        <select id="hFilterCoord" onchange="renderHistory()">
+          <option value="">All Coordinators</option>
+        </select>
+      </div>
+      <div>
+        <label for="hFilterYear">School Year</label>
+        <select id="hFilterYear" onchange="renderHistory()">
+          <option value="">All Years</option>
+        </select>
+      </div>
+      <div>
+        <label for="hFilterSemester">Semester</label>
+        <select id="hFilterSemester" onchange="renderHistory()">
+          <option value="">All Semesters</option>
+          <option value="Fall">Fall</option>
+          <option value="Spring">Spring</option>
+        </select>
+      </div>
+      <div>
+        <label for="hFilterType">Type</label>
+        <select id="hFilterType" onchange="renderHistory()">
+          <option value="">All Types</option>
+          <option value="self">Self</option>
+          <option value="manager">Manager</option>
+        </select>
+      </div>
+    </div>
+    <div id="trendSection" style="display:none" class="trend-section">
+      <div class="card-title">&#128200; Trend Over Time</div>
+      <canvas id="trendChart" height="200"></canvas>
+    </div>
+    <div id="historyList"></div>
+  </div>
+</div><!-- /container -->
+
+<!-- SHORTCUTS OVERLAY -->
+<div class="overlay" id="shortcutsOverlay" role="dialog" aria-modal="true" aria-label="Keyboard shortcuts" onclick="hideShortcutsHelp(event)">
+  <div class="modal">
+    <h3>&#9875; Keyboard Shortcuts</h3>
+    <ul class="shortcut-list">
+      <li><span>Save assessment</span><kbd class="shortcut-key">Ctrl+S</kbd></li>
+      <li><span>Toggle dark mode</span><kbd class="shortcut-key">Ctrl+D</kbd></li>
+      <li><span>New Assessment tab</span><kbd class="shortcut-key">1</kbd></li>
+      <li><span>Comparison tab</span><kbd class="shortcut-key">2</kbd></li>
+      <li><span>History tab</span><kbd class="shortcut-key">3</kbd></li>
+      <li><span>Show shortcuts</span><kbd class="shortcut-key">?</kbd></li>
+      <li><span>Close overlay</span><kbd class="shortcut-key">Esc</kbd></li>
+    </ul>
+    <div style="margin-top:14px;text-align:right">
+      <button class="btn btn-secondary btn-sm" onclick="hideShortcutsHelp()">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="last-saved-footer" id="lastSavedFooter"></div>
+
+<script>
+/* ===== THEME IIFE ===== */
+(function(){
+  try {
+    var raw = localStorage.getItem('mlp_hub_config');
+    var cfg = raw ? JSON.parse(raw) : {};
+    var THEMES = {
+      'default':{primary:'#4a90d9',primaryDark:'#2c3e6e',headerGrad1:'#2c3e6e',headerGrad2:'#4a90d9'},
+      'forest':{primary:'#27ae60',primaryDark:'#1a5c38',headerGrad1:'#1a5c38',headerGrad2:'#27ae60'},
+      'sunset':{primary:'#e67e22',primaryDark:'#a04000',headerGrad1:'#a04000',headerGrad2:'#e67e22'},
+      'ruby':{primary:'#e74c3c',primaryDark:'#922b21',headerGrad1:'#922b21',headerGrad2:'#e74c3c'},
+      'slate':{primary:'#607d8b',primaryDark:'#37474f',headerGrad1:'#37474f',headerGrad2:'#607d8b'},
+      'royal':{primary:'#9b59b6',primaryDark:'#6c3483',headerGrad1:'#6c3483',headerGrad2:'#9b59b6'},
+      'teal':{primary:'#009688',primaryDark:'#00695c',headerGrad1:'#00695c',headerGrad2:'#009688'},
+      'charcoal':{primary:'#546e7a',primaryDark:'#263238',headerGrad1:'#263238',headerGrad2:'#546e7a'}
+    };
+    var colors = cfg.customColors || THEMES[cfg.theme || 'default'] || THEMES['default'];
+    var r = document.documentElement.style;
+    r.setProperty('--primary', colors.primary);
+    r.setProperty('--primary-dark', colors.primaryDark);
+    r.setProperty('--header-gradient-1', colors.headerGrad1);
+    r.setProperty('--header-gradient-2', colors.headerGrad2);
+    r.setProperty('--text-heading', colors.primaryDark);
+    var pName = cfg.productName || cfg.orgName || '';
+    if (pName) {
+      document.title = pName + ' \u2014 MLP Self-Assessment';
+    }
+  } catch(e){}
+})();
+
+/* ===== ROLE GATE IIFE ===== */
+(function(){
+  var ALLOWED_ROLES = ['manager','coordinator'];
+  var role = '';
+  try {
+    role = localStorage.getItem('esl_home_role') || '';
+    if (!role) {
+      var cfg = JSON.parse(localStorage.getItem('mlp_hub_config') || '{}');
+      role = cfg.userRole || 'manager';
+    }
+  } catch(e){ role = 'manager'; }
+  var allowed = false;
+  for (var i = 0; i < ALLOWED_ROLES.length; i++) {
+    if (ALLOWED_ROLES[i] === role) { allowed = true; break; }
+  }
+  if (!allowed) {
+    document.addEventListener('DOMContentLoaded', function(){
+      document.body.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;font-family:Segoe UI,Arial,sans-serif;color:#333"><div style="font-size:48px;margin-bottom:16px">&#128274;</div><h2 style="margin-bottom:8px">Access Restricted</h2><p style="color:#777;margin-bottom:18px">This tool is not available for your current role.</p><a href="index.html" style="background:#4a90d9;color:#fff;padding:10px 22px;border-radius:8px;text-decoration:none;font-weight:700">&#8962; Return to Home</a></div>';
+    });
+  }
+})();
+
+/* ===== CONSTANTS ===== */
+var STORAGE_KEY = 'coordinator_self_assessments';
+
+var DEFAULT_COORDINATORS = [
+  {id:'jmiller', name:'J. Miller', email:'jmiller@uplifteducation.org', color:'#8e44ad'},
+  {id:'kpatterson', name:'K. Patterson', email:'kpatterson@uplifteducation.org', color:'#0097a7'},
+  {id:'pokolo', name:'P. Okolo', email:'Pokolo@uplifteducation.org', color:'#c0392b'},
+  {id:'vpalencia', name:'V. Palencia', email:'vpalencia@uplifteducation.org', color:'#2980b9'}
+];
+
+var DOMAINS = [
+  {
+    key:'elps',label:'ELPS / Language Acquisition',icon:'\uD83D\uDDE3',
+    descriptors:{
+      1:'Limited understanding of ELPS. Rarely integrates language objectives into instruction.',
+      2:'Developing understanding. Occasionally guides teachers on ELPS implementation with support.',
+      3:'Proficient. Consistently coaches teachers on language objectives and ELPS alignment.',
+      4:'Expert. Leads campus-wide ELPS implementation, models for others, develops resources.'
+    }
+  },
+  {
+    key:'sheltered',label:'Sheltered Instruction',icon:'\uD83C\uDFEB',
+    descriptors:{
+      1:'Minimal knowledge of sheltered instruction strategies.',
+      2:'Basic understanding. Can identify sheltered strategies during walkthroughs.',
+      3:'Proficient. Coaches teachers on SIOP components; provides targeted feedback.',
+      4:'Expert. Leads professional development; drives campus-wide sheltered instruction culture.'
+    }
+  },
+  {
+    key:'coaching',label:'Coaching & Teacher Development',icon:'\uD83C\uDFAF',
+    descriptors:{
+      1:'Coaching cycles rarely initiated or completed. Feedback is generic.',
+      2:'Some coaching cycles in progress. Feedback becoming more specific and actionable.',
+      3:'Regular coaching cycles with clear observation, feedback, and follow-up.',
+      4:'Highly effective coaching. Teachers demonstrate growth; cycles tied to student outcomes.'
+    }
+  },
+  {
+    key:'dataLiteracy',label:'Data Literacy & Analysis',icon:'\uD83D\uDCCA',
+    descriptors:{
+      1:'Limited ability to analyze EL program data. Relies on others for interpretation.',
+      2:'Can read basic reports. Beginning to use TELPAS and walkthrough data for decisions.',
+      3:'Proficient. Regularly uses multiple data sources to guide coaching and planning.',
+      4:'Expert. Designs data collection systems; leads data-driven PLC conversations.'
+    }
+  },
+  {
+    key:'newcomer',label:'Newcomer & SLIFE Support',icon:'\uD83C\uDF0D',
+    descriptors:{
+      1:'Limited understanding of newcomer and SLIFE student needs.',
+      2:'Basic awareness. Can connect families to initial resources.',
+      3:'Proficient. Implements structured newcomer protocols; coordinates targeted support.',
+      4:'Expert. Designs newcomer programs; leads district-level newcomer initiatives.'
+    }
+  },
+  {
+    key:'bilingual',label:'Bilingual Program Support',icon:'\uD83C\uDF10',
+    descriptors:{
+      1:'Minimal engagement with bilingual program components.',
+      2:'Developing understanding of bilingual program models and dual-language strategies.',
+      3:'Proficient. Coaches bilingual teachers; ensures program fidelity and compliance.',
+      4:'Expert. Leads bilingual program design; models asset-based multilingual pedagogy.'
+    }
+  },
+  {
+    key:'familyEngagement',label:'Family & Community Engagement',icon:'\uD83D\uDC68\u200D\uD83D\uDC69\u200D\uD83D\uDC67',
+    descriptors:{
+      1:'Minimal proactive family engagement. Reactive communication only.',
+      2:'Coordinates basic parent meetings. Growing multilingual communication efforts.',
+      3:'Proficient. Builds authentic partnerships; uses interpreters and translated materials.',
+      4:'Expert. Designs family engagement systems; bridges home-school-community connections.'
+    }
+  },
+  {
+    key:'edtech',label:'EdTech & Digital Tools',icon:'\uD83D\uDCBB',
+    descriptors:{
+      1:'Limited use of technology for coordination or coaching.',
+      2:'Uses basic digital tools. Beginning to leverage data dashboards.',
+      3:'Proficient. Uses this hub and other tools consistently to support program quality.',
+      4:'Expert. Champions digital tools district-wide; builds capacity in others.'
+    }
+  }
+];
+
+/* ===== STATE ===== */
+var data = {version:1, assessments:[]};
+var currentRatings = {};
+var lastSavedId = null;
+var compareRadarChart = null;
+var trendChart = null;
+var currentRole = 'manager';
+var currentUserId = '';
+
+/* ===== UTILITIES ===== */
+function escHtml(str) {
+  if (str === null || str === undefined) return '';
+  var node = document.createTextNode(String(str));
+  var div = document.createElement('div');
+  div.appendChild(node);
+  return div.innerHTML;
+}
+
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 2800);
+}
+
+function toggleDarkMode() {
+  var isDark = document.body.classList.toggle('dark-mode');
+  localStorage.setItem('esl_app_theme', isDark ? 'dark' : 'light');
+}
+
+function getCoordinators() {
+  try {
+    var raw = localStorage.getItem('mlp_hub_config');
+    var cfg = raw ? JSON.parse(raw) : {};
+    if (cfg.coordinators && cfg.coordinators.length) return cfg.coordinators;
+  } catch(e){}
+  return DEFAULT_COORDINATORS;
+}
+
+function getCurrentUser() {
+  try {
+    var raw = localStorage.getItem('mlp_hub_config');
+    var cfg = raw ? JSON.parse(raw) : {};
+    return {
+      id: cfg.userId || cfg.coordId || 'jmiller',
+      name: cfg.userName || cfg.coordName || 'J. Miller',
+      role: cfg.userRole || 'manager',
+      orgId: cfg.orgId || '',
+      orgName: cfg.orgName || ''
+    };
+  } catch(e){ return {id:'jmiller',name:'J. Miller',role:'manager',orgId:'',orgName:''}; }
+}
+
+function getSchoolYears() {
+  var now = new Date();
+  var yr = now.getFullYear();
+  var years = [];
+  for (var i = 0; i < 3; i++) {
+    var y = yr - i;
+    years.push((y-1) + '-' + String(y).slice(2));
+  }
+  return years;
+}
+
+function avgRating(ratings) {
+  var keys = Object.keys(ratings);
+  if (!keys.length) return 0;
+  var sum = 0, count = 0;
+  for (var i = 0; i < keys.length; i++) {
+    var v = parseInt(ratings[keys[i]], 10);
+    if (v > 0) { sum += v; count++; }
+  }
+  return count ? (sum / count) : 0;
+}
+
+function domainIcon(key) {
+  for (var i = 0; i < DOMAINS.length; i++) {
+    if (DOMAINS[i].key === key) return DOMAINS[i].icon;
+  }
+  return '';
+}
+
+function domainLabel(key) {
+  for (var i = 0; i < DOMAINS.length; i++) {
+    if (DOMAINS[i].key === key) return DOMAINS[i].label;
+  }
+  return key;
+}
+
+function ratingBadgeClass(v) {
+  if (v === 1) return 'rb1';
+  if (v === 2) return 'rb2';
+  if (v === 3) return 'rb3';
+  if (v === 4) return 'rb4';
+  return 'rb0';
+}
+
+/* ===== LOAD / SAVE ===== */
+function loadData() {
+  try {
+    var raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) { data = JSON.parse(raw); }
+    if (!data.version) data.version = 1;
+    if (!data.assessments) data.assessments = [];
+  } catch(e){ data = {version:1, assessments:[]}; }
+}
+
+function saveData() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  stampLastSaved();
+  broadcastUpdate();
+}
+
+function stampLastSaved() {
+  var now = new Date();
+  var s = now.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+  document.getElementById('lastSavedFooter').textContent = 'Last saved: ' + s;
+  localStorage.setItem(STORAGE_KEY + '_lastSaved', Date.now());
+}
+
+function renderLastSaved() {
+  var ts = parseInt(localStorage.getItem(STORAGE_KEY + '_lastSaved') || '0', 10);
+  var el = document.getElementById('lastSavedFooter');
+  if (!ts) { el.textContent = 'No saves yet'; return; }
+  var d = new Date(ts);
+  el.textContent = 'Last saved: ' + d.toLocaleString();
+}
+
+/* ===== BROADCAST ===== */
+var bc = null;
+function initBroadcast() {
+  try {
+    bc = new BroadcastChannel('mlp_hub_sync');
+    bc.onmessage = function(e) {
+      if (e.data && e.data.key === STORAGE_KEY) {
+        loadData();
+        renderHistory();
+        renderComparison();
+      }
+    };
+  } catch(err){}
+}
+
+function broadcastUpdate() {
+  try {
+    if (bc) bc.postMessage({type:'data_update', key:STORAGE_KEY, timestamp:Date.now()});
+  } catch(err){}
+}
+
+/* ===== NOTIFICATION BELL ===== */
+function updateNotifBell() {
+  var cnt = parseInt(localStorage.getItem('notification_unread_count') || '0', 10);
+  var badge = document.getElementById('notifBadge');
+  if (cnt > 0) {
+    badge.style.display = 'flex';
+    badge.textContent = cnt > 9 ? '9+' : String(cnt);
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+/* ===== TABS ===== */
+function switchTab(name) {
+  var panels = ['new','compare','history'];
+  for (var i = 0; i < panels.length; i++) {
+    var p = document.getElementById('panel-' + panels[i]);
+    var b = document.getElementById('tab-' + panels[i]);
+    if (panels[i] === name) {
+      p.classList.add('active');
+      b.classList.add('active');
+      b.setAttribute('aria-selected', 'true');
+    } else {
+      p.classList.remove('active');
+      b.classList.remove('active');
+      b.setAttribute('aria-selected', 'false');
+    }
+  }
+  if (name === 'compare') { renderComparison(); }
+  if (name === 'history') { renderHistory(); }
+}
+
+/* ===== BUILD NEW ASSESSMENT FORM ===== */
+function buildDomainsUI() {
+  var container = document.getElementById('domainsContainer');
+  var html = '';
+  for (var i = 0; i < DOMAINS.length; i++) {
+    var d = DOMAINS[i];
+    html += '<div class="domain-section">';
+    html += '<div class="domain-header"><span class="domain-icon">' + d.icon + '</span><span class="domain-label">' + escHtml(d.label) + '</span></div>';
+    html += '<div class="rating-pills" role="radiogroup" aria-label="' + escHtml(d.label) + ' rating">';
+    for (var r = 1; r <= 4; r++) {
+      html += '<button class="rating-pill r' + r + '" id="pill-' + d.key + '-' + r + '" data-domain="' + d.key + '" data-val="' + r + '" onclick="selectRating(\'' + d.key + '\',' + r + ')" aria-label="Rating ' + r + '">' + r + '</button>';
+    }
+    html += '</div>';
+    html += '<div class="descriptor-text" id="desc-' + d.key + '"></div>';
+    if (i < DOMAINS.length - 1) html += '<hr class="section-divider"/>';
+    html += '</div>';
+  }
+  container.innerHTML = html;
+}
+
+function selectRating(domainKey, val) {
+  currentRatings[domainKey] = val;
+  for (var r = 1; r <= 4; r++) {
+    var pill = document.getElementById('pill-' + domainKey + '-' + r);
+    if (pill) pill.classList.toggle('selected', r === val);
+  }
+  var descEl = document.getElementById('desc-' + domainKey);
+  if (descEl) {
+    var descriptor = '';
+    for (var i = 0; i < DOMAINS.length; i++) {
+      if (DOMAINS[i].key === domainKey) { descriptor = DOMAINS[i].descriptors[val]; break; }
+    }
+    descEl.textContent = descriptor || '';
+    descEl.classList.add('visible');
+  }
+}
+
+function populateCoordDropdown(selId, includeAll) {
+  var sel = document.getElementById(selId);
+  if (!sel) return;
+  var cur = sel.value;
+  while (sel.options.length > (includeAll ? 1 : 0)) sel.remove(includeAll ? 1 : 0);
+  var coords = getCoordinators();
+  for (var i = 0; i < coords.length; i++) {
+    var o = document.createElement('option');
+    o.value = coords[i].id;
+    o.textContent = coords[i].name;
+    sel.appendChild(o);
+  }
+  if (cur) sel.value = cur;
+}
+
+function populateYearDropdown(selId, includeAll) {
+  var sel = document.getElementById(selId);
+  if (!sel) return;
+  var cur = sel.value;
+  var startIdx = includeAll ? 1 : 0;
+  while (sel.options.length > startIdx) sel.remove(startIdx);
+  var years = getSchoolYears();
+  for (var i = 0; i < years.length; i++) {
+    var o = document.createElement('option');
+    o.value = years[i];
+    o.textContent = years[i];
+    sel.appendChild(o);
+  }
+  if (cur) { sel.value = cur; } else if (!includeAll && sel.options.length) { sel.value = years[0]; }
+}
+
+function onCoordChange() {
+  var role = currentRole;
+  var coordSel = document.getElementById('saCoordinator');
+  var typeSel = document.getElementById('saType');
+  if (role === 'coordinator') {
+    var myId = currentUserId;
+    if (coordSel.value === myId) {
+      typeSel.value = 'self';
+    } else {
+      typeSel.value = 'manager';
+    }
+  }
+}
+
+/* ===== SAVE ASSESSMENT ===== */
+function saveAssessment() {
+  var coordSel = document.getElementById('saCoordinator');
+  var coordId = coordSel.value;
+  var coordName = coordSel.options[coordSel.selectedIndex] ? coordSel.options[coordSel.selectedIndex].textContent : coordId;
+  var schoolYear = document.getElementById('saSchoolYear').value;
+  var semester = document.getElementById('saSemester').value;
+  var asmType = document.getElementById('saType').value;
+  var strengths = document.getElementById('saStrengths').value.trim();
+  var growthAreas = document.getElementById('saGrowthAreas').value.trim();
+  var goals = document.getElementById('saGoals').value.trim();
+
+  if (!coordId) { showToast('Please select a coordinator.'); return; }
+
+  // Validate all domains rated
+  for (var i = 0; i < DOMAINS.length; i++) {
+    if (!currentRatings[DOMAINS[i].key]) {
+      showToast('Please rate all 8 domains before saving.');
+      var domEl = document.getElementById('pill-' + DOMAINS[i].key + '-1');
+      if (domEl) domEl.scrollIntoView({behavior:'smooth', block:'center'});
+      return;
+    }
+  }
+
+  var user = getCurrentUser();
+  var id = 'sa-' + Date.now();
+  var record = {
+    id: id,
+    coordinatorId: coordId,
+    coordinatorName: coordName,
+    schoolYear: schoolYear,
+    semester: semester,
+    assessmentType: asmType,
+    assessedBy: user.id,
+    ratings: JSON.parse(JSON.stringify(currentRatings)),
+    strengths: strengths,
+    growthAreas: growthAreas,
+    goals: goals,
+    createdAt: new Date().toISOString()
+  };
+
+  data.assessments.push(record);
+  saveData();
+
+  // PD log entry: coordinator self-reflection
+  if (asmType === 'self') {
+    pushPDLogEntry(coordId, coordName, schoolYear, semester);
+  }
+
+  lastSavedId = id;
+  showToast('Assessment saved!');
+  document.getElementById('postSaveBanner').classList.add('show');
+
+  // Broadcast pd_tracker update too
+  try {
+    if (bc) bc.postMessage({type:'data_update', key:'pd_tracker_data', timestamp:Date.now()});
+  } catch(e){}
+}
+
+function pushPDLogEntry(coordId, coordName, schoolYear, semester) {
+  try {
+    var raw = localStorage.getItem('pd_tracker_data');
+    var pd = raw ? JSON.parse(raw) : {version:1, sessions:[], settings:{hourTargets:{}}};
+    if (!pd.sessions) pd.sessions = [];
+    pd.sessions.push({
+      id: 'pd-sa-' + Date.now(),
+      coordinatorId: coordId,
+      coordinatorName: coordName,
+      date: new Date().toISOString().slice(0,10),
+      title: 'Coordinator Self-Reflection',
+      category: 'Data Literacy/Assessment',
+      hours: 0.5,
+      schoolYear: schoolYear,
+      semester: semester,
+      notes: 'Auto-generated from Self-Assessment tool.',
+      _fromSelfAssessment: true
+    });
+    localStorage.setItem('pd_tracker_data', JSON.stringify(pd));
+  } catch(e){}
+}
+
+function linkToGoalSetting() {
+  if (!lastSavedId) return;
+  var rec = null;
+  for (var i = 0; i < data.assessments.length; i++) {
+    if (data.assessments[i].id === lastSavedId) { rec = data.assessments[i]; break; }
+  }
+  if (!rec) return;
+
+  // Find lowest-rated domain
+  var lowestKey = '';
+  var lowestVal = 5;
+  for (var k in rec.ratings) {
+    if (rec.ratings.hasOwnProperty(k) && rec.ratings[k] < lowestVal) {
+      lowestVal = rec.ratings[k];
+      lowestKey = k;
+    }
+  }
+  var lowestLabel = domainLabel(lowestKey);
+
+  var goalEntry = {
+    id: 'g-sa-' + Date.now(),
+    coordinatorId: rec.coordinatorId,
+    coordinatorName: rec.coordinatorName,
+    schoolYear: rec.schoolYear,
+    semester: rec.semester,
+    title: 'Growth: ' + lowestLabel,
+    metric: 'Improve from rating ' + lowestVal + ' to rating ' + Math.min(4, lowestVal + 1) + ' by end of semester.',
+    managerTarget: rec.goals || 'See self-assessment goals.',
+    status: 'active',
+    actionSteps: [],
+    checkins: {},
+    sourceAssessmentId: rec.id,
+    createdAt: new Date().toISOString()
+  };
+
+  try {
+    var raw = localStorage.getItem('goal_setting_data');
+    var gs = raw ? JSON.parse(raw) : {version:1, goals:[], checkins:[]};
+    if (!gs.goals) gs.goals = [];
+    gs.goals.push(goalEntry);
+    localStorage.setItem('goal_setting_data', JSON.stringify(gs));
+    try { if (bc) bc.postMessage({type:'data_update', key:'goal_setting_data', timestamp:Date.now()}); } catch(e){}
+    showToast('Coaching goal added to Goal Setting!');
+    document.getElementById('postSaveBanner').classList.remove('show');
+  } catch(e){ showToast('Could not link to Goal Setting.'); }
+}
+
+function resetForm() {
+  currentRatings = {};
+  document.getElementById('saStrengths').value = '';
+  document.getElementById('saGrowthAreas').value = '';
+  document.getElementById('saGoals').value = '';
+  for (var i = 0; i < DOMAINS.length; i++) {
+    for (var r = 1; r <= 4; r++) {
+      var pill = document.getElementById('pill-' + DOMAINS[i].key + '-' + r);
+      if (pill) pill.classList.remove('selected');
+    }
+    var desc = document.getElementById('desc-' + DOMAINS[i].key);
+    if (desc) { desc.textContent = ''; desc.classList.remove('visible'); }
+  }
+  document.getElementById('postSaveBanner').classList.remove('show');
+  showToast('Form reset.');
+}
+
+/* ===== COMPARISON VIEW ===== */
+function renderComparison() {
+  var isManager = (currentRole === 'manager');
+  document.getElementById('compareManagerOnly').style.display = isManager ? 'none' : 'block';
+  document.getElementById('compareContent').style.display = isManager ? 'block' : 'none';
+  if (!isManager) return;
+
+  var coordId = document.getElementById('cmpCoord').value;
+  var year = document.getElementById('cmpYear').value;
+  var semester = document.getElementById('cmpSemester').value;
+
+  if (!coordId) {
+    clearCompareChart();
+    document.getElementById('gapTableWrap').innerHTML = '<div class="no-data-msg"><div class="no-data-icon">&#128202;</div><div>Select a coordinator above to view gap analysis.</div></div>';
+    document.getElementById('narrativeCard').style.display = 'none';
+    return;
+  }
+
+  var selfAssessment = null;
+  var managerAssessment = null;
+
+  for (var i = 0; i < data.assessments.length; i++) {
+    var a = data.assessments[i];
+    if (a.coordinatorId === coordId && a.schoolYear === year && a.semester === semester) {
+      if (a.assessmentType === 'self' && !selfAssessment) selfAssessment = a;
+      if (a.assessmentType === 'manager' && !managerAssessment) managerAssessment = a;
+    }
+  }
+
+  // At-a-glance
+  var atGlance = '';
+  if (selfAssessment && managerAssessment) {
+    atGlance = '<div style="color:var(--good-text);font-weight:700;margin-bottom:6px">&#10003; Both assessments available</div>';
+    atGlance += '<div style="font-size:12px;color:var(--text-muted)">Self avg: <strong>' + avgRating(selfAssessment.ratings).toFixed(1) + '</strong> &nbsp; Manager avg: <strong>' + avgRating(managerAssessment.ratings).toFixed(1) + '</strong></div>';
+  } else if (selfAssessment) {
+    atGlance = '<div style="color:var(--warn-text);font-weight:700">Self-assessment only &mdash; no manager assessment yet.</div>';
+  } else if (managerAssessment) {
+    atGlance = '<div style="color:var(--warn-text);font-weight:700">Manager assessment only &mdash; no self-assessment yet.</div>';
+  } else {
+    atGlance = '<div style="color:var(--text-muted)">No assessments found for this selection.</div>';
+  }
+  document.getElementById('cmpAtAGlance').innerHTML = atGlance;
+
+  renderCompareRadar(selfAssessment, managerAssessment);
+  renderGapTable(selfAssessment, managerAssessment);
+}
+
+function clearCompareChart() {
+  if (compareRadarChart) { compareRadarChart.destroy(); compareRadarChart = null; }
+}
+
+function renderCompareRadar(selfA, managerA) {
+  clearCompareChart();
+  var ctx = document.getElementById('compareRadar').getContext('2d');
+  var labels = [];
+  for (var i = 0; i < DOMAINS.length; i++) labels.push(DOMAINS[i].label);
+  var selfData = [];
+  var managerData = [];
+  for (var i = 0; i < DOMAINS.length; i++) {
+    selfData.push(selfA ? (selfA.ratings[DOMAINS[i].key] || 0) : 0);
+    managerData.push(managerA ? (managerA.ratings[DOMAINS[i].key] || 0) : 0);
+  }
+  var datasets = [];
+  if (selfA || managerA) {
+    datasets.push({
+      label: 'Self-Assessment',
+      data: selfData,
+      backgroundColor: 'rgba(74,144,217,0.2)',
+      borderColor: 'rgba(74,144,217,0.85)',
+      borderWidth: 2,
+      pointBackgroundColor: 'rgba(74,144,217,1)',
+      pointRadius: 3
+    });
+    datasets.push({
+      label: 'Manager Assessment',
+      data: managerData,
+      backgroundColor: 'rgba(243,156,18,0.2)',
+      borderColor: 'rgba(243,156,18,0.85)',
+      borderWidth: 2,
+      pointBackgroundColor: 'rgba(243,156,18,1)',
+      pointRadius: 3
+    });
+  }
+  compareRadarChart = new Chart(ctx, {
+    type: 'radar',
+    data: {labels: labels, datasets: datasets},
+    options: {
+      responsive: true,
+      scales: {
+        r: {
+          min: 0, max: 4,
+          ticks: {stepSize: 1, font:{size:10}},
+          pointLabels: {font:{size:10}},
+          grid: {color: 'rgba(127,127,127,0.2)'},
+          angleLines: {color: 'rgba(127,127,127,0.2)'}
+        }
+      },
+      plugins: {legend: {display: false}}
+    }
+  });
+}
+
+function renderGapTable(selfA, managerA) {
+  if (!selfA && !managerA) {
+    document.getElementById('gapTableWrap').innerHTML = '<div class="no-data-msg"><div class="no-data-icon">&#128202;</div><div>No assessments found for this coordinator and semester.</div></div>';
+    document.getElementById('narrativeCard').style.display = 'none';
+    return;
+  }
+  var html = '<table class="gap-table">';
+  html += '<thead><tr><th>Domain</th><th>Self</th><th>Manager</th><th>Gap</th><th>Alignment</th></tr></thead><tbody>';
+  var alignedDomains = [];
+  var selfHighDomains = [];
+  var managerHighDomains = [];
+
+  for (var i = 0; i < DOMAINS.length; i++) {
+    var d = DOMAINS[i];
+    var sv = selfA ? (selfA.ratings[d.key] || 0) : 0;
+    var mv = managerA ? (managerA.ratings[d.key] || 0) : 0;
+    var gap = sv - mv;
+    var absGap = Math.abs(gap);
+    var pillClass = 'gap-aligned';
+    var pillText = 'Aligned';
+    if (absGap >= 2) { pillClass = 'gap-major'; pillText = 'Significant'; }
+    else if (absGap === 1) { pillClass = 'gap-minor'; pillText = 'Minor'; }
+
+    if (absGap === 0) alignedDomains.push(d.label);
+    else if (gap > 0) selfHighDomains.push(d.label + ' (' + (gap > 0 ? '+' : '') + gap + ')');
+    else managerHighDomains.push(d.label + ' (' + (gap > 0 ? '+' : '') + gap + ')');
+
+    html += '<tr>';
+    html += '<td><span style="margin-right:5px">' + d.icon + '</span><strong>' + escHtml(d.label) + '</strong></td>';
+    html += '<td><span class="rating-badge ' + ratingBadgeClass(sv) + '">' + (sv || '&mdash;') + '</span></td>';
+    html += '<td><span class="rating-badge ' + ratingBadgeClass(mv) + '">' + (mv || '&mdash;') + '</span></td>';
+    html += '<td style="font-weight:700;color:' + (gap > 0 ? 'var(--warn-text)' : gap < 0 ? 'var(--info-text)' : 'var(--good-text)') + '">' + (gap === 0 ? '0' : (gap > 0 ? '+' + gap : gap)) + '</td>';
+    html += '<td><span class="gap-pill ' + pillClass + '">' + pillText + '</span></td>';
+    html += '</tr>';
+  }
+  html += '</tbody></table>';
+  document.getElementById('gapTableWrap').innerHTML = html;
+
+  // Narrative
+  var narHtml = '';
+  narHtml += '<div class="narrative-section"><div class="narrative-section-label">Areas of Alignment:</div><div class="narrative-section-body">' + (alignedDomains.length ? escHtml(alignedDomains.join(', ')) : 'No fully aligned domains this semester.') + '</div></div>';
+  narHtml += '<div class="narrative-section"><div class="narrative-section-label">Areas Where Self-Assessment Exceeds Manager Assessment:</div><div class="narrative-section-body">' + (selfHighDomains.length ? escHtml(selfHighDomains.join('; ')) : 'None.') + '</div></div>';
+  narHtml += '<div class="narrative-section"><div class="narrative-section-label">Areas Where Manager Sees Higher Potential:</div><div class="narrative-section-body">' + (managerHighDomains.length ? escHtml(managerHighDomains.map(function(s){ return s.replace(/\(-/g,'(+').replace(/\+\d+/g, function(m){ return m.replace('+',''); }); }).join('; ')) : 'None.') + '</div></div>';
+  document.getElementById('narrativeSections').innerHTML = narHtml;
+  document.getElementById('narrativeCard').style.display = 'block';
+}
+
+/* ===== HISTORY & TRENDS ===== */
+function renderHistory() {
+  var filterCoord = document.getElementById('hFilterCoord').value;
+  var filterYear = document.getElementById('hFilterYear').value;
+  var filterSem = document.getElementById('hFilterSemester').value;
+  var filterType = document.getElementById('hFilterType').value;
+
+  var filtered = [];
+  for (var i = 0; i < data.assessments.length; i++) {
+    var a = data.assessments[i];
+    if (filterCoord && a.coordinatorId !== filterCoord) continue;
+    if (filterYear && a.schoolYear !== filterYear) continue;
+    if (filterSem && a.semester !== filterSem) continue;
+    if (filterType && a.assessmentType !== filterType) continue;
+    filtered.push(a);
+  }
+
+  // Sort newest first
+  filtered.sort(function(a,b){ return new Date(b.createdAt) - new Date(a.createdAt); });
+
+  document.getElementById('historyCount').textContent = filtered.length + ' record' + (filtered.length !== 1 ? 's' : '');
+
+  // Populate history year filter
+  var yearSel = document.getElementById('hFilterYear');
+  var curYear = yearSel.value;
+  while (yearSel.options.length > 1) yearSel.remove(1);
+  var yearsInData = {};
+  for (var i = 0; i < data.assessments.length; i++) { yearsInData[data.assessments[i].schoolYear] = true; }
+  var years = getSchoolYears();
+  for (var i = 0; i < years.length; i++) {
+    if (yearsInData[years[i]]) {
+      var o = document.createElement('option');
+      o.value = years[i]; o.textContent = years[i];
+      yearSel.appendChild(o);
+    }
+  }
+  if (curYear) yearSel.value = curYear;
+
+  // Trend chart: only if filtering single coordinator and 2+ data points
+  renderTrend(filterCoord, filtered);
+
+  if (!filtered.length) {
+    document.getElementById('historyList').innerHTML = '<div class="no-data-msg"><div class="no-data-icon">&#128337;</div><div>No assessments match these filters.</div></div>';
+    return;
+  }
+
+  var html = '';
+  for (var i = 0; i < filtered.length; i++) {
+    var a = filtered[i];
+    var avg = avgRating(a.ratings);
+    var topKey = '', topVal = 0, lowKey = '', lowVal = 5;
+    for (var k in a.ratings) {
+      if (a.ratings.hasOwnProperty(k)) {
+        if (a.ratings[k] > topVal) { topVal = a.ratings[k]; topKey = k; }
+        if (a.ratings[k] < lowVal) { lowVal = a.ratings[k]; lowKey = k; }
+      }
+    }
+    var typeClass = a.assessmentType === 'manager' ? 'type-manager' : 'type-self';
+    var typePillClass = a.assessmentType === 'manager' ? 'type-manager-pill' : 'type-self-pill';
+    var typePillText = a.assessmentType === 'manager' ? 'Manager' : 'Self';
+    var dateStr = new Date(a.createdAt).toLocaleDateString();
+
+    html += '<div class="assessment-card ' + typeClass + '" id="ac-' + escHtml(a.id) + '">';
+    html += '<div class="ac-header">';
+    html += '<div class="ac-title">' + escHtml(a.coordinatorName) + ' &mdash; ' + escHtml(a.semester) + ' ' + escHtml(a.schoolYear) + '</div>';
+    html += '<div class="ac-meta">';
+    html += '<span class="type-pill ' + typePillClass + '">' + typePillText + '</span>';
+    html += '<span class="sem-pill">' + escHtml(dateStr) + '</span>';
+    html += '</div></div>';
+    html += '<div class="ac-scores">';
+    for (var di = 0; di < DOMAINS.length; di++) {
+      var dkey = DOMAINS[di].key;
+      var dval = a.ratings[dkey] || 0;
+      html += '<div class="domain-score-chip"><div class="chip-icon">' + DOMAINS[di].icon + '</div><div class="chip-val"><span class="rating-badge ' + ratingBadgeClass(dval) + '" style="font-size:11px;width:20px;height:20px;line-height:20px">' + (dval || '?') + '</span></div></div>';
+    }
+    html += '</div>';
+    html += '<div class="ac-avg">Overall avg: <span>' + avg.toFixed(1) + ' / 4.0</span>';
+    if (topKey) html += ' &nbsp;&#11014; <span title="Highest">' + domainIcon(topKey) + ' ' + escHtml(domainLabel(topKey)) + '</span>';
+    if (lowKey && lowKey !== topKey) html += ' &nbsp;&#11015; <span title="Lowest">' + domainIcon(lowKey) + ' ' + escHtml(domainLabel(lowKey)) + '</span>';
+    html += '</div>';
+    if (a.strengths || a.growthAreas || a.goals) {
+      html += '<div class="ac-remarks">';
+      if (a.strengths) html += '<strong>Strengths:</strong> ' + escHtml(a.strengths) + '<br/>';
+      if (a.growthAreas) html += '<strong>Growth Areas:</strong> ' + escHtml(a.growthAreas) + '<br/>';
+      if (a.goals) html += '<strong>Goals:</strong> ' + escHtml(a.goals);
+      html += '</div>';
+    }
+    html += '<div class="ac-actions">';
+    html += '<button class="btn btn-secondary btn-sm" onclick="deleteAssessment(\'' + escHtml(a.id) + '\')">&#128465; Delete</button>';
+    html += '</div>';
+    html += '</div>';
+  }
+  document.getElementById('historyList').innerHTML = html;
+}
+
+function renderTrend(filterCoord, filtered) {
+  var trendSec = document.getElementById('trendSection');
+  if (trendChart) { trendChart.destroy(); trendChart = null; }
+
+  if (!filterCoord || filtered.length < 2) {
+    trendSec.style.display = 'none';
+    return;
+  }
+
+  // Build chronological data points grouped by type
+  var selfPoints = [];
+  var managerPoints = [];
+  var selfFiltered = [];
+  var managerFiltered = [];
+  for (var i = 0; i < filtered.length; i++) {
+    if (filtered[i].assessmentType === 'self') selfFiltered.push(filtered[i]);
+    else managerFiltered.push(filtered[i]);
+  }
+  selfFiltered.sort(function(a,b){ return new Date(a.createdAt) - new Date(b.createdAt); });
+  managerFiltered.sort(function(a,b){ return new Date(a.createdAt) - new Date(b.createdAt); });
+
+  if (selfFiltered.length < 2 && managerFiltered.length < 2) {
+    trendSec.style.display = 'none';
+    return;
+  }
+
+  trendSec.style.display = 'block';
+  var selfLabels = [];
+  var selfAvgs = [];
+  for (var i = 0; i < selfFiltered.length; i++) {
+    selfLabels.push(selfFiltered[i].semester + ' ' + selfFiltered[i].schoolYear);
+    selfAvgs.push(parseFloat(avgRating(selfFiltered[i].ratings).toFixed(2)));
+  }
+  var managerLabels = [];
+  var managerAvgs = [];
+  for (var i = 0; i < managerFiltered.length; i++) {
+    managerLabels.push(managerFiltered[i].semester + ' ' + managerFiltered[i].schoolYear);
+    managerAvgs.push(parseFloat(avgRating(managerFiltered[i].ratings).toFixed(2)));
+  }
+
+  // Merge labels
+  var allLabels = [];
+  var labelSet = {};
+  var allArr = selfLabels.concat(managerLabels);
+  for (var i = 0; i < allArr.length; i++) {
+    if (!labelSet[allArr[i]]) { labelSet[allArr[i]] = true; allLabels.push(allArr[i]); }
+  }
+
+  // Map to label positions
+  function mapToLabels(labels, vals) {
+    var result = [];
+    for (var i = 0; i < allLabels.length; i++) {
+      var idx = labels.indexOf(allLabels[i]);
+      result.push(idx >= 0 ? vals[idx] : null);
+    }
+    return result;
+  }
+
+  var ctx = document.getElementById('trendChart').getContext('2d');
+  var datasets = [];
+  if (selfFiltered.length >= 2) {
+    datasets.push({
+      label: 'Self-Assessment Avg',
+      data: mapToLabels(selfLabels, selfAvgs),
+      borderColor: 'rgba(74,144,217,0.85)',
+      backgroundColor: 'rgba(74,144,217,0.1)',
+      borderWidth: 2,
+      tension: 0.3,
+      spanGaps: true,
+      fill: true
+    });
+  }
+  if (managerFiltered.length >= 2) {
+    datasets.push({
+      label: 'Manager Assessment Avg',
+      data: mapToLabels(managerLabels, managerAvgs),
+      borderColor: 'rgba(243,156,18,0.85)',
+      backgroundColor: 'rgba(243,156,18,0.1)',
+      borderWidth: 2,
+      tension: 0.3,
+      spanGaps: true,
+      fill: true
+    });
+  }
+
+  trendChart = new Chart(ctx, {
+    type: 'line',
+    data: {labels: allLabels, datasets: datasets},
+    options: {
+      responsive: true,
+      scales: {
+        y: {min:0, max:4, ticks:{stepSize:1}},
+        x: {ticks:{font:{size:11}}}
+      },
+      plugins: {legend:{position:'top'}}
+    }
+  });
+}
+
+function deleteAssessment(id) {
+  if (!confirm('Delete this assessment? This cannot be undone.')) return;
+  var newArr = [];
+  for (var i = 0; i < data.assessments.length; i++) {
+    if (data.assessments[i].id !== id) newArr.push(data.assessments[i]);
+  }
+  data.assessments = newArr;
+  saveData();
+  showToast('Assessment deleted.');
+  renderHistory();
+}
+
+/* ===== CSV EXPORT ===== */
+function exportCSV() {
+  var rows = [['ID','CoordinatorId','CoordinatorName','SchoolYear','Semester','Type','AssessedBy','ELPS','Sheltered','Coaching','DataLiteracy','Newcomer','Bilingual','FamilyEngagement','EdTech','AvgScore','Strengths','GrowthAreas','Goals','CreatedAt']];
+  for (var i = 0; i < data.assessments.length; i++) {
+    var a = data.assessments[i];
+    var row = [
+      a.id, a.coordinatorId, a.coordinatorName, a.schoolYear, a.semester, a.assessmentType, a.assessedBy,
+      a.ratings.elps || '', a.ratings.sheltered || '', a.ratings.coaching || '', a.ratings.dataLiteracy || '',
+      a.ratings.newcomer || '', a.ratings.bilingual || '', a.ratings.familyEngagement || '', a.ratings.edtech || '',
+      avgRating(a.ratings).toFixed(2),
+      a.strengths || '', a.growthAreas || '', a.goals || '', a.createdAt
+    ];
+    rows.push(row);
+  }
+  var csv = '';
+  for (var i = 0; i < rows.length; i++) {
+    var cells = [];
+    for (var j = 0; j < rows[i].length; j++) {
+      var cell = String(rows[i][j]).replace(/"/g, '""');
+      cells.push('"' + cell + '"');
+    }
+    csv += cells.join(',') + '\r\n';
+  }
+  var blob = new Blob([csv], {type:'text/csv'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'self_assessments_' + new Date().toISOString().slice(0,10) + '.csv';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(url); }, 500);
+  showToast('CSV exported!');
+}
+
+/* ===== SHORTCUTS ===== */
+function showShortcutsHelp() {
+  document.getElementById('shortcutsOverlay').classList.add('open');
+}
+function hideShortcutsHelp(e) {
+  if (!e || e.target === document.getElementById('shortcutsOverlay')) {
+    document.getElementById('shortcutsOverlay').classList.remove('open');
+  }
+}
+
+/* ===== KEYBOARD SHORTCUTS ===== */
+document.addEventListener('keydown', function(e) {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+  if (e.key === 'Escape') {
+    document.getElementById('shortcutsOverlay').classList.remove('open');
+  }
+  if (e.key === '?') { showShortcutsHelp(); return; }
+  if (e.ctrlKey && e.key === 's') { e.preventDefault(); saveAssessment(); return; }
+  if (e.ctrlKey && e.key === 'd') { e.preventDefault(); toggleDarkMode(); return; }
+  if (!e.ctrlKey && !e.altKey && !e.metaKey) {
+    if (e.key === '1') switchTab('new');
+    if (e.key === '2') switchTab('compare');
+    if (e.key === '3') switchTab('history');
+  }
+});
+
+/* ===== INIT ===== */
+document.addEventListener('DOMContentLoaded', function() {
+  // Dark mode
+  if (localStorage.getItem('esl_app_theme') === 'dark') document.body.classList.add('dark-mode');
+
+  // Role
+  try {
+    currentRole = localStorage.getItem('esl_home_role') || '';
+    if (!currentRole) {
+      var cfg = JSON.parse(localStorage.getItem('mlp_hub_config') || '{}');
+      currentRole = cfg.userRole || 'manager';
+    }
+  } catch(e){ currentRole = 'manager'; }
+
+  // Current user
+  var user = getCurrentUser();
+  currentUserId = user.id;
+
+  // Try to read coordId from esl_gas_sync
+  try {
+    var gasRaw = localStorage.getItem('esl_gas_sync');
+    if (gasRaw) {
+      var gas = JSON.parse(gasRaw);
+      if (gas.coordId) currentUserId = gas.coordId;
+    }
+  } catch(e){}
+
+  // Load data
+  loadData();
+  initBroadcast();
+  updateNotifBell();
+  renderLastSaved();
+
+  // Build domains
+  buildDomainsUI();
+
+  // Populate form dropdowns
+  populateCoordDropdown('saCoordinator', false);
+  populateYearDropdown('saSchoolYear', false);
+
+  // Pre-select current user if coordinator
+  if (currentRole === 'coordinator') {
+    var coordSel = document.getElementById('saCoordinator');
+    for (var i = 0; i < coordSel.options.length; i++) {
+      if (coordSel.options[i].value === currentUserId) {
+        coordSel.selectedIndex = i;
+        break;
+      }
+    }
+    document.getElementById('saType').value = 'self';
+    // Hide manager option
+    var typeOpts = document.getElementById('saType').options;
+    for (var i = 0; i < typeOpts.length; i++) {
+      if (typeOpts[i].value === 'manager') typeOpts[i].style.display = 'none';
+    }
+  }
+
+  // Comparison dropdowns
+  populateCoordDropdown('cmpCoord', false);
+  populateYearDropdown('cmpYear', false);
+
+  // History filter dropdowns
+  populateCoordDropdown('hFilterCoord', true);
+
+  // Hide comparison view for coordinators
+  if (currentRole !== 'manager') {
+    document.getElementById('tab-compare').style.display = 'none';
+  }
+
+  // PWA
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./service-worker.js').catch(function(){});
+  }
+});
+</script>
+</body>
+</html>

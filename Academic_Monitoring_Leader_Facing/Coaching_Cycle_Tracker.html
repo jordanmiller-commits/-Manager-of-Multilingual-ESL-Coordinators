@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <link rel="manifest" href="../manifest.json"/>
 <meta name="theme-color" content="#2c3e6e"/>
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://api.github.com; font-src 'self'; frame-src 'none'"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://api.zalphateachingsolutions.org https://script.google.com https://script.googleusercontent.com https://api.github.com; font-src 'self'; frame-src 'none'"/>
 <title>Coaching Cycle Tracker &mdash; Observation to Growth</title>
 <style>
 :root{
@@ -57,6 +57,16 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 .toolbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .tool-btn{background:rgba(255,255,255,.13);color:#fff;border:2px solid rgba(255,255,255,.35);padding:6px 13px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
 .tool-btn:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.55)}
+.pipeline-breadcrumb{display:flex;align-items:center;gap:6px;padding:10px 20px;background:var(--section-bg-light);border-bottom:1px solid var(--border);font-size:12px;flex-wrap:wrap}
+.pipeline-breadcrumb a{color:var(--primary);text-decoration:none;font-weight:600}
+.pipeline-breadcrumb a:hover{text-decoration:underline}
+.pipeline-breadcrumb .current{color:var(--text);font-weight:700}
+.pipeline-breadcrumb .sep{color:var(--text-muted);font-size:10px}
+.role-dropdown-wrap{display:inline-flex;align-items:center;gap:6px}
+.role-dropdown-label{font-size:10px;color:rgba(255,255,255,.7);font-weight:600;white-space:nowrap}
+.role-dropdown{background:rgba(255,255,255,.13);color:#fff;border:2px solid rgba(255,255,255,.35);padding:6px 28px 6px 10px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;-webkit-appearance:none;-moz-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='white' stroke-width='2' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;background-size:10px}
+.role-dropdown:hover{background-color:rgba(255,255,255,.25);border-color:rgba(255,255,255,.55)}
+.role-dropdown option{background:var(--primary-dark);color:#fff}
 .tool-btn.danger{border-color:rgba(231,76,60,.6);color:#fdd}
 .tool-btn.danger:hover{background:rgba(231,76,60,.3);border-color:rgba(231,76,60,.9)}
 .tool-btn.success{border-color:rgba(39,174,96,.5)}
@@ -351,6 +361,7 @@ kbd{display:inline-block;padding:2px 7px;border:1px solid var(--input-border);bo
 .template-card .template-icon{font-size:22px;margin-bottom:8px;display:block}
 .template-modal-close{display:flex;justify-content:flex-end;margin-top:18px}
 </style>
+<script src="../api.js"></script>
 </head>
 <body>
 <a href="#main-content" class="skip-link">Skip to main content</a>
@@ -372,6 +383,7 @@ kbd{display:inline-block;padding:2px 7px;border:1px solid var(--input-border);bo
       <button class="tool-btn" onclick="redo()" aria-label="Redo">&#8618; Redo</button>
       <a class="notif-bell-link" href="../index.html" title="Notifications" id="notifBellLink" aria-label="Notifications">&#128276;<span class="notif-bell-badge hidden" id="notifBellBadge">0</span></a>
       <button class="tool-btn" onclick="toggleDarkMode()" id="darkModeToggle" aria-label="Toggle dark mode">&#9789; Dark</button>
+      <span class="role-dropdown-wrap" id="roleDropdownWrap"><span class="role-dropdown-label">View as:</span><select class="role-dropdown" id="roleDropdown" onchange="switchRoleView(this.value)" aria-label="Switch role view"><option value="manager">Manager</option><option value="coordinator">MLP Coordinator</option><option value="campus-leader">Campus Leader</option></select></span>
       <button class="tool-btn" onclick="toggleShortcutsHelp()" aria-label="Keyboard shortcuts">? Help</button>
       <button class="tool-btn" onclick="exportCalendar()" aria-label="Export coaching deadlines to calendar">&#128197; Export Calendar</button>
       <button class="tool-btn" onclick="window.print()" aria-label="Print page">&#128438; Print / PDF</button>
@@ -382,6 +394,13 @@ kbd{display:inline-block;padding:2px 7px;border:1px solid var(--input-border);bo
       <a class="nav-link" href="Walkthrough_Dashboard.html">&#128202; Dashboard</a>
     </div>
   </div>
+<div class="pipeline-breadcrumb">
+  <a href="Academic_Monitoring_Planning_Template.html">Walkthrough Planning</a>
+  <span class="sep">&rarr;</span>
+  <a href="../ESL_Classroom_Audit/ESL_Classroom_Audit.html">Classroom Audit</a>
+  <span class="sep">&rarr;</span>
+  <span class="current">Coaching Tracker</span>
+</div>
   <div class="breadcrumb" id="breadcrumb"></div>
 
   <!-- Summary Stats -->
@@ -630,6 +649,7 @@ function toggleDarkMode(){var d=document.body.classList.toggle("dark-mode");loca
     }
   } catch(e){ role = "manager"; }
   var allowed = false;
+  try{var _c=JSON.parse(localStorage.getItem("mlp_hub_config")||"{}");if((_c.userRole||"manager")==="manager")allowed=true;}catch(_e){}
   for (var i = 0; i < ALLOWED_ROLES.length; i++) {
     if (ALLOWED_ROLES[i] === role) { allowed = true; break; }
   }
@@ -751,6 +771,7 @@ var cycles = [];
 var settings = {};
 var saveTimeout = null;
 var expandedCycles = {};
+var pendingAuditHandoff = null; // holds audit-sourced data until confirmNewCycle() fires
 
 /* ======================================================
    UTILITIES
@@ -1452,8 +1473,29 @@ function confirmNewCycle() {
     createdAt: new Date().toISOString(),
     stages: stages,
     sourceWalkthroughId: null,
+    sourceAuditId: null,
     templateId: templateId || null
   };
+
+  // Apply audit handoff data if this cycle was initiated from a classroom audit
+  if (pendingAuditHandoff) {
+    cycle.sourceAuditId = pendingAuditHandoff.sourceAuditId;
+    // Pre-fill stage notes from audit
+    for (var si = 0; si < cycle.stages.length; si++) {
+      var sk = cycle.stages[si].key;
+      if (sk === "observation" && pendingAuditHandoff.obsNotes) {
+        cycle.stages[si].notes = pendingAuditHandoff.obsNotes;
+        cycle.stages[si].status = "complete";
+        if (pendingAuditHandoff.sourceDate) cycle.stages[si].date = pendingAuditHandoff.sourceDate;
+      } else if (sk === "feedback" && pendingAuditHandoff.recommendationNotes) {
+        cycle.stages[si].notes = "Coaching recommendations from audit:\n" + pendingAuditHandoff.recommendationNotes;
+        cycle.stages[si].status = "in-progress";
+      } else if (sk === "actionStep" && pendingAuditHandoff.nextStepsNotes) {
+        cycle.stages[si].notes = "Suggested next steps:\n" + pendingAuditHandoff.nextStepsNotes;
+      }
+    }
+    pendingAuditHandoff = null;
+  }
 
   addToRoster(teacher);
   pushUndo();
@@ -1741,13 +1783,24 @@ function checkHandoff() {
   localStorage.removeItem('coaching_cycle_handoff');
   try {
     var handoff = JSON.parse(raw);
+    var isFromAudit = !!handoff.sourceAuditId;
+    if (isFromAudit) {
+      // Stash audit-specific fields for confirmNewCycle() to apply
+      pendingAuditHandoff = {
+        sourceAuditId: handoff.sourceAuditId,
+        sourceDate: handoff.sourceDate || '',
+        obsNotes: handoff.obsNotes || '',
+        recommendationNotes: handoff.recommendationNotes || '',
+        nextStepsNotes: handoff.nextStepsNotes || ''
+      };
+    }
     showModal('newCycleModal');
     setTimeout(function() {
       var teacherInput = document.getElementById('newTeacher');
       var campusInput = document.getElementById('newCampus');
       if (teacherInput && handoff.teacher) teacherInput.value = handoff.teacher;
       if (campusInput && handoff.campus) campusInput.value = handoff.campus;
-      showToast('Pre-filled from walkthrough coaching action');
+      showToast(isFromAudit ? 'Pre-filled from classroom audit — audit notes will be added to cycle' : 'Pre-filled from walkthrough coaching action');
     }, 200);
   } catch(e) {}
 }
@@ -1870,6 +1923,8 @@ if(window.mlpSync){
     renderAll();
   });
 }
+function switchRoleView(r){localStorage.setItem("esl_home_role",r);window.location.href="../index.html";}
+(function(){var r=localStorage.getItem("esl_home_role")||"manager";var w=document.getElementById("roleDropdownWrap");var d=document.getElementById("roleDropdown");if(w){try{var c=JSON.parse(localStorage.getItem("mlp_hub_config")||"{}");if((c.userRole||"manager")!=="manager")w.style.display="none";}catch(e){}}if(d)d.value=r;})();
 </script>
 </body>
 </html>

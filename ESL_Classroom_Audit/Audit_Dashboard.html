@@ -6,7 +6,7 @@
 <title>MLP Audit Dashboard &mdash; Trend Analysis</title>
 <link rel="manifest" href="../manifest.json"/>
 <meta name="theme-color" content="#2c3e6e"/>
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://api.github.com; font-src 'self'; frame-src 'none'"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://api.zalphateachingsolutions.org https://script.google.com https://script.googleusercontent.com https://api.github.com; font-src 'self'; frame-src 'none'"/>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 :root{
@@ -56,6 +56,11 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 .toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:14px}
 .tool-btn{padding:7px 14px;border-radius:7px;border:2px solid rgba(255,255,255,.35);background:rgba(255,255,255,.12);color:#fff;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:5px;text-decoration:none;font-family:inherit}
 .tool-btn:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.5)}
+.role-dropdown-wrap{display:inline-flex;align-items:center;gap:6px}
+.role-dropdown-label{font-size:10px;color:rgba(255,255,255,.7);font-weight:600;white-space:nowrap}
+.role-dropdown{background:rgba(255,255,255,.13);color:#fff;border:2px solid rgba(255,255,255,.35);padding:6px 28px 6px 10px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;-webkit-appearance:none;-moz-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='white' stroke-width='2' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;background-size:10px}
+.role-dropdown:hover{background-color:rgba(255,255,255,.25);border-color:rgba(255,255,255,.55)}
+.role-dropdown option{background:var(--primary-dark);color:#fff}
 
 /* Cards */
 .card{background:var(--card-bg);border-radius:10px;box-shadow:var(--shadow);padding:20px;margin-bottom:16px}
@@ -166,6 +171,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 kbd{display:inline-block;padding:2px 7px;border:1px solid var(--input-border);border-radius:4px;background:var(--section-bg-light);font-size:11px;font-family:inherit;font-weight:600;color:var(--text-secondary);box-shadow:0 1px 0 var(--input-border)}
 @media(max-width:600px){.tool-btn,button,input,select{min-height:44px}}
 </style>
+<script src="../api.js"></script>
 </head>
 <body>
 <a href="#main-content" class="skip-link">Skip to main content</a>
@@ -181,6 +187,7 @@ kbd{display:inline-block;padding:2px 7px;border:1px solid var(--input-border);bo
       <button class="tool-btn" onclick="refreshDashboard()" title="Reload data from localStorage">&#x21bb; Refresh</button>
       <a class="notif-bell-link" href="../index.html" title="Notifications" id="notifBellLink" aria-label="Notifications">&#128276;<span class="notif-bell-badge hidden" id="notifBellBadge">0</span></a>
       <button class="tool-btn" onclick="toggleDarkMode()" id="darkModeToggle" aria-label="Toggle dark mode">&#9789; Dark</button>
+      <span class="role-dropdown-wrap" id="roleDropdownWrap"><span class="role-dropdown-label">View as:</span><select class="role-dropdown" id="roleDropdown" onchange="switchRoleView(this.value)" aria-label="Switch role view"><option value="manager">Manager</option><option value="coordinator">MLP Coordinator</option><option value="campus-leader">Campus Leader</option></select></span>
       <button class="tool-btn" onclick="toggleShortcutsHelp()" aria-label="Keyboard shortcuts">? Help</button>
       <button class="tool-btn" onclick="window.print()" aria-label="Print page">&#128438; Print</button>
       <span id="lastUpdated" style="margin-left:auto;font-size:10px;color:rgba(255,255,255,.6)"></span>
@@ -216,6 +223,7 @@ kbd{display:inline-block;padding:2px 7px;border:1px solid var(--input-border);bo
         <option value="sections">Section Breakdown</option>
         <option value="campuses">Campus Comparison</option>
         <option value="principles">Principles Compliance</option>
+        <option value="radar">Section Radar</option>
       </select>
       <div class="filter-sep"></div>
       <div id="filterSlots"></div>
@@ -305,6 +313,7 @@ var MAX_SCORE = 174;
    Chart instance management
    ====================================================== */
 var chartInstance = null;
+var vizRadarChart = null;
 
 function escHtml(str) {
   if (!str) return "";
@@ -631,7 +640,7 @@ function buildFilterBar(data) {
     html += '</select>';
   }
 
-  // Teacher filter (trends view only)
+  // Teacher filter (trends view only — hidden for sections/campuses/principles/radar)
   if (currentView === "trends") {
     html += '<div class="filter-sep"></div>';
     html += '<label>Teacher</label>';
@@ -1113,6 +1122,187 @@ function renderPrinciples(data) {
 }
 
 /* ======================================================
+   VIEW 5: Section Radar (radar chart by campus)
+   ====================================================== */
+var RADAR_SPOKE_LABELS = {
+  s01: "Word Wall",
+  s02: "Vocab Display",
+  s03: "ELPS Objectives",
+  s04: "Scholar Work",
+  s05: "Mentor Text",
+  s06: "Unit Materials",
+  s07: "Lang Objectives",
+  s08: "Unit Vocab",
+  s09: "Discussion Norm",
+  s10: "Writing Models",
+  s11: "Scholar Ownersh",
+  s12: "Cultural Assets",
+  s13: "Env Principles"
+};
+
+var RADAR_CAMPUS_COLORS = [
+  {border:"#4a90d9", bg:"rgba(74,144,217,0.15)"},
+  {border:"#27ae60", bg:"rgba(39,174,96,0.15)"},
+  {border:"#e67e22", bg:"rgba(230,126,34,0.15)"},
+  {border:"#8e44ad", bg:"rgba(142,68,173,0.15)"},
+  {border:"#e74c3c", bg:"rgba(231,76,60,0.15)"},
+  {border:"#1abc9c", bg:"rgba(26,188,156,0.15)"}
+];
+
+function renderVizRadar(data) {
+  destroyChart();
+  if (vizRadarChart) { vizRadarChart.destroy(); vizRadarChart = null; }
+  var legend = document.getElementById("chartLegend");
+  var threshBar = document.getElementById("thresholdBar");
+  threshBar.style.display = "none";
+
+  if (!data || data.length < 2) {
+    showEmptyChart("Need at least 2 audits to render radar chart.");
+    legend.innerHTML = "";
+    return;
+  }
+
+  // Group audits by campus
+  var campusMap = {};
+  for (var i = 0; i < data.length; i++) {
+    var campus = (data[i].meta && data[i].meta.campus) ? data[i].meta.campus.trim() : "(No Campus)";
+    if (!campusMap[campus]) campusMap[campus] = [];
+    campusMap[campus].push(data[i]);
+  }
+
+  var campusNames = [];
+  for (var k in campusMap) {
+    if (campusMap.hasOwnProperty(k)) campusNames.push(k);
+  }
+  campusNames.sort();
+
+  // If a single campus is filtered, use only that campus; otherwise use up to 6
+  var campusesToShow = campusNames.slice(0, 6);
+  var omitted = campusNames.length > 6 ? campusNames.length - 6 : 0;
+
+  // Spoke labels (truncated to 15 chars)
+  var spokeLabels = [];
+  for (var si = 0; si < SECTIONS.length; si++) {
+    var lbl = RADAR_SPOKE_LABELS[SECTIONS[si].id] || SECTIONS[si].title;
+    if (lbl.length > 15) lbl = lbl.slice(0, 14) + "\u2026";
+    spokeLabels.push(lbl);
+  }
+
+  // Compute per-campus per-section averages
+  // Returns 0-100 pct: avg(section sum / section max * 100) across audits with rated items
+  function campusSectionAvg(audits, sec) {
+    var total = 0;
+    var count = 0;
+    for (var ai = 0; ai < audits.length; ai++) {
+      var sc = sectionScore(audits[ai], sec.id, sec.itemCount);
+      if (sc.rated > 0) {
+        total += Math.round((sc.sum / sc.max) * 100);
+        count++;
+      }
+    }
+    return count > 0 ? Math.round(total / count) : 0;
+  }
+
+  var datasets = [];
+  var campusAvgTable = []; // [{name, avgs:[...]}]
+
+  for (var ci = 0; ci < campusesToShow.length; ci++) {
+    var cName = campusesToShow[ci];
+    var cAudits = campusMap[cName];
+    var avgs = [];
+    for (var sj = 0; sj < SECTIONS.length; sj++) {
+      avgs.push(campusSectionAvg(cAudits, SECTIONS[sj]));
+    }
+    campusAvgTable.push({name: cName, avgs: avgs});
+    var col = RADAR_CAMPUS_COLORS[ci % RADAR_CAMPUS_COLORS.length];
+    datasets.push({
+      label: cName,
+      data: avgs,
+      borderColor: col.border,
+      backgroundColor: col.bg,
+      borderWidth: 2,
+      pointBackgroundColor: col.border,
+      pointRadius: 3
+    });
+  }
+
+  // Title based on campus filter
+  var chartTitle = filterCampus
+    ? "Campus: " + filterCampus
+    : "Section Score Radar \u2014 All Campuses";
+
+  chartInstance = new Chart(getCtx(), {
+    type: "radar",
+    data: {
+      labels: spokeLabels,
+      datasets: datasets
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {display: true, position: "top"},
+        title: {display: true, text: chartTitle, font: {size: 13}, color: "#2c3e6e"},
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              return " " + ctx.dataset.label + ": " + ctx.raw + "%";
+            }
+          }
+        }
+      },
+      scales: {
+        r: {
+          min: 0,
+          max: 100,
+          ticks: {
+            stepSize: 20,
+            callback: function(val) { return val + "%"; },
+            font: {size: 9}
+          },
+          pointLabels: {font: {size: 10}}
+        }
+      }
+    }
+  });
+
+  // Build summary table sorted by first campus score descending
+  var firstAvgs = campusAvgTable.length > 0 ? campusAvgTable[0].avgs : [];
+  var rowOrder = [];
+  for (var ri = 0; ri < SECTIONS.length; ri++) { rowOrder.push(ri); }
+  rowOrder.sort(function(a, b) { return firstAvgs[b] - firstAvgs[a]; });
+
+  var tableHtml = '<div style="margin-top:18px;overflow-x:auto">';
+  tableHtml += '<table style="width:100%;border-collapse:collapse;font-size:11px">';
+  tableHtml += '<thead><tr style="background:var(--primary-dark);color:#fff">';
+  tableHtml += '<th style="padding:6px 10px;text-align:left;font-weight:700">Section</th>';
+  for (var ti = 0; ti < campusAvgTable.length; ti++) {
+    tableHtml += '<th style="padding:6px 10px;text-align:center">' + escHtml(campusAvgTable[ti].name) + '</th>';
+  }
+  tableHtml += '</tr></thead><tbody>';
+  for (var rr = 0; rr < rowOrder.length; rr++) {
+    var idx = rowOrder[rr];
+    var sec = SECTIONS[idx];
+    tableHtml += '<tr style="border-bottom:1px solid var(--border)">';
+    tableHtml += '<td style="padding:5px 10px;font-weight:600;color:var(--text-heading)">' + escHtml(sec.title) + '</td>';
+    for (var tc = 0; tc < campusAvgTable.length; tc++) {
+      var v = campusAvgTable[tc].avgs[idx];
+      var col2 = v >= 80 ? "#27ae60" : v >= 55 ? "#f39c12" : "#e74c3c";
+      tableHtml += '<td style="padding:5px 10px;text-align:center;font-weight:700;color:' + col2 + '">' + v + '%</td>';
+    }
+    tableHtml += '</tr>';
+  }
+  tableHtml += '</tbody></table>';
+  if (omitted > 0) {
+    tableHtml += '<div style="font-size:11px;color:var(--text-muted);margin-top:6px;font-style:italic">Note: ' + omitted + ' additional campus' + (omitted > 1 ? 'es' : '') + ' not shown (max 6 on radar).</div>';
+  }
+  tableHtml += '</div>';
+
+  legend.innerHTML = tableHtml;
+  hideAuditTable();
+}
+
+/* ======================================================
    Empty chart placeholder
    ====================================================== */
 function showEmptyChart(msg) {
@@ -1186,6 +1376,9 @@ function renderCurrentView() {
     case "principles":
       renderPrinciples(filtered);
       break;
+    case "radar":
+      renderVizRadar(filtered);
+      break;
     default:
       renderTrends(filtered);
   }
@@ -1258,6 +1451,7 @@ function toggleDarkMode(){var d=document.body.classList.toggle("dark-mode");loca
     }
   } catch(e){ role = "manager"; }
   var allowed = false;
+  try{var _c=JSON.parse(localStorage.getItem("mlp_hub_config")||"{}");if((_c.userRole||"manager")==="manager")allowed=true;}catch(_e){}
   for (var i = 0; i < ALLOWED_ROLES.length; i++) {
     if (ALLOWED_ROLES[i] === role) { allowed = true; break; }
   }
@@ -1278,6 +1472,8 @@ function renderLastSaved(){var ts=localStorage.getItem('esl_audit_history_lastSa
 renderLastSaved();
 if("serviceWorker" in navigator){navigator.serviceWorker.register("../service-worker.js").catch(function(){});}
 initNotifBell();
+function switchRoleView(r){localStorage.setItem("esl_home_role",r);window.location.href="../index.html";}
+(function(){var r=localStorage.getItem("esl_home_role")||"manager";var w=document.getElementById("roleDropdownWrap");var d=document.getElementById("roleDropdown");if(w){try{var c=JSON.parse(localStorage.getItem("mlp_hub_config")||"{}");if((c.userRole||"manager")!=="manager")w.style.display="none";}catch(e){}}if(d)d.value=r;})();
 </script>
 </body>
 </html>

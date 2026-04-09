@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <link rel="manifest" href="../manifest.json"/>
 <meta name="theme-color" content="#2c3e6e"/>
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://api.github.com; font-src 'self'; frame-src 'none'"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://api.zalphateachingsolutions.org https://script.google.com https://script.googleusercontent.com https://api.github.com; font-src 'self'; frame-src 'none'"/>
 <title>Academic Monitoring Planning Template &mdash; Leader-Facing</title>
 <style>
 :root{
@@ -55,6 +55,18 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 .toolbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .tool-btn{background:rgba(255,255,255,.13);color:#fff;border:2px solid rgba(255,255,255,.35);padding:6px 13px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
 .tool-btn:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.55)}
+.pipeline-breadcrumb{display:flex;align-items:center;gap:6px;padding:10px 20px;background:var(--section-bg-light);border-bottom:1px solid var(--border);font-size:12px;flex-wrap:wrap}
+.pipeline-breadcrumb a{color:var(--primary);text-decoration:none;font-weight:600}
+.pipeline-breadcrumb a:hover{text-decoration:underline}
+.pipeline-breadcrumb .current{color:var(--text);font-weight:700}
+.pipeline-breadcrumb .sep{color:var(--text-muted);font-size:10px}
+.teacher-link{color:var(--primary);text-decoration:none;font-weight:600;border-bottom:1px dashed var(--primary)}
+.teacher-link:hover{text-decoration:underline}
+.role-dropdown-wrap{display:inline-flex;align-items:center;gap:6px}
+.role-dropdown-label{font-size:10px;color:rgba(255,255,255,.7);font-weight:600;white-space:nowrap}
+.role-dropdown{background:rgba(255,255,255,.13);color:#fff;border:2px solid rgba(255,255,255,.35);padding:6px 28px 6px 10px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;-webkit-appearance:none;-moz-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='white' stroke-width='2' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;background-size:10px}
+.role-dropdown:hover{background-color:rgba(255,255,255,.25);border-color:rgba(255,255,255,.55)}
+.role-dropdown option{background:var(--primary-dark);color:#fff}
 .tool-btn.danger{border-color:rgba(231,76,60,.6);color:#fdd}
 .tool-btn.danger:hover{background:rgba(231,76,60,.3);border-color:rgba(231,76,60,.9)}
 .save-indicator{font-size:10px;color:rgba(255,255,255,.6);margin-left:auto}
@@ -410,6 +422,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 kbd{display:inline-block;padding:2px 7px;border:1px solid var(--input-border);border-radius:4px;background:var(--section-bg-light);font-size:11px;font-family:inherit;font-weight:600;color:var(--text-secondary);box-shadow:0 1px 0 var(--input-border)}
 @media(max-width:600px){.tool-btn,button,input,select{min-height:44px}}
 </style>
+<script src="../api.js"></script>
 </head>
 <body>
 <a href="#main-content" class="skip-link">Skip to main content</a>
@@ -433,11 +446,19 @@ kbd{display:inline-block;padding:2px 7px;border:1px solid var(--input-border);bo
       <button class="tool-btn" id="qcToggle" onclick="toggleQuickCode()" style="border-color:rgba(39,174,96,.5)">&#9889; Quick Code</button>
       <a class="notif-bell-link" href="../index.html" title="Notifications" id="notifBellLink" aria-label="Notifications">&#128276;<span class="notif-bell-badge hidden" id="notifBellBadge">0</span></a>
       <button class="tool-btn" onclick="toggleDarkMode()" id="darkModeToggle" aria-label="Toggle dark mode">&#9789; Dark</button>
+      <span class="role-dropdown-wrap" id="roleDropdownWrap"><span class="role-dropdown-label">View as:</span><select class="role-dropdown" id="roleDropdown" onchange="switchRoleView(this.value)" aria-label="Switch role view"><option value="manager">Manager</option><option value="coordinator">MLP Coordinator</option><option value="campus-leader">Campus Leader</option></select></span>
       <button class="tool-btn" onclick="toggleShortcutsHelp()" aria-label="Keyboard shortcuts">? Help</button>
       <button class="tool-btn" onclick="window.print()" aria-label="Print page">&#128438; Print</button>
       <span class="save-indicator" id="saveStatus" style="margin-left:auto">Auto-save: ready</span>
     </div>
   </div>
+<div class="pipeline-breadcrumb">
+  <span class="current">Walkthrough Planning</span>
+  <span class="sep">&rarr;</span>
+  <a href="../ESL_Classroom_Audit/ESL_Classroom_Audit.html">Classroom Audit</a>
+  <span class="sep">&rarr;</span>
+  <a href="Coaching_Cycle_Tracker.html">Coaching Tracker</a>
+</div>
 
   <!-- Metadata -->
   <div class="card first-card" id="main-content">
@@ -738,6 +759,7 @@ function toggleDarkMode(){var d=document.body.classList.toggle("dark-mode");loca
     }
   } catch(e){ role = "manager"; }
   var allowed = false;
+  try{var _c=JSON.parse(localStorage.getItem("mlp_hub_config")||"{}");if((_c.userRole||"manager")==="manager")allowed=true;}catch(_e){}
   for (var i = 0; i < ALLOWED_ROLES.length; i++) {
     if (ALLOWED_ROLES[i] === role) { allowed = true; break; }
   }
@@ -931,6 +953,11 @@ function escHtml(str) {
   return d.innerHTML;
 }
 
+function teacherProfileLink(name) {
+  if (!name) return '';
+  return '<a href="../Teacher_360_Profile.html?teacher=' + encodeURIComponent(name) + '" class="teacher-link" title="View teacher profile">' + escHtml(name) + '</a>';
+}
+
 function genId() {
   return "id" + Date.now() + Math.floor(Math.random() * 1000);
 }
@@ -1095,7 +1122,7 @@ function renderObservations() {
       html += '<option value="' + r + '"' + sel + '>' + (r + 1) + '</option>';
     }
     html += '</select></td>';
-    html += '<td><div class="ac-wrap"><input id="obs-teacher-' + i + '" value="' + escHtml(o.teacher) + '" placeholder="Teacher / Room" oninput="scheduleSave();showAutocomplete(this,this.parentElement.querySelector(\'.ac-list\'),this.value)" onblur="hideAutocomplete(this.parentElement.querySelector(\'.ac-list\'))" autocomplete="off"/><div class="ac-list"></div></div></td>';
+    html += '<td><div style="display:flex;align-items:flex-start;gap:4px"><div class="ac-wrap" style="flex:1"><input id="obs-teacher-' + i + '" value="' + escHtml(o.teacher) + '" placeholder="Teacher / Room" oninput="scheduleSave();showAutocomplete(this,this.parentElement.querySelector(\'.ac-list\'),this.value)" onblur="hideAutocomplete(this.parentElement.querySelector(\'.ac-list\'))" autocomplete="off"/><div class="ac-list"></div></div>' + (o.teacher ? '<a href="../Teacher_360_Profile.html?teacher=' + encodeURIComponent(o.teacher) + '" title="View ' + escHtml(o.teacher) + ' profile" style="flex-shrink:0;color:var(--primary);text-decoration:none;font-size:14px;line-height:32px;padding:0 2px" target="_blank">&#128100;</a>' : '') + '</div></td>';
     html += '<td class="code-cell"><select id="obs-code-' + i + '" onchange="scheduleSave();renderMiniDash()">';
     var codes = ["\u2713", "O", "P", "NA"];
     for (var ci = 0; ci < codes.length; ci++) {
@@ -1136,7 +1163,7 @@ function renderCoaching() {
   for (var i = 0; i < coachingActions.length; i++) {
     var a = coachingActions[i];
     html += "<tr>";
-    html += '<td><div class="ac-wrap"><input id="coach-teacher-' + i + '" value="' + escHtml(a.teacher) + '" placeholder="Teacher name" oninput="scheduleSave();showAutocomplete(this,this.parentElement.querySelector(\'.ac-list\'),this.value)" onblur="hideAutocomplete(this.parentElement.querySelector(\'.ac-list\'))" autocomplete="off"/><div class="ac-list"></div></div></td>';
+    html += '<td><div style="display:flex;align-items:flex-start;gap:4px"><div class="ac-wrap" style="flex:1"><input id="coach-teacher-' + i + '" value="' + escHtml(a.teacher) + '" placeholder="Teacher name" oninput="scheduleSave();showAutocomplete(this,this.parentElement.querySelector(\'.ac-list\'),this.value)" onblur="hideAutocomplete(this.parentElement.querySelector(\'.ac-list\'))" autocomplete="off"/><div class="ac-list"></div></div>' + (a.teacher ? '<a href="../Teacher_360_Profile.html?teacher=' + encodeURIComponent(a.teacher) + '" title="View ' + escHtml(a.teacher) + ' profile" style="flex-shrink:0;color:var(--primary);text-decoration:none;font-size:14px;line-height:32px;padding:0 2px" target="_blank">&#128100;</a>' : '') + '</div></td>';
     html += '<td><input id="coach-obs-' + i + '" value="' + escHtml(a.observation) + '" placeholder="What was observed" oninput="scheduleSave()"/></td>';
     html += '<td><input id="coach-feedback-' + i + '" value="' + escHtml(a.feedback) + '" placeholder="Feedback given or planned" oninput="scheduleSave()"/></td>';
     html += '<td><input id="coach-next-' + i + '" value="' + escHtml(a.nextStep) + '" placeholder="Agreed next step" oninput="scheduleSave()"/></td>';
@@ -1538,7 +1565,7 @@ function buildPrintPreview(blank) {
       var obs = observations[o];
       html += '<tr>';
       html += '<td style="text-align:center">' + (obs.roundIdx + 1) + '</td>';
-      html += '<td>' + escHtml(obs.teacher) + '</td>';
+      html += '<td>' + teacherProfileLink(obs.teacher) + '</td>';
       html += '<td style="text-align:center;font-weight:700">' + escHtml(obs.code) + '</td>';
       html += '<td>' + escHtml(obs.notes) + '</td>';
       html += '<td>' + escHtml(obs.time) + '</td>';
@@ -1554,7 +1581,7 @@ function buildPrintPreview(blank) {
     for (var ca = 0; ca < coachingActions.length; ca++) {
       var act = coachingActions[ca];
       html += '<tr>';
-      html += '<td>' + escHtml(act.teacher) + '</td>';
+      html += '<td>' + teacherProfileLink(act.teacher) + '</td>';
       html += '<td>' + escHtml(act.observation) + '</td>';
       html += '<td>' + escHtml(act.feedback) + '</td>';
       html += '<td>' + escHtml(act.nextStep) + '</td>';
@@ -2302,6 +2329,8 @@ if(window.mlpSync){
     loadFromStorage();
   });
 }
+function switchRoleView(r){localStorage.setItem("esl_home_role",r);window.location.href="../index.html";}
+(function(){var r=localStorage.getItem("esl_home_role")||"manager";var w=document.getElementById("roleDropdownWrap");var d=document.getElementById("roleDropdown");if(w){try{var c=JSON.parse(localStorage.getItem("mlp_hub_config")||"{}");if((c.userRole||"manager")!=="manager")w.style.display="none";}catch(e){}}if(d)d.value=r;})();
 </script>
 </body>
 </html>

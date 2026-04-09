@@ -6,7 +6,7 @@
 <title>MLP Coordinator Hub</title>
 <link rel="manifest" href="./manifest.json"/>
 <meta name="theme-color" content="#2c3e6e"/>
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://api.github.com; font-src 'self'; frame-src 'none'"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://api.zalphateachingsolutions.org https://script.google.com https://script.googleusercontent.com https://api.github.com; font-src 'self'; frame-src 'none'"/>
 <style>
 /* ============================
    CSS CUSTOM PROPERTIES
@@ -74,12 +74,13 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
 .tool-btn{background:rgba(255,255,255,.13);color:#fff;border:2px solid rgba(255,255,255,.35);padding:6px 13px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;text-decoration:none;display:inline-block}
 .tool-btn:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.55)}
 
-/* Role tabs — inside header gradient */
-.role-tabs-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.2)}
-.role-tab{padding:7px 18px;border-radius:20px;border:2px solid rgba(255,255,255,.35);background:transparent;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;color:rgba(255,255,255,.75);transition:all .15s;line-height:1}
-.role-tab:hover:not(.active){background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.6);color:#fff}
-.role-tab.active{background:#fff;color:var(--primary-dark);border-color:#fff}
-.role-label{font-size:9px;color:rgba(255,255,255,.5);align-self:center;margin-left:4px;font-style:italic}
+/* Role dropdown — inside header toolbar */
+.role-dropdown-wrap{display:inline-flex;align-items:center;gap:6px}
+.role-dropdown-label{font-size:10px;color:rgba(255,255,255,.7);font-weight:600;white-space:nowrap}
+.role-dropdown{background:rgba(255,255,255,.13);color:#fff;border:2px solid rgba(255,255,255,.35);padding:6px 28px 6px 10px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;-webkit-appearance:none;-moz-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='white' stroke-width='2' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;background-size:10px}
+.role-dropdown:hover{background-color:rgba(255,255,255,.25);border-color:rgba(255,255,255,.55)}
+.role-dropdown:focus{outline:2px solid rgba(255,255,255,.6);outline-offset:1px}
+.role-dropdown option{background:var(--primary-dark);color:#fff}
 
 /* ============================
    CARDS / SHARED
@@ -199,7 +200,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
    ============================ */
 @media print{
   body{background:#fff!important;padding:0}
-  .header,.search-wrap,.search-results,.tool-btn,.role-tabs-row{display:none!important}
+  .header,.search-wrap,.search-results,.tool-btn,.role-dropdown-wrap{display:none!important}
   .tool-card{break-inside:avoid;box-shadow:none;border:1px solid #ddd}
   .stat-card{box-shadow:none;border:1px solid #ddd}
   .notif-bell,.notif-drawer,.notif-overlay{display:none!important}
@@ -212,8 +213,6 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
   .stats-row{grid-template-columns:1fr 1fr}
   .tool-grid{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
   .header-row{flex-wrap:wrap}
-  .role-tabs-row{gap:6px}
-  .role-tab{padding:6px 14px;font-size:10px}
 }
 @media(max-width:600px){
   body{padding:8px}
@@ -221,7 +220,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);min-height:100
   .tool-grid{grid-template-columns:1fr}
   .stats-row{grid-template-columns:1fr 1fr}
   .tool-btn,.search-input{min-height:44px}
-  .role-tab{min-height:38px;padding:6px 12px}
+  .role-dropdown{min-height:38px}
   .notif-drawer{width:100%;right:-100%}
 }
 
@@ -379,6 +378,7 @@ kbd{display:inline-block;padding:2px 7px;font-size:11px;font-weight:600;line-hei
 .tool-vis-toggle input:checked+.slider{background:var(--primary)}
 .tool-vis-toggle input:checked+.slider:before{transform:translateX(16px)}
 </style>
+<script src="./api.js"></script>
 </head>
 <body>
 <a href="#main-content" class="skip-link">Skip to main content</a>
@@ -397,13 +397,17 @@ kbd{display:inline-block;padding:2px 7px;font-size:11px;font-weight:600;line-hei
       <button class="tool-btn" onclick="openSettings()" aria-label="Settings">&#9881; Settings</button>
       <button class="tool-btn demo-btn" onclick="openDemoModal()" aria-label="Try demo data">&#9654; Try Demo</button>
       <button class="tool-btn" onclick="startTutorial()" title="Take a Tour" aria-label="Take a guided tour" style="font-weight:700">?</button>
+      <button class="tool-btn" onclick="mlpSignIn('google')" id="mlpSignInBtn" style="display:none" aria-label="Sign in to sync data">&#128274; Sign In</button>
+      <span id="mlpSyncStatus" style="font-size:11px;color:rgba(255,255,255,.85);display:none;padding:4px 10px;background:rgba(255,255,255,.1);border-radius:6px;cursor:pointer" onclick="mlpSignOut()" title="Click to sign out">&#9989; Synced</span>
     </div>
-    <!-- Role tabs -->
-    <div class="role-tabs-row" id="roleTabsRow">
-      <button class="role-tab active" data-role="manager"       onclick="setRole('manager')">&#128202; Manager</button>
-      <button class="role-tab"        data-role="coordinator"   onclick="setRole('coordinator')">&#128101; MLP Coordinator</button>
-      <button class="role-tab"        data-role="campus-leader" onclick="setRole('campus-leader')">&#127983; Campus Leader</button>
-      <span class="role-label" id="roleLabel">Showing all tools</span>
+    <!-- Role dropdown (Manager only) -->
+    <div class="role-dropdown-wrap" id="roleDropdownWrap">
+      <span class="role-dropdown-label">View as:</span>
+      <select class="role-dropdown" id="roleDropdown" onchange="setRole(this.value)" aria-label="Switch role view">
+        <option value="manager">&#128202; Manager</option>
+        <option value="coordinator">&#128101; MLP Coordinator</option>
+        <option value="campus-leader">&#127983; Campus Leader</option>
+      </select>
     </div>
   </div>
 
@@ -595,6 +599,13 @@ kbd{display:inline-block;padding:2px 7px;font-size:11px;font-weight:600;line-hei
       <div class="tc-name">Feedback Report Builder</div>
       <div class="tc-desc">Compose rich-text feedback with bullet points, action items, and email reports directly to teachers.</div>
       <div class="tc-meta" id="metaFeedbackReport"></div>
+    </a>
+
+    <a class="tool-card" href="Self_Assessment.html" data-roles="manager,coordinator">
+      <div class="tc-icon">&#128203;</div>
+      <div class="tc-name">Self-Assessment</div>
+      <div class="tc-desc">Rate professional growth across 8 MLP domains each semester. Managers compare self and manager assessments side-by-side with gap analysis.</div>
+      <div class="tc-meta" id="metaSelfAssessment"></div>
     </a>
 
     <!-- ===== MANAGER + COORDINATOR ===== -->
@@ -1160,15 +1171,9 @@ function setRole(role) {
 
   var meta = ROLE_META[role] || ROLE_META.manager;
 
-  // Update tab styles
-  var tabs = document.querySelectorAll(".role-tab");
-  for (var t = 0; t < tabs.length; t++) {
-    if (tabs[t].getAttribute("data-role") === role) {
-      tabs[t].classList.add("active");
-    } else {
-      tabs[t].classList.remove("active");
-    }
-  }
+  // Sync dropdown
+  var dd = document.getElementById("roleDropdown");
+  if (dd) dd.value = role;
 
   // Update header text
   var subtitle = document.getElementById("headerSubtitle");
@@ -1227,15 +1232,10 @@ function countVisible(role) {
 function initRole() {
   var saved = localStorage.getItem("esl_home_role") || "manager";
   setRole(saved);
-  // Only managers can switch roles — hide the role tabs for others
-  var tabsRow = document.getElementById("roleTabsRow");
-  if (tabsRow && saved !== "manager") {
-    var tabs = tabsRow.querySelectorAll(".role-tab");
-    for (var i = 0; i < tabs.length; i++) {
-      if (tabs[i].getAttribute("data-role") !== saved) {
-        tabs[i].style.display = "none";
-      }
-    }
+  // Only managers can switch roles — hide the dropdown for others
+  var wrap = document.getElementById("roleDropdownWrap");
+  if (wrap && saved !== "manager") {
+    wrap.style.display = "none";
   }
 }
 
@@ -1274,6 +1274,68 @@ function showToast(msg) {
   toast.textContent = msg;
   toast.classList.add("show");
   setTimeout(function() { toast.classList.remove("show"); }, 3000);
+}
+
+function drawSparkline(canvasId, dataPoints, color) {
+  var canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var w = canvas.width;
+  var h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+  if (!dataPoints || dataPoints.length < 2) {
+    // flat line for all-zero or single point
+    ctx.beginPath();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.5;
+    ctx.moveTo(0, h / 2);
+    ctx.lineTo(w, h / 2);
+    ctx.stroke();
+    return;
+  }
+  var min = dataPoints[0];
+  var max = dataPoints[0];
+  for (var i = 1; i < dataPoints.length; i++) {
+    if (dataPoints[i] < min) min = dataPoints[i];
+    if (dataPoints[i] > max) max = dataPoints[i];
+  }
+  var range = max - min;
+  var pad = 3;
+  function toX(i) { return (i / (dataPoints.length - 1)) * (w - pad * 2) + pad; }
+  function toY(v) {
+    if (range === 0) return h / 2;
+    return h - pad - ((v - min) / range) * (h - pad * 2);
+  }
+  // filled area
+  ctx.beginPath();
+  ctx.moveTo(toX(0), toY(dataPoints[0]));
+  for (var j = 1; j < dataPoints.length; j++) {
+    ctx.lineTo(toX(j), toY(dataPoints[j]));
+  }
+  ctx.lineTo(toX(dataPoints.length - 1), h);
+  ctx.lineTo(toX(0), h);
+  ctx.closePath();
+  ctx.globalAlpha = 0.30;
+  ctx.fillStyle = color;
+  ctx.fill();
+  ctx.globalAlpha = 1.0;
+  // line
+  ctx.beginPath();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1.5;
+  ctx.lineJoin = 'round';
+  ctx.moveTo(toX(0), toY(dataPoints[0]));
+  for (var k = 1; k < dataPoints.length; k++) {
+    ctx.lineTo(toX(k), toY(dataPoints[k]));
+  }
+  ctx.stroke();
+  // dot at last point
+  var lx = toX(dataPoints.length - 1);
+  var ly = toY(dataPoints[dataPoints.length - 1]);
+  ctx.beginPath();
+  ctx.arc(lx, ly, 2.5, 0, Math.PI * 2);
+  ctx.fillStyle = color;
+  ctx.fill();
 }
 
 /* ======================================================
@@ -1317,6 +1379,35 @@ function loadStats() {
     metaAuditDash.innerHTML = auditHistory.length > 0
       ? '<span class="tc-badge blue">' + auditHistory.length + ' audits to analyze</span>'
       : '<span class="tc-badge gray">No data yet</span>';
+    if (auditHistory.length >= 3) {
+      var auditMonthMap = {};
+      for (var ami = 0; ami < auditHistory.length; ami++) {
+        var aEntry = auditHistory[ami];
+        var aDateStr = (aEntry.meta && aEntry.meta.date) ? aEntry.meta.date : (aEntry.timestamp || '');
+        if (!aDateStr) continue;
+        var aD = new Date(aDateStr);
+        if (isNaN(aD.getTime())) continue;
+        var aMonthKey = aD.getFullYear() + '-' + (aD.getMonth() + 1);
+        var aPct = typeof aEntry.scorePct === 'number' ? aEntry.scorePct : 0;
+        if (!auditMonthMap[aMonthKey]) auditMonthMap[aMonthKey] = {sum: 0, cnt: 0};
+        auditMonthMap[aMonthKey].sum += aPct;
+        auditMonthMap[aMonthKey].cnt += 1;
+      }
+      var auditMonthKeys = [];
+      for (var mk in auditMonthMap) { if (auditMonthMap.hasOwnProperty(mk)) auditMonthKeys.push(mk); }
+      auditMonthKeys.sort();
+      auditMonthKeys = auditMonthKeys.slice(-7);
+      var auditSparkPts = [];
+      for (var aki = 0; aki < auditMonthKeys.length; aki++) {
+        var av = auditMonthMap[auditMonthKeys[aki]];
+        auditSparkPts.push(av.cnt > 0 ? Math.round(av.sum / av.cnt) : 0);
+      }
+      if (auditSparkPts.length >= 3) {
+        var auditSparkId = 'spark-audit-' + Date.now();
+        metaAuditDash.innerHTML += '<canvas id="' + auditSparkId + '" width="60" height="24" style="vertical-align:middle;margin-left:6px"></canvas>';
+        setTimeout(function() { drawSparkline(auditSparkId, auditSparkPts, '#4a90d9'); }, 50);
+      }
+    }
   }
 
   var metaWalkthrough = document.getElementById("metaWalkthrough");
@@ -1332,6 +1423,23 @@ function loadStats() {
     metaWalkDash.innerHTML = walkthroughHistory.length > 0
       ? '<span class="tc-badge blue">' + walkthroughHistory.length + ' sessions to analyze</span>'
       : '<span class="tc-badge gray">No data yet</span>';
+    if (walkthroughHistory.length >= 3) {
+      var now7 = new Date();
+      var weekCounts = [0, 0, 0, 0, 0, 0, 0];
+      for (var wii = 0; wii < walkthroughHistory.length; wii++) {
+        var wEntry = walkthroughHistory[wii];
+        var wDateStr = (wEntry.meta && wEntry.meta.date) ? wEntry.meta.date : '';
+        if (!wDateStr) continue;
+        var wD = new Date(wDateStr);
+        if (isNaN(wD.getTime())) continue;
+        var diffDays = Math.floor((now7.getTime() - wD.getTime()) / 86400000);
+        var weekIdx = 6 - Math.floor(diffDays / 7);
+        if (weekIdx >= 0 && weekIdx <= 6) weekCounts[weekIdx] += 1;
+      }
+      var walkSparkId = 'spark-walk-' + Date.now();
+      metaWalkDash.innerHTML += '<canvas id="' + walkSparkId + '" width="60" height="24" style="vertical-align:middle;margin-left:6px"></canvas>';
+      setTimeout(function() { drawSparkline(walkSparkId, weekCounts, '#27ae60'); }, 50);
+    }
   }
 
   var metaCoaching = document.getElementById("metaCoaching");
@@ -1349,6 +1457,31 @@ function loadStats() {
     metaCoaching.innerHTML = cycles.length > 0
       ? '<span class="tc-badge orange">' + activeCycles + ' active</span><span class="tc-badge green">' + (cycles.length - activeCycles) + ' completed</span>'
       : '<span class="tc-badge gray">No cycles yet</span>';
+    if (cycles.length >= 3) {
+      var coachMonthMap = {};
+      for (var cmi = 0; cmi < cycles.length; cmi++) {
+        var cCycle = cycles[cmi];
+        var cDateStr = cCycle.createdAt || '';
+        if (!cDateStr) continue;
+        var cD = new Date(cDateStr);
+        if (isNaN(cD.getTime())) continue;
+        var cMonthKey = cD.getFullYear() + '-' + (cD.getMonth() + 1);
+        coachMonthMap[cMonthKey] = (coachMonthMap[cMonthKey] || 0) + 1;
+      }
+      var coachMonthKeys = [];
+      for (var cmk in coachMonthMap) { if (coachMonthMap.hasOwnProperty(cmk)) coachMonthKeys.push(cmk); }
+      coachMonthKeys.sort();
+      coachMonthKeys = coachMonthKeys.slice(-7);
+      var coachSparkPts = [];
+      for (var cki = 0; cki < coachMonthKeys.length; cki++) {
+        coachSparkPts.push(coachMonthMap[coachMonthKeys[cki]] || 0);
+      }
+      if (coachSparkPts.length >= 3) {
+        var coachSparkId = 'spark-coach-' + Date.now();
+        metaCoaching.innerHTML += '<canvas id="' + coachSparkId + '" width="60" height="24" style="vertical-align:middle;margin-left:6px"></canvas>';
+        setTimeout(function() { drawSparkline(coachSparkId, coachSparkPts, '#8e44ad'); }, 50);
+      }
+    }
   }
 
   var metaScope = document.getElementById("metaScope");
@@ -1698,6 +1831,30 @@ function loadExtraMeta() {
     metaPD.innerHTML = pdSessions > 0
       ? '<span class="tc-badge blue">' + pdSessions + ' sessions logged</span>'
       : '<span class="tc-badge gray">No sessions yet</span>';
+    if (pdData && pdData.sessions && pdData.sessions.length >= 3) {
+      var pdMonthMap = {};
+      for (var pmi = 0; pmi < pdData.sessions.length; pmi++) {
+        var pSess = pdData.sessions[pmi];
+        if (!pSess.date) continue;
+        var pD = new Date(pSess.date);
+        if (isNaN(pD.getTime())) continue;
+        var pMonthKey = pD.getFullYear() + '-' + (pD.getMonth() + 1);
+        pdMonthMap[pMonthKey] = (pdMonthMap[pMonthKey] || 0) + (pSess.hours || 0);
+      }
+      var pdMonthKeys = [];
+      for (var pmk in pdMonthMap) { if (pdMonthMap.hasOwnProperty(pmk)) pdMonthKeys.push(pmk); }
+      pdMonthKeys.sort();
+      pdMonthKeys = pdMonthKeys.slice(-7);
+      var pdSparkPts = [];
+      for (var pki = 0; pki < pdMonthKeys.length; pki++) {
+        pdSparkPts.push(pdMonthMap[pdMonthKeys[pki]] || 0);
+      }
+      if (pdSparkPts.length >= 3) {
+        var pdSparkId = 'spark-pd-' + Date.now();
+        metaPD.innerHTML += '<canvas id="' + pdSparkId + '" width="60" height="24" style="vertical-align:middle;margin-left:6px"></canvas>';
+        setTimeout(function() { drawSparkline(pdSparkId, pdSparkPts, '#e67e22'); }, 50);
+      }
+    }
   }
 
   var metaMeetings = document.getElementById("metaMeetings");
@@ -2144,6 +2301,21 @@ checkDemoStatus();
 
 // PWA
 if ("serviceWorker" in navigator) { navigator.serviceWorker.register("./service-worker.js").catch(function(){}); }
+
+// MLP SaaS sync status
+(function() {
+  var signInBtn = document.getElementById('mlpSignInBtn');
+  var syncStatus = document.getElementById('mlpSyncStatus');
+  if (window.mlpIsSignedIn && mlpIsSignedIn()) {
+    if (syncStatus) {
+      syncStatus.style.display = '';
+      var u = window.mlpCurrentUser ? mlpCurrentUser() : null;
+      if (u && u.email) syncStatus.textContent = '\u2705 ' + u.email;
+    }
+  } else {
+    if (signInBtn) signInBtn.style.display = '';
+  }
+})();
 
 /* ======================================================
    DEMO DATA SYSTEM
@@ -2772,9 +2944,9 @@ var TUTORIAL_STEPS = [
     position: 'center'
   },
   {
-    target: '.role-tabs-row',
+    target: '.role-dropdown-wrap',
     title: 'Switch Between Roles',
-    body: 'Toggle between Manager, MLP Coordinator, and Campus Leader views. Each role sees the tools relevant to their work.',
+    body: 'Use the "View as" dropdown to switch between Manager, MLP Coordinator, and Campus Leader views. Each role sees the tools relevant to their work.',
     position: 'bottom'
   },
   {
